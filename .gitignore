@@ -36,7 +36,7 @@ bin/
 .settings/
 
 # Intellij
-out/
+#out/
 .idea/
 *.iml
 *.iws
