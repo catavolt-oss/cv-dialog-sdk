@@ -2,13 +2,13 @@
  * Created by rburson on 3/5/15.
  */
 
-///<reference path="../references.ts"/>
+///<reference path="../fp/references.ts"/>
 
 module catavolt.fp {
 
     export class Success<A> extends Try<A>{
 
-        constructor(private value : A) {
+        constructor(private _value : A) {
             super();
         }
 
@@ -17,7 +17,7 @@ module catavolt.fp {
         }
 
         success() : A {
-            return this.value;
+            return this._value;
         }
 
     }

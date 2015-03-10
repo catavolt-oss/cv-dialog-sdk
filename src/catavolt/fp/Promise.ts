@@ -1,24 +1,24 @@
 /**
  * Created by rburson on 3/6/15.
  */
-///<reference path="../references.ts"/>
+///<reference path="../fp/references.ts"/>
 
 module catavolt.fp {
 
     export class Promise<A> {
 
-        private future: Future<A>;
+        private _future: Future<A>;
 
         constructor(label:string) {
-            this.future = Future.createFuture<A>(label);
+            this._future = Future.createFuture<A>(label);
         }
 
         /** --------------------- PUBLIC ------------------------------*/
 
-        isComplete(): boolean { return this.future.isComplete(); }
+        isComplete(): boolean { return this._future.isComplete(); }
 
         complete(t: Try<A>): Promise<A> {
-            this.future.complete(t);
+            this._future.complete(t);
             return this;
         }
 
@@ -26,8 +26,8 @@ module catavolt.fp {
             this.complete(new Failure<A>(error));
         }
 
-        getFuture(): Future<A> {
-            return this.future;
+        get future(): Future<A> {
+            return this._future;
         }
 
         success(value: A) {

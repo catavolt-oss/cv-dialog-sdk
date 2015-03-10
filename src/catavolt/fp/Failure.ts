@@ -2,19 +2,19 @@
  * Created by rburson on 3/5/15.
  */
 
-///<reference path="../references.ts"/>
+///<reference path="../fp/references.ts"/>
 
 module catavolt.fp {
 
     export class Failure<A> extends Try<A>{
 
-        constructor(private error) {
+        constructor(private _error) {
             super();
             console.log("test");
         }
 
         failure()  {
-            return this.error;
+            return this._error;
         }
 
         isFailure() : boolean {
