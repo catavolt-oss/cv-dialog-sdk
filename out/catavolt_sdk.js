@@ -281,10 +281,23 @@ var catavolt;
         var XMLHttpClient = (function () {
             function XMLHttpClient() {
             }
-            XMLHttpClient.prototype.jsonCall = function (targetUrl, jsonObj, timeoutMillis) {
+            XMLHttpClient.prototype.jsonGet = function (targetUrl, timeoutMillis) {
+                return this.jsonCall(targetUrl, null, 'GET', timeoutMillis);
+            };
+            XMLHttpClient.prototype.jsonPost = function (targetUrl, jsonObj, timeoutMillis) {
+                return this.jsonCall(targetUrl, jsonObj, 'POST', timeoutMillis);
+            };
+            XMLHttpClient.prototype.jsonCall = function (targetUrl, jsonObj, method, timeoutMillis) {
+                if (method === void 0) { method = 'GET'; }
+                if (timeoutMillis === void 0) { timeoutMillis = 30000; }
                 var promise = new Promise("XMLHttpClient::jsonCall");
+                if (method !== 'GET' && method !== 'POST') {
+                    promise.failure(method + " method not supported.");
+                    return promise.future;
+                }
                 var successCallback = function (request) {
                     try {
+                        Log.info("Got successful response: " + request.responseText);
                         var responseObj = JSON.parse(request.responseText);
                     }
                     catch (error) {
@@ -293,13 +306,15 @@ var catavolt;
                     promise.success(responseObj);
                 };
                 var errorCallback = function (request) {
-                    promise.failure('XMLHttpClient::jsonCall: call failed with' + request.status);
+                    Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText + request.getAllResponseHeaders());
+                    promise.failure('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
                 };
                 var timeoutCallback = function () {
                     if (promise.isComplete()) {
                         Log.error('XMLHttpClient::jsonCall: Timeoutreceived but Promise was already complete.');
                     }
                     else {
+                        Log.error('XMLHttpClient::jsonCall: Timeoutreceived.');
                         promise.failure('XMLHttpClient::jsonCall: Call timed out');
                     }
                 };
@@ -332,14 +347,22 @@ var catavolt;
                         wRequestTimer = setTimeout(timeoutCallback, timeoutMillis);
                     }
                 }
-                var body = JSON.stringify(jsonObj);
-                xmlHttpRequest.open('POST', targetUrl, true);
-                xmlHttpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-                xmlHttpRequest.send(body);
+                var body = jsonObj && JSON.stringify(jsonObj);
+                Log.info("URL: " + targetUrl);
+                Log.info("body " + body);
+                xmlHttpRequest.open(method, targetUrl, true);
+                if (method === 'POST') {
+                    xmlHttpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                    xmlHttpRequest.send(body);
+                }
+                else {
+                    xmlHttpRequest.send();
+                }
                 return promise.future;
             };
             return XMLHttpClient;
         })();
+        ws.XMLHttpClient = XMLHttpClient;
         var Call = (function () {
             function Call(service, method, params, systemContext, sessionContext) {
                 this._client = new XMLHttpClient();
@@ -382,8 +405,8 @@ var catavolt;
                     params: this._params
                 };
                 var servicePath = this._systemContext.toURLString() + (this._service || "");
-                this._client.jsonCall(servicePath, jsonObj, this.timeoutMillis);
                 Log.info("Calling " + servicePath + " with " + this._callString, "Call", "perform");
+                return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
             };
             Call.prototype.complete = function (t) {
                 if (!this._promise.isComplete()) {
@@ -395,6 +418,34 @@ var catavolt;
             return Call;
         })();
         ws.Call = Call;
+        var Get = (function () {
+            function Get(url) {
+                this._client = new XMLHttpClient();
+                this._url = url;
+                this._performed = false;
+                this._promise = new Promise("catavolt.ws.Get");
+                this.timeoutMillis = 30000;
+            }
+            Get.prototype.cancel = function () {
+                Log.error("Needs implementation", "Get", "cancel");
+            };
+            Get.prototype.perform = function () {
+                if (this._performed) {
+                    return this.complete(new Failure("Get:perform(): Get is already performed")).future;
+                }
+                this._performed = true;
+                Log.info("Calling " + this._url + "Get", "perform");
+                return this._client.jsonGet(this._url, this.timeoutMillis);
+            };
+            Get.prototype.complete = function (t) {
+                if (!this._promise.isComplete()) {
+                    this._promise.complete(t);
+                }
+                return this._promise;
+            };
+            return Get;
+        })();
+        ws.Get = Get;
     })(ws = catavolt.ws || (catavolt.ws = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -639,4 +690,27 @@ var catavolt;
         });
     })(fp = catavolt.fp || (catavolt.fp = {}));
 })(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/11/15.
+ */
+///<reference path="jasmine.d.ts"/>
+///<reference path="../src/catavolt/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var ws;
+    (function (ws) {
+        describe("Request::XMLHttpClient", function () {
+            it("Should get endpoint successfully", function (done) {
+                var SERVICE_PATH = "https://www.catavolt.net/***REMOVED***/soi-json";
+                var client = new ws.XMLHttpClient();
+                client.jsonGet(SERVICE_PATH, 30000);
+            });
+        });
+    })(ws = catavolt.ws || (catavolt.ws = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+///<reference path="fp.Test.ts"/>
+///<reference path="ws.Test.ts"/>
 //# sourceMappingURL=catavolt_sdk.js.map

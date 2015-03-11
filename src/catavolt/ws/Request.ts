@@ -8,18 +8,34 @@ module catavolt.ws {
 
 
     //We'll abstract the client as we may later want to use a json-p client or websocket or other
-    interface Client {
-        jsonCall(targetUrl:string, jsonObj:StringDictionary, timeoutMillis:number):Future<StringDictionary>;
+    export interface Client {
+        jsonGet(targetUrl:string, timeoutMillis?:number):Future<StringDictionary>;
+        jsonPost(targetUrl:string, jsonObj?:StringDictionary, timeoutMillis?:number):Future<StringDictionary>;
+        jsonCall(targetUrl:string, jsonObj?:StringDictionary, method?:string, timeoutMillis?:number):Future<StringDictionary>;
     }
 
-    class XMLHttpClient {
+    export class XMLHttpClient implements Client{
 
-        jsonCall(targetUrl:string, jsonObj:StringDictionary, timeoutMillis:number):Future<StringDictionary> {
+        jsonGet(targetUrl:string, timeoutMillis?:number):Future<StringDictionary>{
+            return this.jsonCall(targetUrl, null, 'GET', timeoutMillis);
+        }
+
+        jsonPost(targetUrl:string, jsonObj?:StringDictionary, timeoutMillis?:number):Future<StringDictionary> {
+            return this.jsonCall(targetUrl, jsonObj, 'POST', timeoutMillis);
+        }
+
+        jsonCall(targetUrl:string, jsonObj?:StringDictionary, method = 'GET', timeoutMillis = 30000):Future<StringDictionary> {
 
             var promise = new Promise<StringDictionary>("XMLHttpClient::jsonCall");
 
+            if (method !== 'GET' && method !== 'POST') {
+                promise.failure(method + " method not supported.");
+                return promise.future;
+            }
+
             var successCallback = (request:XMLHttpRequest) => {
                 try {
+                    Log.info("Got successful response: " + request.responseText);
                     var responseObj = JSON.parse(request.responseText);
                 } catch (error) {
                     promise.failure("XMLHttpClient::jsonCall: Failed to parse response: " + request.responseText);
@@ -28,13 +44,15 @@ module catavolt.ws {
             };
 
             var errorCallback = (request:XMLHttpRequest) => {
-                promise.failure('XMLHttpClient::jsonCall: call failed with' + request.status);
+                Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText + request.getAllResponseHeaders());
+                promise.failure('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
             };
 
             var timeoutCallback = () => {
                 if (promise.isComplete()) {
                     Log.error('XMLHttpClient::jsonCall: Timeoutreceived but Promise was already complete.');
                 } else {
+                    Log.error('XMLHttpClient::jsonCall: Timeoutreceived.');
                     promise.failure('XMLHttpClient::jsonCall: Call timed out');
                 }
             };
@@ -67,11 +85,18 @@ module catavolt.ws {
                 }
             }
 
-            var body = JSON.stringify(jsonObj);
+            var body = jsonObj && JSON.stringify(jsonObj);
 
-            xmlHttpRequest.open('POST', targetUrl, true);
-            xmlHttpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xmlHttpRequest.send(body);
+            Log.info("URL: " + targetUrl);
+            Log.info("body " + body);
+
+            xmlHttpRequest.open(method, targetUrl, true);
+            if(method === 'POST'){
+                xmlHttpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xmlHttpRequest.send(body);
+            } else {
+                xmlHttpRequest.send();
+            }
 
             return promise.future;
         }
@@ -160,10 +185,8 @@ module catavolt.ws {
             };
 
             var servicePath = this._systemContext.toURLString() + (this._service || "");
-
-            this._client.jsonCall(servicePath, jsonObj, this.timeoutMillis);
-
             Log.info("Calling " + servicePath + " with " + this._callString, "Call", "perform");
+            return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
 
         }
 
@@ -176,5 +199,45 @@ module catavolt.ws {
 
 
     }
+
+    export class Get implements Request {
+
+        private _performed:boolean;
+        private _promise:Promise<StringDictionary>;
+        private _url:string;
+        private _client:Client = new XMLHttpClient();
+
+        timeoutMillis:number;
+
+        constructor(url:string) {
+            this._url = url;
+            this._performed = false;
+            this._promise = new Promise<StringDictionary>("catavolt.ws.Get");
+            this.timeoutMillis = 30000;
+        }
+
+        cancel(){
+            Log.error("Needs implementation", "Get", "cancel");
+        }
+
+        perform():Future<StringDictionary> {
+
+            if(this._performed) {
+                return this.complete(new Failure<StringDictionary>("Get:perform(): Get is already performed")).future;
+            }
+            this._performed = true;
+
+            Log.info("Calling " + this._url + "Get", "perform");
+            return this._client.jsonGet(this._url, this.timeoutMillis);
+        }
+
+        private complete(t:Try<StringDictionary>):Promise<StringDictionary> {
+            if(!this._promise.isComplete()) {
+                this._promise.complete(t);
+            }
+            return this._promise;
+        }
+    }
+
 
 }
