@@ -3,6 +3,8 @@
  */
 
 //dialog
+///<reference path="AppContext.ts"/>
+///<reference path="AppWinDef.ts"/>
 ///<reference path="DialogTriple.ts"/>
 ///<reference path="GatewayService.ts"/>
 ///<reference path="Redirection.ts"/>
@@ -11,6 +13,8 @@
 ///<reference path="SystemContextImpl.ts"/>
 ///<reference path="SessionService.ts"/>
 
+import AppContext = catavolt.dialog.AppContext;
+import AppWinDef = catavolt.dialog.AppWinDef;
 import DialogTriple = catavolt.dialog.DialogTriple;
 import Redirection = catavolt.dialog.Redirection;
 import GatewayService = catavolt.dialog.GatewayService;

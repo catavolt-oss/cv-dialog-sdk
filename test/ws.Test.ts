@@ -13,7 +13,13 @@ module catavolt.ws {
 
             var SERVICE_PATH = "https://www.catavolt.net/***REMOVED***/soi-json";
             var client:Client = new XMLHttpClient();
-            client.jsonGet(SERVICE_PATH, 30000);
+            var f:Future<StringDictionary> = client.jsonGet(SERVICE_PATH, 30000);
+            f.onComplete((t:Try<StringDictionary>)=>{
+                expect(t.isSuccess).toBe(true);
+                var endPoint:ServiceEndpoint = <any>t.success;
+                expect(endPoint.responseType).toBe('soi-json');
+                done();
+            });
         });
     });
 

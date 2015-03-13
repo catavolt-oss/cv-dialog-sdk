@@ -568,6 +568,66 @@ var catavolt;
 var Call = catavolt.ws.Call;
 var Get = catavolt.ws.Get;
 /**
+ * Created by rburson on 3/13/15.
+ */
+///<reference path="../fp/references.ts"/>
+///<reference path="../util/references.ts"/>
+///<reference path="../ws/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var AppContextState;
+        (function (AppContextState) {
+            AppContextState[AppContextState["LOGGED_OUT"] = 0] = "LOGGED_OUT";
+            AppContextState[AppContextState["LOGGED_IN"] = 1] = "LOGGED_IN";
+        })(AppContextState || (AppContextState = {}));
+        var AppContextValues = (function () {
+            function AppContextValues(sessionContext, appWinDef, tenantSettings) {
+                this.sessionContext = sessionContext;
+                this.appWinDef = appWinDef;
+                this.tenantSettings = tenantSettings;
+            }
+            return AppContextValues;
+        })();
+        var AppContext = (function () {
+            function AppContext() {
+                if (AppContext._singleton) {
+                    throw new Error("Singleton instance already created");
+                }
+                this._deviceProps = [];
+                this.setAppContextStateToLoggedOut();
+                AppContext._singleton = this;
+            }
+            AppContext.singleton = function () {
+                if (!AppContext._singleton) {
+                    AppContext._singleton = new AppContext();
+                }
+                return AppContext._singleton;
+            };
+            AppContext.prototype.setAppContextStateToLoggedOut = function () {
+            };
+            return AppContext;
+        })();
+        dialog.AppContext = AppContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/13/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var AppWinDef = (function () {
+            function AppWinDef() {
+            }
+            return AppWinDef;
+        })();
+        dialog.AppWinDef = AppWinDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -597,6 +657,7 @@ var catavolt;
  */
 ///<reference path="../fp/references.ts"/>
 ///<reference path="../ws/references.ts"/>
+///<reference path="../util/references.ts"/>
 var catavolt;
 (function (catavolt) {
     var dialog;
@@ -816,6 +877,8 @@ var catavolt;
  * Created by rburson on 3/6/15.
  */
 //dialog
+///<reference path="AppContext.ts"/>
+///<reference path="AppWinDef.ts"/>
 ///<reference path="DialogTriple.ts"/>
 ///<reference path="GatewayService.ts"/>
 ///<reference path="Redirection.ts"/>
@@ -823,6 +886,8 @@ var catavolt;
 ///<reference path="SessionContextImpl.ts"/>
 ///<reference path="SystemContextImpl.ts"/>
 ///<reference path="SessionService.ts"/>
+var AppContext = catavolt.dialog.AppContext;
+var AppWinDef = catavolt.dialog.AppWinDef;
 var DialogTriple = catavolt.dialog.DialogTriple;
 var Redirection = catavolt.dialog.Redirection;
 var GatewayService = catavolt.dialog.GatewayService;
@@ -866,7 +931,13 @@ var catavolt;
             it("Should get endpoint successfully", function (done) {
                 var SERVICE_PATH = "https://www.catavolt.net/***REMOVED***/soi-json";
                 var client = new ws.XMLHttpClient();
-                client.jsonGet(SERVICE_PATH, 30000);
+                var f = client.jsonGet(SERVICE_PATH, 30000);
+                f.onComplete(function (t) {
+                    expect(t.isSuccess).toBe(true);
+                    var endPoint = t.success;
+                    expect(endPoint.responseType).toBe('soi-json');
+                    done();
+                });
             });
         });
     })(ws = catavolt.ws || (catavolt.ws = {}));

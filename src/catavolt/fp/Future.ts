@@ -37,7 +37,7 @@ module catavolt.fp {
 
         /** --------------------- PUBLIC ------------------------------*/
 
-        bind<B>(f:(value:A)=>Future<B>):Future<B> {
+        bind<B>(f:FutureFn<A,B>):Future<B> {
             var p:Promise<B> = new Promise<B>('Future.bind:' + this._label);
             this.onComplete((t1:Try<A>)=>{
                 if(t1.isFailure){

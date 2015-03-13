@@ -4,6 +4,7 @@
 
 ///<reference path="../fp/references.ts"/>
 ///<reference path="../ws/references.ts"/>
+///<reference path="../util/references.ts"/>
 
 module catavolt.dialog {
 
