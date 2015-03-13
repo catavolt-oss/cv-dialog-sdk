@@ -6,19 +6,19 @@ module catavolt.fp {
 
     export class Try<A> {
 
-        failure()  {
+        get failure()  {
             return null;
         }
 
-        isFailure() : boolean {
+        get isFailure() : boolean {
             return false;
         }
 
-        isSuccess() : boolean {
+        get isSuccess() : boolean {
             return false;
         }
 
-        success() : A {
+        get success() : A {
             return null;
         }
     }

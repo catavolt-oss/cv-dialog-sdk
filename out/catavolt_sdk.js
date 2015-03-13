@@ -73,18 +73,34 @@ var catavolt;
         var Try = (function () {
             function Try() {
             }
-            Try.prototype.failure = function () {
-                return null;
-            };
-            Try.prototype.isFailure = function () {
-                return false;
-            };
-            Try.prototype.isSuccess = function () {
-                return false;
-            };
-            Try.prototype.success = function () {
-                return null;
-            };
+            Object.defineProperty(Try.prototype, "failure", {
+                get: function () {
+                    return null;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Try.prototype, "isFailure", {
+                get: function () {
+                    return false;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Try.prototype, "isSuccess", {
+                get: function () {
+                    return false;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Try.prototype, "success", {
+                get: function () {
+                    return null;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return Try;
         })();
         fp.Try = Try;
@@ -109,14 +125,21 @@ var catavolt;
             function Failure(_error) {
                 _super.call(this);
                 this._error = _error;
-                console.log("test");
             }
-            Failure.prototype.failure = function () {
-                return this._error;
-            };
-            Failure.prototype.isFailure = function () {
-                return true;
-            };
+            Object.defineProperty(Failure.prototype, "failure", {
+                get: function () {
+                    return this._error;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Failure.prototype, "isFailure", {
+                get: function () {
+                    return true;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return Failure;
         })(fp.Try);
         fp.Failure = Failure;
@@ -141,21 +164,112 @@ var catavolt;
                 var f = new Future(label);
                 return f.complete(result);
             };
+            Future.createSuccessfulFuture = function (label, value) {
+                return Future.createCompletedFuture(label, new fp.Success(value));
+            };
+            Future.createFailedFuture = function (label, error) {
+                return Future.createCompletedFuture(label, new fp.Failure(error));
+            };
             Future.createFuture = function (label) {
                 var f = new Future(label);
                 return f;
             };
             /** --------------------- PUBLIC ------------------------------*/
-            Future.prototype.isComplete = function () {
-                return !!this._result;
+            Future.prototype.bind = function (f) {
+                var p = new fp.Promise('Future.bind:' + this._label);
+                this.onComplete(function (t1) {
+                    if (t1.isFailure) {
+                        p.failure(t1.failure);
+                    }
+                    var a = t1.success;
+                    try {
+                        var mb = f(a);
+                        mb.onComplete(function (t2) {
+                            p.complete(t2);
+                        });
+                    }
+                    catch (error) {
+                        p.complete(new fp.Failure(error));
+                    }
+                });
+                return p.future;
             };
-            Future.prototype.isCompleteWithFailure = function () {
-                return !!this._result && this._result.isFailure();
+            Object.defineProperty(Future.prototype, "failure", {
+                get: function () {
+                    return this._result ? this._result.failure : null;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isComplete", {
+                get: function () {
+                    return !!this._result;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isCompleteWithFailure", {
+                get: function () {
+                    return !!this._result && this._result.isFailure;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isCompleteWithSuccess", {
+                get: function () {
+                    return !!this._result && this._result.isSuccess;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Future.prototype.map = function (f) {
+                var p = new fp.Promise('Future.map:' + this._label);
+                this.onComplete(function (t1) {
+                    if (t1.isFailure) {
+                        p.failure(t1.failure);
+                    }
+                    else {
+                        var a = t1.success;
+                        try {
+                            var b = f(a);
+                            p.success(b);
+                        }
+                        catch (error) {
+                            p.complete(new fp.Failure(error));
+                        }
+                    }
+                });
+                return p.future;
             };
-            Future.prototype.isCompleteWithSuccess = function () {
-                return !!this._result && this._result.isSuccess();
+            Future.prototype.onComplete = function (listener) {
+                this._result ? listener(this._result) : this._completionListeners.push(listener);
             };
-            /*  TODO - figure out how to scope this at the 'module' level */
+            Future.prototype.onFailure = function (listener) {
+                this.onComplete(function (t) {
+                    t.isFailure && listener(t.failure);
+                });
+            };
+            Future.prototype.onSuccess = function (listener) {
+                this.onComplete(function (t) {
+                    t.isSuccess && listener(t.success);
+                });
+            };
+            Object.defineProperty(Future.prototype, "result", {
+                get: function () {
+                    return this._result;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "success", {
+                get: function () {
+                    return this._result ? this.result.success : null;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            /** --------------------- MODULE ------------------------------*/
+            //*** let's pretend this has module level visibility
             Future.prototype.complete = function (t) {
                 var _this = this;
                 var notifyList = new Array();
@@ -196,12 +310,20 @@ var catavolt;
                 _super.call(this);
                 this._value = _value;
             }
-            Success.prototype.isSuccess = function () {
-                return true;
-            };
-            Success.prototype.success = function () {
-                return this._value;
-            };
+            Object.defineProperty(Success.prototype, "isSuccess", {
+                get: function () {
+                    return true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Success.prototype, "success", {
+                get: function () {
+                    return this._value;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return Success;
         })(fp.Try);
         fp.Success = Success;
@@ -221,7 +343,7 @@ var catavolt;
             }
             /** --------------------- PUBLIC ------------------------------*/
             Promise.prototype.isComplete = function () {
-                return this._future.isComplete();
+                return this._future.isComplete;
             };
             Promise.prototype.complete = function (t) {
                 this._future.complete(t);
@@ -252,18 +374,11 @@ var catavolt;
 /**
  * Created by rburson on 3/6/15.
  */
-//fp
-///<reference path="Try.ts"/>
-///<reference path="Failure.ts"/>
-///<reference path="Future.ts"/>
-///<reference path="Success.ts"/>
-///<reference path="Promise.ts"/>
-///<reference path="Types.ts"/>
-var Try = catavolt.fp.Try;
 var Failure = catavolt.fp.Failure;
-var Success = catavolt.fp.Success;
 var Future = catavolt.fp.Future;
 var Promise = catavolt.fp.Promise;
+var Success = catavolt.fp.Success;
+var Try = catavolt.fp.Try;
 /**
  * Created by rburson on 3/9/15.
  */
@@ -335,10 +450,8 @@ var catavolt;
                         }
                     }
                 };
-                // If we're working with a newer implementation, we can just set the timeout property and register
-                // the timeout callback.  If not, we have to set a timer that will execute the timeout callback.
-                // We can cancel the timer if/when the server responds.
                 if (timeoutMillis) {
+                    //check for timeout support on the xmlHttpRequest itself
                     if (typeof xmlHttpRequest.ontimeout !== "undefined") {
                         xmlHttpRequest.timeout = timeoutMillis;
                         xmlHttpRequest.ontimeout = timeoutCallback;
@@ -348,8 +461,8 @@ var catavolt;
                     }
                 }
                 var body = jsonObj && JSON.stringify(jsonObj);
-                Log.info("URL: " + targetUrl);
-                Log.info("body " + body);
+                Log.info("XmlHttpClient: Calling: " + targetUrl);
+                Log.info("XmlHttpClient: body: " + body);
                 xmlHttpRequest.open(method, targetUrl, true);
                 if (method === 'POST') {
                     xmlHttpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -376,7 +489,6 @@ var catavolt;
                 this._promise = new Promise("catavolt.ws.Call");
                 this._callId = Call.nextCallId();
                 this._responseHeaders = null;
-                this._callString = null;
                 this.timeoutMillis = 30000;
             }
             Call.nextCallId = function () {
@@ -405,7 +517,6 @@ var catavolt;
                     params: this._params
                 };
                 var servicePath = this._systemContext.toURLString() + (this._service || "");
-                Log.info("Calling " + servicePath + " with " + this._callString, "Call", "perform");
                 return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
             };
             Call.prototype.complete = function (t) {
@@ -426,6 +537,9 @@ var catavolt;
                 this._promise = new Promise("catavolt.ws.Get");
                 this.timeoutMillis = 30000;
             }
+            Get.fromUrl = function (url) {
+                return new Get(url);
+            };
             Get.prototype.cancel = function () {
                 Log.error("Needs implementation", "Get", "cancel");
             };
@@ -452,6 +566,7 @@ var catavolt;
  * Created by rburson on 3/6/15.
  */
 var Call = catavolt.ws.Call;
+var Get = catavolt.ws.Get;
 /**
  * Created by rburson on 3/9/15.
  */
@@ -477,6 +592,49 @@ var catavolt;
         dialog.DialogTriple = DialogTriple;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/12/15.
+ */
+///<reference path="../fp/references.ts"/>
+///<reference path="../ws/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var GatewayService = (function () {
+            function GatewayService() {
+            }
+            GatewayService.getServiceEndpoint = function (tenantId, serviceName, gatewayHost) {
+                var f = Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
+                var endPointFuture = f.bind(function (jsonObject) {
+                    //'bounce cast' the jsonObject here to coerce into ServiceEndpoint
+                    return Future.createSuccessfulFuture("serviceEndpoint", jsonObject);
+                });
+                return endPointFuture;
+            };
+            return GatewayService;
+        })();
+        dialog.GatewayService = GatewayService;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/10/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var Redirection = (function () {
+            function Redirection() {
+            }
+            return Redirection;
+        })();
+        dialog.Redirection = Redirection;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/12/15.
+ */
 /**
  * Created by rburson on 3/9/15.
  */
@@ -659,13 +817,18 @@ var catavolt;
  */
 //dialog
 ///<reference path="DialogTriple.ts"/>
+///<reference path="GatewayService.ts"/>
+///<reference path="Redirection.ts"/>
+///<reference path="ServiceEndpoint.ts"/>
 ///<reference path="SessionContextImpl.ts"/>
 ///<reference path="SystemContextImpl.ts"/>
 ///<reference path="SessionService.ts"/>
 var DialogTriple = catavolt.dialog.DialogTriple;
+var Redirection = catavolt.dialog.Redirection;
+var GatewayService = catavolt.dialog.GatewayService;
 var SessionContextImpl = catavolt.dialog.SessionContextImpl;
-var SystemContextImpl = catavolt.dialog.SystemContextImpl;
 var SessionService = catavolt.dialog.SessionService;
+var SystemContextImpl = catavolt.dialog.SystemContextImpl;
 /**
  * Created by rburson on 3/6/15.
  */

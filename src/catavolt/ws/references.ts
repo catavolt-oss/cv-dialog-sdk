@@ -11,3 +11,4 @@ import SystemContext = catavolt.ws.SystemContext;
 import SessionContext = catavolt.ws.SessionContext;
 import Request = catavolt.ws.Request;
 import Call = catavolt.ws.Call;
+import Get = catavolt.ws.Get;

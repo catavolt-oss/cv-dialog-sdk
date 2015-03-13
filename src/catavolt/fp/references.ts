@@ -10,9 +10,14 @@
 ///<reference path="Promise.ts"/>
 ///<reference path="Types.ts"/>
 
-import Try = catavolt.fp.Try;
+import CompletionListener = catavolt.fp.CompletionListener;
 import Failure = catavolt.fp.Failure;
-import Success = catavolt.fp.Success;
+import FailureListener = catavolt.fp.FailureListener;
 import Future = catavolt.fp.Future;
+import FutureFn = catavolt.fp.FutureFn;
+import MapFn = catavolt.fp.MapFn;
 import Promise = catavolt.fp.Promise;
+import Success = catavolt.fp.Success;
+import SuccessListener = catavolt.fp.SuccessListener;
+import Try = catavolt.fp.Try;
 import TryClosure = catavolt.fp.TryClosure;

@@ -73,10 +73,8 @@ module catavolt.ws {
                 }
             };
 
-            // If we're working with a newer implementation, we can just set the timeout property and register
-            // the timeout callback.  If not, we have to set a timer that will execute the timeout callback.
-            // We can cancel the timer if/when the server responds.
             if (timeoutMillis) {
+                //check for timeout support on the xmlHttpRequest itself
                 if (typeof xmlHttpRequest.ontimeout !== "undefined") {
                     xmlHttpRequest.timeout = timeoutMillis;
                     xmlHttpRequest.ontimeout = timeoutCallback;
@@ -87,8 +85,8 @@ module catavolt.ws {
 
             var body = jsonObj && JSON.stringify(jsonObj);
 
-            Log.info("URL: " + targetUrl);
-            Log.info("body " + body);
+            Log.info("XmlHttpClient: Calling: " + targetUrl);
+            Log.info("XmlHttpClient: body: " + body);
 
             xmlHttpRequest.open(method, targetUrl, true);
             if(method === 'POST'){
@@ -109,7 +107,6 @@ module catavolt.ws {
         private static _lastCallId:number = 0;
 
         private _callId: number;
-        private _callString: string;
         private _cancelled: boolean;
         private _loggingOption: boolean;
         private _method: string;
@@ -159,7 +156,6 @@ module catavolt.ws {
             this._promise = new Promise<StringDictionary>("catavolt.ws.Call");
             this._callId = Call.nextCallId();
             this._responseHeaders = null;
-            this._callString = null;
             this.timeoutMillis = 30000;
 
         }
@@ -185,7 +181,6 @@ module catavolt.ws {
             };
 
             var servicePath = this._systemContext.toURLString() + (this._service || "");
-            Log.info("Calling " + servicePath + " with " + this._callString, "Call", "perform");
             return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
 
         }
@@ -208,6 +203,10 @@ module catavolt.ws {
         private _client:Client = new XMLHttpClient();
 
         timeoutMillis:number;
+
+        static fromUrl(url:string):Get {
+            return new Get(url);
+        }
 
         constructor(url:string) {
             this._url = url;

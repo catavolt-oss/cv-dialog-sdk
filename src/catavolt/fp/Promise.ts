@@ -15,7 +15,7 @@ module catavolt.fp {
 
         /** --------------------- PUBLIC ------------------------------*/
 
-        isComplete(): boolean { return this._future.isComplete(); }
+        isComplete(): boolean { return this._future.isComplete; }
 
         complete(t: Try<A>): Promise<A> {
             this._future.complete(t);

@@ -12,11 +12,11 @@ module catavolt.fp {
             super();
         }
 
-        isSuccess() : boolean {
+        get isSuccess() : boolean {
             return true;
         }
 
-        success() : A {
+        get success() : A {
             return this._value;
         }
 

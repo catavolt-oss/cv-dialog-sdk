@@ -15,6 +15,14 @@ module catavolt.fp {
             return f.complete(result);
         }
 
+        static createSuccessfulFuture<A>(label:string, value:A): Future<A> {
+            return Future.createCompletedFuture(label, new Success<A>(value));
+        }
+
+        static createFailedFuture<A>(label:string, error):Future<A> {
+            return Future.createCompletedFuture(label, new Failure<A>(error));
+        }
+
         static createFuture<A>(label:string): Future<A> {
             var f:Future<A> = new Future<A>(label);
             return f;
@@ -29,15 +37,76 @@ module catavolt.fp {
 
         /** --------------------- PUBLIC ------------------------------*/
 
-        isComplete(): boolean { return !!this._result; }
+        bind<B>(f:(value:A)=>Future<B>):Future<B> {
+            var p:Promise<B> = new Promise<B>('Future.bind:' + this._label);
+            this.onComplete((t1:Try<A>)=>{
+                if(t1.isFailure){
+                    p.failure(t1.failure);
+                }
+                var a:A = t1.success;
+                try {
+                    var mb:Future<B> = f(a);
+                    mb.onComplete((t2:Try<B>)=>{ p.complete(t2); });
+                }catch(error){
+                    p.complete(new Failure<B>(error));
+                }
+            });
+            return p.future;
+        }
 
-        isCompleteWithFailure(): boolean { return !!this._result && this._result.isFailure(); }
+        get failure() { return this._result ? this._result.failure : null; }
 
-        isCompleteWithSuccess(): boolean { return !!this._result && this._result.isSuccess(); }
+        get isComplete(): boolean { return !!this._result; }
 
-        /*  TODO - figure out how to scope this at the 'module' level */
+        get isCompleteWithFailure(): boolean { return !!this._result && this._result.isFailure; }
+
+        get isCompleteWithSuccess(): boolean { return !!this._result && this._result.isSuccess; }
+
+        map<B>(f:MapFn<A,B>):Future<B> {
+
+            var p:Promise<B> = new Promise<B>('Future.map:' + this._label);
+            this.onComplete((t1:Try<A>)=>{
+              if(t1.isFailure){
+                  p.failure(t1.failure);
+              } else {
+                  var a:A = t1.success;
+                  try {
+                      var b:B = f(a);
+                      p.success(b);
+                  }catch(error){
+                      p.complete(new Failure<B>(error));
+                  }
+              }
+            });
+            return p.future;
+        }
+
+        onComplete(listener:CompletionListener<A>):void {
+            this._result ? listener(this._result) : this._completionListeners.push(listener);
+        }
+
+        onFailure(listener:FailureListener): void {
+            this.onComplete((t:Try<A>)=>{
+                t.isFailure && listener(t.failure);
+            });
+        }
+
+        onSuccess(listener:SuccessListener<A>):void {
+            this.onComplete((t:Try<A>)=>{
+                t.isSuccess &&  listener(t.success);
+            });
+        }
+
+        get result():Try<A> { return this._result; }
+
+        get success():A { return this._result ? this.result.success : null; }
+
+
+        /** --------------------- MODULE ------------------------------*/
+        //*** let's pretend this has module level visibility
+
         complete(t: Try<A>): Future<A>{
-            var notifyList:Array<(t:Try<A>)=>void> = new Array();
+            var notifyList:Array<CompletionListener<A>> = new Array();
             if(t) {
                 if (!this._result) {
                     this._result = t;
@@ -47,7 +116,7 @@ module catavolt.fp {
                     Log.error("Future::complete() : Future is already completed");
                 }
                 notifyList.forEach(
-                    (listener:(t:Try<A>)=>void)=> {
+                    (listener:CompletionListener<A>)=> {
                         listener(this._result);
                     }
                 );

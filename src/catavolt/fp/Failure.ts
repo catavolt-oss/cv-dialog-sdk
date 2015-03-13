@@ -10,14 +10,13 @@ module catavolt.fp {
 
         constructor(private _error) {
             super();
-            console.log("test");
         }
 
-        failure()  {
+        get failure()  {
             return this._error;
         }
 
-        isFailure() : boolean {
+        get isFailure() : boolean {
             return true;
         }
 
