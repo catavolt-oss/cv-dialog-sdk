@@ -79,7 +79,7 @@ module catavolt.dialog {
             return this._tenantSettingsTry;
         }
 
-        private finalizeContext(sessionContext:SessionContext, deviceProps:Array<string>):Future<AppContextValues> {
+        private finalizeContext(sessionContext:SessionContext, deviceProps:Array<string>): Future<AppContextValues> {
             SessionService.s
         }
 

@@ -1029,7 +1029,28 @@ var catavolt;
                     return Future.createCompletedFuture("createSession/extractSessionContextFromResponse", dialog.SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
                 });
             };
+            SessionService.getSessionListProperty = function (propertyName, sessionContext) {
+                var method = "getSessionListProperty";
+                var params = {
+                    'propertyName': propertyName,
+                    'sessionHandle': sessionContext.sessionHandle
+                };
+                var call = Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createSuccessfulFuture("getSessionListProperty/extractResultFromResponse", result);
+                });
+            };
             SessionService.setSessionListProperty = function (propertyName, listProperty, sessionContext) {
+                var method = "createSessionListProperty";
+                var params = {
+                    'propertyName': propertyName,
+                    'listProperty': listProperty,
+                    'sessionHandle': sessionContext.sessionHandle
+                };
+                var call = Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createSuccessfulFuture("setSessionListProperty/extractVoidResultFromResponse", result);
+                });
             };
             SessionService.SERVICE_NAME = "SessionService";
             SessionService.SERVICE_PATH = "soi-json-v02/" + SessionService.SERVICE_NAME;

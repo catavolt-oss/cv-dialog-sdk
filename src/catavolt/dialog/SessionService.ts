@@ -31,10 +31,37 @@ module catavolt.dialog {
 
         }
 
+        static getSessionListProperty(propertyName:string, sessionContext:SessionContext): Future<StringDictionary> {
+
+            var method = "getSessionListProperty";
+            var params:StringDictionary = {
+                'propertyName':propertyName,
+                'sessionHandle':sessionContext.sessionHandle
+            }
+            var call = Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind(
+                (result:StringDictionary)=>{
+                    return Future.createSuccessfulFuture<StringDictionary>("getSessionListProperty/extractResultFromResponse", result);
+                }
+            );
+        }
+
         static setSessionListProperty(propertyName:string,
                                       listProperty:Array<string>,
                                       sessionContext:SessionContext): Future<VoidResult> {
 
+            var method = "createSessionListProperty";
+            var params:StringDictionary = {
+                'propertyName':propertyName,
+                'listProperty':listProperty,
+                'sessionHandle':sessionContext.sessionHandle
+            }
+            var call = Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind(
+                (result:StringDictionary)=>{
+                    return Future.createSuccessfulFuture<VoidResult>("setSessionListProperty/extractVoidResultFromResponse", result);
+                }
+            );
         }
     }
 }
