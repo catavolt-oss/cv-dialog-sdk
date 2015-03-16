@@ -22,13 +22,19 @@ module catavolt.dialog {
         systemContext: SystemContext;
         userName: string;
 
-        //TODO
         static fromWSCreateSessionResult(jsonObject: {[id: string]: any},
                                           systemContext: SystemContext): Try<SessionContext> {
 
-
-            return null;
-
+            return DialogTriple.extractValue(jsonObject, "WSCreateSessionResult",
+                ()=>{
+                    return new Success(new SessionContextImpl(
+                        jsonObject['sessionHandle'],
+                        jsonObject['userName'],
+                        jsonObject['currentDivision'],
+                        jsonObject['serverVersion'],
+                        systemContext));
+                }
+            );
         }
 
         static createSessionContext(gatewayHost:string,

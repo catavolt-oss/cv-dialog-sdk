@@ -5,10 +5,12 @@
 module catavolt.ws {
 
     export interface SystemContext {
-        host: string;
+        /*host: string;
         path: string;
         port: number;
         scheme: string;
-        toURLString():string;
+        toURLString():string;*/
+
+        urlString:string;
     }
 }

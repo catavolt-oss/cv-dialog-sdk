@@ -5,6 +5,7 @@
 //dialog
 ///<reference path="AppContext.ts"/>
 ///<reference path="AppWinDef.ts"/>
+///<reference path="DialogException.ts"/>
 ///<reference path="DialogTriple.ts"/>
 ///<reference path="GatewayService.ts"/>
 ///<reference path="Redirection.ts"/>
@@ -12,9 +13,11 @@
 ///<reference path="SessionContextImpl.ts"/>
 ///<reference path="SystemContextImpl.ts"/>
 ///<reference path="SessionService.ts"/>
+///<reference path="VoidResult.ts"/>
 
 import AppContext = catavolt.dialog.AppContext;
 import AppWinDef = catavolt.dialog.AppWinDef;
+import DialogException = catavolt.dialog.DialogException;
 import DialogTriple = catavolt.dialog.DialogTriple;
 import Redirection = catavolt.dialog.Redirection;
 import GatewayService = catavolt.dialog.GatewayService;
@@ -22,3 +25,4 @@ import ServiceEndpoint = catavolt.dialog.ServiceEndpoint;
 import SessionContextImpl = catavolt.dialog.SessionContextImpl;
 import SessionService = catavolt.dialog.SessionService;
 import SystemContextImpl = catavolt.dialog.SystemContextImpl;
+import VoidResult = catavolt.dialog.VoidResult;

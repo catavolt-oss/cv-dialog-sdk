@@ -6,9 +6,15 @@
 
 module catavolt.dialog {
 
-    export class SystemContextImpl implements  SystemContext{
+    export class SystemContextImpl implements SystemContext{
 
-        constructor(private _scheme: string,
+        constructor(private _urlString:string) {  }
+
+        get urlString():string {
+            return this._urlString;
+        }
+
+        /*constructor(private _scheme: string,
                     private _host: string,
                     private _port: number,
                     private _path: string){}
@@ -29,7 +35,7 @@ module catavolt.dialog {
             return this._path;
         }
 
-        toURLString():string {
+        private toURLString():string {
 
             var urlString = "";
             if(this._host) {
@@ -47,6 +53,6 @@ module catavolt.dialog {
             }
 
             return urlString;
-        }
+        }*/
     }
 }

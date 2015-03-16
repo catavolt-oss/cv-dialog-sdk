@@ -55,14 +55,22 @@ var catavolt;
  * Created by rburson on 3/9/15.
  */
 /**
+ * Created by rburson on 3/16/15.
+ */
+/**
  * Created by rburson on 3/6/15.
  */
 //util
 ///<reference path="ArrayUtil.ts"/>
 ///<reference path="Log.ts"/>
 ///<reference path="Types.ts"/>
+///<reference path="UserException.ts"/>
 var ArrayUtil = catavolt.util.ArrayUtil;
 var Log = catavolt.util.Log;
+/**
+ * Created by rburson on 3/9/15.
+ */
+///<reference path="../fp/references.ts"/>
 /**
  * Created by rburson on 3/5/15.
  */
@@ -368,12 +376,62 @@ var catavolt;
     })(fp = catavolt.fp || (catavolt.fp = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 3/9/15.
+ * Created by rburson on 3/16/15.
  */
-///<reference path="../fp/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var fp;
+    (function (fp) {
+        var Either = (function () {
+            function Either() {
+            }
+            Either.left = function (left) {
+                var either = new Either();
+                either._left = left;
+                return either;
+            };
+            Either.right = function (right) {
+                var either = new Either();
+                either._right = right;
+                return either;
+            };
+            Object.defineProperty(Either.prototype, "isLeft", {
+                get: function () {
+                    return !!this._left;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "isRight", {
+                get: function () {
+                    return !!this._right;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "left", {
+                get: function () {
+                    return this._left;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "right", {
+                get: function () {
+                    return this._right;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return Either;
+        })();
+        fp.Either = Either;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
+})(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 3/6/15.
  */
+var Either = catavolt.fp.Either;
 var Failure = catavolt.fp.Failure;
 var Future = catavolt.fp.Future;
 var Promise = catavolt.fp.Promise;
@@ -516,7 +574,7 @@ var catavolt;
                     method: this._method,
                     params: this._params
                 };
-                var servicePath = this._systemContext.toURLString() + (this._service || "");
+                var servicePath = this._systemContext.urlString + (this._service || "");
                 return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
             };
             Call.prototype.complete = function (t) {
@@ -599,14 +657,90 @@ var catavolt;
                 this.setAppContextStateToLoggedOut();
                 AppContext._singleton = this;
             }
+            Object.defineProperty(AppContext, "defaultTTLInMillis", {
+                get: function () {
+                    return AppContext.ONE_DAY_IN_MILLIS;
+                },
+                enumerable: true,
+                configurable: true
+            });
             AppContext.singleton = function () {
                 if (!AppContext._singleton) {
                     AppContext._singleton = new AppContext();
                 }
                 return AppContext._singleton;
             };
-            AppContext.prototype.setAppContextStateToLoggedOut = function () {
+            Object.defineProperty(AppContext.prototype, "appWinDefTry", {
+                get: function () {
+                    return this._appWinDefTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "deviceProps", {
+                get: function () {
+                    return this._deviceProps;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
+                if (this._appContextState === 1 /* LOGGED_IN */) {
+                    return Future.createFailedFuture("AppContext::login", "User is already logged in");
+                }
+                var answer;
+                var appContextValuesFr = loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
             };
+            Object.defineProperty(AppContext.prototype, "sessionContextTry", {
+                get: function () {
+                    return this._sessionContextTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "tenantSettingsTry", {
+                get: function () {
+                    return this._tenantSettingsTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AppContext.prototype.finalizeContext = function (sessionContext, deviceProps) {
+                dialog.SessionService.s;
+            };
+            AppContext.prototype.loginOnline = function (gatewayHost, tenantId, clientType, userId, password, deviceProps) {
+                var _this = this;
+                var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
+                return systemContextFr.bind(function (sc) {
+                    _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
+                });
+            };
+            AppContext.prototype.loginFromSystemContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
+                var _this = this;
+                var sessionContextFuture = dialog.SessionService.createSession(tenantId, userId, password, clientType, systemContext);
+                return sessionContextFuture.bind(function (sessionContext) {
+                    return _this.finalizedContext(sessionContext, deviceProps);
+                });
+            };
+            AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {
+                var serviceEndpoint = dialog.GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
+                return serviceEndpoint.map(function (serviceEndpoint) {
+                    return new dialog.SystemContextImpl(serviceEndpoint.serverAssignment);
+                });
+            };
+            AppContext.prototype.setAppContextStateToLoggedIn = function (appContextValues) {
+                this._appWinDefTry = new Success(appContextValues.appWinDef);
+                this._tenantSettingsTry = new Success(appContextValues.tenantSettings);
+                this._sessionContextTry = new Success(appContextValues.sessionContext);
+                this._appContextState = 1 /* LOGGED_IN */;
+            };
+            AppContext.prototype.setAppContextStateToLoggedOut = function () {
+                this._appWinDefTry = new Failure("Not logged in");
+                this._tenantSettingsTry = new Failure('Not logged in"');
+                this._sessionContextTry = new Failure('Not loggged in');
+                this._appContextState = 0 /* LOGGED_OUT */;
+            };
+            AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
             return AppContext;
         })();
         dialog.AppContext = AppContext;
@@ -628,6 +762,10 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/16/15.
+ */
+///<reference path="../util/references.ts"/>
+/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -639,13 +777,67 @@ var catavolt;
         var DialogTriple = (function () {
             function DialogTriple() {
             }
-            //TODO
-            DialogTriple.extractTriple = function (jsonObject, OType, ignoreRedirection, extractor) {
-                return null;
+            DialogTriple.extractValue = function (jsonObject, Otype, extractor) {
+                return DialogTriple._extractValue(jsonObject, Otype, false, extractor);
             };
-            //TODO
-            DialogTriple.extractValue = function (jsonObject, OType, ignoreRedirection, extractor) {
-                return null;
+            DialogTriple.extractTriple = function (jsonObject, OType, ignoreRedirection, extractor) {
+                var result;
+                if (!jsonObject) {
+                    return new Failure('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + OType + ' because json object is null');
+                }
+                else {
+                    var ot = jsonObject['WS_OTYPE'];
+                    if (!ot || OType !== ot) {
+                        result = new Failure('DialogTriple:extractTriple: expected O_TYPE ' + OType + ' but found ' + ot);
+                    }
+                    else {
+                        if (jsonObject['exception']) {
+                            var dialogException = jsonObject['exception'];
+                            result = new Failure(dialogException);
+                        }
+                        else if (jsonObject['redirection'] && !ignoreRedirection) {
+                            var drt = dialog.Redirection.fromWSRedirection(jsonObject);
+                            if (drt.isFailure) {
+                                result = new Failure(drt.failure);
+                            }
+                            else {
+                                result = new Success(Either.left(drt.success));
+                            }
+                        }
+                        else {
+                            if (extractor) {
+                                var valueTry = extractor();
+                                if (valueTry.isFailure) {
+                                    result = new Failure(valueTry.failure);
+                                }
+                                else {
+                                    result = new Success(Either.right(valueTry.success));
+                                }
+                            }
+                            else {
+                                result = new Failure('DialogTriple::extractTriple: Triple is not an exception or redirection and no value extractor was provided');
+                            }
+                        }
+                    }
+                }
+                return result;
+            };
+            DialogTriple._extractValue = function (jsonObject, OType, ignoreRedirection, extractor) {
+                var tripleTry = DialogTriple.extractTriple(jsonObject, OType, ignoreRedirection, extractor);
+                var result;
+                if (tripleTry.isFailure) {
+                    result = new Failure(tripleTry.failure);
+                }
+                else {
+                    var triple = tripleTry.success;
+                    if (triple.isLeft) {
+                        result = new Failure('DialogTriple::extractValue: Unexpected redirection for O_TYPE: ' + OType);
+                    }
+                    else {
+                        result = new Success(triple.right);
+                    }
+                }
+                return result;
             };
             return DialogTriple;
         })();
@@ -688,6 +880,10 @@ var catavolt;
         var Redirection = (function () {
             function Redirection() {
             }
+            //@TODO
+            Redirection.fromWSRedirection = function (jsonObject) {
+                return null;
+            };
             return Redirection;
         })();
         dialog.Redirection = Redirection;
@@ -714,9 +910,10 @@ var catavolt;
                 this.systemContext = systemContext;
                 this._remoteSession = true;
             }
-            //TODO
             SessionContextImpl.fromWSCreateSessionResult = function (jsonObject, systemContext) {
-                return null;
+                return dialog.DialogTriple.extractValue(jsonObject, "WSCreateSessionResult", function () {
+                    return new Success(new SessionContextImpl(jsonObject['sessionHandle'], jsonObject['userName'], jsonObject['currentDivision'], jsonObject['serverVersion'], systemContext));
+                });
             };
             SessionContextImpl.createSessionContext = function (gatewayHost, tenantId, clientType, userId, password) {
                 var sessionContext = new SessionContextImpl(null, userId, "", null, null);
@@ -798,57 +995,16 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var SystemContextImpl = (function () {
-            function SystemContextImpl(_scheme, _host, _port, _path) {
-                this._scheme = _scheme;
-                this._host = _host;
-                this._port = _port;
-                this._path = _path;
+            function SystemContextImpl(_urlString) {
+                this._urlString = _urlString;
             }
-            Object.defineProperty(SystemContextImpl.prototype, "scheme", {
+            Object.defineProperty(SystemContextImpl.prototype, "urlString", {
                 get: function () {
-                    return this._scheme;
+                    return this._urlString;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(SystemContextImpl.prototype, "host", {
-                get: function () {
-                    return this._host;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(SystemContextImpl.prototype, "port", {
-                get: function () {
-                    return this._port;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(SystemContextImpl.prototype, "path", {
-                get: function () {
-                    return this._path;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            SystemContextImpl.prototype.toURLString = function () {
-                var urlString = "";
-                if (this._host) {
-                    if (this._scheme) {
-                        urlString += this._scheme + "://";
-                    }
-                    urlString += this._host;
-                    if (this.port) {
-                        urlString += ":" + this._port;
-                    }
-                    urlString += "/";
-                }
-                if (this._path) {
-                    urlString += this._path + "/";
-                }
-                return urlString;
-            };
             return SystemContextImpl;
         })();
         dialog.SystemContextImpl = SystemContextImpl;
@@ -867,18 +1023,31 @@ var catavolt;
             }
             SessionService.createSession = function (tenantId, userId, password, clientType, systemContext) {
                 var method = "createSessionDirectly";
+                var params = { 'tenantId': tenantId, 'userId': userId, 'password': password, 'clientType': clientType };
+                var call = Call.createCallWithoutSession(SessionService.SERVICE_PATH, method, params, systemContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture("createSession/extractSessionContextFromResponse", dialog.SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
+                });
             };
+            SessionService.setSessionListProperty = function (propertyName, listProperty, sessionContext) {
+            };
+            SessionService.SERVICE_NAME = "SessionService";
+            SessionService.SERVICE_PATH = "soi-json-v02/" + SessionService.SERVICE_NAME;
             return SessionService;
         })();
         dialog.SessionService = SessionService;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/16/15.
+ */
+/**
  * Created by rburson on 3/6/15.
  */
 //dialog
 ///<reference path="AppContext.ts"/>
 ///<reference path="AppWinDef.ts"/>
+///<reference path="DialogException.ts"/>
 ///<reference path="DialogTriple.ts"/>
 ///<reference path="GatewayService.ts"/>
 ///<reference path="Redirection.ts"/>
@@ -886,6 +1055,7 @@ var catavolt;
 ///<reference path="SessionContextImpl.ts"/>
 ///<reference path="SystemContextImpl.ts"/>
 ///<reference path="SessionService.ts"/>
+///<reference path="VoidResult.ts"/>
 var AppContext = catavolt.dialog.AppContext;
 var AppWinDef = catavolt.dialog.AppWinDef;
 var DialogTriple = catavolt.dialog.DialogTriple;

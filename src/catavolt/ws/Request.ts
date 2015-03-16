@@ -180,7 +180,7 @@ module catavolt.ws {
                 params: this._params
             };
 
-            var servicePath = this._systemContext.toURLString() + (this._service || "");
+            var servicePath = this._systemContext.urlString + (this._service || "");
             return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
 
         }

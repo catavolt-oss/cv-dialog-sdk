@@ -3,14 +3,16 @@
  */
 
 //fp
+///<reference path="Types.ts"/>
 ///<reference path="Try.ts"/>
 ///<reference path="Failure.ts"/>
 ///<reference path="Future.ts"/>
 ///<reference path="Success.ts"/>
 ///<reference path="Promise.ts"/>
-///<reference path="Types.ts"/>
+///<reference path="Either.ts"/>
 
 import CompletionListener = catavolt.fp.CompletionListener;
+import Either = catavolt.fp.Either;
 import Failure = catavolt.fp.Failure;
 import FailureListener = catavolt.fp.FailureListener;
 import Future = catavolt.fp.Future;

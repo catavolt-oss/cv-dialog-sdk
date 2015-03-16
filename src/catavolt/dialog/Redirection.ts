@@ -6,6 +6,10 @@ module catavolt.dialog {
 
     export class Redirection {
 
+        //@TODO
+        static fromWSRedirection(jsonObject:StringDictionary):Try<Redirection> {
+            return null;
+        }
 
 
     }
