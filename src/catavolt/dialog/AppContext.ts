@@ -80,7 +80,17 @@ module catavolt.dialog {
         }
 
         private finalizeContext(sessionContext:SessionContext, deviceProps:Array<string>): Future<AppContextValues> {
-            SessionService.s
+            var devicePropName = "com.catavolt.session.property.DeviceProperties";
+            return SessionService.setSessionListProperty(devicePropName, deviceProps, sessionContext).bind(
+                (setPropertyListResult:VoidResult)=>{
+                    var listPropName = "com.catavolt.session.property.TenantProperties";
+                    return SessionService.getSessionListProperty(listPropName, sessionContext).bind(
+                        (listPropertyResult:StringDictionary)=>{
+
+                        }
+                    );
+                }
+            );
         }
 
         private loginOnline(gatewayHost:string,

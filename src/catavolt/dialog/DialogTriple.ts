@@ -9,12 +9,63 @@ module catavolt.dialog {
 
     export class DialogTriple {
 
+        public static extractList<A>(jsonObject:StringDictionary, Ltype:string, extractor:MapFn<any,Try<A>>) {
+            var result:Try<Array<A>>;
+            if (jsonObject) {
+                var lt = jsonObject['WS_LTYPE'];
+                if (Ltype === lt) {
+                    if (jsonObject['values']) {
+                        var realValues:Array<A> = [];
+                        var values:Array<any> = jsonObject['values'];
+                        for (var elem in values) {
+                            var extdValue:Try<A> = extractor(elem);
+                            if (extdValue.isFailure) {
+                                result = new Failure<Array<A>>(extdValue.failure);
+                                break;
+                            }
+                            realValues.push(extdValue.success);
+                        }
+                        if (!result) {
+                            result = new Success<Array<A>>(realValues);
+                        }
+                    } else {
+                        result = new Failure<Array<A>>("DialogTriple::extractList: Values array not found");
+                    }
+                } else {
+                    result = new Failure<Array<A>>("DialogTriple::extractList: Expected WS_LTYPE " + Ltype + " but found " + lt);
+                }
+            }
+            return result;
+        }
+
+        public static extractRedirection(jsonObject:StringDictionary, Otype:string): Try<Redirection> {
+           var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, false,
+               ()=>{ return new Success(new NullRedirection({})); }
+           );
+            var answer:Try<Redirection>;
+            if(tripleTry.isSuccess) {
+                var triple = tripleTry.success;
+                answer = triple.isLeft ? new Success(triple.left) : new Success(triple.right);
+            } else {
+                answer = new Failure(tripleTry.failure);
+            }
+            return answer;
+        }
+
+        public static extractTriple<A>(jsonObject:StringDictionary, Otype:string, extractor:TryClosure<A>):Try<Either<Redirection,A>> {
+            return DialogTriple._extractTriple(jsonObject, Otype, false, extractor);
+        }
 
         public static extractValue<A>(jsonObject:StringDictionary, Otype:string, extractor:TryClosure<A>):Try<A> {
             return DialogTriple._extractValue(jsonObject, Otype, false, extractor);
         }
 
-        private static extractTriple<A>(jsonObject: StringDictionary,
+        public static extractValueIgnoringRedirection<A>(jsonObject:StringDictionary, Otype:string, extractor:TryClosure<A>):Try<A> {
+            return DialogTriple._extractValue(jsonObject, Otype, true, extractor);
+        }
+
+
+        private static _extractTriple<A>(jsonObject: StringDictionary,
                                         OType:string,
                                         ignoreRedirection: boolean,
                                         extractor: TryClosure<A>): Try<Either<Redirection,A>>{
@@ -61,7 +112,7 @@ module catavolt.dialog {
                                     extractor: TryClosure<A>): Try<A> {
 
 
-            var tripleTry = DialogTriple.extractTriple(jsonObject, OType, ignoreRedirection, extractor);
+            var tripleTry = DialogTriple._extractTriple(jsonObject, OType, ignoreRedirection, extractor);
             var result:Try<A>;
             if(tripleTry.isFailure) {
                result = new Failure<A>(tripleTry.failure);

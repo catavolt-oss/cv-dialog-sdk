@@ -111,7 +111,7 @@ module catavolt.fp {
                 if (!this._result) {
                     this._result = t;
                     /* capture the listener set to prevent missing a notification */
-                    notifyList = ArrayUtil.deepCopy(this._completionListeners);
+                    notifyList = ArrayUtil.copy(this._completionListeners);
                 } else {
                     Log.error("Future::complete() : Future is already completed");
                 }
