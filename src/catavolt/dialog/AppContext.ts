@@ -51,7 +51,7 @@ module catavolt.dialog {
             return this._appWinDefTry;
         }
 
-        get deviceProps():Array<String> {
+        get deviceProps():Array<string> {
             return this._deviceProps;
         }
 
@@ -62,11 +62,11 @@ module catavolt.dialog {
               password:string):Future<AppWinDef>{
 
             if(this._appContextState === AppContextState.LOGGED_IN) {
-                return Future.createFailedFuture("AppContext::login", "User is already logged in");
+                return Future.createFailedFuture<AppWinDef>("AppContext::login", "User is already logged in");
             }
 
             var answer;
-            var appContextValuesFr = loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
+            var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
 
 
         }
@@ -85,8 +85,13 @@ module catavolt.dialog {
                 (setPropertyListResult:VoidResult)=>{
                     var listPropName = "com.catavolt.session.property.TenantProperties";
                     return SessionService.getSessionListProperty(listPropName, sessionContext).bind(
-                        (listPropertyResult:StringDictionary)=>{
-
+                        (listPropertyResult:XGetSessionListPropertyResult)=>{
+                            return WorkbenchService.getAppWinDef(sessionContext).bind(
+                                (appWinDef:AppWinDef)=>{
+                                    return Future.createSuccessfulFuture<AppContextValues>("AppContextCore:loginFromSystemContext",
+                                    new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
+                                }
+                            );
                         }
                     );
                 }
@@ -103,7 +108,7 @@ module catavolt.dialog {
             var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
             return systemContextFr.bind(
                 (sc:SystemContext)=>{
-                   this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
+                   return this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
                 }
             );
         }
@@ -118,7 +123,7 @@ module catavolt.dialog {
             var sessionContextFuture = SessionService.createSession(tenantId, userId, password, clientType, systemContext);
             return sessionContextFuture.bind(
                 (sessionContext:SessionContext)=>{
-                    return this.finalizedContext(sessionContext, deviceProps);
+                    return this.finalizeContext(sessionContext, deviceProps);
                 }
             );
         }

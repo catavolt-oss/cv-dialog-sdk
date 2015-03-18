@@ -41,7 +41,8 @@ module catavolt.dialog {
             var call = Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
             return call.perform().bind(
                 (result:StringDictionary)=>{
-                    return Future.createCompletedFuture<XGetSessionListPropertyResult>("getSessionListProperty/extractResultFromResponse", XGetSessionListPropertyResult.fromWSGetSessionListPropertyResult(result));
+                    return Future.createCompletedFuture<XGetSessionListPropertyResult>("getSessionListProperty/extractResultFromResponse",
+                        XGetSessionListPropertyResult.fromWSGetSessionListPropertyResult(result));
                 }
             );
         }

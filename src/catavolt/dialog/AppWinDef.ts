@@ -16,7 +16,21 @@ module catavolt.dialog {
 
             return DialogTriple.extractValue(jsonObject, "WSApplicationWindowDef",
                 ()=>{
-                    Workbench.fromListOf
+                    var jsonWorkbenches = jsonObject['workbenches'];
+                    return DialogTriple.fromListOfWSDialogObjectWithFunc<Workbench>(jsonWorkbenches,
+                        'WSWorkbench', Workbench.fromWSWorkbench).bind(
+                        (workbenchList:Array<Workbench>)=>{
+                            var appVendorsTry:Try<Array<string>> =
+                                DialogTriple.fromListOfWSDialogObject<string>(jsonObject['applicationVendors'], 'String');
+                            return appVendorsTry.bind(
+                                (appVendorsList:Array<string>)=>{
+                                    return new Success<AppWinDef>(new AppWinDef(workbenchList,
+                                        appVendorsList, jsonObject['windowTitle'], jsonObject['windowWidth'],
+                                        jsonObject['windowHeight']));
+                                }
+                            );
+                        }
+                    );
                 }
             );
         }

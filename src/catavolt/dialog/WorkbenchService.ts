@@ -16,9 +16,12 @@ module catavolt.dialog {
             var method:string = "getApplicationWindowDef";
             var params:StringDictionary = { 'sessionHandle':sessionContext.sessionHandle };
             var call =  Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
-            call.perform().bind(
+            return call.perform().bind(
                 (result:StringDictionary)=>{
-                    return Future.createCompletedFuture("createSession/extractAppWinDefFromResult", AppWinDef.fromWSApplicationWindowDef(result));
+                    return Future.createCompletedFuture("createSession/extractAppWinDefFromResult",
+                        DialogTriple.fromWSDialogObjectResultWithFunc(result, 'ApplicationWindowDefResult',
+                            'applicationWindowDef', AppWinDef.fromWSApplicationWindowDef)
+                    );
                 }
             );
         }

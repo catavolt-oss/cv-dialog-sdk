@@ -41,5 +41,16 @@ module catavolt.dialog {
         get values():Array<string> {
             return this._values;
         }
+
+        valuesAsDictionary():StringDictionary {
+            var result:StringDictionary = {};
+            this.values.forEach(
+                (v)=>{
+                    var pair = v.split(':');
+                    (pair.length > 1) && (result[pair[0]] = pair[1]);
+                }
+            );
+            return result;
+        }
     }
 }

@@ -23,3 +23,4 @@ import Success = catavolt.fp.Success;
 import SuccessListener = catavolt.fp.SuccessListener;
 import Try = catavolt.fp.Try;
 import TryClosure = catavolt.fp.TryClosure;
+import TryFn = catavolt.fp.TryFn;

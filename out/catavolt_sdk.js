@@ -79,6 +79,9 @@ var catavolt;
         var Try = (function () {
             function Try() {
             }
+            Try.prototype.bind = function (f) {
+                return this.isFailure ? new fp.Failure(this.failure) : f(this.success);
+            };
             Object.defineProperty(Try.prototype, "failure", {
                 get: function () {
                     return null;
@@ -100,6 +103,9 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
+            Try.prototype.map = function (f) {
+                return this.isFailure ? new fp.Failure(this.failure) : new fp.Success(f(this.success));
+            };
             Object.defineProperty(Try.prototype, "success", {
                 get: function () {
                     return null;
@@ -669,6 +675,14 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
+            XGetSessionListPropertyResult.prototype.valuesAsDictionary = function () {
+                var result = {};
+                this.values.forEach(function (v) {
+                    var pair = v.split(':');
+                    (pair.length > 1) && (result[pair[0]] = pair[1]);
+                });
+                return result;
+            };
             return XGetSessionListPropertyResult;
         })();
         dialog.XGetSessionListPropertyResult = XGetSessionListPropertyResult;
@@ -784,15 +798,15 @@ var catavolt;
             DialogTriple.extractValueIgnoringRedirection = function (jsonObject, Otype, extractor) {
                 return DialogTriple._extractValue(jsonObject, Otype, true, extractor);
             };
-            DialogTriple._extractTriple = function (jsonObject, OType, ignoreRedirection, extractor) {
+            DialogTriple._extractTriple = function (jsonObject, Otype, ignoreRedirection, extractor) {
                 var result;
                 if (!jsonObject) {
-                    return new Failure('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + OType + ' because json object is null');
+                    return new Failure('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + Otype + ' because json object is null');
                 }
                 else {
                     var ot = jsonObject['WS_OTYPE'];
-                    if (!ot || OType !== ot) {
-                        result = new Failure('DialogTriple:extractTriple: expected O_TYPE ' + OType + ' but found ' + ot);
+                    if (!ot || Otype !== ot) {
+                        result = new Failure('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
                     }
                     else {
                         if (jsonObject['exception']) {
@@ -826,8 +840,8 @@ var catavolt;
                 }
                 return result;
             };
-            DialogTriple._extractValue = function (jsonObject, OType, ignoreRedirection, extractor) {
-                var tripleTry = DialogTriple._extractTriple(jsonObject, OType, ignoreRedirection, extractor);
+            DialogTriple._extractValue = function (jsonObject, Otype, ignoreRedirection, extractor) {
+                var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, ignoreRedirection, extractor);
                 var result;
                 if (tripleTry.isFailure) {
                     result = new Failure(tripleTry.failure);
@@ -835,13 +849,50 @@ var catavolt;
                 else {
                     var triple = tripleTry.success;
                     if (triple.isLeft) {
-                        result = new Failure('DialogTriple::extractValue: Unexpected redirection for O_TYPE: ' + OType);
+                        result = new Failure('DialogTriple::extractValue: Unexpected redirection for O_TYPE: ' + Otype);
                     }
                     else {
                         result = new Success(triple.right);
                     }
                 }
                 return result;
+            };
+            DialogTriple.fromWSDialogObject = function (obj, Otype, targetType) {
+                if (!obj) {
+                    return new Failure('DialogTriple::fromWSDialogObject: Cannot extract from null value');
+                }
+                else if (typeof obj !== 'object') {
+                    return new Success(obj);
+                }
+                return DialogTriple.extractValue(obj, Otype, function () {
+                    if (!targetType) {
+                        /* Assume we're just going to coerce the exiting object */
+                        return new Success(obj);
+                    }
+                    else {
+                        throw Error("DialogTriple::fromWSDialogObject: complex deserializaion not yet implemented!");
+                    }
+                });
+            };
+            DialogTriple.fromListOfWSDialogObject = function (jsonObject, Ltype, targetType) {
+                return DialogTriple.extractList(jsonObject, Ltype, function (value) {
+                    return DialogTriple.fromWSDialogObject(value, Ltype, targetType);
+                });
+            };
+            DialogTriple.fromWSDialogObjectResult = function (jsonObject, resultOtype, targetOtype, objPropName, targetType) {
+                return DialogTriple.extractValue(jsonObject, resultOtype, function () {
+                    return DialogTriple.fromWSDialogObject(jsonObject[objPropName], targetOtype, targetType);
+                });
+            };
+            DialogTriple.fromWSDialogObjectResultWithFunc = function (jsonObject, resultOtype, objPropName, fromWSObjectFunc) {
+                return DialogTriple.extractValue(jsonObject, resultOtype, function () {
+                    return fromWSObjectFunc(jsonObject[objPropName]);
+                });
+            };
+            DialogTriple.fromListOfWSDialogObjectWithFunc = function (jsonObject, Ltype, fromWSObjectFunc) {
+                return DialogTriple.extractList(jsonObject, Ltype, function (value) {
+                    return fromWSObjectFunc(value);
+                });
             };
             return DialogTriple;
         })();
@@ -989,7 +1040,13 @@ var catavolt;
             }
             AppWinDef.fromWSApplicationWindowDef = function (jsonObject) {
                 return dialog.DialogTriple.extractValue(jsonObject, "WSApplicationWindowDef", function () {
-                    dialog.Workbench.fromListOf;
+                    var jsonWorkbenches = jsonObject['workbenches'];
+                    return dialog.DialogTriple.fromListOfWSDialogObjectWithFunc(jsonWorkbenches, 'WSWorkbench', dialog.Workbench.fromWSWorkbench).bind(function (workbenchList) {
+                        var appVendorsTry = dialog.DialogTriple.fromListOfWSDialogObject(jsonObject['applicationVendors'], 'String');
+                        return appVendorsTry.bind(function (appVendorsList) {
+                            return new Success(new AppWinDef(workbenchList, appVendorsList, jsonObject['windowTitle'], jsonObject['windowWidth'], jsonObject['windowHeight']));
+                        });
+                    });
                 });
             };
             Object.defineProperty(AppWinDef.prototype, "appVendors", {
@@ -1110,6 +1167,7 @@ var catavolt;
 /**
  * Created by rburson on 3/17/15.
  */
+///<reference path="../references.ts"/>
 var catavolt;
 (function (catavolt) {
     var dialog;
@@ -1121,6 +1179,16 @@ var catavolt;
                 this._alias = _alias;
                 this._workbenchLaunchActions = _workbenchLaunchActions;
             }
+            Workbench.fromWSWorkbench = function (jsonObject) {
+                return dialog.DialogTriple.extractValue(jsonObject, 'WSWorkbench', function () {
+                    var laTry = dialog.DialogTriple.fromListOfWSDialogObject(jsonObject['actions'], 'WSWorkbenchLaunchAction');
+                    if (laTry.isFailure) {
+                        return new Failure(laTry.failure);
+                    }
+                    var workbench = new Workbench(jsonObject['id'], jsonObject['name'], jsonObject['alias'], laTry.success);
+                    return new Success(workbench);
+                });
+            };
             Object.defineProperty(Workbench.prototype, "alias", {
                 get: function () {
                     return this._alias;
@@ -1184,8 +1252,8 @@ var catavolt;
                 var method = "getApplicationWindowDef";
                 var params = { 'sessionHandle': sessionContext.sessionHandle };
                 var call = Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
-                call.perform().bind(function (result) {
-                    return Future.createCompletedFuture("createSession/extractAppWinDefFromResult", dialog.AppWinDef.fromWSApplicationWindowDef(result));
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture("createSession/extractAppWinDefFromResult", dialog.DialogTriple.fromWSDialogObjectResultWithFunc(result, 'ApplicationWindowDefResult', 'applicationWindowDef', dialog.AppWinDef.fromWSApplicationWindowDef));
                 });
             };
             WorkbenchService.SERVICE_NAME = "WorkbenchService";
@@ -1259,7 +1327,7 @@ var catavolt;
                     return Future.createFailedFuture("AppContext::login", "User is already logged in");
                 }
                 var answer;
-                var appContextValuesFr = loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
+                var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
             };
             Object.defineProperty(AppContext.prototype, "sessionContextTry", {
                 get: function () {
@@ -1280,6 +1348,9 @@ var catavolt;
                 return dialog.SessionService.setSessionListProperty(devicePropName, deviceProps, sessionContext).bind(function (setPropertyListResult) {
                     var listPropName = "com.catavolt.session.property.TenantProperties";
                     return dialog.SessionService.getSessionListProperty(listPropName, sessionContext).bind(function (listPropertyResult) {
+                        return dialog.WorkbenchService.getAppWinDef(sessionContext).bind(function (appWinDef) {
+                            return Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
+                        });
                     });
                 });
             };
@@ -1287,14 +1358,14 @@ var catavolt;
                 var _this = this;
                 var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
                 return systemContextFr.bind(function (sc) {
-                    _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
+                    return _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
                 });
             };
             AppContext.prototype.loginFromSystemContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
                 var _this = this;
                 var sessionContextFuture = dialog.SessionService.createSession(tenantId, userId, password, clientType, systemContext);
                 return sessionContextFuture.bind(function (sessionContext) {
-                    return _this.finalizedContext(sessionContext, deviceProps);
+                    return _this.finalizeContext(sessionContext, deviceProps);
                 });
             };
             AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {

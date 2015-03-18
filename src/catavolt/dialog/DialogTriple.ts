@@ -66,17 +66,17 @@ module catavolt.dialog {
 
 
         private static _extractTriple<A>(jsonObject: StringDictionary,
-                                        OType:string,
+                                        Otype:string,
                                         ignoreRedirection: boolean,
                                         extractor: TryClosure<A>): Try<Either<Redirection,A>>{
 
             var result:Try<Either<Redirection,A>>;
             if(!jsonObject) {
-                return new Failure<Either<Redirection,A>>('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + OType + ' because json object is null');
+                return new Failure<Either<Redirection,A>>('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + Otype + ' because json object is null');
             } else {
                 var ot:string = jsonObject['WS_OTYPE'];
-                if(!ot || OType !== ot) {
-                    result = new Failure<Either<Redirection,A>>('DialogTriple:extractTriple: expected O_TYPE ' + OType + ' but found ' + ot);
+                if(!ot || Otype !== ot) {
+                    result = new Failure<Either<Redirection,A>>('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
                 } else {
                     if(jsonObject['exception']) {
                         var dialogException:DialogException = jsonObject['exception'];
@@ -107,19 +107,19 @@ module catavolt.dialog {
 
 
         private static _extractValue<A>(jsonObject: StringDictionary,
-                                    OType:string,
+                                    Otype:string,
                                     ignoreRedirection:boolean,
                                     extractor: TryClosure<A>): Try<A> {
 
 
-            var tripleTry = DialogTriple._extractTriple(jsonObject, OType, ignoreRedirection, extractor);
+            var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, ignoreRedirection, extractor);
             var result:Try<A>;
             if(tripleTry.isFailure) {
                result = new Failure<A>(tripleTry.failure);
             } else {
                 var triple:Either<Redirection,A> = tripleTry.success;
                 if(triple.isLeft){
-                    result = new Failure<A>('DialogTriple::extractValue: Unexpected redirection for O_TYPE: ' + OType);
+                    result = new Failure<A>('DialogTriple::extractValue: Unexpected redirection for O_TYPE: ' + Otype);
                 } else {
                     result = new Success<A>(triple.right);
                 }
@@ -127,5 +127,70 @@ module catavolt.dialog {
             return result;
 
         }
+
+        static fromWSDialogObject<A>(obj, Otype:string, targetType?:{new():A}):Try<A> {
+
+            if(!obj) {
+                return new Failure<A>('DialogTriple::fromWSDialogObject: Cannot extract from null value')
+            } else if (typeof obj !== 'object'){
+                return new Success<A>(obj);
+            }
+
+            return DialogTriple.extractValue(obj, Otype,
+                ()=>{
+                    if(!targetType) {
+                       /* Assume we're just going to coerce the exiting object */
+                       return new Success<A>(obj);
+                    } else {
+                       /* @TODO - implement more complex object instantiation
+                          copy props and recursively build composite objects
+                       */
+                        throw Error("DialogTriple::fromWSDialogObject: complex deserializaion not yet implemented!")
+                    }
+                }
+            );
+        }
+
+        static fromListOfWSDialogObject<A>(jsonObject:StringDictionary, Ltype:string, targetType?:{new():A}):Try<Array<A>> {
+            return DialogTriple.extractList(jsonObject, Ltype,
+                (value)=>{ return DialogTriple.fromWSDialogObject<A>(value, Ltype, targetType); }
+            );
+        }
+
+        static fromWSDialogObjectResult<A>(jsonObject:StringDictionary,
+                                           resultOtype:string,
+                                           targetOtype:string,
+                                           objPropName:string,
+                                           targetType?:{new():A}):Try<A> {
+
+            return DialogTriple.extractValue(jsonObject, resultOtype,
+                ()=>{
+                    return DialogTriple.fromWSDialogObject<A>(jsonObject[objPropName], targetOtype, targetType);
+                }
+            );
+        }
+
+        static fromWSDialogObjectResultWithFunc<A>(jsonObject:StringDictionary,
+                                           resultOtype:string,
+                                           objPropName:string,
+                                           fromWSObjectFunc:(o:StringDictionary)=>Try<A>): Try<A> {
+
+            return DialogTriple.extractValue(jsonObject, resultOtype,
+                ()=>{
+                    return fromWSObjectFunc(jsonObject[objPropName]);
+                }
+            );
+        }
+
+        static fromListOfWSDialogObjectWithFunc<A>(jsonObject:StringDictionary,
+                                                  Ltype:string,
+                                                  fromWSObjectFunc:(o:StringDictionary)=>Try<A>): Try<Array<A>> {
+            return DialogTriple.extractList(jsonObject, Ltype,
+                (value)=>{ return fromWSObjectFunc(value); }
+            );
+        }
+
+
+
     }
 }
