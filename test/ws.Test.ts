@@ -7,7 +7,7 @@
 
 module catavolt.ws {
 
-    describe("Request::XMLHttpClient", function () {
+    xdescribe("Request::XMLHttpClient", function () {
 
         it("Should get endpoint successfully", function (done) {
 

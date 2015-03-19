@@ -22,6 +22,10 @@ module catavolt.util {
             }
         }
 
+        static formatRecString(o): string {
+           return o;
+        }
+
     }
 }
 

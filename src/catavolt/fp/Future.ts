@@ -42,13 +42,16 @@ module catavolt.fp {
             this.onComplete((t1:Try<A>)=>{
                 if(t1.isFailure){
                     p.failure(t1.failure);
-                }
-                var a:A = t1.success;
-                try {
-                    var mb:Future<B> = f(a);
-                    mb.onComplete((t2:Try<B>)=>{ p.complete(t2); });
-                }catch(error){
-                    p.complete(new Failure<B>(error));
+                } else {
+                    var a:A = t1.success;
+                    try {
+                        var mb:Future<B> = f(a);
+                        mb.onComplete((t2:Try<B>)=> {
+                            p.complete(t2);
+                        });
+                    } catch (error) {
+                        p.complete(new Failure<B>(error));
+                    }
                 }
             });
             return p.future;
@@ -107,13 +110,14 @@ module catavolt.fp {
 
         complete(t: Try<A>): Future<A>{
             var notifyList:Array<CompletionListener<A>> = new Array();
+            //Log.debug("complete() called on Future " + this._label + ' there are ' + this._completionListeners.length + " listeners.");
             if(t) {
                 if (!this._result) {
                     this._result = t;
                     /* capture the listener set to prevent missing a notification */
                     notifyList = ArrayUtil.copy(this._completionListeners);
                 } else {
-                    Log.error("Future::complete() : Future is already completed");
+                    Log.error("Future::complete() : Future " + this._label + " has already been completed");
                 }
                 notifyList.forEach(
                     (listener:CompletionListener<A>)=> {

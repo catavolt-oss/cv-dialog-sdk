@@ -51,7 +51,7 @@ module catavolt.dialog {
                                       listProperty:Array<string>,
                                       sessionContext:SessionContext): Future<VoidResult> {
 
-            var method = "createSessionListProperty";
+            var method = "setSessionListProperty";
             var params:StringDictionary = {
                 'propertyName':propertyName,
                 'listProperty':listProperty,

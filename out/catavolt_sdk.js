@@ -44,6 +44,9 @@ var catavolt;
                     console.error(message);
                 }
             };
+            Log.formatRecString = function (o) {
+                return o;
+            };
             return Log;
         })();
         util.Log = Log;
@@ -193,15 +196,17 @@ var catavolt;
                     if (t1.isFailure) {
                         p.failure(t1.failure);
                     }
-                    var a = t1.success;
-                    try {
-                        var mb = f(a);
-                        mb.onComplete(function (t2) {
-                            p.complete(t2);
-                        });
-                    }
-                    catch (error) {
-                        p.complete(new fp.Failure(error));
+                    else {
+                        var a = t1.success;
+                        try {
+                            var mb = f(a);
+                            mb.onComplete(function (t2) {
+                                p.complete(t2);
+                            });
+                        }
+                        catch (error) {
+                            p.complete(new fp.Failure(error));
+                        }
                     }
                 });
                 return p.future;
@@ -285,6 +290,7 @@ var catavolt;
             Future.prototype.complete = function (t) {
                 var _this = this;
                 var notifyList = new Array();
+                //Log.debug("complete() called on Future " + this._label + ' there are ' + this._completionListeners.length + " listeners.");
                 if (t) {
                     if (!this._result) {
                         this._result = t;
@@ -292,7 +298,7 @@ var catavolt;
                         notifyList = ArrayUtil.copy(this._completionListeners);
                     }
                     else {
-                        Log.error("Future::complete() : Future is already completed");
+                        Log.error("Future::complete() : Future " + this._label + " has already been completed");
                     }
                     notifyList.forEach(function (listener) {
                         listener(_this._result);
@@ -358,6 +364,7 @@ var catavolt;
                 return this._future.isComplete;
             };
             Promise.prototype.complete = function (t) {
+                //Log.debug('Promise calling complete on Future...');
                 this._future.complete(t);
                 return this;
             };
@@ -476,14 +483,14 @@ var catavolt;
                     try {
                         Log.info("Got successful response: " + request.responseText);
                         var responseObj = JSON.parse(request.responseText);
+                        promise.success(responseObj);
                     }
                     catch (error) {
                         promise.failure("XMLHttpClient::jsonCall: Failed to parse response: " + request.responseText);
                     }
-                    promise.success(responseObj);
                 };
                 var errorCallback = function (request) {
-                    Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText + request.getAllResponseHeaders());
+                    Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
                     promise.failure('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
                 };
                 var timeoutCallback = function () {
@@ -548,7 +555,6 @@ var catavolt;
                 this._service = service;
                 this._method = method;
                 this._params = params;
-                this._promise = new Promise("catavolt.ws.Call");
                 this._callId = Call.nextCallId();
                 this._responseHeaders = null;
                 this.timeoutMillis = 30000;
@@ -567,25 +573,26 @@ var catavolt;
             };
             Call.prototype.perform = function () {
                 if (this._performed) {
-                    return this.complete(new Failure("Call:perform(): Call is already performed")).future;
+                    return Future.createFailedFuture("Call::perform", "Call:perform(): Call is already performed");
                 }
                 this._performed = true;
                 if (!this._systemContext) {
-                    return this.complete(new Failure("Call:perform(): SystemContext cannot be null")).future;
+                    return Future.createFailedFuture("Call::perform", "Call:perform(): SystemContext cannot be null");
                 }
                 var jsonObj = {
                     id: this._callId,
                     method: this._method,
                     params: this._params
                 };
-                var servicePath = this._systemContext.urlString + (this._service || "");
-                return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
-            };
-            Call.prototype.complete = function (t) {
-                if (!this._promise.isComplete()) {
-                    this._promise.complete(t);
+                var pathPrefix = "";
+                if (this._systemContext && this._systemContext.urlString) {
+                    pathPrefix = this._systemContext.urlString;
+                    if (pathPrefix.charAt(pathPrefix.length - 1) !== '/') {
+                        pathPrefix += '/';
+                    }
                 }
-                return this._promise;
+                var servicePath = pathPrefix + (this._service || "");
+                return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
             };
             Call._lastCallId = 0;
             return Call;
@@ -610,7 +617,6 @@ var catavolt;
                     return this.complete(new Failure("Get:perform(): Get is already performed")).future;
                 }
                 this._performed = true;
-                Log.info("Calling " + this._url + "Get", "perform");
                 return this._client.jsonGet(this._url, this.timeoutMillis);
             };
             Get.prototype.complete = function (t) {
@@ -1120,7 +1126,7 @@ var catavolt;
                 });
             };
             SessionService.setSessionListProperty = function (propertyName, listProperty, sessionContext) {
-                var method = "createSessionListProperty";
+                var method = "setSessionListProperty";
                 var params = {
                     'propertyName': propertyName,
                     'listProperty': listProperty,
@@ -1253,7 +1259,7 @@ var catavolt;
                 var params = { 'sessionHandle': sessionContext.sessionHandle };
                 var call = Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture("createSession/extractAppWinDefFromResult", dialog.DialogTriple.fromWSDialogObjectResultWithFunc(result, 'ApplicationWindowDefResult', 'applicationWindowDef', dialog.AppWinDef.fromWSApplicationWindowDef));
+                    return Future.createCompletedFuture("createSession/extractAppWinDefFromResult", dialog.DialogTriple.fromWSDialogObjectResultWithFunc(result, 'WSApplicationWindowDefResult', 'applicationWindowDef', dialog.AppWinDef.fromWSApplicationWindowDef));
                 });
             };
             WorkbenchService.SERVICE_NAME = "WorkbenchService";
@@ -1302,12 +1308,16 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
-            AppContext.singleton = function () {
-                if (!AppContext._singleton) {
-                    AppContext._singleton = new AppContext();
-                }
-                return AppContext._singleton;
-            };
+            Object.defineProperty(AppContext, "singleton", {
+                get: function () {
+                    if (!AppContext._singleton) {
+                        AppContext._singleton = new AppContext();
+                    }
+                    return AppContext._singleton;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(AppContext.prototype, "appWinDefTry", {
                 get: function () {
                     return this._appWinDefTry;
@@ -1323,11 +1333,16 @@ var catavolt;
                 configurable: true
             });
             AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
+                var _this = this;
                 if (this._appContextState === 1 /* LOGGED_IN */) {
                     return Future.createFailedFuture("AppContext::login", "User is already logged in");
                 }
                 var answer;
                 var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
+                return appContextValuesFr.bind(function (appContextValues) {
+                    _this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+                });
             };
             Object.defineProperty(AppContext.prototype, "sessionContextTry", {
                 get: function () {
@@ -1443,7 +1458,7 @@ var catavolt;
 (function (catavolt) {
     var fp;
     (function (fp) {
-        describe("Future", function () {
+        xdescribe("Future", function () {
             it("should be created successfully with Try", function () {
                 var f = fp.Future.createCompletedFuture("test", new fp.Success("successfulValue"));
             });
@@ -1459,7 +1474,7 @@ var catavolt;
 (function (catavolt) {
     var ws;
     (function (ws) {
-        describe("Request::XMLHttpClient", function () {
+        xdescribe("Request::XMLHttpClient", function () {
             it("Should get endpoint successfully", function (done) {
                 var SERVICE_PATH = "https://www.catavolt.net/***REMOVED***/soi-json";
                 var client = new ws.XMLHttpClient();
@@ -1475,8 +1490,32 @@ var catavolt;
     })(ws = catavolt.ws || (catavolt.ws = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/19/15.
+ */
+///<reference path="jasmine.d.ts"/>
+///<reference path="../src/catavolt/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var SERVICE_PATH = "www.catavolt.net";
+        var tenantId = "***REMOVED***";
+        var userId = "sales";
+        var password = "***REMOVED***";
+        var clientType = "LIMITED_ACCESS";
+        describe("AppContext::login", function () {
+            it("should login successfully with valid creds", function (done) {
+                dialog.AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(function (appWinDefTry) {
+                    Log.info(Log.formatRecString(appWinDefTry));
+                });
+            });
+        });
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/6/15.
  */
 ///<reference path="fp.Test.ts"/>
 ///<reference path="ws.Test.ts"/>
+///<reference path="dialog.Test.ts"/>
 //# sourceMappingURL=catavolt_sdk.js.map

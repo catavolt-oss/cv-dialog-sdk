@@ -37,14 +37,14 @@ module catavolt.ws {
                 try {
                     Log.info("Got successful response: " + request.responseText);
                     var responseObj = JSON.parse(request.responseText);
+                    promise.success(responseObj);
                 } catch (error) {
                     promise.failure("XMLHttpClient::jsonCall: Failed to parse response: " + request.responseText);
                 }
-                promise.success(responseObj);
             };
 
             var errorCallback = (request:XMLHttpRequest) => {
-                Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText + request.getAllResponseHeaders());
+                Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
                 promise.failure('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
             };
 
@@ -153,7 +153,6 @@ module catavolt.ws {
             this._service = service;
             this._method = method;
             this._params = params;
-            this._promise = new Promise<StringDictionary>("catavolt.ws.Call");
             this._callId = Call.nextCallId();
             this._responseHeaders = null;
             this.timeoutMillis = 30000;
@@ -167,11 +166,11 @@ module catavolt.ws {
         perform():Future<StringDictionary> {
 
             if(this._performed) {
-                return this.complete(new Failure<StringDictionary>("Call:perform(): Call is already performed")).future;
+                return Future.createFailedFuture<StringDictionary>("Call::perform", "Call:perform(): Call is already performed");
             }
             this._performed = true;
             if(!this._systemContext) {
-                return this.complete(new Failure<StringDictionary>("Call:perform(): SystemContext cannot be null")).future;
+                return Future.createFailedFuture<StringDictionary>("Call::perform", "Call:perform(): SystemContext cannot be null");
             }
 
             var jsonObj:StringDictionary = {
@@ -180,18 +179,16 @@ module catavolt.ws {
                 params: this._params
             };
 
-            var servicePath = this._systemContext.urlString + (this._service || "");
-            return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
-
-        }
-
-        private complete(t:Try<StringDictionary>):Promise<StringDictionary> {
-            if(!this._promise.isComplete()) {
-               this._promise.complete(t);
+            var pathPrefix = "";
+            if(this._systemContext && this._systemContext.urlString) {
+                pathPrefix = this._systemContext.urlString;
+                if(pathPrefix.charAt(pathPrefix.length - 1) !== '/') {
+                    pathPrefix += '/';
+                }
             }
-            return this._promise;
+            var servicePath = pathPrefix + (this._service || "");
+            return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
         }
-
 
     }
 
@@ -226,7 +223,6 @@ module catavolt.ws {
             }
             this._performed = true;
 
-            Log.info("Calling " + this._url + "Get", "perform");
             return this._client.jsonGet(this._url, this.timeoutMillis);
         }
 

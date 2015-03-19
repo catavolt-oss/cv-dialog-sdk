@@ -19,7 +19,7 @@ module catavolt.dialog {
             return call.perform().bind(
                 (result:StringDictionary)=>{
                     return Future.createCompletedFuture("createSession/extractAppWinDefFromResult",
-                        DialogTriple.fromWSDialogObjectResultWithFunc(result, 'ApplicationWindowDefResult',
+                        DialogTriple.fromWSDialogObjectResultWithFunc(result, 'WSApplicationWindowDefResult',
                             'applicationWindowDef', AppWinDef.fromWSApplicationWindowDef)
                     );
                 }

@@ -18,6 +18,7 @@ module catavolt.fp {
         isComplete(): boolean { return this._future.isComplete; }
 
         complete(t: Try<A>): Promise<A> {
+            //Log.debug('Promise calling complete on Future...');
             this._future.complete(t);
             return this;
         }

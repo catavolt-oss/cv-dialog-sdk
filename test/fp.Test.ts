@@ -4,7 +4,7 @@
 
 module catavolt.fp {
 
-    describe("Future", function () {
+    xdescribe("Future", function () {
         it("should be created successfully with Try", function () {
             var f:Future<string> = Future.createCompletedFuture("test", new Success<string>("successfulValue"));
         });

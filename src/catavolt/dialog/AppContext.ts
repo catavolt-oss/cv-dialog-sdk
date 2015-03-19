@@ -31,7 +31,7 @@ module catavolt.dialog {
 
         public static get defaultTTLInMillis(): number { return AppContext.ONE_DAY_IN_MILLIS; }
 
-        static singleton():AppContext {
+        static get singleton():AppContext {
             if(!AppContext._singleton) {
                 AppContext._singleton =  new AppContext();
             }
@@ -67,6 +67,12 @@ module catavolt.dialog {
 
             var answer;
             var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
+            return appContextValuesFr.bind(
+                (appContextValues:AppContextValues)=>{
+                    this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+                }
+            );
 
 
         }
