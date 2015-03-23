@@ -25,28 +25,75 @@ var catavolt;
 (function (catavolt) {
     var util;
     (function (util) {
+        (function (LogLevel) {
+            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
+            LogLevel[LogLevel["WARN"] = 1] = "WARN";
+            LogLevel[LogLevel["INFO"] = 2] = "INFO";
+            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
+        })(util.LogLevel || (util.LogLevel = {}));
+        var LogLevel = util.LogLevel;
         var Log = (function () {
             function Log() {
             }
-            Log.info = function (message, obj, method) {
-                if (obj || method) {
-                    console.log(obj + "::" + method + " : " + message);
+            Log.logLevel = function (level) {
+                if (level >= 3 /* DEBUG */) {
+                    Log.debug = function (message, method, clz) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'DEBUG: ' + message, method, clz);
+                    };
                 }
                 else {
-                    console.log(message);
+                    Log.debug = function (message, method, clz) {
+                    };
+                }
+                if (level >= 2 /* INFO */) {
+                    Log.info = function (message, method, clz) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'INFO: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.info = function (message, method, clz) {
+                    };
+                }
+                if (level >= 1 /* WARN */) {
+                    Log.error = function (message, clz, method) {
+                        Log.log(function (o) {
+                            console.error(o);
+                        }, 'ERROR: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.error = function (message, clz, method) {
+                    };
+                }
+                if (level >= 0 /* ERROR */) {
+                    Log.warn = function (message, clz, method) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'WARN: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.warn = function (message, clz, method) {
+                    };
                 }
             };
-            Log.error = function (message, obj, method) {
-                if (obj || method) {
-                    console.error(obj + "::" + method + " : " + message);
+            Log.log = function (logger, message, method, clz) {
+                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
+                if (clz || method) {
+                    logger(clz + "::" + method + " : " + m);
                 }
                 else {
-                    console.error(message);
+                    logger(m);
                 }
             };
             Log.formatRecString = function (o) {
-                return o;
+                return JSON.stringify(o);
             };
+            Log.init = Log.logLevel(3 /* DEBUG */);
             return Log;
         })();
         util.Log = Log;
@@ -68,6 +115,7 @@ var catavolt;
 ///<reference path="UserException.ts"/>
 var ArrayUtil = catavolt.util.ArrayUtil;
 var Log = catavolt.util.Log;
+var LogLevel = catavolt.util.LogLevel;
 /**
  * Created by rburson on 3/9/15.
  */
@@ -644,29 +692,10 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var XGetSessionListPropertyResult = (function () {
-            function XGetSessionListPropertyResult(_values, _dialogProps) {
-                this._values = _values;
+            function XGetSessionListPropertyResult(_list, _dialogProps) {
+                this._list = _list;
                 this._dialogProps = _dialogProps;
             }
-            XGetSessionListPropertyResult.fromWSGetSessionListPropertyResult = function (jsonObject) {
-                return dialog.DialogTriple.extractValue(jsonObject, "WSGetSessionListPropertyResult", function () {
-                    var valuesTry = dialog.DialogTriple.extractList(jsonObject['list'], "String", function (value) {
-                        var valueTry;
-                        if (typeof value === 'string') {
-                            valueTry = new Success(value);
-                        }
-                        else {
-                            valueTry = new Failure("XGetSessionListPropertyResult: Expected a String but found " + value);
-                        }
-                        return valueTry;
-                    });
-                    if (valuesTry.isFailure) {
-                        return new Failure(valuesTry.failure);
-                    }
-                    var dialogProps = jsonObject['dialogProperties'];
-                    return new Success(new XGetSessionListPropertyResult(valuesTry.success, dialogProps));
-                });
-            };
             Object.defineProperty(XGetSessionListPropertyResult.prototype, "dialogProps", {
                 get: function () {
                     return this._dialogProps;
@@ -676,7 +705,7 @@ var catavolt;
             });
             Object.defineProperty(XGetSessionListPropertyResult.prototype, "values", {
                 get: function () {
-                    return this._values;
+                    return this._list;
                 },
                 enumerable: true,
                 configurable: true
@@ -759,14 +788,15 @@ var catavolt;
                         if (jsonObject['values']) {
                             var realValues = [];
                             var values = jsonObject['values'];
-                            for (var elem in values) {
-                                var extdValue = extractor(elem);
+                            values.every(function (item) {
+                                var extdValue = extractor(item);
                                 if (extdValue.isFailure) {
                                     result = new Failure(extdValue.failure);
-                                    break;
+                                    return false;
                                 }
                                 realValues.push(extdValue.success);
-                            }
+                                return true;
+                            });
                             if (!result) {
                                 result = new Success(realValues);
                             }
@@ -803,6 +833,43 @@ var catavolt;
             };
             DialogTriple.extractValueIgnoringRedirection = function (jsonObject, Otype, extractor) {
                 return DialogTriple._extractValue(jsonObject, Otype, true, extractor);
+            };
+            DialogTriple.fromWSDialogObject = function (obj, Otype, factoryFn) {
+                if (!obj) {
+                    return new Failure('DialogTriple::fromWSDialogObject: Cannot extract from null value');
+                }
+                else if (typeof obj !== 'object') {
+                    return new Success(obj);
+                }
+                if (!factoryFn) {
+                    /* Assume we're just going to coerce the exiting object */
+                    return DialogTriple.extractValue(obj, Otype, function () {
+                        return new Success(obj);
+                    });
+                }
+                else {
+                    return dialog.OType.deserializeObject(obj, Otype, factoryFn);
+                }
+            };
+            DialogTriple.fromListOfWSDialogObject = function (jsonObject, Ltype, factoryFn) {
+                return DialogTriple.extractList(jsonObject, Ltype, function (value) {
+                    return DialogTriple.fromWSDialogObject(value, Ltype, factoryFn);
+                });
+            };
+            DialogTriple.fromWSDialogObjectResult = function (jsonObject, resultOtype, targetOtype, objPropName, factoryFn) {
+                return DialogTriple.extractValue(jsonObject, resultOtype, function () {
+                    return DialogTriple.fromWSDialogObject(jsonObject[objPropName], targetOtype, factoryFn);
+                });
+            };
+            DialogTriple.fromWSDialogObjectResultWithFunc = function (jsonObject, resultOtype, objPropName, fromWSObjectFunc) {
+                return DialogTriple.extractValue(jsonObject, resultOtype, function () {
+                    return fromWSObjectFunc(jsonObject[objPropName]);
+                });
+            };
+            DialogTriple.fromListOfWSDialogObjectWithFunc = function (jsonObject, Ltype, fromWSObjectFunc) {
+                return DialogTriple.extractList(jsonObject, Ltype, function (value) {
+                    return fromWSObjectFunc(value);
+                });
             };
             DialogTriple._extractTriple = function (jsonObject, Otype, ignoreRedirection, extractor) {
                 var result;
@@ -863,43 +930,6 @@ var catavolt;
                 }
                 return result;
             };
-            DialogTriple.fromWSDialogObject = function (obj, Otype, targetType) {
-                if (!obj) {
-                    return new Failure('DialogTriple::fromWSDialogObject: Cannot extract from null value');
-                }
-                else if (typeof obj !== 'object') {
-                    return new Success(obj);
-                }
-                return DialogTriple.extractValue(obj, Otype, function () {
-                    if (!targetType) {
-                        /* Assume we're just going to coerce the exiting object */
-                        return new Success(obj);
-                    }
-                    else {
-                        throw Error("DialogTriple::fromWSDialogObject: complex deserializaion not yet implemented!");
-                    }
-                });
-            };
-            DialogTriple.fromListOfWSDialogObject = function (jsonObject, Ltype, targetType) {
-                return DialogTriple.extractList(jsonObject, Ltype, function (value) {
-                    return DialogTriple.fromWSDialogObject(value, Ltype, targetType);
-                });
-            };
-            DialogTriple.fromWSDialogObjectResult = function (jsonObject, resultOtype, targetOtype, objPropName, targetType) {
-                return DialogTriple.extractValue(jsonObject, resultOtype, function () {
-                    return DialogTriple.fromWSDialogObject(jsonObject[objPropName], targetOtype, targetType);
-                });
-            };
-            DialogTriple.fromWSDialogObjectResultWithFunc = function (jsonObject, resultOtype, objPropName, fromWSObjectFunc) {
-                return DialogTriple.extractValue(jsonObject, resultOtype, function () {
-                    return fromWSObjectFunc(jsonObject[objPropName]);
-                });
-            };
-            DialogTriple.fromListOfWSDialogObjectWithFunc = function (jsonObject, Ltype, fromWSObjectFunc) {
-                return DialogTriple.extractList(jsonObject, Ltype, function (value) {
-                    return fromWSObjectFunc(value);
-                });
-            };
             return DialogTriple;
         })();
         dialog.DialogTriple = DialogTriple;
@@ -930,8 +960,10 @@ var catavolt;
                 this._remoteSession = true;
             }
             SessionContextImpl.fromWSCreateSessionResult = function (jsonObject, systemContext) {
-                return dialog.DialogTriple.extractValue(jsonObject, "WSCreateSessionResult", function () {
-                    return new Success(new SessionContextImpl(jsonObject['sessionHandle'], jsonObject['userName'], jsonObject['currentDivision'], jsonObject['serverVersion'], systemContext));
+                var sessionContextTry = dialog.DialogTriple.fromWSDialogObject(jsonObject, 'WSCreateSessionResult', dialog.OType.factoryFn);
+                return sessionContextTry.map(function (sessionContext) {
+                    sessionContext.systemContext = systemContext;
+                    return sessionContext;
                 });
             };
             SessionContextImpl.createSessionContext = function (gatewayHost, tenantId, clientType, userId, password) {
@@ -1039,25 +1071,14 @@ var catavolt;
         var AppWinDef = (function () {
             function AppWinDef(workbenches, appVendors, windowTitle, windowWidth, windowHeight) {
                 this._workbenches = workbenches || [];
-                this._appVendors = appVendors || [];
+                this._applicationVendors = appVendors || [];
                 this._windowTitle = windowTitle;
                 this._windowWidth = windowWidth;
                 this._windowHeight = windowHeight;
             }
-            AppWinDef.fromWSApplicationWindowDef = function (jsonObject) {
-                return dialog.DialogTriple.extractValue(jsonObject, "WSApplicationWindowDef", function () {
-                    var jsonWorkbenches = jsonObject['workbenches'];
-                    return dialog.DialogTriple.fromListOfWSDialogObjectWithFunc(jsonWorkbenches, 'WSWorkbench', dialog.Workbench.fromWSWorkbench).bind(function (workbenchList) {
-                        var appVendorsTry = dialog.DialogTriple.fromListOfWSDialogObject(jsonObject['applicationVendors'], 'String');
-                        return appVendorsTry.bind(function (appVendorsList) {
-                            return new Success(new AppWinDef(workbenchList, appVendorsList, jsonObject['windowTitle'], jsonObject['windowWidth'], jsonObject['windowHeight']));
-                        });
-                    });
-                });
-            };
             Object.defineProperty(AppWinDef.prototype, "appVendors", {
                 get: function () {
-                    return this._appVendors;
+                    return this._applicationVendors;
                 },
                 enumerable: true,
                 configurable: true
@@ -1122,7 +1143,7 @@ var catavolt;
                 };
                 var call = Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture("getSessionListProperty/extractResultFromResponse", dialog.XGetSessionListPropertyResult.fromWSGetSessionListPropertyResult(result));
+                    return Future.createCompletedFuture("getSessionListProperty/extractResultFromResponse", dialog.DialogTriple.fromWSDialogObject(result, 'WSGetSessionListPropertyResult', dialog.OType.factoryFn));
                 });
             };
             SessionService.setSessionListProperty = function (propertyName, listProperty, sessionContext) {
@@ -1179,22 +1200,12 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var Workbench = (function () {
-            function Workbench(_workbenchId, _name, _alias, _workbenchLaunchActions) {
-                this._workbenchId = _workbenchId;
+            function Workbench(_id, _name, _alias, _actions) {
+                this._id = _id;
                 this._name = _name;
                 this._alias = _alias;
-                this._workbenchLaunchActions = _workbenchLaunchActions;
+                this._actions = _actions;
             }
-            Workbench.fromWSWorkbench = function (jsonObject) {
-                return dialog.DialogTriple.extractValue(jsonObject, 'WSWorkbench', function () {
-                    var laTry = dialog.DialogTriple.fromListOfWSDialogObject(jsonObject['actions'], 'WSWorkbenchLaunchAction');
-                    if (laTry.isFailure) {
-                        return new Failure(laTry.failure);
-                    }
-                    var workbench = new Workbench(jsonObject['id'], jsonObject['name'], jsonObject['alias'], laTry.success);
-                    return new Success(workbench);
-                });
-            };
             Object.defineProperty(Workbench.prototype, "alias", {
                 get: function () {
                     return this._alias;
@@ -1211,14 +1222,14 @@ var catavolt;
             });
             Object.defineProperty(Workbench.prototype, "workbenchId", {
                 get: function () {
-                    return this._workbenchId;
+                    return this._id;
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Workbench.prototype, "workbenchLaunchActions", {
                 get: function () {
-                    return ArrayUtil.copy(this._workbenchLaunchActions);
+                    return ArrayUtil.copy(this._actions);
                 },
                 enumerable: true,
                 configurable: true
@@ -1236,7 +1247,12 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var WorkbenchLaunchAction = (function () {
-            function WorkbenchLaunchAction() {
+            function WorkbenchLaunchAction(id, workbenchId, name, alias, iconBase) {
+                this.id = id;
+                this.workbenchId = workbenchId;
+                this.name = name;
+                this.alias = alias;
+                this.iconBase = iconBase;
             }
             return WorkbenchLaunchAction;
         })();
@@ -1259,7 +1275,7 @@ var catavolt;
                 var params = { 'sessionHandle': sessionContext.sessionHandle };
                 var call = Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture("createSession/extractAppWinDefFromResult", dialog.DialogTriple.fromWSDialogObjectResultWithFunc(result, 'WSApplicationWindowDefResult', 'applicationWindowDef', dialog.AppWinDef.fromWSApplicationWindowDef));
+                    return Future.createCompletedFuture("createSession/extractAppWinDefFromResult", dialog.DialogTriple.fromWSDialogObjectResult(result, 'WSApplicationWindowDefResult', 'WSApplicationWindowDef', 'applicationWindowDef', dialog.OType.factoryFn));
                 });
             };
             WorkbenchService.SERVICE_NAME = "WorkbenchService";
@@ -1408,6 +1424,90 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/23/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var OType = (function () {
+            function OType() {
+            }
+            OType.factoryFn = function (otype) {
+                return function () {
+                    var type = OType.types[otype];
+                    return type && new type;
+                };
+            };
+            OType.deserializeObject = function (obj, Otype, factoryFn) {
+                return dialog.DialogTriple.extractValue(obj, Otype, function () {
+                    var newObj = factoryFn(Otype)();
+                    if (!newObj) {
+                        return new Failure('OType::deserializeObject: factory failed to produce object for ' + Otype);
+                    }
+                    for (var prop in obj) {
+                        var value = obj[prop];
+                        //Log.info("prop: " + prop + " is type " + typeof value);
+                        if (value && typeof value === 'object') {
+                            if ('WS_OTYPE' in value) {
+                                var otypeTry = dialog.DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
+                                if (otypeTry.isFailure) {
+                                    return new Failure(otypeTry.failure);
+                                }
+                                OType.assignPropIfDefined(prop, otypeTry.success, newObj, Otype);
+                            }
+                            else if ('WS_LTYPE' in value) {
+                                var ltypeTry = dialog.DialogTriple.fromListOfWSDialogObject(value, value['WS_LTYPE'], OType.factoryFn);
+                                if (ltypeTry.isFailure) {
+                                    return new Failure(ltypeTry.failure);
+                                }
+                                OType.assignPropIfDefined(prop, ltypeTry.success, newObj, Otype);
+                            }
+                            else {
+                                OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
+                            }
+                        }
+                        else {
+                            OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
+                        }
+                    }
+                    return new Success(newObj);
+                });
+            };
+            OType.assignPropIfDefined = function (prop, value, target, otype) {
+                if (otype === void 0) { otype = 'object'; }
+                try {
+                    if ('_' + prop in target) {
+                        target['_' + prop] = value;
+                    }
+                    else {
+                        //it may be public
+                        if (prop in target) {
+                            target[prop] = value;
+                        }
+                        else {
+                            Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
+                        }
+                    }
+                }
+                catch (error) {
+                    Log.error('OType::assignPropIfDefined: Failed to set prop: ' + prop + ' on target: ' + error);
+                }
+            };
+            OType.types = {
+                "WSCreateSessionResult": dialog.SessionContextImpl,
+                'WSApplicationWindowDef': dialog.AppWinDef,
+                'WSWorkbench': dialog.Workbench,
+                'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction,
+                'WSGetSessionListPropertyResult': dialog.XGetSessionListPropertyResult
+            };
+            return OType;
+        })();
+        dialog.OType = OType;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/6/15.
  */
 //dialog
@@ -1428,12 +1528,14 @@ var catavolt;
 ///<reference path="WorkbenchLaunchAction.ts"/>
 ///<reference path="WorkbenchService.ts"/>
 ///<reference path="AppContext.ts"/>
+///<reference path="OType.ts"/>
 var AppContext = catavolt.dialog.AppContext;
 var AppWinDef = catavolt.dialog.AppWinDef;
 var DialogTriple = catavolt.dialog.DialogTriple;
 var NullRedirection = catavolt.dialog.NullRedirection;
 var Redirection = catavolt.dialog.Redirection;
 var GatewayService = catavolt.dialog.GatewayService;
+var OType = catavolt.dialog.OType;
 var SessionContextImpl = catavolt.dialog.SessionContextImpl;
 var SessionService = catavolt.dialog.SessionService;
 var SystemContextImpl = catavolt.dialog.SystemContextImpl;
@@ -1507,6 +1609,10 @@ var catavolt;
             it("should login successfully with valid creds", function (done) {
                 dialog.AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(function (appWinDefTry) {
                     Log.info(Log.formatRecString(appWinDefTry));
+                    Log.info(Log.formatRecString(dialog.AppContext.singleton.sessionContextTry));
+                    Log.info(Log.formatRecString(dialog.AppContext.singleton.tenantSettingsTry));
+                    expect(dialog.AppContext.singleton.appWinDefTry.success.workbenches.length).toBeGreaterThan(0);
+                    done();
                 });
             });
         });

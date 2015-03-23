@@ -8,27 +8,15 @@ module catavolt.dialog {
 
     export class Workbench implements NavRequest{
 
-        static fromWSWorkbench(jsonObject:StringDictionary): Try<Workbench> {
-            return DialogTriple.extractValue(jsonObject, 'WSWorkbench',
-                ()=>{
-                    var laTry:Try<Array<WorkbenchLaunchAction>> =
-                        DialogTriple.fromListOfWSDialogObject<WorkbenchLaunchAction>(jsonObject['actions'], 'WSWorkbenchLaunchAction');
-                    if(laTry.isFailure) { return new Failure<Workbench>(laTry.failure); }
-                    var workbench = new Workbench(jsonObject['id'], jsonObject['name'], jsonObject['alias'], laTry.success);
-                    return new Success<Workbench>(workbench);
-                }
-            );
-        }
-
-        constructor(private _workbenchId:string,
+        constructor(private _id:string,
                     private _name:string,
                     private _alias:string,
-                    private _workbenchLaunchActions:Array<WorkbenchLaunchAction>) {}
+                    private _actions:Array<WorkbenchLaunchAction>) {}
 
         get alias() { return this._alias; }
         get name() { return this._name; }
-        get workbenchId() { return this._workbenchId; }
-        get workbenchLaunchActions() { return ArrayUtil.copy(this._workbenchLaunchActions); }
+        get workbenchId() { return this._id; }
+        get workbenchLaunchActions() { return ArrayUtil.copy(this._actions); }
 
     }
 }

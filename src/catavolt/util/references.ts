@@ -11,5 +11,6 @@
 import ArrayUtil = catavolt.util.ArrayUtil;
 import Dictionary = catavolt.util.Dictionary;
 import Log = catavolt.util.Log;
+import LogLevel = catavolt.util.LogLevel;
 import StringDictionary = catavolt.util.StringDictionary;
 import UserException = catavolt.util.UserException;

@@ -18,6 +18,10 @@ module catavolt.dialog {
             AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(
                 (appWinDefTry:Try<AppWinDef>)=>{
                     Log.info(Log.formatRecString(appWinDefTry));
+                    Log.info(Log.formatRecString(AppContext.singleton.sessionContextTry));
+                    Log.info(Log.formatRecString(AppContext.singleton.tenantSettingsTry));
+                    expect(AppContext.singleton.appWinDefTry.success.workbenches.length).toBeGreaterThan(0);
+                    done();
                 }
             );
         });

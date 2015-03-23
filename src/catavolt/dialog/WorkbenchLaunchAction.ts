@@ -6,11 +6,11 @@ module catavolt.dialog {
 
     export class WorkbenchLaunchAction {
 
-        id:string;
-        workbenchId:string;
-        name:string;
-        alias:string;
-        iconBase:string;
+        constructor(public id:string,
+                    public workbenchId:string,
+                    public name:string,
+                    public alias:string,
+                    public iconBase:string){}
 
     }
 }

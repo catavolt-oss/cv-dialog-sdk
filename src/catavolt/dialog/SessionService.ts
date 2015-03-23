@@ -42,7 +42,7 @@ module catavolt.dialog {
             return call.perform().bind(
                 (result:StringDictionary)=>{
                     return Future.createCompletedFuture<XGetSessionListPropertyResult>("getSessionListProperty/extractResultFromResponse",
-                        XGetSessionListPropertyResult.fromWSGetSessionListPropertyResult(result));
+                        DialogTriple.fromWSDialogObject<XGetSessionListPropertyResult>(result, 'WSGetSessionListPropertyResult', OType.factoryFn));
                 }
             );
         }

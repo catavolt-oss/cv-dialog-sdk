@@ -25,16 +25,12 @@ module catavolt.dialog {
         static fromWSCreateSessionResult(jsonObject: {[id: string]: any},
                                           systemContext: SystemContext): Try<SessionContext> {
 
-            return DialogTriple.extractValue(jsonObject, "WSCreateSessionResult",
-                ()=>{
-                    return new Success(new SessionContextImpl(
-                        jsonObject['sessionHandle'],
-                        jsonObject['userName'],
-                        jsonObject['currentDivision'],
-                        jsonObject['serverVersion'],
-                        systemContext));
-                }
-            );
+            var sessionContextTry:Try<SessionContext> = DialogTriple.fromWSDialogObject<SessionContext>(jsonObject,
+                'WSCreateSessionResult', OType.factoryFn);
+            return sessionContextTry.map((sessionContext:SessionContext)=>{
+                sessionContext.systemContext = systemContext;
+                return sessionContext;
+            });
         }
 
         static createSessionContext(gatewayHost:string,

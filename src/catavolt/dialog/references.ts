@@ -20,6 +20,7 @@
 ///<reference path="WorkbenchLaunchAction.ts"/>
 ///<reference path="WorkbenchService.ts"/>
 ///<reference path="AppContext.ts"/>
+///<reference path="OType.ts"/>
 
 import AppContext = catavolt.dialog.AppContext;
 import AppWinDef = catavolt.dialog.AppWinDef;
@@ -29,6 +30,7 @@ import NavRequest = catavolt.dialog.NavRequest;
 import NullRedirection = catavolt.dialog.NullRedirection;
 import Redirection = catavolt.dialog.Redirection;
 import GatewayService = catavolt.dialog.GatewayService;
+import OType = catavolt.dialog.OType;
 import ServiceEndpoint = catavolt.dialog.ServiceEndpoint;
 import SessionContextImpl = catavolt.dialog.SessionContextImpl;
 import SessionService = catavolt.dialog.SessionService;
