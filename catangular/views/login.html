@@ -1,0 +1,13 @@
+<div>
+    <form novalidate>
+        Tenant Id: <input type="text" ng-model="creds.tenantId" required/><br />
+        Gateway URL: <input type="url" ng-model="creds.gatewayUrl" required/><br />
+        User Id: <input type="text" ng-model="creds.userId" required/><br />
+        Password: <input type="password" ng-model="creds.password" required/><br />
+        Client Type: <input type="radio" ng-model="creds.clientType" value="LIMITED_ACCESS"/>Limited
+        <input type="radio" ng-model="creds.clientType" value="RICH_CLIENT" />Rich<br />
+        <input type="submit" ng-click="login(creds)" value="Login" />
+    </form>
+
+    <p>{{ loginMessage }}</p>
+</div>
