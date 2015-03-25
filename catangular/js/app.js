@@ -6,10 +6,22 @@
 var catavoltSdk = angular.module('catavoltSdk', ['ngRoute']);
 
 catavoltSdk.config(['$routeProvider',
-    function ($routeProvider) {
+    function ($routeProvider, $http, $q, Catavolt) {
         $routeProvider.
             when('/', {templateUrl:'views/login.html', controller: 'LoginController'}).
-            when('/main', {templateUrl:'views/main.html', controller: 'WorkbenchController'});
+            when('/main', {
+                templateUrl:'views/main.html',
+                controller: 'WorkbenchController',
+                resolve: {
+                    item: function ($http, $q) {
+                        var deferred = $q.defer();
+                        $http.get("http://localhost:63342/js-sdk/catangular/img/Catavolt-Logo-retina.png").success(function () {
+                              deferred.resolve();
+                         });
+                        return deferred.promise;
+                    }
+                }
+            });
             //otherwise({redirectTo:'/'});
     }
 ]);
