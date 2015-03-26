@@ -39,7 +39,7 @@
             <h3 class="panel-title">Default Workbench</h3>
         </div>
         <div class="panel-body">
-            <div class="row" ng-repeat="action in launchActions track by $index" ng-if="$index%3==0">
+            <div class="row fx-bounce-right fx-speed-500" ng-repeat="action in launchActions track by $index" ng-if="$index%3==0">
                 <div class="col-md-4" ng-repeat="i in [$index,$index+1,$index+2]" ng-if="launchActions[i]">
                     <img class="launch-icon img-responsive center-block" ng-src="{{ launchActions[i].iconBase }}"/>
                     <h5 class="small text-center">{{ launchActions[i].name }}</h5>
