@@ -2,6 +2,7 @@
  * Created by rburson on 3/13/15.
  */
 
+///<reference path="references.ts"/>
 ///<reference path="../fp/references.ts"/>
 ///<reference path="../util/references.ts"/>
 ///<reference path="../ws/references.ts"/>
@@ -55,6 +56,10 @@ module catavolt.dialog {
             return this._deviceProps;
         }
 
+        get isLoggedIn() {
+            return this._appContextState === AppContextState.LOGGED_IN;
+        }
+
         login(gatewayHost:string,
               tenantId:string,
               clientType:string,
@@ -75,6 +80,24 @@ module catavolt.dialog {
             );
 
 
+        }
+
+        performLaunchAction(launchAction:WorkbenchLaunchAction):Future<NavRequest> {
+            if(this._appContextState === AppContextState.LOGGED_OUT) {
+                return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
+            }
+            return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
+        }
+
+        performLaunchActionOnline(launchAction:WorkbenchLaunchAction,
+                                  sessionContext:SessionContext):Future<NavRequest> {
+
+            var redirFr = WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
+
+            /*redirFr.bind<NavRequest>((r:Redirection)=>{
+            });*/
+
+            return null;
         }
 
         get sessionContextTry():Try<SessionContext> {

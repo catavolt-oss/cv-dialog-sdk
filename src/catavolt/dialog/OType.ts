@@ -8,24 +8,44 @@ module catavolt.dialog {
     export class OType {
 
         private static types = {
-            "WSCreateSessionResult": SessionContextImpl,
             'WSApplicationWindowDef': AppWinDef,
+            "WSCreateSessionResult": SessionContextImpl,
+            "WSContextAction": ContextAction,
+            'WSDialogHandle': DialogHandle,
+            'WSDialogRedirection': DialogRedirection,
+            'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
+            'WSWebRedirection': WebRedirection,
             'WSWorkbench': Workbench,
-            'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
-            'WSGetSessionListPropertyResult': XGetSessionListPropertyResult
+            'WSWorkbenchRedirection': WorkbenchRedirection,
+            'WSWorkbenchLaunchAction': WorkbenchLaunchAction
         }
 
-        static factoryFn(otype:string):()=>any {
-            return ()=>{
+        private static typeFns = {
+            'WSRedirection': (otype, jsonObj)=>{
+                if(jsonObj && jsonObj['webURL']) {
+                    return WebRedirection.constructor();
+                } else if(jsonObj && jsonObj['workbenchId']) {
+                    return WorkbenchRedirection.constructor();
+                } else {
+                    return DialogRedirection.constructor();
+                }
+            }
+        }
+
+        static factoryFn(otype:string, jsonObj?):()=>any {
+            var typeFn = OType.typeFns[otype];
+            if(typeFn) {
+                return typeFn(otype, jsonObj);
+            } else {
                 var type = OType.types[otype];
                 return type && new type;
-            };
+            }
         }
 
-        static deserializeObject<A>(obj, Otype:string, factoryFn?:(otype:string)=>any):Try<A> {
+        static deserializeObject<A>(obj, Otype:string, factoryFn?:(otype:string, jsonObj?)=>any):Try<A> {
             return DialogTriple.extractValue<A>(obj, Otype, ()=>{
 
-                var newObj:A = factoryFn(Otype)();
+                var newObj:A = factoryFn(Otype, obj);
                 if(!newObj){ return new Failure<A>('OType::deserializeObject: factory failed to produce object for ' + Otype); }
 
                 for(var prop in obj) {

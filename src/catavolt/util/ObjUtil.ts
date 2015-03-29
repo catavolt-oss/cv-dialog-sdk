@@ -5,8 +5,20 @@
 module catavolt.util {
 
     export class ObjUtil {
-        static propCopy(sourceObj, targetObj, mustExistOnTarget=true):any {
-            return targetObj;
+        static cloneOwnProps(sourceObj):any {
+            if (null == sourceObj || "object" != typeof sourceObj) return sourceObj;
+            var copy = sourceObj.constructor();
+            for (var attr in sourceObj) {
+                if (sourceObj.hasOwnProperty(attr)) {
+                    copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
+                }
+            }
+            return copy;
+        }
+
+        static formatRecString(o):string {
+            return JSON.stringify(o);
         }
     }
+
 }

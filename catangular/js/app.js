@@ -17,27 +17,43 @@ catavoltSdk.config(['$routeProvider',
     }
 ]);
 
-catavoltSdk.controller('LoginController', ['$scope', '$location', '$rootScope',
-    'Catavolt', function($scope, $location, $rootScope, Catavolt) {
+catavoltSdk.controller('LoginController', ['$scope', '$location', '$rootScope', '$timeout',
+    'Catavolt', function($scope, $location, $rootScope, $timeout, Catavolt) {
 
+        function init() {
+            $scope.creds = {tenantId:'***REMOVED***', gatewayUrl:'www.catavolt.net',
+                userId:'sales', password:'***REMOVED***', clientType:'LIMITED_ACCESS'};
+            $scope.loginMessage = "";
+            $scope.loggingIn = false;
+            $scope.loggedIn = Catavolt.isLoggedIn;
+        }
 
-    $scope.creds = {tenantId:'***REMOVED***', gatewayUrl:'www.catavolt.net',
-        userId:'sales', password:'***REMOVED***', clientType:'LIMITED_ACCESS'};
-    $scope.loginMessage = "";
+        $scope.login = function (creds) {
+            $scope.loginMessage = "";
+            $scope.loggingIn = true;
+            if (Catavolt.loggedIn) {
+                $scope.loggedIn = Catavolt.isLoggedIn;
+                $location.path('/main');
+            } else {
+                Catavolt.login(creds.gatewayUrl, creds.tenantId, creds.clientType, creds.userId, creds.password)
+                    .onComplete(function (appWinDefTry) {
+                        $rootScope.$apply(function () {
+                            $scope.loggingIn = false;
+                            if (appWinDefTry.isFailure) {
+                                $scope.loginMessage = "Invalid Login";
+                                $scope.loggedIn = Catavolt.isLoggedIn;
+                            } else {
+                                $scope.loggedIn = Catavolt.isLoggedIn;
+                                $timeout(function() {
+                                    $location.path('/main');
+                                }, 800);
+                            }
+                        });
+                    });
+            }
+        }
 
-    $scope.login = function(creds){
-        $scope.loginMessage = "";
-         Catavolt.login(creds.gatewayUrl, creds.tenantId, creds.clientType, creds.userId, creds.password)
-             .onComplete(function(appWinDefTry){
-                 $rootScope.$apply(function(){
-                     if(appWinDefTry.isFailure) {
-                        $scope.loginMessage = "Invalid Login";
-                     }else{
-                         $location.path('/main');
-                     }
-                 });
-        });
-    }
+        init();
 
 }]);
 
@@ -74,7 +90,6 @@ catavoltSdk.controller('WorkbenchController', ['$scope', '$location', '$rootScop
 
 
 catavoltSdk.factory('Catavolt', function(){ return catavolt.dialog.AppContext.singleton; });
-
 
 /*
 ,

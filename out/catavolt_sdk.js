@@ -19,8 +19,38 @@ var catavolt;
     })(util = catavolt.util || (catavolt.util = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/20/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var ObjUtil = (function () {
+            function ObjUtil() {
+            }
+            ObjUtil.cloneOwnProps = function (sourceObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return sourceObj;
+                var copy = sourceObj.constructor();
+                for (var attr in sourceObj) {
+                    if (sourceObj.hasOwnProperty(attr)) {
+                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
+                    }
+                }
+                return copy;
+            };
+            ObjUtil.formatRecString = function (o) {
+                return JSON.stringify(o);
+            };
+            return ObjUtil;
+        })();
+        util.ObjUtil = ObjUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/6/15.
  */
+///<reference path="references.ts"/>
 var catavolt;
 (function (catavolt) {
     var util;
@@ -91,7 +121,7 @@ var catavolt;
                 }
             };
             Log.formatRecString = function (o) {
-                return JSON.stringify(o);
+                return util.ObjUtil.formatRecString(o);
             };
             Log.init = Log.logLevel(3 /* DEBUG */);
             return Log;
@@ -110,12 +140,14 @@ var catavolt;
  */
 //util
 ///<reference path="ArrayUtil.ts"/>
+///<reference path="ObjUtil.ts"/>
 ///<reference path="Log.ts"/>
 ///<reference path="Types.ts"/>
 ///<reference path="UserException.ts"/>
 var ArrayUtil = catavolt.util.ArrayUtil;
 var Log = catavolt.util.Log;
 var LogLevel = catavolt.util.LogLevel;
+var ObjUtil = catavolt.util.ObjUtil;
 /**
  * Created by rburson on 3/9/15.
  */
@@ -684,6 +716,17 @@ var catavolt;
 var Call = catavolt.ws.Call;
 var Get = catavolt.ws.Get;
 /**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="util/references.ts"/>
+//fp
+///<reference path="fp/references.ts"/>
+//ws
+///<reference path="ws/references.ts"/>
+//dialog
+///<reference path="dialog/references.ts"/>
+/**
  * Created by rburson on 3/17/15.
  */
 ///<reference path="../references.ts"/>
@@ -733,6 +776,7 @@ var catavolt;
 /**
  * Created by rburson on 3/10/15.
  */
+///<reference path="../references.ts"/>
 var catavolt;
 (function (catavolt) {
     var dialog;
@@ -740,13 +784,143 @@ var catavolt;
         var Redirection = (function () {
             function Redirection() {
             }
-            //@TODO
             Redirection.fromWSRedirection = function (jsonObject) {
-                return null;
+                return dialog.DialogTriple.extractValue(jsonObject, 'WSRedirection', function () {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObject, 'WSRedirection', dialog.OType.factoryFn);
+                });
             };
             return Redirection;
         })();
         dialog.Redirection = Redirection;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/27/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var DialogHandle = (function () {
+            function DialogHandle(handleValue, sessionHandle) {
+                this.handleValue = handleValue;
+                this.sessionHandle = sessionHandle;
+            }
+            return DialogHandle;
+        })();
+        dialog.DialogHandle = DialogHandle;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/26/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var DialogRedirection = (function (_super) {
+            __extends(DialogRedirection, _super);
+            function DialogRedirection(_dialogHandle, _dialogType, _dialogMode, _paneMode, _objectId, _open, _domainClassName, _dialogModelClassName, _dialogProperties, _fromDialogProperties) {
+                _super.call(this);
+                this._dialogHandle = _dialogHandle;
+                this._dialogType = _dialogType;
+                this._dialogMode = _dialogMode;
+                this._paneMode = _paneMode;
+                this._objectId = _objectId;
+                this._open = _open;
+                this._domainClassName = _domainClassName;
+                this._dialogModelClassName = _dialogModelClassName;
+                this._dialogProperties = _dialogProperties;
+                this._fromDialogProperties = _fromDialogProperties;
+            }
+            Object.defineProperty(DialogRedirection.prototype, "dialogHandle", {
+                get: function () {
+                    return this._dialogHandle;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "dialogMode", {
+                get: function () {
+                    return this._dialogMode;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "dialogModelClassName", {
+                get: function () {
+                    return this._dialogModelClassName;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "dialogProps", {
+                get: function () {
+                    return this._dialogProperties;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "dialogType", {
+                get: function () {
+                    return this._dialogType;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "domainClassName", {
+                get: function () {
+                    return this._domainClassName;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "fromDialogProps", {
+                get: function () {
+                    return this._fromDialogProperties;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "isEditor", {
+                get: function () {
+                    return this._dialogType === 'EDITOR';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "isQuery", {
+                get: function () {
+                    return this._dialogType === 'QUERY';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "objectId", {
+                get: function () {
+                    return this._objectId;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "open", {
+                get: function () {
+                    return this._open;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DialogRedirection.prototype, "paneMode", {
+                get: function () {
+                    return this._paneMode;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return DialogRedirection;
+        })(dialog.Redirection);
+        dialog.DialogRedirection = DialogRedirection;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -769,10 +943,52 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/27/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var WebRedirection = (function (_super) {
+            __extends(WebRedirection, _super);
+            function WebRedirection(_webURL, _open, _dialogProperties, _fromDialogProperties) {
+                _super.call(this);
+                this._webURL = _webURL;
+                this._open = _open;
+                this._dialogProperties = _dialogProperties;
+                this._fromDialogProperties = _fromDialogProperties;
+            }
+            return WebRedirection;
+        })(dialog.Redirection);
+        dialog.WebRedirection = WebRedirection;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/27/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var WorkbenchRedirection = (function (_super) {
+            __extends(WorkbenchRedirection, _super);
+            function WorkbenchRedirection(_workbenchId, _dialogProperties, _fromDialogProperties) {
+                _super.call(this);
+                this._workbenchId = _workbenchId;
+                this._dialogProperties = _dialogProperties;
+                this._fromDialogProperties = _fromDialogProperties;
+            }
+            return WorkbenchRedirection;
+        })(dialog.Redirection);
+        dialog.WorkbenchRedirection = WorkbenchRedirection;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/9/15.
  */
-///<reference path="../fp/references.ts"/>
-///<reference path="../util/references.ts"/>
+///<reference path="../references.ts"/>
 var catavolt;
 (function (catavolt) {
     var dialog;
@@ -848,7 +1064,9 @@ var catavolt;
                     });
                 }
                 else {
-                    return dialog.OType.deserializeObject(obj, Otype, factoryFn);
+                    return DialogTriple.extractValue(obj, Otype, function () {
+                        return dialog.OType.deserializeObject(obj, Otype, factoryFn);
+                    });
                 }
             };
             DialogTriple.fromListOfWSDialogObject = function (jsonObject, Ltype, factoryFn) {
@@ -936,8 +1154,45 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/27/15.
+ */
+///<reference path="references.ts"/>
+/**
+ * Created by rburson on 3/27/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var ContextAction = (function () {
+            function ContextAction() {
+            }
+            return ContextAction;
+        })();
+        dialog.ContextAction = ContextAction;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/17/15.
  */
+///<reference path="references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var NavRequest;
+        (function (NavRequest) {
+            var Util;
+            (function (Util) {
+                function fromRedirection(redirection, actionSource, sessionContext) {
+                    //if(redirection instanceof )
+                    return null;
+                }
+                Util.fromRedirection = fromRedirection;
+            })(Util = NavRequest.Util || (NavRequest.Util = {}));
+        })(NavRequest = dialog.NavRequest || (dialog.NavRequest = {}));
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 3/12/15.
  */
@@ -1278,6 +1533,18 @@ var catavolt;
                     return Future.createCompletedFuture("createSession/extractAppWinDefFromResult", dialog.DialogTriple.fromWSDialogObjectResult(result, 'WSApplicationWindowDefResult', 'WSApplicationWindowDef', 'applicationWindowDef', dialog.OType.factoryFn));
                 });
             };
+            WorkbenchService.performLaunchAction = function (actionId, workbenchId, sessionContext) {
+                var method = "performLaunchAction";
+                var params = {
+                    'actionId': actionId,
+                    'workbenchId': workbenchId,
+                    'sessionHandle': sessionContext.sessionHandle
+                };
+                var call = Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture("performLaunchAction/extractRedirection", dialog.Redirection.fromWSRedirection(result));
+                });
+            };
             WorkbenchService.SERVICE_NAME = "WorkbenchService";
             WorkbenchService.SERVICE_PATH = "soi-json-v02/" + WorkbenchService.SERVICE_NAME;
             return WorkbenchService;
@@ -1286,8 +1553,164 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/23/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var OType = (function () {
+            function OType() {
+            }
+            OType.factoryFn = function (otype, jsonObj) {
+                var typeFn = OType.typeFns[otype];
+                if (typeFn) {
+                    return typeFn(otype, jsonObj);
+                }
+                else {
+                    var type = OType.types[otype];
+                    return type && new type;
+                }
+            };
+            OType.deserializeObject = function (obj, Otype, factoryFn) {
+                return dialog.DialogTriple.extractValue(obj, Otype, function () {
+                    var newObj = factoryFn(Otype, obj);
+                    if (!newObj) {
+                        return new Failure('OType::deserializeObject: factory failed to produce object for ' + Otype);
+                    }
+                    for (var prop in obj) {
+                        var value = obj[prop];
+                        //Log.info("prop: " + prop + " is type " + typeof value);
+                        if (value && typeof value === 'object') {
+                            if ('WS_OTYPE' in value) {
+                                var otypeTry = dialog.DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
+                                if (otypeTry.isFailure) {
+                                    return new Failure(otypeTry.failure);
+                                }
+                                OType.assignPropIfDefined(prop, otypeTry.success, newObj, Otype);
+                            }
+                            else if ('WS_LTYPE' in value) {
+                                var ltypeTry = dialog.DialogTriple.fromListOfWSDialogObject(value, value['WS_LTYPE'], OType.factoryFn);
+                                if (ltypeTry.isFailure) {
+                                    return new Failure(ltypeTry.failure);
+                                }
+                                OType.assignPropIfDefined(prop, ltypeTry.success, newObj, Otype);
+                            }
+                            else {
+                                OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
+                            }
+                        }
+                        else {
+                            OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
+                        }
+                    }
+                    return new Success(newObj);
+                });
+            };
+            OType.assignPropIfDefined = function (prop, value, target, otype) {
+                if (otype === void 0) { otype = 'object'; }
+                try {
+                    if ('_' + prop in target) {
+                        target['_' + prop] = value;
+                    }
+                    else {
+                        //it may be public
+                        if (prop in target) {
+                            target[prop] = value;
+                        }
+                        else {
+                            Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
+                        }
+                    }
+                }
+                catch (error) {
+                    Log.error('OType::assignPropIfDefined: Failed to set prop: ' + prop + ' on target: ' + error);
+                }
+            };
+            OType.types = {
+                'WSApplicationWindowDef': dialog.AppWinDef,
+                "WSCreateSessionResult": dialog.SessionContextImpl,
+                "WSContextAction": dialog.ContextAction,
+                'WSDialogHandle': dialog.DialogHandle,
+                'WSDialogRedirection': dialog.DialogRedirection,
+                'WSGetSessionListPropertyResult': dialog.XGetSessionListPropertyResult,
+                'WSWebRedirection': dialog.WebRedirection,
+                'WSWorkbench': dialog.Workbench,
+                'WSWorkbenchRedirection': dialog.WorkbenchRedirection,
+                'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction
+            };
+            OType.typeFns = {
+                'WSRedirection': function (otype, jsonObj) {
+                    if (jsonObj && jsonObj['webURL']) {
+                        return dialog.WebRedirection.constructor();
+                    }
+                    else if (jsonObj && jsonObj['workbenchId']) {
+                        return dialog.WorkbenchRedirection.constructor();
+                    }
+                    else {
+                        return dialog.DialogRedirection.constructor();
+                    }
+                }
+            };
+            return OType;
+        })();
+        dialog.OType = OType;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+//dialog
+///<reference path="XGetSessionListPropertyResult.ts"/>
+///<reference path="VoidResult.ts"/>
+///<reference path="DialogException.ts"/>
+///<reference path="Redirection.ts"/>
+///<reference path="DialogHandle.ts"/>
+///<reference path="DialogRedirection.ts"/>
+///<reference path="DialogRedirection.ts"/>
+///<reference path="NullRedirection.ts"/>
+///<reference path="WebRedirection.ts"/>
+///<reference path="WorkbenchRedirection.ts"/>
+///<reference path="DialogTriple.ts"/>
+///<reference path="ActionSource.ts"/>
+///<reference path="ContextAction.ts"/>
+///<reference path="NavRequest.ts"/>
+///<reference path="ServiceEndpoint.ts"/>
+///<reference path="SessionContextImpl.ts"/>
+///<reference path="SystemContextImpl.ts"/>
+///<reference path="AppWinDef.ts"/>
+///<reference path="SessionService.ts"/>
+///<reference path="GatewayService.ts"/>
+///<reference path="Workbench.ts"/>
+///<reference path="WorkbenchLaunchAction.ts"/>
+///<reference path="WorkbenchService.ts"/>
+///<reference path="AppContext.ts"/>
+///<reference path="OType.ts"/>
+var AppContext = catavolt.dialog.AppContext;
+var AppWinDef = catavolt.dialog.AppWinDef;
+var ContextAction = catavolt.dialog.ContextAction;
+var DialogHandle = catavolt.dialog.DialogHandle;
+var DialogRedirection = catavolt.dialog.DialogRedirection;
+var DialogTriple = catavolt.dialog.DialogTriple;
+var NavRequest = catavolt.dialog.NavRequest;
+var NullRedirection = catavolt.dialog.NullRedirection;
+var Redirection = catavolt.dialog.Redirection;
+var GatewayService = catavolt.dialog.GatewayService;
+var OType = catavolt.dialog.OType;
+var SessionContextImpl = catavolt.dialog.SessionContextImpl;
+var SessionService = catavolt.dialog.SessionService;
+var SystemContextImpl = catavolt.dialog.SystemContextImpl;
+var WebRedirection = catavolt.dialog.WebRedirection;
+var Workbench = catavolt.dialog.Workbench;
+var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
+var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
+var WorkbenchService = catavolt.dialog.WorkbenchService;
+var XGetSessionListPropertyResult = catavolt.dialog.XGetSessionListPropertyResult;
+/**
  * Created by rburson on 3/13/15.
  */
+///<reference path="references.ts"/>
 ///<reference path="../fp/references.ts"/>
 ///<reference path="../util/references.ts"/>
 ///<reference path="../ws/references.ts"/>
@@ -1348,6 +1771,13 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(AppContext.prototype, "isLoggedIn", {
+                get: function () {
+                    return this._appContextState === 1 /* LOGGED_IN */;
+                },
+                enumerable: true,
+                configurable: true
+            });
             AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
                 var _this = this;
                 if (this._appContextState === 1 /* LOGGED_IN */) {
@@ -1359,6 +1789,18 @@ var catavolt;
                     _this.setAppContextStateToLoggedIn(appContextValues);
                     return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
                 });
+            };
+            AppContext.prototype.performLaunchAction = function (launchAction) {
+                if (this._appContextState === 0 /* LOGGED_OUT */) {
+                    return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
+                }
+                return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
+            };
+            AppContext.prototype.performLaunchActionOnline = function (launchAction, sessionContext) {
+                var redirFr = dialog.WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
+                /*redirFr.bind<NavRequest>((r:Redirection)=>{
+                });*/
+                return null;
             };
             Object.defineProperty(AppContext.prototype, "sessionContextTry", {
                 get: function () {
@@ -1423,135 +1865,4 @@ var catavolt;
         dialog.AppContext = AppContext;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/23/15.
- */
-///<reference path="../references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var OType = (function () {
-            function OType() {
-            }
-            OType.factoryFn = function (otype) {
-                return function () {
-                    var type = OType.types[otype];
-                    return type && new type;
-                };
-            };
-            OType.deserializeObject = function (obj, Otype, factoryFn) {
-                return dialog.DialogTriple.extractValue(obj, Otype, function () {
-                    var newObj = factoryFn(Otype)();
-                    if (!newObj) {
-                        return new Failure('OType::deserializeObject: factory failed to produce object for ' + Otype);
-                    }
-                    for (var prop in obj) {
-                        var value = obj[prop];
-                        //Log.info("prop: " + prop + " is type " + typeof value);
-                        if (value && typeof value === 'object') {
-                            if ('WS_OTYPE' in value) {
-                                var otypeTry = dialog.DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
-                                if (otypeTry.isFailure) {
-                                    return new Failure(otypeTry.failure);
-                                }
-                                OType.assignPropIfDefined(prop, otypeTry.success, newObj, Otype);
-                            }
-                            else if ('WS_LTYPE' in value) {
-                                var ltypeTry = dialog.DialogTriple.fromListOfWSDialogObject(value, value['WS_LTYPE'], OType.factoryFn);
-                                if (ltypeTry.isFailure) {
-                                    return new Failure(ltypeTry.failure);
-                                }
-                                OType.assignPropIfDefined(prop, ltypeTry.success, newObj, Otype);
-                            }
-                            else {
-                                OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
-                            }
-                        }
-                        else {
-                            OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
-                        }
-                    }
-                    return new Success(newObj);
-                });
-            };
-            OType.assignPropIfDefined = function (prop, value, target, otype) {
-                if (otype === void 0) { otype = 'object'; }
-                try {
-                    if ('_' + prop in target) {
-                        target['_' + prop] = value;
-                    }
-                    else {
-                        //it may be public
-                        if (prop in target) {
-                            target[prop] = value;
-                        }
-                        else {
-                            Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
-                        }
-                    }
-                }
-                catch (error) {
-                    Log.error('OType::assignPropIfDefined: Failed to set prop: ' + prop + ' on target: ' + error);
-                }
-            };
-            OType.types = {
-                "WSCreateSessionResult": dialog.SessionContextImpl,
-                'WSApplicationWindowDef': dialog.AppWinDef,
-                'WSWorkbench': dialog.Workbench,
-                'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction,
-                'WSGetSessionListPropertyResult': dialog.XGetSessionListPropertyResult
-            };
-            return OType;
-        })();
-        dialog.OType = OType;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/6/15.
- */
-//dialog
-///<reference path="XGetSessionListPropertyResult.ts"/>
-///<reference path="VoidResult.ts"/>
-///<reference path="DialogException.ts"/>
-///<reference path="Redirection.ts"/>
-///<reference path="NullRedirection.ts"/>
-///<reference path="DialogTriple.ts"/>
-///<reference path="NavRequest.ts"/>
-///<reference path="ServiceEndpoint.ts"/>
-///<reference path="SessionContextImpl.ts"/>
-///<reference path="SystemContextImpl.ts"/>
-///<reference path="AppWinDef.ts"/>
-///<reference path="SessionService.ts"/>
-///<reference path="GatewayService.ts"/>
-///<reference path="Workbench.ts"/>
-///<reference path="WorkbenchLaunchAction.ts"/>
-///<reference path="WorkbenchService.ts"/>
-///<reference path="AppContext.ts"/>
-///<reference path="OType.ts"/>
-var AppContext = catavolt.dialog.AppContext;
-var AppWinDef = catavolt.dialog.AppWinDef;
-var DialogTriple = catavolt.dialog.DialogTriple;
-var NullRedirection = catavolt.dialog.NullRedirection;
-var Redirection = catavolt.dialog.Redirection;
-var GatewayService = catavolt.dialog.GatewayService;
-var OType = catavolt.dialog.OType;
-var SessionContextImpl = catavolt.dialog.SessionContextImpl;
-var SessionService = catavolt.dialog.SessionService;
-var SystemContextImpl = catavolt.dialog.SystemContextImpl;
-var Workbench = catavolt.dialog.Workbench;
-var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
-var WorkbenchService = catavolt.dialog.WorkbenchService;
-var XGetSessionListPropertyResult = catavolt.dialog.XGetSessionListPropertyResult;
-/**
- * Created by rburson on 3/6/15.
- */
-//util
-///<reference path="util/references.ts"/>
-//fp
-///<reference path="fp/references.ts"/>
-//ws
-///<reference path="ws/references.ts"/>
-//dialog
-///<reference path="dialog/references.ts"/>
 //# sourceMappingURL=catavolt_sdk.js.map

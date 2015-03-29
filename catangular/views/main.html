@@ -25,10 +25,8 @@
         </div>
     </div>
 </nav>
-
-
 <div class="container">
-    <div class="container-fluid">
+    <div class="container-fluid fx-zoom-left fx-speed-800" ng-show="launchActions.length > 0">
         <div class="center-block logo">
             <img class="img-responsive center-block" src="img/Catavolt-Logo-retina.png" style="vertical-align: middle;">
         </div>
@@ -40,14 +38,14 @@
         </div>
         <div class="panel-body">
             <div class="row fx-bounce-right fx-speed-500" ng-repeat="action in launchActions track by $index" ng-if="$index%3==0">
-                <div class="col-md-4" ng-repeat="i in [$index,$index+1,$index+2]" ng-if="launchActions[i]">
+
+                <div class="col-md-4 launch-div" ng-repeat="i in [$index,$index+1,$index+2]" ng-if="launchActions[i]">
                     <img class="launch-icon img-responsive center-block" ng-src="{{ launchActions[i].iconBase }}"/>
-                    <h5 class="small text-center">{{ launchActions[i].name }}</h5>
+                    <h5 class="launch-text small text-center">{{ launchActions[i].name }}</h5>
                 </div>
             </div>
 
         </div>
     </div>
-
 
 </div>

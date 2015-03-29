@@ -2,8 +2,7 @@
  * Created by rburson on 3/9/15.
  */
 
-///<reference path="../fp/references.ts"/>
-///<reference path="../util/references.ts"/>
+///<reference path="../references.ts"/>
 
 module catavolt.dialog {
 
@@ -66,7 +65,7 @@ module catavolt.dialog {
         }
 
 
-        static fromWSDialogObject<A>(obj, Otype:string, factoryFn?:(otype:string)=>any):Try<A> {
+        static fromWSDialogObject<A>(obj, Otype:string, factoryFn?:(otype:string, jsonObj?)=>any):Try<A> {
 
             if(!obj) {
                 return new Failure<A>('DialogTriple::fromWSDialogObject: Cannot extract from null value')
@@ -79,11 +78,13 @@ module catavolt.dialog {
                     return new Success<A>(obj);
                 });
             } else {
-                return OType.deserializeObject<A>(obj, Otype, factoryFn);
+                return DialogTriple.extractValue<A>(obj, Otype, ()=>{
+                    return OType.deserializeObject<A>(obj, Otype, factoryFn);
+                });
             }
         }
 
-        static fromListOfWSDialogObject<A>(jsonObject:StringDictionary, Ltype:string, factoryFn?:(otype:string)=>any):Try<Array<A>> {
+        static fromListOfWSDialogObject<A>(jsonObject:StringDictionary, Ltype:string, factoryFn?:(otype:string, jsonObj?)=>any):Try<Array<A>> {
             return DialogTriple.extractList(jsonObject, Ltype,
                 (value)=>{ return DialogTriple.fromWSDialogObject<A>(value, Ltype, factoryFn); }
             );
@@ -93,7 +94,7 @@ module catavolt.dialog {
                                            resultOtype:string,
                                            targetOtype:string,
                                            objPropName:string,
-                                           factoryFn?:(otype:string)=>any):Try<A> {
+                                           factoryFn?:(otype:string, jsonObj?)=>any):Try<A> {
 
             return DialogTriple.extractValue(jsonObject, resultOtype,
                 ()=>{

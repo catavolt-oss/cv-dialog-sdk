@@ -7,8 +7,15 @@
 ///<reference path="VoidResult.ts"/>
 ///<reference path="DialogException.ts"/>
 ///<reference path="Redirection.ts"/>
+///<reference path="DialogHandle.ts"/>
+///<reference path="DialogRedirection.ts"/>
+///<reference path="DialogRedirection.ts"/>
 ///<reference path="NullRedirection.ts"/>
+///<reference path="WebRedirection.ts"/>
+///<reference path="WorkbenchRedirection.ts"/>
 ///<reference path="DialogTriple.ts"/>
+///<reference path="ActionSource.ts"/>
+///<reference path="ContextAction.ts"/>
 ///<reference path="NavRequest.ts"/>
 ///<reference path="ServiceEndpoint.ts"/>
 ///<reference path="SessionContextImpl.ts"/>
@@ -24,7 +31,11 @@
 
 import AppContext = catavolt.dialog.AppContext;
 import AppWinDef = catavolt.dialog.AppWinDef;
+import ActionSource = catavolt.dialog.ActionSource;
+import ContextAction = catavolt.dialog.ContextAction;
 import DialogException = catavolt.dialog.DialogException;
+import DialogHandle = catavolt.dialog.DialogHandle;
+import DialogRedirection = catavolt.dialog.DialogRedirection;
 import DialogTriple = catavolt.dialog.DialogTriple;
 import NavRequest = catavolt.dialog.NavRequest;
 import NullRedirection = catavolt.dialog.NullRedirection;
@@ -36,7 +47,9 @@ import SessionContextImpl = catavolt.dialog.SessionContextImpl;
 import SessionService = catavolt.dialog.SessionService;
 import SystemContextImpl = catavolt.dialog.SystemContextImpl;
 import VoidResult = catavolt.dialog.VoidResult;
+import WebRedirection = catavolt.dialog.WebRedirection;
 import Workbench = catavolt.dialog.Workbench;
 import WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
+import WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 import WorkbenchService = catavolt.dialog.WorkbenchService;
 import XGetSessionListPropertyResult = catavolt.dialog.XGetSessionListPropertyResult;

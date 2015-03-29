@@ -25,5 +25,24 @@ module catavolt.dialog {
                 }
             );
         }
+
+        static performLaunchAction(actionId:string,
+                                   workbenchId:string,
+                                   sessionContext:SessionContext):Future<Redirection> {
+
+            var method = "performLaunchAction";
+            var params:StringDictionary = {
+                'actionId':actionId,
+                'workbenchId':workbenchId,
+                'sessionHandle':sessionContext.sessionHandle
+            };
+            var call =  Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind(
+                (result:StringDictionary)=>{
+                   return Future.createCompletedFuture("performLaunchAction/extractRedirection",
+                       Redirection.fromWSRedirection(result));
+                }
+            );
+        }
     }
 }

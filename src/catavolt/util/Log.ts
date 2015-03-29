@@ -2,6 +2,8 @@
  * Created by rburson on 3/6/15.
  */
 
+///<reference path="references.ts"/>
+
 module catavolt.util {
 
     export enum LogLevel { ERROR, WARN, INFO, DEBUG }
@@ -59,7 +61,7 @@ module catavolt.util {
         }
 
         static formatRecString(o):string {
-            return JSON.stringify(o);
+            return ObjUtil.formatRecString(o);
         }
 
     }
