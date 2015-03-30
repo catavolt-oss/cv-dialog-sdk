@@ -4,6 +4,9 @@
 
 //dialog
 ///<reference path="XGetSessionListPropertyResult.ts"/>
+///<reference path="XPaneDefRef.ts"/>
+///<reference path="XFormDef.ts"/>
+///<reference path="XPaneDef.ts"/>
 ///<reference path="VoidResult.ts"/>
 ///<reference path="DialogException.ts"/>
 ///<reference path="Redirection.ts"/>
@@ -70,4 +73,7 @@ import Workbench = catavolt.dialog.Workbench;
 import WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
 import WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 import WorkbenchService = catavolt.dialog.WorkbenchService;
+import XFormDef = catavolt.dialog.XFormDef;
 import XGetSessionListPropertyResult = catavolt.dialog.XGetSessionListPropertyResult;
+import XPaneDe = catavolt.dialog.XPaneDef;
+import XPaneDefRef = catavolt.dialog.XPaneDefRef;

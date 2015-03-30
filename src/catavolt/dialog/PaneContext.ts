@@ -20,7 +20,7 @@ module catavolt.dialog {
             this._paneRef = paneRef;
             this._binaryCache = {};
         }
-
+        /*
         get actionSource():ActionSource {
             return this.parentContext ? this.parentContext.actionSource : null;
         }
@@ -52,12 +52,12 @@ module catavolt.dialog {
         get paneRef():number {
             return this._paneRef;
 
-        }
+        }*/
         /** --------------------- MODULE ------------------------------*/
         //*** let's pretend this has module level visibility
 
-        get dialogRedirection():DialogRedirection {
+        /*get dialogRedirection():DialogRedirection {
             return this.paneDef.dialogRedirection;
-        }
+        }*/
     }
 }

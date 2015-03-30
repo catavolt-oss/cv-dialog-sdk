@@ -17,7 +17,8 @@ module catavolt.dialog {
             'WSWebRedirection': WebRedirection,
             'WSWorkbench': Workbench,
             'WSWorkbenchRedirection': WorkbenchRedirection,
-            'WSWorkbenchLaunchAction': WorkbenchLaunchAction
+            'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
+            'WSPaneDefRef': XPaneDefRef
         };
 
         private static localTypes = {

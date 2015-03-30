@@ -766,6 +766,66 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var XPaneDefRef = (function () {
+            function XPaneDefRef(name, paneId, title, type) {
+                this.name = name;
+                this.paneId = paneId;
+                this.title = title;
+                this.type = type;
+            }
+            return XPaneDefRef;
+        })();
+        dialog.XPaneDefRef = XPaneDefRef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var XFormDef = (function () {
+            function XFormDef(borderStyle, formLayout, formStyle, name, paneId, title, headerDefRef, paneDefRefs) {
+                this.borderStyle = borderStyle;
+                this.formLayout = formLayout;
+                this.formStyle = formStyle;
+                this.name = name;
+                this.paneId = paneId;
+                this.title = title;
+                this.headerDefRef = headerDefRef;
+                this.paneDefRefs = paneDefRefs;
+            }
+            return XFormDef;
+        })();
+        dialog.XFormDef = XFormDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var XPaneDef = (function () {
+            function XPaneDef() {
+            }
+            return XPaneDef;
+        })();
+        dialog.XPaneDef = XPaneDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/16/15.
  */
 /**
@@ -1663,6 +1723,22 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
+        var PaneDef = (function () {
+            function PaneDef() {
+            }
+            return PaneDef;
+        })();
+        dialog.PaneDef = PaneDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
         var FormDef = (function (_super) {
             __extends(FormDef, _super);
             function FormDef() {
@@ -1702,68 +1778,6 @@ var catavolt;
                 this._paneRef = paneRef;
                 this._binaryCache = {};
             }
-            Object.defineProperty(PaneContext.prototype, "actionSource", {
-                get: function () {
-                    return this.parentContext ? this.parentContext.actionSource : null;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(PaneContext.prototype, "dialogAlias", {
-                get: function () {
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(PaneContext.prototype, "formDef", {
-                get: function () {
-                    return this.parentContext.formDef();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(PaneContext.prototype, "lastRefreshTime", {
-                get: function () {
-                    return this._lastRefreshTime;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(PaneContext.prototype, "parentContext", {
-                get: function () {
-                    return this._parentContext;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(PaneContext.prototype, "paneDef", {
-                get: function () {
-                    if (this.paneRef) {
-                        return this.formDef.headerDef();
-                    }
-                    else {
-                        return this.formDef.childrenDefs[this.paneRef];
-                    }
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(PaneContext.prototype, "paneRef", {
-                get: function () {
-                    return this._paneRef;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(PaneContext.prototype, "dialogRedirection", {
-                /** --------------------- MODULE ------------------------------*/
-                //*** let's pretend this has module level visibility
-                get: function () {
-                    return this.paneDef.dialogRedirection;
-                },
-                enumerable: true,
-                configurable: true
-            });
             PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
             PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
             return PaneContext;
@@ -2067,7 +2081,8 @@ var catavolt;
                 'WSWebRedirection': dialog.WebRedirection,
                 'WSWorkbench': dialog.Workbench,
                 'WSWorkbenchRedirection': dialog.WorkbenchRedirection,
-                'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction
+                'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction,
+                'WSPaneDefRef': dialog.XPaneDefRef
             };
             OType.localTypes = {
                 'DialogRedirection': dialog.DialogRedirection,
@@ -2097,6 +2112,9 @@ var catavolt;
  */
 //dialog
 ///<reference path="XGetSessionListPropertyResult.ts"/>
+///<reference path="XPaneDefRef.ts"/>
+///<reference path="XFormDef.ts"/>
+///<reference path="XPaneDef.ts"/>
 ///<reference path="VoidResult.ts"/>
 ///<reference path="DialogException.ts"/>
 ///<reference path="Redirection.ts"/>
@@ -2156,7 +2174,10 @@ var Workbench = catavolt.dialog.Workbench;
 var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
 var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 var WorkbenchService = catavolt.dialog.WorkbenchService;
+var XFormDef = catavolt.dialog.XFormDef;
 var XGetSessionListPropertyResult = catavolt.dialog.XGetSessionListPropertyResult;
+var XPaneDe = catavolt.dialog.XPaneDef;
+var XPaneDefRef = catavolt.dialog.XPaneDefRef;
 /**
  * Created by rburson on 3/6/15.
  */
@@ -2176,12 +2197,14 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var PaneDef = (function () {
-            function PaneDef() {
+        var XDetailsDef = (function (_super) {
+            __extends(XDetailsDef, _super);
+            function XDetailsDef() {
+                _super.call(this);
             }
-            return PaneDef;
-        })();
-        dialog.PaneDef = PaneDef;
+            return XDetailsDef;
+        })(dialog.XPaneDef);
+        dialog.XDetailsDef = XDetailsDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map
