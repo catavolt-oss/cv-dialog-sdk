@@ -60,6 +60,13 @@ module catavolt.dialog {
             return this._appContextState === AppContextState.LOGGED_IN;
         }
 
+        getWorkbench(sessionContext:SessionContext, workbenchId:string): Future<Workbench> {
+            if(this._appContextState === AppContextState.LOGGED_OUT) {
+                return Future.createFailedFuture<Workbench>("AppContext::getWorkbench", "User is logged out");
+            }
+            return WorkbenchService.getWorkbench(sessionContext, workbenchId);
+        }
+
         login(gatewayHost:string,
               tenantId:string,
               clientType:string,
@@ -87,17 +94,6 @@ module catavolt.dialog {
                 return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
             }
             return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
-        }
-
-        performLaunchActionOnline(launchAction:WorkbenchLaunchAction,
-                                  sessionContext:SessionContext):Future<NavRequest> {
-
-            var redirFr = WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
-
-            /*redirFr.bind<NavRequest>((r:Redirection)=>{
-            });*/
-
-            return null;
         }
 
         get sessionContextTry():Try<SessionContext> {
@@ -164,6 +160,15 @@ module catavolt.dialog {
                    return new SystemContextImpl(serviceEndpoint.serverAssignment);
                 }
             );
+        }
+
+        private performLaunchActionOnline(launchAction:WorkbenchLaunchAction,
+                                          sessionContext:SessionContext):Future<NavRequest> {
+
+            var redirFr = WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
+            return redirFr.bind<NavRequest>((r:Redirection)=>{
+                return NavRequest.Util.fromRedirection(r, launchAction, sessionContext);
+            });
         }
 
         private setAppContextStateToLoggedIn(appContextValues:AppContextValues) {

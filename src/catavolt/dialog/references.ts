@@ -17,6 +17,7 @@
 ///<reference path="ActionSource.ts"/>
 ///<reference path="ContextAction.ts"/>
 ///<reference path="NavRequest.ts"/>
+///<reference path="NullNavRequest.ts"/>
 ///<reference path="ServiceEndpoint.ts"/>
 ///<reference path="SessionContextImpl.ts"/>
 ///<reference path="SystemContextImpl.ts"/>
@@ -38,6 +39,7 @@ import DialogHandle = catavolt.dialog.DialogHandle;
 import DialogRedirection = catavolt.dialog.DialogRedirection;
 import DialogTriple = catavolt.dialog.DialogTriple;
 import NavRequest = catavolt.dialog.NavRequest;
+import NullNavRequest = catavolt.dialog.NullNavRequest;
 import NullRedirection = catavolt.dialog.NullRedirection;
 import Redirection = catavolt.dialog.Redirection;
 import GatewayService = catavolt.dialog.GatewayService;

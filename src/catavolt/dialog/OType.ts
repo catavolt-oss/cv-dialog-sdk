@@ -20,19 +20,30 @@ module catavolt.dialog {
             'WSWorkbenchLaunchAction': WorkbenchLaunchAction
         }
 
+        private static localTypes = {
+            'DialogRedirection': DialogRedirection,
+            'WebRedirection': WebRedirection,
+            'WorkbenchRedirection': WorkbenchRedirection
+        }
+
+        private static localTypeInstance(name) {
+            var type = OType.localTypes[name];
+            return type && new type;
+        }
+
         private static typeFns = {
             'WSRedirection': (otype, jsonObj)=>{
                 if(jsonObj && jsonObj['webURL']) {
-                    return WebRedirection.constructor();
+                    return OType.localTypeInstance('WebRedirection');
                 } else if(jsonObj && jsonObj['workbenchId']) {
-                    return WorkbenchRedirection.constructor();
+                    return OType.localTypeInstance('WorkbenchRedirection');
                 } else {
-                    return DialogRedirection.constructor();
+                    return OType.localTypeInstance('DialogRedirection');
                 }
             }
         }
 
-        static factoryFn(otype:string, jsonObj?):()=>any {
+        static factoryFn(otype:string, jsonObj?):any {
             var typeFn = OType.typeFns[otype];
             if(typeFn) {
                 return typeFn(otype, jsonObj);

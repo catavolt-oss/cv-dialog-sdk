@@ -7,8 +7,8 @@
 module catavolt.dialog {
 
     export interface ActionSource {
-        fromActionSource():ActionSource;
-        virtualPathSuffix():Array<string>;
+        fromActionSource:ActionSource;
+        virtualPathSuffix:Array<string>;
     }
 
 }

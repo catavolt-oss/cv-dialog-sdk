@@ -32,7 +32,7 @@ module catavolt.dialog {
             return this._dialogModelClassName;
         }
 
-        get dialogProps():StringDictionary{
+        get dialogProperties():StringDictionary{
             return this._dialogProperties;
         }
 
@@ -44,7 +44,7 @@ module catavolt.dialog {
             return this._domainClassName;
         }
 
-        get fromDialogProps():StringDictionary{
+        get fromDialogProperties():StringDictionary{
             return this._fromDialogProperties;
         }
 

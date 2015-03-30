@@ -8,6 +8,6 @@ module catavolt.dialog {
 
     export class NullRedirection extends Redirection {
 
-        constructor(public fromDialogProps:StringDictionary){ super(); }
+        constructor(public fromDialogProperties:StringDictionary){ super(); }
     }
 }

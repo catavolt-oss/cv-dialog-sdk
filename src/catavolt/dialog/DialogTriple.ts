@@ -141,7 +141,7 @@ module catavolt.dialog {
                         var dialogException:DialogException = jsonObject['exception'];
                         result = new Failure<Either<Redirection,A>>(dialogException);
                     } else if (jsonObject['redirection'] && !ignoreRedirection){
-                        var drt:Try<Redirection> = Redirection.fromWSRedirection(jsonObject);
+                        var drt:Try<Redirection> = DialogTriple.fromWSDialogObject(jsonObject['redirection'], 'WSRedirection', OType.factoryFn);
                         if(drt.isFailure) {
                             result = new Failure<Either<Redirection,A>>(drt.failure);
                         } else {

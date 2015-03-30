@@ -61,7 +61,7 @@ module catavolt.util {
         }
 
         static formatRecString(o):string {
-            return ObjUtil.formatRecString(o);
+            return ObjUtil.formatRecAttr(o);
         }
 
     }
