@@ -1381,6 +1381,12 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/30/15.
+ */
+/**
+ * Created by rburson on 3/30/15.
+ */
+/**
  * Created by rburson on 3/13/15.
  */
 var catavolt;
@@ -1650,6 +1656,161 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var FormDef = (function (_super) {
+            __extends(FormDef, _super);
+            function FormDef() {
+                _super.apply(this, arguments);
+            }
+            return FormDef;
+        })(dialog.PaneDef);
+        dialog.FormDef = FormDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var MenuDef = (function () {
+            function MenuDef() {
+            }
+            return MenuDef;
+        })();
+        dialog.MenuDef = MenuDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var PaneContext = (function () {
+            function PaneContext(paneRef) {
+                this._paneRef = paneRef;
+                this._binaryCache = {};
+            }
+            Object.defineProperty(PaneContext.prototype, "actionSource", {
+                get: function () {
+                    return this.parentContext ? this.parentContext.actionSource : null;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "dialogAlias", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "formDef", {
+                get: function () {
+                    return this.parentContext.formDef();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "lastRefreshTime", {
+                get: function () {
+                    return this._lastRefreshTime;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "parentContext", {
+                get: function () {
+                    return this._parentContext;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "paneDef", {
+                get: function () {
+                    if (this.paneRef) {
+                        return this.formDef.headerDef();
+                    }
+                    else {
+                        return this.formDef.childrenDefs[this.paneRef];
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "paneRef", {
+                get: function () {
+                    return this._paneRef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "dialogRedirection", {
+                /** --------------------- MODULE ------------------------------*/
+                //*** let's pretend this has module level visibility
+                get: function () {
+                    return this.paneDef.dialogRedirection;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
+            PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
+            return PaneContext;
+        })();
+        dialog.PaneContext = PaneContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var FormContext = (function () {
+            function FormContext() {
+            }
+            Object.defineProperty(FormContext.prototype, "actionSource", {
+                get: function () {
+                    return this._actionSource;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return FormContext;
+        })();
+        dialog.FormContext = FormContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var FormContextBuilder = (function () {
+            function FormContextBuilder() {
+            }
+            return FormContextBuilder;
+        })();
+        dialog.FormContextBuilder = FormContextBuilder;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/13/15.
  */
 ///<reference path="references.ts"/>
@@ -1814,68 +1975,6 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 3/6/15.
- */
-//dialog
-///<reference path="XGetSessionListPropertyResult.ts"/>
-///<reference path="VoidResult.ts"/>
-///<reference path="DialogException.ts"/>
-///<reference path="Redirection.ts"/>
-///<reference path="DialogHandle.ts"/>
-///<reference path="DialogRedirection.ts"/>
-///<reference path="DialogRedirection.ts"/>
-///<reference path="NullRedirection.ts"/>
-///<reference path="WebRedirection.ts"/>
-///<reference path="WorkbenchRedirection.ts"/>
-///<reference path="DialogTriple.ts"/>
-///<reference path="ActionSource.ts"/>
-///<reference path="ContextAction.ts"/>
-///<reference path="NavRequest.ts"/>
-///<reference path="NullNavRequest.ts"/>
-///<reference path="ServiceEndpoint.ts"/>
-///<reference path="SessionContextImpl.ts"/>
-///<reference path="SystemContextImpl.ts"/>
-///<reference path="AppWinDef.ts"/>
-///<reference path="SessionService.ts"/>
-///<reference path="GatewayService.ts"/>
-///<reference path="Workbench.ts"/>
-///<reference path="WorkbenchLaunchAction.ts"/>
-///<reference path="WorkbenchService.ts"/>
-///<reference path="AppContext.ts"/>
-///<reference path="OType.ts"/>
-var AppContext = catavolt.dialog.AppContext;
-var AppWinDef = catavolt.dialog.AppWinDef;
-var ContextAction = catavolt.dialog.ContextAction;
-var DialogHandle = catavolt.dialog.DialogHandle;
-var DialogRedirection = catavolt.dialog.DialogRedirection;
-var DialogTriple = catavolt.dialog.DialogTriple;
-var NavRequest = catavolt.dialog.NavRequest;
-var NullNavRequest = catavolt.dialog.NullNavRequest;
-var NullRedirection = catavolt.dialog.NullRedirection;
-var Redirection = catavolt.dialog.Redirection;
-var GatewayService = catavolt.dialog.GatewayService;
-var OType = catavolt.dialog.OType;
-var SessionContextImpl = catavolt.dialog.SessionContextImpl;
-var SessionService = catavolt.dialog.SessionService;
-var SystemContextImpl = catavolt.dialog.SystemContextImpl;
-var WebRedirection = catavolt.dialog.WebRedirection;
-var Workbench = catavolt.dialog.Workbench;
-var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
-var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
-var WorkbenchService = catavolt.dialog.WorkbenchService;
-var XGetSessionListPropertyResult = catavolt.dialog.XGetSessionListPropertyResult;
-/**
- * Created by rburson on 3/6/15.
- */
-//util
-///<reference path="util/references.ts"/>
-//fp
-///<reference path="fp/references.ts"/>
-//ws
-///<reference path="ws/references.ts"/>
-//dialog
-///<reference path="dialog/references.ts"/>
-/**
  * Created by rburson on 3/23/15.
  */
 ///<reference path="../references.ts"/>
@@ -1886,6 +1985,10 @@ var catavolt;
         var OType = (function () {
             function OType() {
             }
+            OType.typeInstance = function (name) {
+                var type = OType.types[name];
+                return type && new type;
+            };
             OType.localTypeInstance = function (name) {
                 var type = OType.localTypes[name];
                 return type && new type;
@@ -1896,8 +1999,7 @@ var catavolt;
                     return typeFn(otype, jsonObj);
                 }
                 else {
-                    var type = OType.types[otype];
-                    return type && new type;
+                    return OType.typeInstance(otype);
                 }
             };
             OType.deserializeObject = function (obj, Otype, factoryFn) {
@@ -1988,6 +2090,98 @@ var catavolt;
             return OType;
         })();
         dialog.OType = OType;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+//dialog
+///<reference path="XGetSessionListPropertyResult.ts"/>
+///<reference path="VoidResult.ts"/>
+///<reference path="DialogException.ts"/>
+///<reference path="Redirection.ts"/>
+///<reference path="DialogHandle.ts"/>
+///<reference path="DialogRedirection.ts"/>
+///<reference path="DialogRedirection.ts"/>
+///<reference path="NullRedirection.ts"/>
+///<reference path="WebRedirection.ts"/>
+///<reference path="WorkbenchRedirection.ts"/>
+///<reference path="DialogTriple.ts"/>
+///<reference path="ActionSource.ts"/>
+///<reference path="ContextAction.ts"/>
+///<reference path="NavRequest.ts"/>
+///<reference path="NullNavRequest.ts"/>
+///<reference path="ServiceEndpoint.ts"/>
+///<reference path="SessionContextImpl.ts"/>
+///<reference path="SystemContextImpl.ts"/>
+///<reference path="Binary.ts"/>
+///<reference path="EntityRec.ts"/>
+///<reference path="AppWinDef.ts"/>
+///<reference path="SessionService.ts"/>
+///<reference path="GatewayService.ts"/>
+///<reference path="Workbench.ts"/>
+///<reference path="WorkbenchLaunchAction.ts"/>
+///<reference path="WorkbenchService.ts"/>
+///<reference path="PaneDef.ts"/>
+///<reference path="FormDef.ts"/>
+///<reference path="MenuDef.ts"/>
+///<reference path="PaneContext.ts"/>
+///<reference path="FormContext.ts"/>
+///<reference path="FormContextBuilder.ts"/>
+///<reference path="AppContext.ts"/>
+///<reference path="OType.ts"/>
+var AppContext = catavolt.dialog.AppContext;
+var AppWinDef = catavolt.dialog.AppWinDef;
+var ContextAction = catavolt.dialog.ContextAction;
+var DialogHandle = catavolt.dialog.DialogHandle;
+var DialogRedirection = catavolt.dialog.DialogRedirection;
+var DialogTriple = catavolt.dialog.DialogTriple;
+var FormContext = catavolt.dialog.FormContext;
+var PaneDef = catavolt.dialog.PaneDef;
+var FormDef = catavolt.dialog.FormDef;
+var MenuDef = catavolt.dialog.MenuDef;
+var FormContextBuilder = catavolt.dialog.FormContextBuilder;
+var NavRequest = catavolt.dialog.NavRequest;
+var NullNavRequest = catavolt.dialog.NullNavRequest;
+var NullRedirection = catavolt.dialog.NullRedirection;
+var Redirection = catavolt.dialog.Redirection;
+var GatewayService = catavolt.dialog.GatewayService;
+var OType = catavolt.dialog.OType;
+var PaneContext = catavolt.dialog.PaneContext;
+var SessionContextImpl = catavolt.dialog.SessionContextImpl;
+var SessionService = catavolt.dialog.SessionService;
+var SystemContextImpl = catavolt.dialog.SystemContextImpl;
+var WebRedirection = catavolt.dialog.WebRedirection;
+var Workbench = catavolt.dialog.Workbench;
+var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
+var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
+var WorkbenchService = catavolt.dialog.WorkbenchService;
+var XGetSessionListPropertyResult = catavolt.dialog.XGetSessionListPropertyResult;
+/**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="util/references.ts"/>
+//fp
+///<reference path="fp/references.ts"/>
+//ws
+///<reference path="ws/references.ts"/>
+//dialog
+///<reference path="dialog/references.ts"/>
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var PaneDef = (function () {
+            function PaneDef() {
+            }
+            return PaneDef;
+        })();
+        dialog.PaneDef = PaneDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

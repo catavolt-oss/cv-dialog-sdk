@@ -18,12 +18,17 @@ module catavolt.dialog {
             'WSWorkbench': Workbench,
             'WSWorkbenchRedirection': WorkbenchRedirection,
             'WSWorkbenchLaunchAction': WorkbenchLaunchAction
-        }
+        };
 
         private static localTypes = {
             'DialogRedirection': DialogRedirection,
             'WebRedirection': WebRedirection,
             'WorkbenchRedirection': WorkbenchRedirection
+        };
+
+        private static typeInstance(name) {
+            var type = OType.types[name];
+            return type && new type;
         }
 
         private static localTypeInstance(name) {
@@ -48,8 +53,7 @@ module catavolt.dialog {
             if(typeFn) {
                 return typeFn(otype, jsonObj);
             } else {
-                var type = OType.types[otype];
-                return type && new type;
+                return OType.typeInstance(otype);
             }
         }
 
