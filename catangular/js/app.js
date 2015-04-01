@@ -21,8 +21,8 @@ catavoltSdk.controller('LoginController', ['$scope', '$location', '$rootScope', 
     'Catavolt', function($scope, $location, $rootScope, $timeout, Catavolt) {
 
         function init() {
-            $scope.creds = {tenantId:'***REMOVED***', gatewayUrl:'www.catavolt.net',
-                userId:'sales', password:'***REMOVED***', clientType:'LIMITED_ACCESS'};
+            $scope.creds = {tenantId:'***REMOVED***z', gatewayUrl:'www.catavolt.net',
+                userId:'sales', password:'', clientType:'LIMITED_ACCESS'};
             $scope.loginMessage = "";
             $scope.loggingIn = false;
             $scope.loggedIn = Catavolt.isLoggedIn;

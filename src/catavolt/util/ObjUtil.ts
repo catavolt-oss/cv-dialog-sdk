@@ -6,6 +6,15 @@ module catavolt.util {
 
     export class ObjUtil {
 
+        static addAllProps(sourceObj, targetObj):any {
+            if (null == sourceObj || "object" != typeof sourceObj) return targetObj;
+            if (null == targetObj || "object" != typeof targetObj) return targetObj;
+            for (var attr in sourceObj) {
+                 targetObj[attr] = sourceObj[attr];
+            }
+            return targetObj;
+        }
+
         static cloneOwnProps(sourceObj):any {
             if (null == sourceObj || "object" != typeof sourceObj) return sourceObj;
             var copy = sourceObj.constructor();
@@ -17,17 +26,12 @@ module catavolt.util {
             return copy;
         }
 
-        static addAllProps(sourceObj, targetObj):any {
-            if (null == sourceObj || "object" != typeof sourceObj) return targetObj;
-            if (null == targetObj || "object" != typeof targetObj) return targetObj;
-            for (var attr in sourceObj) {
-                 targetObj[attr] = sourceObj[attr];
-            }
-            return targetObj;
-        }
-
         static formatRecAttr(o):string {
             return JSON.stringify(o);
+        }
+
+        static newInstance(type) {
+            return new type;
         }
     }
 

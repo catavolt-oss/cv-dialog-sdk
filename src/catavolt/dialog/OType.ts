@@ -9,6 +9,8 @@ module catavolt.dialog {
 
         private static types = {
             'WSApplicationWindowDef': AppWinDef,
+            'WSCellDef': CellDef,
+            'WSCellValueDef': CellValueDef,
             "WSCreateSessionResult": SessionContextImpl,
             "WSContextAction": ContextAction,
             'WSDialogHandle': DialogHandle,
@@ -21,78 +23,102 @@ module catavolt.dialog {
             'WSPaneDefRef': XPaneDefRef
         };
 
-        private static localTypes = {
-            'DialogRedirection': DialogRedirection,
-            'WebRedirection': WebRedirection,
-            'WorkbenchRedirection': WorkbenchRedirection
-        };
+        private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {
+            'WSRedirection': Redirection.fromWS,
+            'WSQueryResult': XQueryResult.fromWS
+       }
 
         private static typeInstance(name) {
             var type = OType.types[name];
             return type && new type;
         }
 
-        private static localTypeInstance(name) {
-            var type = OType.localTypes[name];
-            return type && new type;
-        }
-
-        private static typeFns = {
-            'WSRedirection': (otype, jsonObj)=>{
-                if(jsonObj && jsonObj['webURL']) {
-                    return OType.localTypeInstance('WebRedirection');
-                } else if(jsonObj && jsonObj['workbenchId']) {
-                    return OType.localTypeInstance('WorkbenchRedirection');
-                } else {
-                    return OType.localTypeInstance('DialogRedirection');
-                }
-            }
-        }
-
-        static factoryFn(otype:string, jsonObj?):any {
-            var typeFn = OType.typeFns[otype];
+        static factoryFn<A>(otype:string, jsonObj?):Try<A> {
+            var typeFn:(string, any)=>Try<A> = OType.typeFns[otype];
             if(typeFn) {
                 return typeFn(otype, jsonObj);
-            } else {
-                return OType.typeInstance(otype);
             }
+            return null;
         }
 
-        static deserializeObject<A>(obj, Otype:string, factoryFn?:(otype:string, jsonObj?)=>any):Try<A> {
-            return DialogTriple.extractValue<A>(obj, Otype, ()=>{
+        static deserializeObject<A>(obj, Otype:string, factoryFn:(otype:string, jsonObj?)=>any):Try<A> {
 
-                var newObj:A = factoryFn(Otype, obj);
-                if(!newObj){ return new Failure<A>('OType::deserializeObject: factory failed to produce object for ' + Otype); }
-
-                for(var prop in obj) {
-                    var value = obj[prop];
-                    //Log.info("prop: " + prop + " is type " + typeof value);
-                    if (value && typeof value === 'object') {
-                        if('WS_OTYPE' in value) {
-                            var otypeTry = DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
-                            if(otypeTry.isFailure) { return new Failure<A>(otypeTry.failure); }
-                            OType.assignPropIfDefined(prop, otypeTry.success, newObj, Otype);
-                        } else if ('WS_LTYPE' in value) {
-                            var ltypeTry = DialogTriple.fromListOfWSDialogObject(value, value['WS_LTYPE'], OType.factoryFn);
-                            if(ltypeTry.isFailure) { return new Failure<A>(ltypeTry.failure); }
-                            OType.assignPropIfDefined(prop, ltypeTry.success, newObj, Otype);
+            if (Array.isArray(obj)) {
+                //it's a nested array (no LTYPE!)
+                return OType.handleNestedArray<A>(Otype, obj);
+            } else {
+                var newObj:A = null;
+                var objTry:Try<A> = factoryFn(Otype, obj); //this returns null if there is no custom function
+                if(objTry) {
+                    if(objTry.isFailure) {
+                        return new Failure<A>('OType::deserializeObject: factory failed to produce object for '
+                        + Otype + " : " + ObjUtil.formatRecAttr(objTry.failure));
+                    }
+                    newObj = objTry.success;
+                } else {
+                    newObj = OType.typeInstance(Otype);
+                    if (!newObj) return new Failure<A>('OType::deserializeObject: no type constructor found for ' + Otype);
+                    for (var prop in obj) {
+                        var value = obj[prop];
+                        //Log.info("prop: " + prop + " is type " + typeof value);
+                        if (value && typeof value === 'object') {
+                            if ('WS_OTYPE' in value) {
+                                var otypeTry = DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
+                                if (otypeTry.isFailure) return new Failure<A>(otypeTry.failure);
+                                OType.assignPropIfDefined(prop, otypeTry.success, newObj, Otype);
+                            } else if ('WS_LTYPE' in value) {
+                                var ltypeTry = DialogTriple.fromListOfWSDialogObject(value, value['WS_LTYPE'], OType.factoryFn);
+                                if (ltypeTry.isFailure) return new Failure<A>(ltypeTry.failure);
+                                OType.assignPropIfDefined(prop, ltypeTry.success, newObj, Otype);
+                            } else {
+                                OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
+                            }
                         } else {
                             OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
                         }
-
-                    } else {
-                        OType.assignPropIfDefined(prop, obj[prop], newObj, Otype);
                     }
                 }
                 return new Success<A>(newObj);
-            });
+            }
+        }
+
+        private static handleNestedArray<A>(Otype:string, obj):Try<A>{
+
+            var ltype = OType.extractLType(Otype);
+            var newArrayTry = OType.deserializeNestedArray(obj, ltype);
+            if (newArrayTry.isFailure) return new Failure<A>(newArrayTry.failure);
+            return new Success(<any>newArrayTry.success);
+        }
+
+        private static deserializeNestedArray(array, ltype):Try<Array<any>> {
+
+            var newArray = [];
+            for(var i=0; i<array.length; i++) {
+                var value = array[i];
+                if (value && typeof value === 'object') {
+                    var otypeTry = DialogTriple.fromWSDialogObject(value, ltype, OType.factoryFn);
+                    if(otypeTry.isFailure) { return new Failure<Array<any>>(otypeTry.failure); }
+                    newArray.push(otypeTry.success);
+                } else {
+                    newArray.push(value);
+                }
+            }
+            return new Success(newArray);
+        }
+
+        private static extractLType(Otype):Try<string> {
+            if(Otype.length > 5 && Otype.slice(0, 5) === 'List<') {
+                return new Failure<string>('Expected OType of List<some_type> but found ' + Otype);
+            }
+            var ltype = Otype.slice(5, -1);
+            return new Success(ltype);
         }
 
         private static assignPropIfDefined(prop, value, target, otype='object') {
             try {
                 if ('_' + prop in target) {
                     target['_' + prop] = value;
-                    //Log.info('Assigning private prop _' + prop + ' = ' + value);
+                  //Log.info('Assigning private prop _' + prop + ' = ' + value);
                 } else {
                     //it may be public
                     if (prop in target) {

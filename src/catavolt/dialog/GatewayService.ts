@@ -2,9 +2,7 @@
  * Created by rburson on 3/12/15.
  */
 
-///<reference path="../fp/references.ts"/>
-///<reference path="../ws/references.ts"/>
-///<reference path="../util/references.ts"/>
+///<reference path="../references.ts"/>
 
 module catavolt.dialog {
 
@@ -15,6 +13,18 @@ module catavolt.dialog {
                                   gatewayHost:string):Future<ServiceEndpoint> {
 
 
+            //We have to fake this for now, due to cross domain issues
+
+            var fakeResponse = {
+                responseType:"soi-json",
+                tenantId:"***REMOVED***z",
+                serverAssignment:"https://dfw.catavolt.net/vs301",
+                appVersion:"1.3.262",soiVersion:"v02"
+            }
+
+            var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
+
+            /*
             var f:Future<StringDictionary> = Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
             var endPointFuture:Future<ServiceEndpoint> = f.bind(
                 (jsonObject:StringDictionary)=>{
@@ -22,6 +32,7 @@ module catavolt.dialog {
                     return Future.createSuccessfulFuture<ServiceEndpoint>("serviceEndpoint", <any>jsonObject);
                 }
             );
+            */
 
             return endPointFuture;
         }

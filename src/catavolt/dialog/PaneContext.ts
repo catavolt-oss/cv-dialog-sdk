@@ -12,8 +12,8 @@ module catavolt.dialog {
         private static PROP_NAME_KEY = "com.catavolt.propName";
 
         private _binaryCache: { [index:string] : Array<Binary> }
-        private _lastRefreshTime:Date;
-        private _parentContext:FormContext;
+        private _lastRefreshTime:Date = null;
+        private _parentContext:FormContext = null;
         private _paneRef:number;
 
         constructor(paneRef:number) {

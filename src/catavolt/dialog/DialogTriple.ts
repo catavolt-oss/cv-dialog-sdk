@@ -72,15 +72,20 @@ module catavolt.dialog {
             } else if (typeof obj !== 'object'){
                 return new Success<A>(obj);
             }
-            if(!factoryFn) {
-                /* Assume we're just going to coerce the exiting object */
-                return DialogTriple.extractValue(obj, Otype, ()=> {
-                    return new Success<A>(obj);
-                });
-            } else {
-                return DialogTriple.extractValue<A>(obj, Otype, ()=>{
-                    return OType.deserializeObject<A>(obj, Otype, factoryFn);
-                });
+
+            try {
+                if (!factoryFn) {
+                    /* Assume we're just going to coerce the exiting object */
+                    return DialogTriple.extractValue(obj, Otype, ()=> {
+                        return new Success<A>(obj);
+                    });
+                } else {
+                    return DialogTriple.extractValue<A>(obj, Otype, ()=> {
+                        return OType.deserializeObject<A>(obj, Otype, factoryFn);
+                    });
+                }
+            }catch(e) {
+               return new Failure<A>('DialogTriple::fromWSDialogObject: ' + e.name + ": " + e.message);
             }
         }
 

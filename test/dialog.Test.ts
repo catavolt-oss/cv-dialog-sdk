@@ -8,7 +8,7 @@
 module catavolt.dialog {
 
     var SERVICE_PATH = "www.catavolt.net";
-    var tenantId = "***REMOVED***";
+    var tenantId = "***REMOVED***z";
     var userId = "sales";
     var password = "***REMOVED***";
     var clientType = "LIMITED_ACCESS";

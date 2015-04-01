@@ -6,7 +6,16 @@
 
 module catavolt.dialog {
 
+    /*
+        @TODO
+    */
     export class XPaneDef {
+
+        static fromWSPaneDef(jsonObject) {
+           var paneDefTry:Try<XPaneDef> = null;
+            if(jsonObject['listDef']) {
+            }
+        }
 
         constructor() {
         }
