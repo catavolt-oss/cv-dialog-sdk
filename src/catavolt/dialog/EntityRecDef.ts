@@ -11,6 +11,17 @@ module catavolt.dialog {
 
         constructor(private _propDefs:Array<PropDef>){}
 
+        get propCount():number {
+            return this.propDefs.length;
+        }
+
+        propDefAtName(name:string):PropDef {
+            var propDef:PropDef = null;
+            this.propDefs.some((value:PropDef)=>{
+                if(value.)
+            });
+        }
+
         // Note we need to support both 'propDefs' and 'propertyDefs' as both
         // field names seem to be used in the dialog model
         get propDefs():Array<PropDef> {

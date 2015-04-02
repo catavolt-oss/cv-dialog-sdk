@@ -33,7 +33,7 @@ module catavolt.dialog {
             return type && new type;
         }
 
-        static factoryFn<A>(otype:string, jsonObj?):Try<A> {
+        static factoryFn<A>(otype:string, jsonObj):Try<A> {
             var typeFn:(string, any)=>Try<A> = OType.typeFns[otype];
             if(typeFn) {
                 return typeFn(otype, jsonObj);

@@ -33,6 +33,7 @@ module catavolt.util {
         static newInstance(type) {
             return new type;
         }
+
     }
 
 }

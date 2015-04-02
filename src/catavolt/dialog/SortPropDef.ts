@@ -4,12 +4,19 @@
 
 ///<reference path="../references.ts"/>
 
-/* @TODO */
 module catavolt.dialog {
 
     export class SortPropDef {
 
-        constructor() {
+        constructor(private _name:string, private _direction:string) {
+        }
+
+        get direction():string {
+            return this._direction;
+        }
+
+        get name():string {
+            return this._name;
         }
 
     }
