@@ -22,8 +22,8 @@ module catavolt.dialog {
             var result:StringDictionary = {};
             this.values.forEach(
                 (v)=>{
-                    var pair = v.split(':');
-                    (pair.length > 1) && (result[pair[0]] = pair[1]);
+                    var pair = StringUtil.splitSimpleKeyValuePair(v);
+                    result[pair[0]] = pair[1];
                 }
             );
             return result;

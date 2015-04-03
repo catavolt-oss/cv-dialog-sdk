@@ -5,6 +5,7 @@
 //util
 ///<reference path="ArrayUtil.ts"/>
 ///<reference path="ObjUtil.ts"/>
+///<reference path="StringUtil.ts"/>
 ///<reference path="Log.ts"/>
 ///<reference path="Types.ts"/>
 ///<reference path="UserException.ts"/>
@@ -15,4 +16,5 @@ import Log = catavolt.util.Log;
 import LogLevel = catavolt.util.LogLevel;
 import ObjUtil = catavolt.util.ObjUtil;
 import StringDictionary = catavolt.util.StringDictionary;
+import StringUtil = catavolt.util.StringUtil;
 import UserException = catavolt.util.UserException;

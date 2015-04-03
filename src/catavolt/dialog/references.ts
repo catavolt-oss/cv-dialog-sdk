@@ -8,14 +8,16 @@
 ///<reference path="CellDef.ts"/>
 ///<reference path="EntityRec.ts"/>
 ///<reference path="EntityRecDef.ts"/>
+///<reference path="DataAnno.ts"/>
+///<reference path="Prop.ts"/>
+///<reference path="PropDef.ts"/>
+///<reference path="SortPropDef.ts"/>
+///<reference path="GraphDataPointDef.ts"/>
 ///<reference path="XGetSessionListPropertyResult.ts"/>
 ///<reference path="XPaneDefRef.ts"/>
 ///<reference path="XFormDef.ts"/>
 ///<reference path="XPaneDef.ts"/>
 ///<reference path="ColumnDef.ts"/>
-///<reference path="PropDef.ts"/>
-///<reference path="SortPropDef.ts"/>
-///<reference path="GraphDataPointDef.ts"/>
 ///<reference path="XBarcodeScanDef.ts"/>
 ///<reference path="XCalendarDef.ts"/>
 ///<reference path="XChangePaneModeResult.ts"/>
@@ -59,7 +61,6 @@
 ///<reference path="SessionContextImpl.ts"/>
 ///<reference path="SystemContextImpl.ts"/>
 ///<reference path="Binary.ts"/>
-///<reference path="EntityRec.ts"/>
 ///<reference path="AppWinDef.ts"/>
 ///<reference path="SessionService.ts"/>
 ///<reference path="GatewayService.ts"/>

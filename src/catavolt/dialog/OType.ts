@@ -14,6 +14,8 @@ module catavolt.dialog {
             "WSCreateSessionResult": SessionContextImpl,
             "WSContextAction": ContextAction,
             'WSDialogHandle': DialogHandle,
+            'WSDataAnno': DataAnno,
+            'WSPropertyDef': PropDef,
             'WSDialogRedirection': DialogRedirection,
             'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
             'WSWebRedirection': WebRedirection,
@@ -24,6 +26,8 @@ module catavolt.dialog {
         };
 
         private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {
+            'WSProp': Prop.fromWS,
+            'WSDataAnnotation': DataAnno.fromWS,
             'WSRedirection': Redirection.fromWS,
             'WSQueryResult': XQueryResult.fromWS
        }

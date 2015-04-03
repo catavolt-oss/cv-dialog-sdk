@@ -1,43 +1,32 @@
 /**
- * Created by rburson on 3/20/15.
+ * Created by rburson on 3/6/15.
  */
 var catavolt;
 (function (catavolt) {
     var util;
     (function (util) {
-        var ObjUtil = (function () {
-            function ObjUtil() {
+        var ArrayUtil = (function () {
+            function ArrayUtil() {
             }
-            ObjUtil.addAllProps = function (sourceObj, targetObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return targetObj;
-                if (null == targetObj || "object" != typeof targetObj)
-                    return targetObj;
-                for (var attr in sourceObj) {
-                    targetObj[attr] = sourceObj[attr];
-                }
-                return targetObj;
+            ArrayUtil.copy = function (source) {
+                return source.map(function (e) {
+                    return e;
+                });
             };
-            ObjUtil.cloneOwnProps = function (sourceObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return sourceObj;
-                var copy = sourceObj.constructor();
-                for (var attr in sourceObj) {
-                    if (sourceObj.hasOwnProperty(attr)) {
-                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
+            ArrayUtil.find = function (source, f) {
+                var value = null;
+                source.some(function (v) {
+                    if (f(v)) {
+                        value = v;
+                        return true;
                     }
-                }
-                return copy;
+                    return false;
+                });
+                return value;
             };
-            ObjUtil.formatRecAttr = function (o) {
-                return JSON.stringify(o);
-            };
-            ObjUtil.newInstance = function (type) {
-                return new type;
-            };
-            return ObjUtil;
+            return ArrayUtil;
         })();
-        util.ObjUtil = ObjUtil;
+        util.ArrayUtil = ArrayUtil;
     })(util = catavolt.util || (catavolt.util = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map
