@@ -4,6 +4,7 @@
 
 //util
 ///<reference path="ArrayUtil.ts"/>
+///<reference path="Base64.ts"/>
 ///<reference path="ObjUtil.ts"/>
 ///<reference path="StringUtil.ts"/>
 ///<reference path="Log.ts"/>
@@ -11,6 +12,7 @@
 ///<reference path="UserException.ts"/>
 
 import ArrayUtil = catavolt.util.ArrayUtil;
+import Base64 = catavolt.util.Base64;
 import Dictionary = catavolt.util.Dictionary;
 import Log = catavolt.util.Log;
 import LogLevel = catavolt.util.LogLevel;

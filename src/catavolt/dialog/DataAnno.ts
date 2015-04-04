@@ -4,7 +4,6 @@
 
 ///<reference path="../references.ts"/>
 
-/* @TODO */
 module catavolt.dialog {
 
     export class DataAnno {
@@ -25,10 +24,20 @@ module catavolt.dialog {
         private static PLACEMENT_UNDER          = "UNDER";
         private static PLACEMENT_STRETCH_UNDER  = "STRETCH_UNDER";
 
-        static annotatePropsUsingWSDataAnnotation(props:Array<Prop>, jsonObj:StringDictionary) {
-            DialogTriple.fromListOfWSDialogObject(jsonObj, 'WSDataAnnotation', OType.factoryFn).bind(
-                (propsAnnos:Array<Array<DataAnno>>) => {
-
+        static annotatePropsUsingWSDataAnnotation(props:Array<Prop>, jsonObj:StringDictionary):Try<Array<Prop>> {
+            return DialogTriple.fromListOfWSDialogObject(jsonObj, 'WSDataAnnotation', OType.factoryFn).bind(
+                (propAnnos:Array<Array<DataAnno>>) => {
+                    var annotatedProps:Array<Prop> = [];
+                    for(var i=0; i < props.length; i++) {
+                        var p = props[i];
+                        var annos:Array<DataAnno> = propAnnos[i];
+                        if(annos) {
+                            annotatedProps.push(new Prop(p.name, p.value, annos));
+                        } else {
+                            annotatedProps.push(p);
+                        }
+                    }
+                    return new Success(annotatedProps);
                 }
             );
         }

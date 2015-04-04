@@ -2,6 +2,8 @@
  * Created by rburson on 3/5/15.
  */
 
+///<reference path="references.ts"/>
+
 module catavolt.fp {
 
     export class Try<A> {

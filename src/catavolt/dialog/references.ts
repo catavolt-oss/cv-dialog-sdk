@@ -8,6 +8,7 @@
 ///<reference path="CellDef.ts"/>
 ///<reference path="EntityRec.ts"/>
 ///<reference path="EntityRecDef.ts"/>
+///<reference path="BinaryRef.ts"/>
 ///<reference path="DataAnno.ts"/>
 ///<reference path="Prop.ts"/>
 ///<reference path="PropDef.ts"/>
