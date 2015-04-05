@@ -15,12 +15,11 @@ module catavolt.dialog {
             return this.propDefs.length;
         }
 
-        propDefAtName(name:string):PropDef {
+        /*propDefAtName(name:string):PropDef {
             var propDef:PropDef = null;
             this.propDefs.some((value:PropDef)=>{
-                if(value.)
             });
-        }
+        }*/
 
         // Note we need to support both 'propDefs' and 'propertyDefs' as both
         // field names seem to be used in the dialog model

@@ -116,17 +116,17 @@ module catavolt.dialog {
             return result ? result.value : null;
         }
 
-        static fromWS<A>(otype:string, jsonObj):Try<A> {
+        static fromWS(otype:string, jsonObj):Try<Array<DataAnno>> {
            var stringObj = jsonObj['annotations'];
-            if(stringsObj['WS_LTYPE'] !== 'String') {
-                return new Failure('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringsObj['WS_LTYPE']);
+            if(stringObj['WS_LTYPE'] !== 'String') {
+                return new Failure<Array<DataAnno>>('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
             }
-            var annoStrings:Array<string> = stringsObj['values'];
+            var annoStrings:Array<string> = stringObj['values'];
             var annos:Array<DataAnno> = [];
             for(var i = 0; i < annoStrings.length; i++) {
                annos.push(DataAnno.parseString(annoStrings[i]));
             }
-            return new Success<Array<DataAnno>(annos);
+            return new Success<Array<DataAnno>>(annos);
         }
 
         private static parseString(formatted:string):DataAnno {

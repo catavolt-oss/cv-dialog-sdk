@@ -19,7 +19,7 @@ module catavolt.dialog {
 
         }
 
-       settings():StringDictionary;
+       settings: () => StringDictionary;
 
     }
 

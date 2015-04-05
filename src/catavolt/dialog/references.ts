@@ -9,6 +9,10 @@
 ///<reference path="EntityRec.ts"/>
 ///<reference path="EntityRecDef.ts"/>
 ///<reference path="BinaryRef.ts"/>
+///<reference path="CodeRef.ts"/>
+///<reference path="ObjectRef.ts"/>
+///<reference path="GeoFix.ts"/>
+///<reference path="GeoLocation.ts"/>
 ///<reference path="DataAnno.ts"/>
 ///<reference path="Prop.ts"/>
 ///<reference path="PropDef.ts"/>
