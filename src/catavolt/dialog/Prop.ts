@@ -9,6 +9,16 @@ module catavolt.dialog {
 
     export class Prop {
 
+        static fromListOfWSValue(values:Array<any>):Try<Array<any>> {
+           var props = [];
+           values.forEach((v)=>{
+               var propTry = Prop.fromWSValue(v);
+               if(propTry.isFailure) return new Failure(propTry.failure);
+               props.push(propTry.success);
+           });
+            return new Success(props);
+        }
+
         static fromWSNameAndWSValue(name:string, value:any):Try<Prop> {
             var propTry:Try<any> = Prop.fromWSValue(value);
             if(propTry.isFailure) {
@@ -38,11 +48,13 @@ module catavolt.dialog {
                 var PType = value['WS_PTYPE'];
                 var strVal = value['value'];
                 if(PType) {
+                    if (PType === 'Decimal') {
+                        propValue = Number(strVal);
                     /*
                         @TODO learn more about these date strings. if they are intended to be UTC we'll need to make sure
                         'UTC' is appended to the end of the string before creation
-                     */
-                    if (PType === 'Date') {
+                    */
+                    } else if (PType === 'Date') {
                         propValue = new Date(strVal);
                     } else if (PType === 'DateTime') {
                         propValue = new Date(strVal);
@@ -68,6 +80,60 @@ module catavolt.dialog {
             return new Success(propValue);
         }
 
+        static fromWS(otype:string, jsonObj):Try<Prop> {
+            var name:string = jsonObj['name'];
+            var valueTry = Prop.fromWSValue(jsonObj['value']);
+            if(valueTry.isFailure) return new Failure<Prop>(valueTry.failure);
+            var annos:Array<DataAnno> = null;
+            if(jsonObj['annos']) {
+                var annosListTry:Try<Array<DataAnno>> =
+                    DialogTriple.fromListOfWSDialogObject<DataAnno>(jsonObj['annos'], 'WSDataAnno', OType.factoryFn);
+                if(annosListTry.isFailure) return new Failure<Prop>(annosListTry.failure);
+                annos = annosListTry.success;
+            }
+            return new Success(new Prop(name, valueTry.success, annos));
+        }
+
+        static toWSProperty(o:any) {
+           if (typeof o === 'number') {
+              return {'WS_PTYPE':'Decimal', 'value':String(o)};
+           } else if (typeof o === 'object') {
+               if(o instanceof Date) {
+                   return {'WS_PTYPE':'DateTime', 'value':o.toUTCString()};
+               } else if (o instanceof CodeRef) {
+                   return {'WS_PTYPE':'CodeRef', 'value':o.toString()};
+               } else if (o instanceof ObjectRef) {
+                   return {'WS_PTYPE':'ObjectRef', 'value':o.toString()};
+               } else if (o instanceof GeoFix) {
+                   return {'WS_PTYPE':'GeoFix', 'value':o.toString()};
+               } else if (o instanceof GeoLocation) {
+                   return {'WS_PTYPE':'GeoLocation', 'value':o.toString()};
+               }
+           } else {
+              return o;
+           }
+        }
+
+        static toWSListOfProperties(list:Array<any>):StringDictionary {
+            var result:StringDictionary = {'WS_LTYPE':'Object'};
+            var values = [];
+            list.forEach((o)=>{ values.push(Prop.toWSProperty(o))});
+            result['values'] = values;
+            return result;
+        }
+
+        static toWSListOfString(list:Array<string>):StringDictionary {
+            return {'WS_LTYPE':'String', 'values':list};
+        }
+
+        static toListOfWSProp(props:Array<Prop>):StringDictionary {
+            var result:StringDictionary = {'WS_LTYPE':'WSProp'};
+            var values = [];
+            props.forEach((prop)=>{values.push(prop.toWS())});
+            result['values'] = values;
+            return result;
+        }
+
         constructor(private _name:string, private _value:any, private _annos:Array<DataAnno> = []) {
         }
 
@@ -85,6 +151,14 @@ module catavolt.dialog {
 
         get value():any {
             return this._value;
+        }
+
+        toWS():StringDictionary {
+            var result:StringDictionary = {'WS_OTYPE':'WSProp', 'name':this.name, 'value':Prop.toWSProperty(this.value)};
+            if(this.annos) {
+                result['annos'] = DataAnno.toListOfWSDataAnno(this.annos);
+            }
+            return result;
         }
 
     }

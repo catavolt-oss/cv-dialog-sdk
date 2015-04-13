@@ -36,5 +36,9 @@ module catavolt.dialog {
            return this._accuracy
         }
 
+        toString():string {
+            return this.latitude + ":" + this.longitude;
+        }
+
     }
 }

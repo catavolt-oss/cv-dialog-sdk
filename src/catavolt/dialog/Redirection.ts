@@ -8,13 +8,13 @@ module catavolt.dialog {
 
     export class Redirection {
 
-        static fromWS<A>(otype:string, jsonObj):Try<A> {
+        static fromWS(otype:string, jsonObj):Try<Redirection> {
             if (jsonObj && jsonObj['webURL']) {
-                return OType.deserializeObject<A>(jsonObj, 'WSWebRedirection', OType.factoryFn);
+                return OType.deserializeObject<WebRedirection>(jsonObj, 'WSWebRedirection', OType.factoryFn);
             } else if (jsonObj && jsonObj['workbenchId']) {
-                return OType.deserializeObject<A>(jsonObj, 'WSWorkbenchRedirection', OType.factoryFn);
+                return OType.deserializeObject<WorkbenchRedirection>(jsonObj, 'WSWorkbenchRedirection', OType.factoryFn);
             } else {
-                return OType.deserializeObject<A>(jsonObj, 'WSDialogRedirection', OType.factoryFn);
+                return OType.deserializeObject<DialogRedirection>(jsonObj, 'WSDialogRedirection', OType.factoryFn);
             }
         }
     }

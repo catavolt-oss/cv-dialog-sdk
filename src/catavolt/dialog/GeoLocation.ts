@@ -25,5 +25,9 @@ module catavolt {
             return this._longitude;
         }
 
+        toString():string {
+           return this.latitude + ":" + this.longitude;
+        }
+
     }
 }

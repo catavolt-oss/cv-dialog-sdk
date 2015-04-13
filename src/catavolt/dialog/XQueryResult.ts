@@ -16,13 +16,13 @@ module catavolt.dialog {
                     public defaultActionId:string,
                     public dialogProps:StringDictionary) {}
 
-        static fromWS<A>(otype:string, jsonObj):Try<A> {
+        static fromWS(otype:string, jsonObj):Try<XQueryResult> {
 
             return DialogTriple.fromWSDialogObject<EntityRecDef>(jsonObj['queryRecordDef'],
                 'WSQueryRecordDef', OType.factoryFn).bind((entityRecDef:EntityRecDef)=>{
                     var entityRecDefJson = jsonObj['queryRecordDef'];
                     var actionId:string = jsonObj['defaultActionId'];
-                    DialogTriple.fromListOfWSDialogObject(entityRecDefJson['sortPropertyDefs'],
+                    return DialogTriple.fromListOfWSDialogObject<SortPropDef>(entityRecDefJson['sortPropertyDefs'],
                         'WSSortPropertyDef', OType.factoryFn).bind((sortPropDefs:Array<SortPropDef>)=>{
                             var queryRecsJson = jsonObj['queryRecords'];
                             if(queryRecsJson['WS_LTYPE'] !== 'WSQueryRecord'){
@@ -40,8 +40,23 @@ module catavolt.dialog {
                                     return new Failure('XQueryResult::fromWS: Expected WS_LTYPE of Object but found ' + recPropsObj['WS_LTYPE']);
                                 }
                                 var recPropsObjValues:Array<any> = recPropsObj['values'];
-                                var propsTry:Try<Array<Prop>> = Prop.fromWSNamesAndValues(entityRecDef.propN);
-
+                                var propsTry:Try<Array<Prop>> = Prop.fromWSNamesAndValues(entityRecDef.propNames, recPropsObjValues);
+                                if(propsTry.isFailure) return new Failure(propsTry.failure);
+                                var props:Array<Prop> = propsTry.success;
+                                if(queryRecValue['propertyAnnotations']) {
+                                    var propAnnosJson = queryRecValue['propertyAnnotations'] ;
+                                    var annotatedPropsTry = DataAnno.annotatePropsUsingWSDataAnnotation(props, propAnnosJson);
+                                    if(annotatedPropsTry.isFailure) return new Failure(annotatedPropsTry.failure);
+                                    props = annotatedPropsTry.success;
+                                }
+                                var recAnnos:Array<DataAnno> = null;
+                                if(queryRecValue['recordAnnotation']) {
+                                    var recAnnosTry = DialogTriple.fromWSDialogObject<Array<DataAnno>>(queryRecValue['recoredAnnotation'],
+                                        'WSDataAnnotation', OType.factoryFn);
+                                    if(recAnnosTry.isFailure) return new Failure(recAnnosTry.failure);
+                                    recAnnos = recAnnosTry.success;
+                                }
+                                var entityRec:EntityRec = EntityRec.U
                             }
                     });
 

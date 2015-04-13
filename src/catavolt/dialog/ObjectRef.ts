@@ -25,5 +25,9 @@ module catavolt.dialog {
             return this._objectId;
         }
 
+        toString():string {
+            return this.objectId + ":" + this.description;
+        }
+
     }
 }

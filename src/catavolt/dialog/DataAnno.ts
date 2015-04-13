@@ -129,6 +129,14 @@ module catavolt.dialog {
             return new Success<Array<DataAnno>>(annos);
         }
 
+        static toListOfWSDataAnno(annos:Array<DataAnno>):StringDictionary {
+            var result:StringDictionary = {'WS_LTYPE':'WSDataAnno'};
+            var values = [];
+            annos.forEach((anno)=>{values.push(anno.toWS())});
+            result['values'] = values;
+            return result;
+        }
+
         private static parseString(formatted:string):DataAnno {
             var pair = StringUtil.splitSimpleKeyValuePair(formatted);
             return new DataAnno(pair[0], pair[1]);
@@ -212,6 +220,10 @@ module catavolt.dialog {
 
         get value():string {
             return this._value;
+        }
+
+        toWS():StringDictionary{
+            return {'WS_OTYPE':'WSDataAnno', 'name':this.name, 'value':this.value};
         }
 
     }
