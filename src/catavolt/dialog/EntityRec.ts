@@ -74,12 +74,15 @@ module catavolt.dialog {
 
         toWSEditorRecord():StringDictionary;
 
-        toWSEntityRec():StringDictionary;
+        toWS():StringDictionary;
 
         valueAtName(propName:string):any;
     }
 
     export module EntityRec.Util {
 
+        export function newEntityRec(objectId:string, props:Array<Prop>, annos?:Array<DataAnno>):EntityRec {
+           return annos ? new EntityRecImpl(objectId, props, annos) : new EntityRecImpl(objectId, props);
+        }
     }
 }

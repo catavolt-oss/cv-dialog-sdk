@@ -18,6 +18,7 @@
 ///<reference path="PropDef.ts"/>
 ///<reference path="SortPropDef.ts"/>
 ///<reference path="GraphDataPointDef.ts"/>
+///<reference path="EntityRecImpl.ts"/>
 ///<reference path="XGetSessionListPropertyResult.ts"/>
 ///<reference path="XPaneDefRef.ts"/>
 ///<reference path="XFormDef.ts"/>

@@ -145,8 +145,64 @@ module catavolt.dialog {
             return this.name === prop.name && this.value === prop.value;
         }
 
+        get backgroundColor():string {
+            return DataAnno.backgroundColor(this.annos);
+        }
+
+        get foregroundColor():string {
+            return DataAnno.foregroundColor(this.annos);
+        }
+
+        get imageName():string {
+            return DataAnno.imageName(this.annos);
+        }
+
+        get imagePlacement():string {
+            return DataAnno.imagePlacement(this.annos);
+        }
+
+        get isBoldText():boolean {
+            return DataAnno.isBoldText(this.annos);
+        }
+
+        get isItalicText():boolean {
+            return DataAnno.isItalicText(this.annos);
+        }
+
+        get isPlacementCenter():boolean {
+            return DataAnno.isPlacementCenter(this.annos);
+        }
+
+        get isPlacementLeft():boolean {
+            return DataAnno.isPlacementLeft(this.annos);
+        }
+
+        get isPlacementRight():boolean {
+            return DataAnno.isPlacementRight(this.annos);
+        }
+
+        get isPlacementStretchUnder():boolean {
+            return DataAnno.isPlacementStretchUnder(this.annos);
+        }
+
+        get isPlacementUnder():boolean {
+            return DataAnno.isPlacementUnder(this.annos);
+        }
+
+        get isUnderline():boolean {
+            return DataAnno.isUnderlineText(this.annos);
+        }
+
         get name():string {
             return this._name;
+        }
+
+        get overrideText():string  {
+            return DataAnno.overrideText(this.annos);
+        }
+
+        get tipText():string {
+            return DataAnno.tipText(this.annos);
         }
 
         get value():any {
