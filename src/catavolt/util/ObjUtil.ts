@@ -10,7 +10,7 @@ module catavolt.util {
             if (null == sourceObj || "object" != typeof sourceObj) return targetObj;
             if (null == targetObj || "object" != typeof targetObj) return targetObj;
             for (var attr in sourceObj) {
-                 targetObj[attr] = sourceObj[attr];
+                targetObj[attr] = sourceObj[attr];
             }
             return targetObj;
         }
@@ -24,6 +24,21 @@ module catavolt.util {
                 }
             }
             return copy;
+        }
+
+        static copyNonNullFieldsOnly(obj, newObj, filterFn?:(prop)=>boolean) {
+            for (var prop in obj) {
+                if (!filterFn || filterFn(prop)) {
+                    var type = typeof obj[prop];
+                    if (type !== 'function') {
+                        var val = obj[prop];
+                        if (val) {
+                            newObj[prop] = val;
+                        }
+                    }
+                }
+            }
+            return newObj;
         }
 
         static formatRecAttr(o):string {

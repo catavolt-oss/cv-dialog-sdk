@@ -86,6 +86,13 @@ module catavolt.dialog {
             }
         }
 
+        static serializeObject(obj, Otype:string, filterFn?:(prop)=>boolean):StringDictionary {
+            var newObj = {'WS_OTYPE':Otype};
+            return ObjUtil.copyNonNullFieldsOnly(obj, newObj, (prop)=>{
+               return prop.charAt(0) !== '_' && (!filterFn || filterFn(prop));
+            });
+        }
+
         private static handleNestedArray<A>(Otype:string, obj):Try<A>{
 
             var ltype = OType.extractLType(Otype);

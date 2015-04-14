@@ -5,6 +5,8 @@
 module catavolt.dialog {
 
     export class DialogHandle {
+
         constructor(public handleValue:number, public sessionHandle:string) {}
+
     }
 }
