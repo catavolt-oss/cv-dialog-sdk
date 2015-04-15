@@ -8,10 +8,6 @@ module catavolt.dialog {
 
     export class FormContext {
 
-        private _actionSource:ActionSource = null;
-
-        get actionSource():ActionSource {
-            return this._actionSource;
-        }
+        constructor(){}
     }
 }

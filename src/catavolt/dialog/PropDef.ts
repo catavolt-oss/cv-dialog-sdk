@@ -184,11 +184,11 @@ module catavolt.dialog {
             return this._presScale;
         }
 
-        get propLength():number {
+        get propertyLength():number {
             return this._propertyLength;
         }
 
-        get propScale():number {
+        get propertyScale():number {
             return this._propertyScale;
         }
 

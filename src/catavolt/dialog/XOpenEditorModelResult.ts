@@ -15,5 +15,13 @@ module catavolt.dialog {
             return this.editorRecordDef;
         }
 
+        get formPaneId():string {
+            return this.formModel.form.paneId;
+        }
+
+        get formRedirection():DialogRedirection {
+            return this.formModel.form.redirection;
+        }
+
     }
 }

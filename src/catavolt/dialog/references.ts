@@ -59,6 +59,8 @@
 ///<reference path="WorkbenchRedirection.ts"/>
 ///<reference path="DialogTriple.ts"/>
 ///<reference path="ActionSource.ts"/>
+///<reference path="DialogService.ts"/>
+///<reference path="ContextAction.ts"/>
 ///<reference path="ContextAction.ts"/>
 ///<reference path="NavRequest.ts"/>
 ///<reference path="NullNavRequest.ts"/>

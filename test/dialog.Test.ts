@@ -28,7 +28,7 @@ module catavolt.dialog {
     });
 
     describe("AppContext::performLaunchAction", function () {
-        it("should login successfully with valid creds", function (done) {
+        it("should peform launch action successfully", function (done) {
             var launchAction:WorkbenchLaunchAction = AppContext.singleton.appWinDefTry.success.workbenches[0].workbenchLaunchActions[0];
             AppContext.singleton.performLaunchAction(launchAction).onComplete((navRequestTry:Try<NavRequest>)=>{
                 if(navRequestTry.isFailure) {

@@ -2074,14 +2074,14 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(PropDef.prototype, "propLength", {
+            Object.defineProperty(PropDef.prototype, "propertyLength", {
                 get: function () {
                     return this._propertyLength;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(PropDef.prototype, "propScale", {
+            Object.defineProperty(PropDef.prototype, "propertyScale", {
                 get: function () {
                     return this._propertyScale;
                 },
@@ -2544,8 +2544,39 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var ColumnDef = (function () {
-            function ColumnDef() {
+            function ColumnDef(_name, _heading, _propDef) {
+                this._name = _name;
+                this._heading = _heading;
+                this._propDef = _propDef;
             }
+            Object.defineProperty(ColumnDef.prototype, "heading", {
+                get: function () {
+                    return this._heading;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ColumnDef.prototype, "isInlineMediaStyle", {
+                get: function () {
+                    return this._propDef.isInlineMediaStyle;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ColumnDef.prototype, "name", {
+                get: function () {
+                    return this._name;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ColumnDef.prototype, "propDef", {
+                get: function () {
+                    return this._propDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return ColumnDef;
         })();
         dialog.ColumnDef = ColumnDef;
@@ -2744,6 +2775,13 @@ var catavolt;
                 this.columnStyle = columnStyle;
                 this.columns = columns;
             }
+            Object.defineProperty(XGetActiveColumnDefsResult.prototype, "columnDefs", {
+                get: function () {
+                    return this.columns;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return XGetActiveColumnDefsResult;
         })();
         dialog.XGetActiveColumnDefsResult = XGetActiveColumnDefsResult;
@@ -2896,6 +2934,20 @@ var catavolt;
             Object.defineProperty(XOpenEditorModelResult.prototype, "entityRecDef", {
                 get: function () {
                     return this.editorRecordDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(XOpenEditorModelResult.prototype, "formPaneId", {
+                get: function () {
+                    return this.formModel.form.paneId;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(XOpenEditorModelResult.prototype, "formRedirection", {
+                get: function () {
+                    return this.formModel.form.redirection;
                 },
                 enumerable: true,
                 configurable: true
@@ -3555,6 +3607,10 @@ var catavolt;
                     }
                     else if (redirection instanceof dialog.DialogRedirection) {
                         var dr = redirection;
+                        var fcb = new dialog.FormContextBuilder(dr, actionSource, sessionContext);
+                        result = fcb.build().map(function (formContext) {
+                            return formContext;
+                        });
                     }
                     else if (redirection instanceof dialog.NullRedirection) {
                         var nullRedir = redirection;
@@ -4241,15 +4297,7 @@ var catavolt;
     (function (dialog) {
         var FormContext = (function () {
             function FormContext() {
-                this._actionSource = null;
             }
-            Object.defineProperty(FormContext.prototype, "actionSource", {
-                get: function () {
-                    return this._actionSource;
-                },
-                enumerable: true,
-                configurable: true
-            });
             return FormContext;
         })();
         dialog.FormContext = FormContext;
@@ -4264,8 +4312,40 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var FormContextBuilder = (function () {
-            function FormContextBuilder() {
+            function FormContextBuilder(_dialogRedirection, _actionSource, _sessionContext) {
+                this._dialogRedirection = _dialogRedirection;
+                this._actionSource = _actionSource;
+                this._sessionContext = _sessionContext;
             }
+            Object.defineProperty(FormContextBuilder.prototype, "actionSource", {
+                get: function () {
+                    return this._actionSource;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            FormContextBuilder.prototype.build = function () {
+                if (!this.dialogRedirection.isEditor) {
+                    return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
+                }
+                var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
+                Log.debug(xOpenFr);
+                return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
+            };
+            Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
+                get: function () {
+                    return this._dialogRedirection;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormContextBuilder.prototype, "sessionContext", {
+                get: function () {
+                    return this._sessionContext;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return FormContextBuilder;
         })();
         dialog.FormContextBuilder = FormContextBuilder;
@@ -4400,18 +4480,26 @@ var catavolt;
                 'WSApplicationWindowDef': dialog.AppWinDef,
                 'WSCellDef': dialog.CellDef,
                 'WSCellValueDef': dialog.CellValueDef,
-                "WSCreateSessionResult": dialog.SessionContextImpl,
-                "WSContextAction": dialog.ContextAction,
+                'WSCreateSessionResult': dialog.SessionContextImpl,
+                'WSColumnDef': dialog.ColumnDef,
+                'WSContextAction': dialog.ContextAction,
                 'WSDialogHandle': dialog.DialogHandle,
                 'WSDataAnno': dialog.DataAnno,
-                'WSPropertyDef': dialog.PropDef,
                 'WSDialogRedirection': dialog.DialogRedirection,
+                'WSEditorRecordDef': dialog.EntityRecDef,
+                'WSEntityRecDef': dialog.EntityRecDef,
+                'WSFormModel': dialog.XFormModel,
+                'WSFormModelComp': dialog.XFormModelComp,
+                'WSGetActiveColumnDefsResult': dialog.XGetActiveColumnDefsResult,
                 'WSGetSessionListPropertyResult': dialog.XGetSessionListPropertyResult,
+                'WSOpenEditorModelResult': dialog.XOpenEditorModelResult,
+                'WSPaneDefRef': dialog.XPaneDefRef,
+                'WSPropertyDef': dialog.PropDef,
+                'WSQueryRecordDef': dialog.EntityRecDef,
                 'WSWebRedirection': dialog.WebRedirection,
                 'WSWorkbench': dialog.Workbench,
                 'WSWorkbenchRedirection': dialog.WorkbenchRedirection,
-                'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction,
-                'WSPaneDefRef': dialog.XPaneDefRef
+                'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction
             };
             OType.typeFns = {
                 'WSProp': dialog.Prop.fromWS,
@@ -4484,6 +4572,8 @@ var catavolt;
 ///<reference path="WorkbenchRedirection.ts"/>
 ///<reference path="DialogTriple.ts"/>
 ///<reference path="ActionSource.ts"/>
+///<reference path="DialogService.ts"/>
+///<reference path="ContextAction.ts"/>
 ///<reference path="ContextAction.ts"/>
 ///<reference path="NavRequest.ts"/>
 ///<reference path="NullNavRequest.ts"/>
@@ -4532,6 +4622,35 @@ var catavolt;
                 var method = 'getActiveColumnDefs';
                 var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
                 var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getActiveColumnDefs', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', dialog.OType.factoryFn));
+                });
+            };
+            /*
+            static getEditorModelMenuDefs(dialogHandle:DialogHandle,
+                                          sessionContext:SessionContext):Future<List<MenuDef>> {
+    
+            }
+    
+            static getEditorModelPaneDef(dialogHandle:DialogHandle,
+                                         paneId:string,
+                                         sessionContext:SessionContext):Future<XPaneDef> {
+    
+            }
+    
+            static getQueryModelMenuDefs(dialogHandle:DialogHandle,
+                                         sessionContext:SessionContext):Future<List<MenuDef>> {
+    
+            }*/
+            DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
+                var method = 'open2';
+                var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
+                if (redirection.objectId)
+                    params['objectId'] = redirection.objectId;
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('openEditorModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', dialog.OType.factoryFn));
+                });
             };
             DialogService.EDITOR_SERVICE_NAME = 'EditorService';
             DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;

@@ -11,18 +11,26 @@ module catavolt.dialog {
             'WSApplicationWindowDef': AppWinDef,
             'WSCellDef': CellDef,
             'WSCellValueDef': CellValueDef,
-            "WSCreateSessionResult": SessionContextImpl,
-            "WSContextAction": ContextAction,
+            'WSCreateSessionResult': SessionContextImpl,
+            'WSColumnDef': ColumnDef,
+            'WSContextAction': ContextAction,
             'WSDialogHandle': DialogHandle,
             'WSDataAnno': DataAnno,
-            'WSPropertyDef': PropDef,
             'WSDialogRedirection': DialogRedirection,
+            'WSEditorRecordDef': EntityRecDef,
+            'WSEntityRecDef': EntityRecDef,
+            'WSFormModel': XFormModel,
+            'WSFormModelComp': XFormModelComp,
+            'WSGetActiveColumnDefsResult': XGetActiveColumnDefsResult,
             'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
+            'WSOpenEditorModelResult': XOpenEditorModelResult,
+            'WSPaneDefRef': XPaneDefRef,
+            'WSPropertyDef': PropDef,
+            'WSQueryRecordDef': EntityRecDef,
             'WSWebRedirection': WebRedirection,
             'WSWorkbench': Workbench,
             'WSWorkbenchRedirection': WorkbenchRedirection,
-            'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
-            'WSPaneDefRef': XPaneDefRef
+            'WSWorkbenchLaunchAction': WorkbenchLaunchAction
         };
 
         private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {

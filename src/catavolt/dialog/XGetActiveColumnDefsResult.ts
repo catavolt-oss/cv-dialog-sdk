@@ -11,5 +11,9 @@ module catavolt.dialog {
         constructor(public columnStyle:string, public columns:Array<ColumnDef>) {
         }
 
+        get columnDefs():Array<ColumnDef> {
+            return this.columns;
+        }
+
     }
 }
