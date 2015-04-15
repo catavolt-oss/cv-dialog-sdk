@@ -54,6 +54,7 @@ module catavolt.dialog {
 
             var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
             return call.perform().bind((result:StringDictionary)=>{
+                Log.debug('got result ' + Log.formatRecString(result));
                 return Future.createCompletedFuture('openEditorModelFromRedir',
                     DialogTriple.fromWSDialogObject<XOpenEditorModelResult>(result, 'WSOpenEditorModelResult', OType.factoryFn));
             });

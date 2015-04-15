@@ -22,9 +22,10 @@ module catavolt.dialog {
             }
             var xOpenFr = DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
 
-            Log.debug(xOpenFr);
-
-            return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
+            return xOpenFr.bind((result)=>{
+                Log.debug(Log.formatRecString(result));
+                return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
+            });
 
         }
 

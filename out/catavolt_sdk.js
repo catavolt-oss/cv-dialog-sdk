@@ -3557,6 +3557,62 @@ var catavolt;
  */
 ///<reference path="references.ts"/>
 /**
+ * Created by rburson on 4/14/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var DialogService = (function () {
+            function DialogService() {
+            }
+            DialogService.getActiveColumnDefs = function (dialogHandle, sessionContext) {
+                var method = 'getActiveColumnDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getActiveColumnDefs', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', dialog.OType.factoryFn));
+                });
+            };
+            /*
+            static getEditorModelMenuDefs(dialogHandle:DialogHandle,
+                                          sessionContext:SessionContext):Future<List<MenuDef>> {
+    
+            }
+    
+            static getEditorModelPaneDef(dialogHandle:DialogHandle,
+                                         paneId:string,
+                                         sessionContext:SessionContext):Future<XPaneDef> {
+    
+            }
+    
+            static getQueryModelMenuDefs(dialogHandle:DialogHandle,
+                                         sessionContext:SessionContext):Future<List<MenuDef>> {
+    
+            }*/
+            DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
+                var method = 'open2';
+                var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
+                if (redirection.objectId)
+                    params['objectId'] = redirection.objectId;
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    Log.debug('got result ' + Log.formatRecString(result));
+                    return Future.createCompletedFuture('openEditorModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.EDITOR_SERVICE_NAME = 'EditorService';
+            DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
+            DialogService.QUERY_SERVICE_NAME = 'QueryService';
+            DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
+            return DialogService;
+        })();
+        dialog.DialogService = DialogService;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/27/15.
  */
 ///<reference path="references.ts"/>
@@ -4329,8 +4385,10 @@ var catavolt;
                     return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
                 }
                 var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
-                Log.debug(xOpenFr);
-                return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
+                return xOpenFr.bind(function (result) {
+                    Log.debug(Log.formatRecString(result));
+                    return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
+                });
             };
             Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
                 get: function () {
@@ -4607,58 +4665,42 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 4/14/15.
+ * Created by rburson on 3/19/15.
  */
-///<reference path="../references.ts"/>
-/* @TODO */
+///<reference path="jasmine.d.ts"/>
+///<reference path="../src/catavolt/references.ts"/>
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var DialogService = (function () {
-            function DialogService() {
-            }
-            DialogService.getActiveColumnDefs = function (dialogHandle, sessionContext) {
-                var method = 'getActiveColumnDefs';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getActiveColumnDefs', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', dialog.OType.factoryFn));
+        var SERVICE_PATH = "www.catavolt.net";
+        var tenantId = "***REMOVED***z";
+        var userId = "sales";
+        var password = "***REMOVED***";
+        var clientType = "LIMITED_ACCESS";
+        describe("AppContext::login", function () {
+            it("should login successfully with valid creds", function (done) {
+                dialog.AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(function (appWinDefTry) {
+                    Log.info(Log.formatRecString(appWinDefTry));
+                    Log.info(Log.formatRecString(dialog.AppContext.singleton.sessionContextTry));
+                    Log.info(Log.formatRecString(dialog.AppContext.singleton.tenantSettingsTry));
+                    expect(dialog.AppContext.singleton.appWinDefTry.success.workbenches.length).toBeGreaterThan(0);
+                    done();
                 });
-            };
-            /*
-            static getEditorModelMenuDefs(dialogHandle:DialogHandle,
-                                          sessionContext:SessionContext):Future<List<MenuDef>> {
-    
-            }
-    
-            static getEditorModelPaneDef(dialogHandle:DialogHandle,
-                                         paneId:string,
-                                         sessionContext:SessionContext):Future<XPaneDef> {
-    
-            }
-    
-            static getQueryModelMenuDefs(dialogHandle:DialogHandle,
-                                         sessionContext:SessionContext):Future<List<MenuDef>> {
-    
-            }*/
-            DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
-                var method = 'open2';
-                var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
-                if (redirection.objectId)
-                    params['objectId'] = redirection.objectId;
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('openEditorModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', dialog.OType.factoryFn));
+            });
+        });
+        describe("AppContext::performLaunchAction", function () {
+            it("should peform launch action successfully", function (done) {
+                var launchAction = dialog.AppContext.singleton.appWinDefTry.success.workbenches[0].workbenchLaunchActions[0];
+                dialog.AppContext.singleton.performLaunchAction(launchAction).onComplete(function (navRequestTry) {
+                    if (navRequestTry.isFailure) {
+                        Log.debug(navRequestTry.failure);
+                    }
+                    expect(navRequestTry.isSuccess).toBeTruthy();
+                    done();
                 });
-            };
-            DialogService.EDITOR_SERVICE_NAME = 'EditorService';
-            DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
-            DialogService.QUERY_SERVICE_NAME = 'QueryService';
-            DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
-            return DialogService;
-        })();
-        dialog.DialogService = DialogService;
+            });
+        });
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map
