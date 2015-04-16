@@ -56,6 +56,19 @@ module catavolt.dialog {
             return result ? result.foregroundColor : null;
         }
 
+        static fromWS(otype:string, jsonObj):Try<Array<DataAnno>> {
+            var stringObj = jsonObj['annotations'];
+            if(stringObj['WS_LTYPE'] !== 'String') {
+                return new Failure<Array<DataAnno>>('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
+            }
+            var annoStrings:Array<string> = stringObj['values'];
+            var annos:Array<DataAnno> = [];
+            for(var i = 0; i < annoStrings.length; i++) {
+                annos.push(DataAnno.parseString(annoStrings[i]));
+            }
+            return new Success<Array<DataAnno>>(annos);
+        }
+
         static imageName(annos:Array<DataAnno>):string {
             var result:DataAnno = ArrayUtil.find(annos, (anno)=>{
                 return anno.isImageName;
@@ -116,18 +129,7 @@ module catavolt.dialog {
             return result ? result.value : null;
         }
 
-        static fromWS(otype:string, jsonObj):Try<Array<DataAnno>> {
-           var stringObj = jsonObj['annotations'];
-            if(stringObj['WS_LTYPE'] !== 'String') {
-                return new Failure<Array<DataAnno>>('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
-            }
-            var annoStrings:Array<string> = stringObj['values'];
-            var annos:Array<DataAnno> = [];
-            for(var i = 0; i < annoStrings.length; i++) {
-               annos.push(DataAnno.parseString(annoStrings[i]));
-            }
-            return new Success<Array<DataAnno>>(annos);
-        }
+
 
         static toListOfWSDataAnno(annos:Array<DataAnno>):StringDictionary {
             var result:StringDictionary = {'WS_LTYPE':'WSDataAnno'};

@@ -64,8 +64,7 @@ module catavolt.dialog {
             return DialogTriple._extractValue(jsonObject, Otype, true, extractor);
         }
 
-
-        static fromWSDialogObject<A>(obj, Otype:string, factoryFn?:(otype:string, jsonObj?)=>any):Try<A> {
+        static fromWSDialogObject<A>(obj, Otype:string, factoryFn?:(otype:string, jsonObj?)=>any, ignoreRedirection:boolean=false):Try<A> {
 
             if(!obj) {
                 return new Failure<A>('DialogTriple::fromWSDialogObject: Cannot extract from null value')
@@ -80,18 +79,24 @@ module catavolt.dialog {
                         return new Success<A>(obj);
                     });
                 } else {
-                    return DialogTriple.extractValue<A>(obj, Otype, ()=> {
-                        return OType.deserializeObject<A>(obj, Otype, factoryFn);
-                    });
+                    if(ignoreRedirection) {
+                        return DialogTriple.extractValueIgnoringRedirection<A>(obj, Otype, ()=> {
+                            return OType.deserializeObject<A>(obj, Otype, factoryFn);
+                        });
+                    }else{
+                        return DialogTriple.extractValue<A>(obj, Otype, ()=> {
+                            return OType.deserializeObject<A>(obj, Otype, factoryFn);
+                        });
+                    }
                 }
             }catch(e) {
                return new Failure<A>('DialogTriple::fromWSDialogObject: ' + e.name + ": " + e.message);
             }
         }
 
-        static fromListOfWSDialogObject<A>(jsonObject:StringDictionary, Ltype:string, factoryFn?:(otype:string, jsonObj?)=>any):Try<Array<A>> {
+        static fromListOfWSDialogObject<A>(jsonObject:StringDictionary, Ltype:string, factoryFn?:(otype:string, jsonObj?)=>any, ignoreRedirection:boolean=false):Try<Array<A>> {
             return DialogTriple.extractList(jsonObject, Ltype,
-                (value)=>{ return DialogTriple.fromWSDialogObject<A>(value, Ltype, factoryFn); }
+                (value)=>{ return DialogTriple.fromWSDialogObject<A>(value, Ltype, factoryFn, ignoreRedirection); }
             );
         }
 

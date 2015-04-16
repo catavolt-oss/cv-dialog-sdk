@@ -19,7 +19,6 @@ module catavolt.dialog {
             'WSDialogRedirection': DialogRedirection,
             'WSEditorRecordDef': EntityRecDef,
             'WSEntityRecDef': EntityRecDef,
-            'WSFormModel': XFormModel,
             'WSFormModelComp': XFormModelComp,
             'WSGetActiveColumnDefsResult': XGetActiveColumnDefsResult,
             'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
@@ -34,10 +33,11 @@ module catavolt.dialog {
         };
 
         private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {
-            'WSProp': Prop.fromWS,
             'WSDataAnnotation': DataAnno.fromWS,
-            'WSRedirection': Redirection.fromWS,
-            'WSQueryResult': XQueryResult.fromWS
+            'WSFormModel': XFormModel.fromWS,
+            'WSProp': Prop.fromWS,
+            'WSQueryResult': XQueryResult.fromWS,
+            'WSRedirection': Redirection.fromWS
        }
 
         private static typeInstance(name) {

@@ -1281,6 +1281,18 @@ var catavolt;
                 });
                 return result ? result.foregroundColor : null;
             };
+            DataAnno.fromWS = function (otype, jsonObj) {
+                var stringObj = jsonObj['annotations'];
+                if (stringObj['WS_LTYPE'] !== 'String') {
+                    return new Failure('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
+                }
+                var annoStrings = stringObj['values'];
+                var annos = [];
+                for (var i = 0; i < annoStrings.length; i++) {
+                    annos.push(DataAnno.parseString(annoStrings[i]));
+                }
+                return new Success(annos);
+            };
             DataAnno.imageName = function (annos) {
                 var result = ArrayUtil.find(annos, function (anno) {
                     return anno.isImageName;
@@ -1344,18 +1356,6 @@ var catavolt;
                     return anno.isTipText;
                 });
                 return result ? result.value : null;
-            };
-            DataAnno.fromWS = function (otype, jsonObj) {
-                var stringObj = jsonObj['annotations'];
-                if (stringObj['WS_LTYPE'] !== 'String') {
-                    return new Failure('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
-                }
-                var annoStrings = stringObj['values'];
-                var annos = [];
-                for (var i = 0; i < annoStrings.length; i++) {
-                    annos.push(DataAnno.parseString(annoStrings[i]));
-                }
-                return new Success(annos);
             };
             DataAnno.toListOfWSDataAnno = function (annos) {
                 var result = { 'WS_LTYPE': 'WSDataAnno' };
@@ -2694,6 +2694,24 @@ var catavolt;
                 this.refreshTimer = refreshTimer;
                 this.sizeToWindow = sizeToWindow;
             }
+            /*
+                This custom fromWS method is necessary because the XFormModelComps, must be
+                built with the 'ignoreRedirection' flag set to true
+             */
+            XFormModel.fromWS = function (otype, jsonObj) {
+                return dialog.DialogTriple.fromWSDialogObject(jsonObj['form'], 'WSFormModelComp', dialog.OType.factoryFn, true).bind(function (form) {
+                    var header = null;
+                    if (jsonObj['header']) {
+                        var headerTry = dialog.DialogTriple.fromWSDialogObject(jsonObj['header'], 'WSFormModelComp', dialog.OType.factoryFn, true);
+                        if (headerTry.isFailure)
+                            return new Failure(headerTry.isFailure);
+                        header = headerTry.success;
+                    }
+                    return dialog.DialogTriple.fromListOfWSDialogObject(jsonObj['children'], 'WSFormModelComp', dialog.OType.factoryFn, true).bind(function (children) {
+                        return new Success(new XFormModel(form, header, children, jsonObj['placement'], jsonObj['refreshTimer'], jsonObj['sizeToWindow']));
+                    });
+                });
+            };
             return XFormModel;
         })();
         dialog.XFormModel = XFormModel;
@@ -3444,7 +3462,8 @@ var catavolt;
             DialogTriple.extractValueIgnoringRedirection = function (jsonObject, Otype, extractor) {
                 return DialogTriple._extractValue(jsonObject, Otype, true, extractor);
             };
-            DialogTriple.fromWSDialogObject = function (obj, Otype, factoryFn) {
+            DialogTriple.fromWSDialogObject = function (obj, Otype, factoryFn, ignoreRedirection) {
+                if (ignoreRedirection === void 0) { ignoreRedirection = false; }
                 if (!obj) {
                     return new Failure('DialogTriple::fromWSDialogObject: Cannot extract from null value');
                 }
@@ -3459,18 +3478,26 @@ var catavolt;
                         });
                     }
                     else {
-                        return DialogTriple.extractValue(obj, Otype, function () {
-                            return dialog.OType.deserializeObject(obj, Otype, factoryFn);
-                        });
+                        if (ignoreRedirection) {
+                            return DialogTriple.extractValueIgnoringRedirection(obj, Otype, function () {
+                                return dialog.OType.deserializeObject(obj, Otype, factoryFn);
+                            });
+                        }
+                        else {
+                            return DialogTriple.extractValue(obj, Otype, function () {
+                                return dialog.OType.deserializeObject(obj, Otype, factoryFn);
+                            });
+                        }
                     }
                 }
                 catch (e) {
                     return new Failure('DialogTriple::fromWSDialogObject: ' + e.name + ": " + e.message);
                 }
             };
-            DialogTriple.fromListOfWSDialogObject = function (jsonObject, Ltype, factoryFn) {
+            DialogTriple.fromListOfWSDialogObject = function (jsonObject, Ltype, factoryFn, ignoreRedirection) {
+                if (ignoreRedirection === void 0) { ignoreRedirection = false; }
                 return DialogTriple.extractList(jsonObject, Ltype, function (value) {
-                    return DialogTriple.fromWSDialogObject(value, Ltype, factoryFn);
+                    return DialogTriple.fromWSDialogObject(value, Ltype, factoryFn, ignoreRedirection);
                 });
             };
             DialogTriple.fromWSDialogObjectResult = function (jsonObject, resultOtype, targetOtype, objPropName, factoryFn) {
@@ -3599,7 +3626,6 @@ var catavolt;
                     params['objectId'] = redirection.objectId;
                 var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
-                    Log.debug('got result ' + Log.formatRecString(result));
                     return Future.createCompletedFuture('openEditorModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', dialog.OType.factoryFn));
                 });
             };
@@ -4546,7 +4572,6 @@ var catavolt;
                 'WSDialogRedirection': dialog.DialogRedirection,
                 'WSEditorRecordDef': dialog.EntityRecDef,
                 'WSEntityRecDef': dialog.EntityRecDef,
-                'WSFormModel': dialog.XFormModel,
                 'WSFormModelComp': dialog.XFormModelComp,
                 'WSGetActiveColumnDefsResult': dialog.XGetActiveColumnDefsResult,
                 'WSGetSessionListPropertyResult': dialog.XGetSessionListPropertyResult,
@@ -4560,10 +4585,11 @@ var catavolt;
                 'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction
             };
             OType.typeFns = {
-                'WSProp': dialog.Prop.fromWS,
                 'WSDataAnnotation': dialog.DataAnno.fromWS,
-                'WSRedirection': dialog.Redirection.fromWS,
-                'WSQueryResult': dialog.XQueryResult.fromWS
+                'WSFormModel': dialog.XFormModel.fromWS,
+                'WSProp': dialog.Prop.fromWS,
+                'WSQueryResult': dialog.XQueryResult.fromWS,
+                'WSRedirection': dialog.Redirection.fromWS
             };
             return OType;
         })();
