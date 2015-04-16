@@ -64,7 +64,8 @@ module catavolt.dialog {
             return DialogTriple._extractValue(jsonObject, Otype, true, extractor);
         }
 
-        static fromWSDialogObject<A>(obj, Otype:string, factoryFn?:(otype:string, jsonObj?)=>any, ignoreRedirection:boolean=false):Try<A> {
+        static fromWSDialogObject<A>(obj, Otype:string, factoryFn?:(otype:string, jsonObj?)=>any,
+                                     ignoreRedirection:boolean=false):Try<A> {
 
             if(!obj) {
                 return new Failure<A>('DialogTriple::fromWSDialogObject: Cannot extract from null value')
@@ -94,7 +95,9 @@ module catavolt.dialog {
             }
         }
 
-        static fromListOfWSDialogObject<A>(jsonObject:StringDictionary, Ltype:string, factoryFn?:(otype:string, jsonObj?)=>any, ignoreRedirection:boolean=false):Try<Array<A>> {
+        static fromListOfWSDialogObject<A>(jsonObject:StringDictionary, Ltype:string,
+                                           factoryFn?:(otype:string, jsonObj?)=>any,
+                                           ignoreRedirection:boolean=false):Try<Array<A>> {
             return DialogTriple.extractList(jsonObject, Ltype,
                 (value)=>{ return DialogTriple.fromWSDialogObject<A>(value, Ltype, factoryFn, ignoreRedirection); }
             );
@@ -113,26 +116,18 @@ module catavolt.dialog {
             );
         }
 
-        static fromWSDialogObjectResultWithFunc<A>(jsonObject:StringDictionary,
-                                                   resultOtype:string,
-                                                   objPropName:string,
-                                                   fromWSObjectFunc:(o:StringDictionary)=>Try<A>): Try<A> {
+        static fromWSDialogObjectsResult<A>(jsonObject:StringDictionary,
+                                           resultOtype:string,
+                                           targetLtype:string,
+                                           objPropName:string,
+                                           factoryFn?:(otype:string, jsonObj?)=>any):Try<Array<A>> {
 
             return DialogTriple.extractValue(jsonObject, resultOtype,
                 ()=>{
-                    return fromWSObjectFunc(jsonObject[objPropName]);
+                    return DialogTriple.fromListOfWSDialogObject<A>(jsonObject[objPropName], targetLtype, factoryFn);
                 }
             );
         }
-
-        static fromListOfWSDialogObjectWithFunc<A>(jsonObject:StringDictionary,
-                                                   Ltype:string,
-                                                   fromWSObjectFunc:(o:StringDictionary)=>Try<A>): Try<Array<A>> {
-            return DialogTriple.extractList(jsonObject, Ltype,
-                (value)=>{ return fromWSObjectFunc(value); }
-            );
-        }
-
 
         private static _extractTriple<A>(jsonObject: StringDictionary,
                                         Otype:string,

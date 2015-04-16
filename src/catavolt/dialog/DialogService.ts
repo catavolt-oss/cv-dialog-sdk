@@ -27,18 +27,35 @@ module catavolt.dialog {
             });
         }
 
-        /*
         static getEditorModelMenuDefs(dialogHandle:DialogHandle,
-                                      sessionContext:SessionContext):Future<List<MenuDef>> {
+                                      sessionContext:SessionContext):Future<Array<MenuDef>> {
 
+            var method = 'getMenuDefs';
+            var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                return Future.createCompletedFuture('getEditorModelMenuDefs',
+                    DialogTriple.fromWSDialogObjectsResult<MenuDef>(result, 'WSGetMenuDefsResult', 'WSMenuDef',
+                        'menuDefs', OType.factoryFn));
+            });
         }
 
         static getEditorModelPaneDef(dialogHandle:DialogHandle,
                                      paneId:string,
                                      sessionContext:SessionContext):Future<XPaneDef> {
 
+            var method = 'getEditorModelPaneDef';
+            var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+            params['paneId'] = paneId;
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                return Future.createCompletedFuture('getEditorModelPaneDef',
+                    DialogTriple.fromWSDialogObjectResult<MenuDef>(result, 'sult', 'WSMenuDef',
+                        'menuDefs', OType.factoryFn));
+            });
         }
 
+        /*
         static getQueryModelMenuDefs(dialogHandle:DialogHandle,
                                      sessionContext:SessionContext):Future<List<MenuDef>> {
 

@@ -9,8 +9,8 @@ module catavolt.dialog {
 
         private static types = {
             'WSApplicationWindowDef': AppWinDef,
+            'WSAttributeCellValueDef': AttributeCellValueDef,
             'WSCellDef': CellDef,
-            'WSCellValueDef': CellValueDef,
             'WSCreateSessionResult': SessionContextImpl,
             'WSColumnDef': ColumnDef,
             'WSContextAction': ContextAction,
@@ -22,10 +22,12 @@ module catavolt.dialog {
             'WSFormModelComp': XFormModelComp,
             'WSGetActiveColumnDefsResult': XGetActiveColumnDefsResult,
             'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
+            'WSLabelCellValueDef': LabelCellValueDef,
             'WSOpenEditorModelResult': XOpenEditorModelResult,
             'WSPaneDefRef': XPaneDefRef,
             'WSPropertyDef': PropDef,
             'WSQueryRecordDef': EntityRecDef,
+            'WSSubstitutionCellValueDef': SubstitutionCellValueDef,
             'WSWebRedirection': WebRedirection,
             'WSWorkbench': Workbench,
             'WSWorkbenchRedirection': WorkbenchRedirection,
@@ -33,8 +35,10 @@ module catavolt.dialog {
         };
 
         private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {
+            'WSCellValueDef': CellValueDef.fromWS,
             'WSDataAnnotation': DataAnno.fromWS,
             'WSFormModel': XFormModel.fromWS,
+            'WSGetPaneDefResult': XPaneDef.fromWS,
             'WSProp': Prop.fromWS,
             'WSQueryResult': XQueryResult.fromWS,
             'WSRedirection': Redirection.fromWS

@@ -895,6 +895,78 @@ var catavolt;
 var Call = catavolt.ws.Call;
 var Get = catavolt.ws.Get;
 /**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var MenuDef = (function () {
+            function MenuDef(_name, _type, _actionId, _mode, _iconName, _directive, _menuDefs) {
+                this._name = _name;
+                this._type = _type;
+                this._actionId = _actionId;
+                this._mode = _mode;
+                this._iconName = _iconName;
+                this._directive = _directive;
+                this._menuDefs = _menuDefs;
+            }
+            Object.defineProperty(MenuDef.prototype, "name", {
+                get: function () {
+                    return this._name;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "type", {
+                get: function () {
+                    return this._type;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "actionId", {
+                get: function () {
+                    return this._actionId;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "mode", {
+                get: function () {
+                    return this._mode;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "iconName", {
+                get: function () {
+                    return this._iconName;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "directive", {
+                get: function () {
+                    return this._directive;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "menuDefs", {
+                get: function () {
+                    return this._menuDefs;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return MenuDef;
+        })();
+        dialog.MenuDef = MenuDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/31/15.
  */
 ///<reference path="../references.ts"/>
@@ -906,13 +978,188 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var CellValueDef = (function () {
-            function CellValueDef() {
+            function CellValueDef(_style) {
+                this._style = _style;
             }
-            CellValueDef.prototype.test = function () {
+            CellValueDef.fromWS = function (otype, jsonObj) {
             };
+            Object.defineProperty(CellValueDef.prototype, "isInlineMediaStyle", {
+                get: function () {
+                    return this.style && (this.style === dialog.PropDef.STYLE_INLINE_MEDIA || this.style === dialog.PropDef.STYLE_INLINE_MEDIA2);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(CellValueDef.prototype, "style", {
+                get: function () {
+                    return this._style;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return CellValueDef;
         })();
         dialog.CellValueDef = CellValueDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/16/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var AttributeCellValueDef = (function (_super) {
+            __extends(AttributeCellValueDef, _super);
+            function AttributeCellValueDef(_propertyName, _presentationLength, _entryMethod, _autoFillCapable, _hint, _toolTip, _fieldActions, style) {
+                _super.call(this, style);
+                this._propertyName = _propertyName;
+                this._presentationLength = _presentationLength;
+                this._entryMethod = _entryMethod;
+                this._autoFillCapable = _autoFillCapable;
+                this._hint = _hint;
+                this._toolTip = _toolTip;
+                this._fieldActions = _fieldActions;
+            }
+            Object.defineProperty(AttributeCellValueDef.prototype, "autoFileCapable", {
+                get: function () {
+                    return this._autoFillCapable;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "entryMethod", {
+                get: function () {
+                    return this._entryMethod;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "fieldActions", {
+                get: function () {
+                    return this._fieldActions;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "hint", {
+                get: function () {
+                    return this._hint;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "isComboBoxEntryMethod", {
+                get: function () {
+                    return this.entryMethod && this.entryMethod === 'ENTRY_METHOD_COMBO_BOX';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "isDropDownEntryMethod", {
+                get: function () {
+                    return this.entryMethod && this.entryMethod === 'ENTRY_METHOD_DROP_DOWN';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "isTextFieldEntryMethod", {
+                get: function () {
+                    return !this.entryMethod || this.entryMethod === 'ENTRY_METHOD_TEXT_FIELD';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "presentationLength", {
+                get: function () {
+                    return this._presentationLength;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "propertyName", {
+                get: function () {
+                    return this._propertyName;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AttributeCellValueDef.prototype, "toolTip", {
+                get: function () {
+                    return this._toolTip;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return AttributeCellValueDef;
+        })(dialog.CellValueDef);
+        dialog.AttributeCellValueDef = AttributeCellValueDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/16/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var ForcedLineCellValueDef = (function (_super) {
+            __extends(ForcedLineCellValueDef, _super);
+            function ForcedLineCellValueDef() {
+                _super.call(this, null);
+            }
+            return ForcedLineCellValueDef;
+        })(dialog.CellValueDef);
+        dialog.ForcedLineCellValueDef = ForcedLineCellValueDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/16/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var TabCellValueDef = (function (_super) {
+            __extends(TabCellValueDef, _super);
+            function TabCellValueDef() {
+                _super.call(this, null);
+            }
+            return TabCellValueDef;
+        })(dialog.CellValueDef);
+        dialog.TabCellValueDef = TabCellValueDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/16/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var SubstitutionCellValueDef = (function (_super) {
+            __extends(SubstitutionCellValueDef, _super);
+            function SubstitutionCellValueDef(_value, style) {
+                _super.call(this, style);
+                this._value = _value;
+            }
+            Object.defineProperty(SubstitutionCellValueDef.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return SubstitutionCellValueDef;
+        })(dialog.CellValueDef);
+        dialog.SubstitutionCellValueDef = SubstitutionCellValueDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -2524,9 +2771,39 @@ var catavolt;
         var XPaneDef = (function () {
             function XPaneDef() {
             }
-            XPaneDef.fromWSPaneDef = function (jsonObject) {
-                var paneDefTry = null;
-                if (jsonObject['listDef']) {
+            XPaneDef.fromWS = function (otype, jsonObj) {
+                if (jsonObj['listDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['listDef'], 'WSListDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['detailsDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['detailsDef'], 'WSDetailsDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['formDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['formDef'], 'WSFormDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['mapDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['mapDef'], 'WSMapDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['graphDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['graphDef'], 'WSGraphDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['barcodeScanDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['barcodeScanDef'], 'WSBarcodeScanDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['imagePickerDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['imagePickerDef'], 'WSImagePickerDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['geoFixDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['geoFixDef'], 'WSGeoFixDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['geoLocationDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['geoLocationDef'], 'WSGeoLocationDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['calendarDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['calendarDef'], 'WSCalendarDef', dialog.OType.factoryFn);
+                }
+                else {
+                    return new Failure('XPaneDef::fromWS: Cannot determine concrete class for XPaneDef ' + ObjUtil.formatRecAttr(jsonObj));
                 }
             };
             return XPaneDef;
@@ -3505,14 +3782,9 @@ var catavolt;
                     return DialogTriple.fromWSDialogObject(jsonObject[objPropName], targetOtype, factoryFn);
                 });
             };
-            DialogTriple.fromWSDialogObjectResultWithFunc = function (jsonObject, resultOtype, objPropName, fromWSObjectFunc) {
+            DialogTriple.fromWSDialogObjectsResult = function (jsonObject, resultOtype, targetLtype, objPropName, factoryFn) {
                 return DialogTriple.extractValue(jsonObject, resultOtype, function () {
-                    return fromWSObjectFunc(jsonObject[objPropName]);
-                });
-            };
-            DialogTriple.fromListOfWSDialogObjectWithFunc = function (jsonObject, Ltype, fromWSObjectFunc) {
-                return DialogTriple.extractList(jsonObject, Ltype, function (value) {
-                    return fromWSObjectFunc(value);
+                    return DialogTriple.fromListOfWSDialogObject(jsonObject[objPropName], targetLtype, factoryFn);
                 });
             };
             DialogTriple._extractTriple = function (jsonObject, Otype, ignoreRedirection, extractor) {
@@ -3603,18 +3875,24 @@ var catavolt;
                     return Future.createCompletedFuture('getActiveColumnDefs', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', dialog.OType.factoryFn));
                 });
             };
+            DialogService.getEditorModelMenuDefs = function (dialogHandle, sessionContext) {
+                var method = 'getMenuDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getEditorModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.getEditorModelPaneDef = function (dialogHandle, paneId, sessionContext) {
+                var method = 'getEditorModelPaneDef';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                params['paneId'] = paneId;
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getEditorModelPaneDef', dialog.DialogTriple.fromWSDialogObjectResult(result, 'sult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
+                });
+            };
             /*
-            static getEditorModelMenuDefs(dialogHandle:DialogHandle,
-                                          sessionContext:SessionContext):Future<List<MenuDef>> {
-    
-            }
-    
-            static getEditorModelPaneDef(dialogHandle:DialogHandle,
-                                         paneId:string,
-                                         sessionContext:SessionContext):Future<XPaneDef> {
-    
-            }
-    
             static getQueryModelMenuDefs(dialogHandle:DialogHandle,
                                          sessionContext:SessionContext):Future<List<MenuDef>> {
     
@@ -4339,22 +4617,6 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var MenuDef = (function () {
-            function MenuDef() {
-            }
-            return MenuDef;
-        })();
-        dialog.MenuDef = MenuDef;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/30/15.
- */
-///<reference path="../references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
         var PaneContext = (function () {
             function PaneContext(paneRef) {
                 this._lastRefreshTime = null;
@@ -4411,8 +4673,9 @@ var catavolt;
                     return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
                 }
                 var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
-                return xOpenFr.bind(function (result) {
-                    Log.debug(Log.formatRecString(result));
+                return xOpenFr.bind(function (formXOpen) {
+                    var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
+                    //var formXFormDefFr = fetchXFormDef(formXOpen);
                     return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
                 });
             };
@@ -4562,8 +4825,8 @@ var catavolt;
             };
             OType.types = {
                 'WSApplicationWindowDef': dialog.AppWinDef,
+                'WSAttributeCellValueDef': dialog.AttributeCellValueDef,
                 'WSCellDef': dialog.CellDef,
-                'WSCellValueDef': dialog.CellValueDef,
                 'WSCreateSessionResult': dialog.SessionContextImpl,
                 'WSColumnDef': dialog.ColumnDef,
                 'WSContextAction': dialog.ContextAction,
@@ -4575,18 +4838,22 @@ var catavolt;
                 'WSFormModelComp': dialog.XFormModelComp,
                 'WSGetActiveColumnDefsResult': dialog.XGetActiveColumnDefsResult,
                 'WSGetSessionListPropertyResult': dialog.XGetSessionListPropertyResult,
+                'WSLabelCellValueDef': dialog.LabelCellValueDef,
                 'WSOpenEditorModelResult': dialog.XOpenEditorModelResult,
                 'WSPaneDefRef': dialog.XPaneDefRef,
                 'WSPropertyDef': dialog.PropDef,
                 'WSQueryRecordDef': dialog.EntityRecDef,
+                'WSSubstitutionCellValueDef': dialog.SubstitutionCellValueDef,
                 'WSWebRedirection': dialog.WebRedirection,
                 'WSWorkbench': dialog.Workbench,
                 'WSWorkbenchRedirection': dialog.WorkbenchRedirection,
                 'WSWorkbenchLaunchAction': dialog.WorkbenchLaunchAction
             };
             OType.typeFns = {
+                'WSCellValueDef': dialog.CellValueDef.fromWS,
                 'WSDataAnnotation': dialog.DataAnno.fromWS,
                 'WSFormModel': dialog.XFormModel.fromWS,
+                'WSGetPaneDefResult': dialog.XPaneDef.fromWS,
                 'WSProp': dialog.Prop.fromWS,
                 'WSQueryResult': dialog.XQueryResult.fromWS,
                 'WSRedirection': dialog.Redirection.fromWS
@@ -4601,7 +4868,13 @@ var catavolt;
  */
 //dialog
 //note - these have a dependency-based ordering
+///<reference path="MenuDef.ts"/>
 ///<reference path="CellValueDef.ts"/>
+///<reference path="AttributeCellValueDef.ts"/>
+///<reference path="ForcedLineCellValueDef.ts"/>
+///<reference path="LabelCellValueDef.ts"/>
+///<reference path="TabCellValueDef.ts"/>
+///<reference path="SubstitutionCellValueDef.ts"/>
 ///<reference path="CellDef.ts"/>
 ///<reference path="EntityRec.ts"/>
 ///<reference path="EntityRecDef.ts"/>
@@ -4674,7 +4947,6 @@ var catavolt;
 ///<reference path="WorkbenchService.ts"/>
 ///<reference path="PaneDef.ts"/>
 ///<reference path="FormDef.ts"/>
-///<reference path="MenuDef.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>
@@ -4691,42 +4963,29 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 3/19/15.
+ * Created by rburson on 4/16/15.
  */
-///<reference path="jasmine.d.ts"/>
-///<reference path="../src/catavolt/references.ts"/>
+///<reference path="../references.ts"/>
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var SERVICE_PATH = "www.catavolt.net";
-        var tenantId = "***REMOVED***z";
-        var userId = "sales";
-        var password = "***REMOVED***";
-        var clientType = "LIMITED_ACCESS";
-        describe("AppContext::login", function () {
-            it("should login successfully with valid creds", function (done) {
-                dialog.AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(function (appWinDefTry) {
-                    Log.info(Log.formatRecString(appWinDefTry));
-                    Log.info(Log.formatRecString(dialog.AppContext.singleton.sessionContextTry));
-                    Log.info(Log.formatRecString(dialog.AppContext.singleton.tenantSettingsTry));
-                    expect(dialog.AppContext.singleton.appWinDefTry.success.workbenches.length).toBeGreaterThan(0);
-                    done();
-                });
+        var LabelCellValueDef = (function (_super) {
+            __extends(LabelCellValueDef, _super);
+            function LabelCellValueDef(_value, style) {
+                _super.call(this, style);
+                this._value = _value;
+            }
+            Object.defineProperty(LabelCellValueDef.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                enumerable: true,
+                configurable: true
             });
-        });
-        describe("AppContext::performLaunchAction", function () {
-            it("should peform launch action successfully", function (done) {
-                var launchAction = dialog.AppContext.singleton.appWinDefTry.success.workbenches[0].workbenchLaunchActions[0];
-                dialog.AppContext.singleton.performLaunchAction(launchAction).onComplete(function (navRequestTry) {
-                    if (navRequestTry.isFailure) {
-                        Log.debug(navRequestTry.failure);
-                    }
-                    expect(navRequestTry.isSuccess).toBeTruthy();
-                    done();
-                });
-            });
-        });
+            return LabelCellValueDef;
+        })(dialog.CellValueDef);
+        dialog.LabelCellValueDef = LabelCellValueDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

@@ -4,7 +4,13 @@
 
 //dialog
 //note - these have a dependency-based ordering
+///<reference path="MenuDef.ts"/>
 ///<reference path="CellValueDef.ts"/>
+///<reference path="AttributeCellValueDef.ts"/>
+///<reference path="ForcedLineCellValueDef.ts"/>
+///<reference path="LabelCellValueDef.ts"/>
+///<reference path="TabCellValueDef.ts"/>
+///<reference path="SubstitutionCellValueDef.ts"/>
 ///<reference path="CellDef.ts"/>
 ///<reference path="EntityRec.ts"/>
 ///<reference path="EntityRecDef.ts"/>
@@ -77,7 +83,6 @@
 ///<reference path="WorkbenchService.ts"/>
 ///<reference path="PaneDef.ts"/>
 ///<reference path="FormDef.ts"/>
-///<reference path="MenuDef.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>

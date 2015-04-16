@@ -22,8 +22,11 @@ module catavolt.dialog {
             }
             var xOpenFr = DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
 
-            return xOpenFr.bind((result)=>{
-                Log.debug(Log.formatRecString(result));
+            return xOpenFr.bind((formXOpen:XOpenEditorModelResult)=>{
+
+                var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
+                //var formXFormDefFr = fetchXFormDef(formXOpen);
+
                 return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
             });
 
@@ -36,6 +39,13 @@ module catavolt.dialog {
         get sessionContext():SessionContext {
             return this._sessionContext;
         }
+
+        /*
+        private fetchXFormDef(xformOpenResult:XOpenEditorModelResult):Future<XFormDef> {
+            var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
+            var formPaneId = xformOpenResult.formPaneId;
+            var xPaneDefFr = DialogService.get
+        }*/
 
     }
 }
