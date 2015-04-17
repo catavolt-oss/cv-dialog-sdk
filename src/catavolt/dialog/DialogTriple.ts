@@ -99,7 +99,12 @@ module catavolt.dialog {
                                            factoryFn?:(otype:string, jsonObj?)=>any,
                                            ignoreRedirection:boolean=false):Try<Array<A>> {
             return DialogTriple.extractList(jsonObject, Ltype,
-                (value)=>{ return DialogTriple.fromWSDialogObject<A>(value, Ltype, factoryFn, ignoreRedirection); }
+                (value)=>{
+                    /*note - we could add a check here to make sure the otype 'is a' ltype, to enforce the generic constraint
+                    i.e. list items should be lype assignment compatible*/
+                    var Otype = value['WS_OTYPE'] || Ltype;
+                    return DialogTriple.fromWSDialogObject<A>(value, Otype, factoryFn, ignoreRedirection);
+                }
             );
         }
 
@@ -129,52 +134,58 @@ module catavolt.dialog {
             );
         }
 
-        private static _extractTriple<A>(jsonObject: StringDictionary,
-                                        Otype:string,
-                                        ignoreRedirection: boolean,
-                                        extractor: TryClosure<A>): Try<Either<Redirection,A>>{
+        private static _extractTriple<A>(jsonObject,
+                                         Otype:string,
+                                         ignoreRedirection:boolean,
+                                         extractor:TryClosure<A>):Try<Either<Redirection,A>> {
 
-            var result:Try<Either<Redirection,A>>;
-            if(!jsonObject) {
+            if (!jsonObject) {
                 return new Failure<Either<Redirection,A>>('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + Otype + ' because json object is null');
             } else {
-                var ot:string = jsonObject['WS_OTYPE'];
-                if(!ot || Otype !== ot) {
-                    result = new Failure<Either<Redirection,A>>('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
+                if (Array.isArray(jsonObject)) {
+                    //verify we'll dealing with a nested List
+                    if (Otype.indexOf('List') !== 0) {
+                        return new Failure<Either<Redirection, A>>("DialogTriple::extractTriple: expected OType of List<> for Array obj");
+                    }
                 } else {
-                    if(jsonObject['exception']) {
-                        var dialogException:DialogException = jsonObject['exception'];
-                        result = new Failure<Either<Redirection,A>>(dialogException);
-                    } else if (jsonObject['redirection'] && !ignoreRedirection){
-                        var drt:Try<Redirection> = DialogTriple.fromWSDialogObject(jsonObject['redirection'], 'WSRedirection', OType.factoryFn);
-                        if(drt.isFailure) {
-                            result = new Failure<Either<Redirection,A>>(drt.failure);
-                        } else {
-                            result = new Success<Either<Redirection,A>>(Either.left<Redirection,A>(drt.success));
-                        }
+                    var ot:string = jsonObject['WS_OTYPE'];
+                    if (!ot || Otype !== ot) {
+                        return new Failure<Either<Redirection,A>>('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
                     } else {
-                        if (extractor) {
-                           var valueTry:Try<A> = extractor();
-                            if(valueTry.isFailure) {
-                                result = new Failure<Either<Redirection,A>>(valueTry.failure);
+                        if (jsonObject['exception']) {
+                            var dialogException:DialogException = jsonObject['exception'];
+                            return new Failure<Either<Redirection,A>>(dialogException);
+                        } else if (jsonObject['redirection'] && !ignoreRedirection) {
+                            var drt:Try<Redirection> = DialogTriple.fromWSDialogObject(jsonObject['redirection'], 'WSRedirection', OType.factoryFn);
+                            if (drt.isFailure) {
+                                return new Failure<Either<Redirection,A>>(drt.failure);
                             } else {
-                                result = new Success(Either.right(valueTry.success));
+                                return new Success<Either<Redirection,A>>(Either.left<Redirection,A>(drt.success));
                             }
-                        } else {
-                            result = new Failure<Either<Redirection,A>>('DialogTriple::extractTriple: Triple is not an exception or redirection and no value extractor was provided');
                         }
                     }
                 }
+
+                var result:Try<Either<Redirection,A>>;
+                if (extractor) {
+                    var valueTry:Try<A> = extractor();
+                    if (valueTry.isFailure) {
+                        result = new Failure<Either<Redirection,A>>(valueTry.failure);
+                    } else {
+                        result = new Success(Either.right(valueTry.success));
+                    }
+                } else {
+                    result = new Failure<Either<Redirection,A>>('DialogTriple::extractTriple: Triple is not an exception or redirection and no value extractor was provided');
+                }
+                return result;
             }
-            return result;
         }
 
 
-        private static _extractValue<A>(jsonObject: StringDictionary,
-                                    Otype:string,
-                                    ignoreRedirection:boolean,
-                                    extractor: TryClosure<A>): Try<A> {
-
+        private static _extractValue<A>(jsonObject,
+                                        Otype:string,
+                                        ignoreRedirection:boolean,
+                                        extractor: TryClosure<A>): Try<A> {
 
             var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, ignoreRedirection, extractor);
             var result:Try<A>;

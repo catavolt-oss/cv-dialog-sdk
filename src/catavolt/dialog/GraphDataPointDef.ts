@@ -9,7 +9,10 @@ module catavolt.dialog {
 
     export class GraphDataPointDef {
 
-        constructor() {
+        constructor(private _name:string,
+                    private _type:string,
+                    private _plotType:string,
+                    private _legendkey:string) {
         }
 
     }

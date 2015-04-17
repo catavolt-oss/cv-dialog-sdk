@@ -50,8 +50,7 @@ module catavolt.dialog {
             var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
             return call.perform().bind((result:StringDictionary)=>{
                 return Future.createCompletedFuture('getEditorModelPaneDef',
-                    DialogTriple.fromWSDialogObjectResult<MenuDef>(result, 'sult', 'WSMenuDef',
-                        'menuDefs', OType.factoryFn));
+                    DialogTriple.fromWSDialogObjectResult<MenuDef>(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', OType.factoryFn));
             });
         }
 

@@ -25,7 +25,8 @@ module catavolt.dialog {
             return xOpenFr.bind((formXOpen:XOpenEditorModelResult)=>{
 
                 var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
-                //var formXFormDefFr = fetchXFormDef(formXOpen);
+                //@TODO Test this!
+                var formXFormDefFr = this.fetchXFormDef(formXOpen);
 
                 return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
             });
@@ -40,12 +41,20 @@ module catavolt.dialog {
             return this._sessionContext;
         }
 
-        /*
         private fetchXFormDef(xformOpenResult:XOpenEditorModelResult):Future<XFormDef> {
             var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
             var formPaneId = xformOpenResult.formPaneId;
-            var xPaneDefFr = DialogService.get
-        }*/
+            return DialogService.getEditorModelPaneDef(dialogHandle, formPaneId,
+                this.sessionContext).bind((value:XPaneDef)=>{
+                    if(value instanceof XFormDef) {
+                        return Future.createSuccessfulFuture('fetchXFormDef/success', value);
+                    } else {
+                        return Future.createFailedFuture<XFormDef>('fetchXFormDef/failure',
+                            'Expected reponse to contain an XFormDef but got ' + ObjUtil.formatRecAttr(value));
+                    }
+            });
+
+        }
 
     }
 }

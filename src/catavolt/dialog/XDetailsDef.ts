@@ -4,6 +4,12 @@
 
 ///<reference path="../references.ts"/>
 
+/*
+    @TODO
+
+    Note! Use this as a test example!
+    It has an Array of Array with subitems that also have Array of Array!!
+*/
 module catavolt.dialog {
 
     export class XDetailsDef extends XPaneDef{
@@ -18,6 +24,10 @@ module catavolt.dialog {
                     public overrideGML:string,
                     public rows:Array<Array<CellDef>>) {
             super();
+        }
+
+        get graphicalMarkup():string {
+            return this.overrideGML;
         }
 
     }

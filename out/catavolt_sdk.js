@@ -981,7 +981,26 @@ var catavolt;
             function CellValueDef(_style) {
                 this._style = _style;
             }
+            /* Note compact deserialization will be handled normally by OType */
             CellValueDef.fromWS = function (otype, jsonObj) {
+                if (jsonObj['attributeCellValueDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['attributeCellValueDef'], 'WSAttributeCellValueDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['forcedLineCellValueDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['forcedLineCellValueDef'], 'WSForcedLineCellValueDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['labelCellValueDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['labelCellValueDef'], 'WSLabelCellValueDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['substitutionCellValueDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['substitutionCellValueDef'], 'WSSubstitutionCellValueDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['tabCellValueDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['tabCellValueDef'], 'WSTabCellValueDef', dialog.OType.factoryFn);
+                }
+                else {
+                    return new Failure('CellValueDef::fromWS: unknown CellValueDef type: ' + ObjUtil.formatRecAttr(jsonObj));
+                }
             };
             Object.defineProperty(CellValueDef.prototype, "isInlineMediaStyle", {
                 get: function () {
@@ -1120,6 +1139,32 @@ var catavolt;
  * Created by rburson on 4/16/15.
  */
 ///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var LabelCellValueDef = (function (_super) {
+            __extends(LabelCellValueDef, _super);
+            function LabelCellValueDef(_value, style) {
+                _super.call(this, style);
+                this._value = _value;
+            }
+            Object.defineProperty(LabelCellValueDef.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return LabelCellValueDef;
+        })(dialog.CellValueDef);
+        dialog.LabelCellValueDef = LabelCellValueDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/16/15.
+ */
+///<reference path="../references.ts"/>
 /* @TODO */
 var catavolt;
 (function (catavolt) {
@@ -1168,14 +1213,25 @@ var catavolt;
 ///<reference path="../references.ts"/>
 /*
     @TODO
+
+    Test all of the deserialization methods
+    They should all be handled, but the cover many of the edge cases (i.e. List<List<CellDef>>)
  */
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
         var CellDef = (function () {
-            function CellDef() {
+            function CellDef(_values) {
+                this._values = _values;
             }
+            Object.defineProperty(CellDef.prototype, "values", {
+                get: function () {
+                    return this._values;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return CellDef;
         })();
         dialog.CellDef = CellDef;
@@ -2405,7 +2461,11 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var GraphDataPointDef = (function () {
-            function GraphDataPointDef() {
+            function GraphDataPointDef(_name, _type, _plotType, _legendkey) {
+                this._name = _name;
+                this._type = _type;
+                this._plotType = _plotType;
+                this._legendkey = _legendkey;
             }
             return GraphDataPointDef;
         })();
@@ -2931,6 +2991,12 @@ var catavolt;
  * Created by rburson on 3/30/15.
  */
 ///<reference path="../references.ts"/>
+/*
+    @TODO
+
+    Note! Use this as a test example!
+    It has an Array of Array with subitems that also have Array of Array!!
+*/
 var catavolt;
 (function (catavolt) {
     var dialog;
@@ -2949,6 +3015,13 @@ var catavolt;
                 this.overrideGML = overrideGML;
                 this.rows = rows;
             }
+            Object.defineProperty(XDetailsDef.prototype, "graphicalMarkup", {
+                get: function () {
+                    return this.overrideGML;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return XDetailsDef;
         })(dialog.XPaneDef);
         dialog.XDetailsDef = XDetailsDef;
@@ -3774,7 +3847,10 @@ var catavolt;
             DialogTriple.fromListOfWSDialogObject = function (jsonObject, Ltype, factoryFn, ignoreRedirection) {
                 if (ignoreRedirection === void 0) { ignoreRedirection = false; }
                 return DialogTriple.extractList(jsonObject, Ltype, function (value) {
-                    return DialogTriple.fromWSDialogObject(value, Ltype, factoryFn, ignoreRedirection);
+                    /*note - we could add a check here to make sure the otype 'is a' ltype, to enforce the generic constraint
+                    i.e. list items should be lype assignment compatible*/
+                    var Otype = value['WS_OTYPE'] || Ltype;
+                    return DialogTriple.fromWSDialogObject(value, Otype, factoryFn, ignoreRedirection);
                 });
             };
             DialogTriple.fromWSDialogObjectResult = function (jsonObject, resultOtype, targetOtype, objPropName, factoryFn) {
@@ -3788,46 +3864,52 @@ var catavolt;
                 });
             };
             DialogTriple._extractTriple = function (jsonObject, Otype, ignoreRedirection, extractor) {
-                var result;
                 if (!jsonObject) {
                     return new Failure('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + Otype + ' because json object is null');
                 }
                 else {
-                    var ot = jsonObject['WS_OTYPE'];
-                    if (!ot || Otype !== ot) {
-                        result = new Failure('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
+                    if (Array.isArray(jsonObject)) {
+                        //verify we'll dealing with a nested List
+                        if (Otype.indexOf('List') !== 0) {
+                            return new Failure("DialogTriple::extractTriple: expected OType of List<> for Array obj");
+                        }
                     }
                     else {
-                        if (jsonObject['exception']) {
-                            var dialogException = jsonObject['exception'];
-                            result = new Failure(dialogException);
-                        }
-                        else if (jsonObject['redirection'] && !ignoreRedirection) {
-                            var drt = DialogTriple.fromWSDialogObject(jsonObject['redirection'], 'WSRedirection', dialog.OType.factoryFn);
-                            if (drt.isFailure) {
-                                result = new Failure(drt.failure);
-                            }
-                            else {
-                                result = new Success(Either.left(drt.success));
-                            }
+                        var ot = jsonObject['WS_OTYPE'];
+                        if (!ot || Otype !== ot) {
+                            return new Failure('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
                         }
                         else {
-                            if (extractor) {
-                                var valueTry = extractor();
-                                if (valueTry.isFailure) {
-                                    result = new Failure(valueTry.failure);
+                            if (jsonObject['exception']) {
+                                var dialogException = jsonObject['exception'];
+                                return new Failure(dialogException);
+                            }
+                            else if (jsonObject['redirection'] && !ignoreRedirection) {
+                                var drt = DialogTriple.fromWSDialogObject(jsonObject['redirection'], 'WSRedirection', dialog.OType.factoryFn);
+                                if (drt.isFailure) {
+                                    return new Failure(drt.failure);
                                 }
                                 else {
-                                    result = new Success(Either.right(valueTry.success));
+                                    return new Success(Either.left(drt.success));
                                 }
-                            }
-                            else {
-                                result = new Failure('DialogTriple::extractTriple: Triple is not an exception or redirection and no value extractor was provided');
                             }
                         }
                     }
+                    var result;
+                    if (extractor) {
+                        var valueTry = extractor();
+                        if (valueTry.isFailure) {
+                            result = new Failure(valueTry.failure);
+                        }
+                        else {
+                            result = new Success(Either.right(valueTry.success));
+                        }
+                    }
+                    else {
+                        result = new Failure('DialogTriple::extractTriple: Triple is not an exception or redirection and no value extractor was provided');
+                    }
+                    return result;
                 }
-                return result;
             };
             DialogTriple._extractValue = function (jsonObject, Otype, ignoreRedirection, extractor) {
                 var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, ignoreRedirection, extractor);
@@ -3889,7 +3971,7 @@ var catavolt;
                 params['paneId'] = paneId;
                 var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getEditorModelPaneDef', dialog.DialogTriple.fromWSDialogObjectResult(result, 'sult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
+                    return Future.createCompletedFuture('getEditorModelPaneDef', dialog.DialogTriple.fromWSDialogObjectResult(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', dialog.OType.factoryFn));
                 });
             };
             /*
@@ -4648,57 +4730,6 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 3/30/15.
- */
-///<reference path="../references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var FormContextBuilder = (function () {
-            function FormContextBuilder(_dialogRedirection, _actionSource, _sessionContext) {
-                this._dialogRedirection = _dialogRedirection;
-                this._actionSource = _actionSource;
-                this._sessionContext = _sessionContext;
-            }
-            Object.defineProperty(FormContextBuilder.prototype, "actionSource", {
-                get: function () {
-                    return this._actionSource;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            FormContextBuilder.prototype.build = function () {
-                if (!this.dialogRedirection.isEditor) {
-                    return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
-                }
-                var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
-                return xOpenFr.bind(function (formXOpen) {
-                    var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
-                    //var formXFormDefFr = fetchXFormDef(formXOpen);
-                    return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
-                });
-            };
-            Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
-                get: function () {
-                    return this._dialogRedirection;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(FormContextBuilder.prototype, "sessionContext", {
-                get: function () {
-                    return this._sessionContext;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return FormContextBuilder;
-        })();
-        dialog.FormContextBuilder = FormContextBuilder;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
  * Created by rburson on 3/23/15.
  */
 ///<reference path="../references.ts"/>
@@ -4826,24 +4857,36 @@ var catavolt;
             OType.types = {
                 'WSApplicationWindowDef': dialog.AppWinDef,
                 'WSAttributeCellValueDef': dialog.AttributeCellValueDef,
+                'WSBarcodeScanDef': dialog.XBarcodeScanDef,
+                'WSCalendarDef': dialog.XCalendarDef,
                 'WSCellDef': dialog.CellDef,
                 'WSCreateSessionResult': dialog.SessionContextImpl,
                 'WSColumnDef': dialog.ColumnDef,
                 'WSContextAction': dialog.ContextAction,
                 'WSDialogHandle': dialog.DialogHandle,
                 'WSDataAnno': dialog.DataAnno,
+                'WSDetailsDef': dialog.XDetailsDef,
                 'WSDialogRedirection': dialog.DialogRedirection,
                 'WSEditorRecordDef': dialog.EntityRecDef,
                 'WSEntityRecDef': dialog.EntityRecDef,
+                'WSForcedLineCellValueDef': dialog.ForcedLineCellValueDef,
+                'WSFormDef': dialog.XFormDef,
                 'WSFormModelComp': dialog.XFormModelComp,
+                'WSGeoFixDef': dialog.XGeoFixDef,
+                'WSGeoLocationDef': dialog.XGeoLocationDef,
                 'WSGetActiveColumnDefsResult': dialog.XGetActiveColumnDefsResult,
                 'WSGetSessionListPropertyResult': dialog.XGetSessionListPropertyResult,
+                'WSGraphDataPointDef': dialog.GraphDataPointDef,
+                'WSGraphDef': dialog.XGraphDef,
+                'WSImagePickerDef': dialog.XImagePickerDef,
                 'WSLabelCellValueDef': dialog.LabelCellValueDef,
+                'WSMapDef': dialog.XMapDef,
                 'WSOpenEditorModelResult': dialog.XOpenEditorModelResult,
                 'WSPaneDefRef': dialog.XPaneDefRef,
                 'WSPropertyDef': dialog.PropDef,
                 'WSQueryRecordDef': dialog.EntityRecDef,
                 'WSSubstitutionCellValueDef': dialog.SubstitutionCellValueDef,
+                'WSTabCellValueDef': dialog.TabCellValueDef,
                 'WSWebRedirection': dialog.WebRedirection,
                 'WSWorkbench': dialog.Workbench,
                 'WSWorkbenchRedirection': dialog.WorkbenchRedirection,
@@ -4853,7 +4896,7 @@ var catavolt;
                 'WSCellValueDef': dialog.CellValueDef.fromWS,
                 'WSDataAnnotation': dialog.DataAnno.fromWS,
                 'WSFormModel': dialog.XFormModel.fromWS,
-                'WSGetPaneDefResult': dialog.XPaneDef.fromWS,
+                'WSPaneDef': dialog.XPaneDef.fromWS,
                 'WSProp': dialog.Prop.fromWS,
                 'WSQueryResult': dialog.XQueryResult.fromWS,
                 'WSRedirection': dialog.Redirection.fromWS
@@ -4963,29 +5006,68 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 4/16/15.
+ * Created by rburson on 3/30/15.
  */
 ///<reference path="../references.ts"/>
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var LabelCellValueDef = (function (_super) {
-            __extends(LabelCellValueDef, _super);
-            function LabelCellValueDef(_value, style) {
-                _super.call(this, style);
-                this._value = _value;
+        var FormContextBuilder = (function () {
+            function FormContextBuilder(_dialogRedirection, _actionSource, _sessionContext) {
+                this._dialogRedirection = _dialogRedirection;
+                this._actionSource = _actionSource;
+                this._sessionContext = _sessionContext;
             }
-            Object.defineProperty(LabelCellValueDef.prototype, "value", {
+            Object.defineProperty(FormContextBuilder.prototype, "actionSource", {
                 get: function () {
-                    return this._value;
+                    return this._actionSource;
                 },
                 enumerable: true,
                 configurable: true
             });
-            return LabelCellValueDef;
-        })(dialog.CellValueDef);
-        dialog.LabelCellValueDef = LabelCellValueDef;
+            FormContextBuilder.prototype.build = function () {
+                var _this = this;
+                if (!this.dialogRedirection.isEditor) {
+                    return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
+                }
+                var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
+                return xOpenFr.bind(function (formXOpen) {
+                    var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
+                    //@TODO Test this!
+                    var formXFormDefFr = _this.fetchXFormDef(formXOpen);
+                    return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
+                });
+            };
+            Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
+                get: function () {
+                    return this._dialogRedirection;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormContextBuilder.prototype, "sessionContext", {
+                get: function () {
+                    return this._sessionContext;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            FormContextBuilder.prototype.fetchXFormDef = function (xformOpenResult) {
+                var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
+                var formPaneId = xformOpenResult.formPaneId;
+                return dialog.DialogService.getEditorModelPaneDef(dialogHandle, formPaneId, this.sessionContext).bind(function (value) {
+                    if (value instanceof dialog.XFormDef) {
+                        return Future.createSuccessfulFuture('fetchXFormDef/success', value);
+                    }
+                    else {
+                        return Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + ObjUtil.formatRecAttr(value));
+                    }
+                });
+            };
+            return FormContextBuilder;
+        })();
+        dialog.FormContextBuilder = FormContextBuilder;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map
