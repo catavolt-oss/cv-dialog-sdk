@@ -44,7 +44,7 @@ module catavolt.dialog {
                                      paneId:string,
                                      sessionContext:SessionContext):Future<XPaneDef> {
 
-            var method = 'getEditorModelPaneDef';
+            var method = 'getPaneDef';
             var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
             params['paneId'] = paneId;
             var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);

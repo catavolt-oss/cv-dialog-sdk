@@ -62,6 +62,7 @@ module catavolt.ws {
 
             xmlHttpRequest.onreadystatechange = () => {
                 if (xmlHttpRequest.readyState === 4) {
+                    Log.debug('XmlHttpClinent: Reponse is: ' + ObjUtil.formatRecAttr(xmlHttpRequest.response));
                     if (wRequestTimer) { clearTimeout(wRequestTimer); }
                     if ((xmlHttpRequest.status !== 200) && (xmlHttpRequest.status !== 304)) {
                         if (errorCallback) {

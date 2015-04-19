@@ -28,7 +28,10 @@ module catavolt.dialog {
                 //@TODO Test this!
                 var formXFormDefFr = this.fetchXFormDef(formXOpen);
 
-                return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
+                return formXFormDefFr.bind((value)=>{
+                    Log.debug('formDef is :' + ObjUtil.formatRecAttr(value));
+                    return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
+                });
             });
 
         }
