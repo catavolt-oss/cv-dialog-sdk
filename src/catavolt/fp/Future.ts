@@ -28,6 +28,20 @@ module catavolt.fp {
             return f;
         }
 
+        static sequence<A>(seqOfFutures:Array<Future<A>>): Future<Array<Try<A>>> {
+            var start:Future<Array<Try<A>>> = Future.createSuccessfulFuture<Array<Try<A>>>('Future::sequence/start', []);
+            return seqOfFutures.reduce((seqFr:Future<Array<Try<A>>>, nextFr:Future<A>)=>{
+               return seqFr.bind((seq:Array<Try<A>>)=>{
+                   var pr = new Promise<Array<Try<A>>>('Future::sequence/nextFr');
+                   nextFr.onComplete((t:Try<A>)=>{
+                       seq.push(t);
+                       pr.complete(new Success<Array<Try<A>>>(seq));
+                   });
+                   return pr.future;
+               });
+            }, start);
+        }
+
         private _completionListeners: Array<(t:Try<A>)=>void> = new Array();
         private _result:Try<A>;
 

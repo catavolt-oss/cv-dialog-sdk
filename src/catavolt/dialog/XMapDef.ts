@@ -21,5 +21,10 @@ module catavolt.dialog {
             super();
         }
 
+        //descriptionProperty is misspelled in json returned by server currently...
+        set descrptionProperty(prop:string) {
+            this.descriptionProperty = prop;
+        }
+
     }
 }

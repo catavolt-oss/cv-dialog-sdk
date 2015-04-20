@@ -9,7 +9,7 @@ module catavolt.dialog {
 
     export class ColumnDef {
 
-        constructor(private _name:string, private _heading:string, private _propDef:PropDef) {
+        constructor(private _name:string, private _heading:string, private _propertyDef:PropDef) {
         }
 
         get heading():string {
@@ -17,15 +17,15 @@ module catavolt.dialog {
         }
 
         get isInlineMediaStyle():boolean {
-            return this._propDef.isInlineMediaStyle;
+            return this._propertyDef.isInlineMediaStyle;
         }
 
         get name():string {
             return this._name;
         }
 
-        get propDef():PropDef {
-            return this._propDef;
+        get propertyDef():PropDef {
+            return this._propertyDef;
         }
 
     }

@@ -25,13 +25,24 @@ module catavolt.dialog {
             return xOpenFr.bind((formXOpen:XOpenEditorModelResult)=>{
 
                 var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
-                //@TODO Test this!
                 var formXFormDefFr = this.fetchXFormDef(formXOpen);
+                var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
+                //var formChildrenFr
+                return formXFormDefFr.bind((xFormDef:XFormDef)=>{
 
-                return formXFormDefFr.bind((value)=>{
-                    Log.debug('formDef is :' + ObjUtil.formatRecAttr(value));
-                    return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
+                    var childrenXOpenFr = this.openChildren(formXOpen);
+                    var childrenXPaneDefsFr = this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
+                    var childrenActiveColDefsFr = this.fetchChildrenActiveColDefs(formXOpen);
+                    var childrenMenuDefsFr = this.fetchChildrenMenuDefs(fromXOpen);
+
+                    //debug
+                    return childrenActiveColDefsFr.bind((value:Array<Try<XGetActiveColumnDefsResult>>)=>{
+                      Log.debug('activeColDefsResult  is :' + ObjUtil.formatRecAttr(value));
+                        return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
+                    });
                 });
+
+
             });
 
         }
@@ -42,6 +53,39 @@ module catavolt.dialog {
 
         get sessionContext():SessionContext {
             return this._sessionContext;
+        }
+
+        private fetchChildrenActiveColDefs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XGetActiveColumnDefsResult>>> {
+            var xComps = formXOpen.formModel.children;
+            var seqOfFutures:Array<Future<XGetActiveColumnDefsResult>> = xComps.map((xComp:XFormModelComp)=>{
+               if(xComp.redirection.isQuery) {
+                  return DialogService.getActiveColumnDefs(xComp.redirection.dialogHandle, this.sessionContext);
+               } else {
+                   return Future.createSuccessfulFuture('FormContextBuilder::fetchChildrenActiveColDefs', null);
+               }
+            });
+            return Future.sequence(seqOfFutures);
+        }
+
+        private fetchChildrenMenuDefs(formXOpen:XOpenEditorModelResult):Future<Array<Try<Array<MenuDef>>>> {
+            var xComps = formXOpen.formModel.children;
+            var seqOfFutures = xComps.map((xComp:XFormModelComp)=>{
+                if(xComp.redirection.isEditor) {
+                   return DialogService.getEditorModelMenuDefs(xComp.redirection.dialogHandle, this.sessionContext);
+                } else {
+                    return DialogService.getQuery
+                }
+            });
+        }
+
+        private fetchChildrenXPaneDefs(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):Future<Array<Try<XPaneDef>>> {
+
+            var formHandle:DialogHandle = formXOpen.formModel.form.redirection.dialogHandle;
+            var xRefs = xFormDef.paneDefRefs;
+            var seqOfFutures:Array<Future<XPaneDef>> = xRefs.map((xRef:XPaneDefRef)=>{
+                return DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, this.sessionContext);
+            });
+            return Future.sequence(seqOfFutures);
         }
 
         private fetchXFormDef(xformOpenResult:XOpenEditorModelResult):Future<XFormDef> {
@@ -57,6 +101,21 @@ module catavolt.dialog {
                     }
             });
 
+        }
+
+        private openChildren(formXOpen:XOpenEditorModelResult):Future<Array<Try<XOpenDialogModelResult>>> {
+            var xComps = formXOpen.formModel.children;
+            var seqOfFutures:Array<Future<XOpenDialogModelResult>> = [];
+            xComps.forEach((nextXComp:XFormModelComp)=>{
+               var nextFr = null;
+              if(nextXComp.redirection.isEditor) {
+                 nextFr = DialogService.openEditorModelFromRedir(nextXComp.redirection, this.sessionContext);
+              } else {
+                 nextFr = DialogService.openQueryModelFromRedir(nextXComp.redirection, this.sessionContext);
+              }
+                seqOfFutures.push(nextFr);
+            });
+            return Future.sequence<XOpenDialogModelResult>(seqOfFutures);
         }
 
     }

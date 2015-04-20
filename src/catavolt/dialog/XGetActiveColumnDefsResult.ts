@@ -8,7 +8,7 @@ module catavolt.dialog {
 
     export class XGetActiveColumnDefsResult {
 
-        constructor(public columnStyle:string, public columns:Array<ColumnDef>) {
+        constructor(public columnsStyle:string, public columns:Array<ColumnDef>) {
         }
 
         get columnDefs():Array<ColumnDef> {

@@ -48,9 +48,9 @@ module catavolt.dialog {
             var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
             params['paneId'] = paneId;
             var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-            return call.perform().bind((result:StringDictionary)=>{
-                return Future.createCompletedFuture('getEditorModelPaneDef',
-                    DialogTriple.fromWSDialogObjectResult<MenuDef>(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', OType.factoryFn));
+            return call.perform().bind<XPaneDef>((result:StringDictionary)=>{
+                return Future.createCompletedFuture<XPaneDef>('getEditorModelPaneDef',
+                    DialogTriple.fromWSDialogObjectResult<XPaneDef>(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', OType.factoryFn));
             });
         }
 
@@ -76,12 +76,20 @@ module catavolt.dialog {
 
         }
 
-        /*
         static openQueryModelFromRedir(redirection:DialogRedirection,
                                        sessionContext:SessionContext):Future<XOpenQueryModelResult> {
 
+            if(!redirection.isQuery) return Future.createFailedFuture<XOpenQueryModelResult>('DialogService::openQueryModelFromRedir', 'Redirection must be a query');
+            var method = 'open';
+            var params:StringDictionary = {'dialogHandle':OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle')};
+
+            var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                return Future.createCompletedFuture('openQueryModelFromRedir',
+                    DialogTriple.fromWSDialogObject<XOpenQueryModelResult>(result, 'WSOpenQueryModelResult', OType.factoryFn));
+            });
+
         }
-        */
 
     }
 }
