@@ -27,8 +27,6 @@
 ///<reference path="EntityRecImpl.ts"/>
 ///<reference path="XGetSessionListPropertyResult.ts"/>
 ///<reference path="XPaneDefRef.ts"/>
-///<reference path="XFormDef.ts"/>
-///<reference path="XPaneDef.ts"/>
 ///<reference path="ColumnDef.ts"/>
 ///<reference path="XBarcodeScanDef.ts"/>
 ///<reference path="XCalendarDef.ts"/>
@@ -49,6 +47,7 @@
 ///<reference path="XOpenEditorModelResult.ts"/>
 ///<reference path="XOpenQueryModelResult.ts"/>
 ///<reference path="XPaneDef.ts"/>
+///<reference path="XFormDef.ts"/>
 ///<reference path="XPaneDefRef.ts"/>
 ///<reference path="XPropertyChangeResult.ts"/>
 ///<reference path="XQueryResult.ts"/>
@@ -83,6 +82,7 @@
 ///<reference path="WorkbenchService.ts"/>
 ///<reference path="PaneDef.ts"/>
 ///<reference path="FormDef.ts"/>
+///<reference path="DetailsDef.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>

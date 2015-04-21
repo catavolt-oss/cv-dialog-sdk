@@ -341,6 +341,40 @@ var catavolt;
         var Try = (function () {
             function Try() {
             }
+            Try.flatten = function (tryList) {
+                var successes = [];
+                var failures = [];
+                tryList.forEach(function (t) {
+                    if (t.isFailure) {
+                        failures.push(t);
+                    }
+                    else {
+                        if (Array.isArray(t.success) && Try.isListOfTry(t.success)) {
+                            var flattened = Try.flatten(t.success);
+                            if (flattened.isFailure) {
+                                failures.push(flattened.failure);
+                            }
+                            else {
+                                successes.push(flattened.success);
+                            }
+                        }
+                        else {
+                            successes.push(t.success);
+                        }
+                    }
+                });
+                if (failures.length > 0) {
+                    return new fp.Failure(failures);
+                }
+                else {
+                    return new fp.Success(successes);
+                }
+            };
+            Try.isListOfTry = function (list) {
+                return list.every(function (value) {
+                    return (value instanceof Try);
+                });
+            };
             Try.prototype.bind = function (f) {
                 return this.isFailure ? new fp.Failure(this.failure) : f(this.success);
             };
@@ -2807,84 +2841,6 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 3/30/15.
- */
-///<reference path="../references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var XFormDef = (function () {
-            function XFormDef(borderStyle, formLayout, formStyle, name, paneId, title, headerDefRef, paneDefRefs) {
-                this.borderStyle = borderStyle;
-                this.formLayout = formLayout;
-                this.formStyle = formStyle;
-                this.name = name;
-                this.paneId = paneId;
-                this.title = title;
-                this.headerDefRef = headerDefRef;
-                this.paneDefRefs = paneDefRefs;
-            }
-            return XFormDef;
-        })();
-        dialog.XFormDef = XFormDef;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/30/15.
- */
-///<reference path="../references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        /*
-            @TODO
-        */
-        var XPaneDef = (function () {
-            function XPaneDef() {
-            }
-            XPaneDef.fromWS = function (otype, jsonObj) {
-                if (jsonObj['listDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['listDef'], 'WSListDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['detailsDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['detailsDef'], 'WSDetailsDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['formDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['formDef'], 'WSFormDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['mapDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['mapDef'], 'WSMapDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['graphDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['graphDef'], 'WSGraphDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['barcodeScanDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['barcodeScanDef'], 'WSBarcodeScanDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['imagePickerDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['imagePickerDef'], 'WSImagePickerDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['geoFixDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['geoFixDef'], 'WSGeoFixDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['geoLocationDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['geoLocationDef'], 'WSGeoLocationDef', dialog.OType.factoryFn);
-                }
-                else if (jsonObj['calendarDef']) {
-                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['calendarDef'], 'WSCalendarDef', dialog.OType.factoryFn);
-                }
-                else {
-                    return new Failure('XPaneDef::fromWS: Cannot determine concrete class for XPaneDef ' + ObjUtil.formatRecAttr(jsonObj));
-                }
-            };
-            return XPaneDef;
-        })();
-        dialog.XPaneDef = XPaneDef;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
  * Created by rburson on 4/1/15.
  */
 ///<reference path="../references.ts"/>
@@ -3373,6 +3329,84 @@ var catavolt;
             return XOpenQueryModelResult;
         })();
         dialog.XOpenQueryModelResult = XOpenQueryModelResult;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        /*
+            @TODO
+        */
+        var XPaneDef = (function () {
+            function XPaneDef() {
+            }
+            XPaneDef.fromWS = function (otype, jsonObj) {
+                if (jsonObj['listDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['listDef'], 'WSListDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['detailsDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['detailsDef'], 'WSDetailsDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['formDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['formDef'], 'WSFormDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['mapDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['mapDef'], 'WSMapDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['graphDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['graphDef'], 'WSGraphDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['barcodeScanDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['barcodeScanDef'], 'WSBarcodeScanDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['imagePickerDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['imagePickerDef'], 'WSImagePickerDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['geoFixDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['geoFixDef'], 'WSGeoFixDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['geoLocationDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['geoLocationDef'], 'WSGeoLocationDef', dialog.OType.factoryFn);
+                }
+                else if (jsonObj['calendarDef']) {
+                    return dialog.DialogTriple.fromWSDialogObject(jsonObj['calendarDef'], 'WSCalendarDef', dialog.OType.factoryFn);
+                }
+                else {
+                    return new Failure('XPaneDef::fromWS: Cannot determine concrete class for XPaneDef ' + ObjUtil.formatRecAttr(jsonObj));
+                }
+            };
+            return XPaneDef;
+        })();
+        dialog.XPaneDef = XPaneDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var XFormDef = (function () {
+            function XFormDef(borderStyle, formLayout, formStyle, name, paneId, title, headerDefRef, paneDefRefs) {
+                this.borderStyle = borderStyle;
+                this.formLayout = formLayout;
+                this.formStyle = formStyle;
+                this.name = name;
+                this.paneId = paneId;
+                this.title = title;
+                this.headerDefRef = headerDefRef;
+                this.paneDefRefs = paneDefRefs;
+            }
+            return XFormDef;
+        })();
+        dialog.XFormDef = XFormDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -3998,11 +4032,14 @@ var catavolt;
                     return Future.createCompletedFuture('getEditorModelPaneDef', dialog.DialogTriple.fromWSDialogObjectResult(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', dialog.OType.factoryFn));
                 });
             };
-            /*
-            static getQueryModelMenuDefs(dialogHandle:DialogHandle,
-                                         sessionContext:SessionContext):Future<List<MenuDef>> {
-    
-            }*/
+            DialogService.getQueryModelMenuDefs = function (dialogHandle, sessionContext) {
+                var method = 'getMenuDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getQueryModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
+                });
+            };
             DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
                 var method = 'open2';
                 var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
@@ -4700,29 +4737,87 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var PaneDef = (function () {
-            function PaneDef() {
+            function PaneDef(_paneId, _name, _label, _title, _menuDefs, _entityRecDef, _dialogRedirection, _settings) {
+                this._paneId = _paneId;
+                this._name = _name;
+                this._label = _label;
+                this._title = _title;
+                this._menuDefs = _menuDefs;
+                this._entityRecDef = _entityRecDef;
+                this._dialogRedirection = _dialogRedirection;
+                this._settings = _settings;
             }
+            Object.defineProperty(PaneDef.prototype, "dialogHandle", {
+                get: function () {
+                    return this._dialogRedirection.dialogHandle;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneDef.prototype, "dialogRedirection", {
+                get: function () {
+                    return this._dialogRedirection;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneDef.prototype, "label", {
+                get: function () {
+                    return this._label;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneDef.prototype, "menuDefs", {
+                get: function () {
+                    return this._menuDefs;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneDef.prototype, "name", {
+                get: function () {
+                    return this._name;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneDef.prototype, "paneId", {
+                get: function () {
+                    return this._paneId;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneDef.prototype, "settings", {
+                get: function () {
+                    return this._settings;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return PaneDef;
         })();
         dialog.PaneDef = PaneDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 3/30/15.
+ * Created by rburson on 4/21/15.
  */
 ///<reference path="../references.ts"/>
+/* @TODO */
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var FormDef = (function (_super) {
-            __extends(FormDef, _super);
-            function FormDef() {
-                _super.apply(this, arguments);
+        var DetailsDef = (function (_super) {
+            __extends(DetailsDef, _super);
+            function DetailsDef() {
+                _super.call(this);
             }
-            return FormDef;
+            return DetailsDef;
         })(dialog.PaneDef);
-        dialog.FormDef = FormDef;
+        dialog.DetailsDef = DetailsDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -4764,6 +4859,154 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var FormContextBuilder = (function () {
+            function FormContextBuilder(_dialogRedirection, _actionSource, _sessionContext) {
+                this._dialogRedirection = _dialogRedirection;
+                this._actionSource = _actionSource;
+                this._sessionContext = _sessionContext;
+            }
+            Object.defineProperty(FormContextBuilder.prototype, "actionSource", {
+                get: function () {
+                    return this._actionSource;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            FormContextBuilder.prototype.build = function () {
+                var _this = this;
+                if (!this.dialogRedirection.isEditor) {
+                    return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
+                }
+                var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
+                var openAllFr = xOpenFr.bind(function (formXOpen) {
+                    var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
+                    var formXFormDefFr = _this.fetchXFormDef(formXOpen);
+                    var formMenuDefsFr = dialog.DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, _this.sessionContext);
+                    var formChildrenFr = formXFormDefFr.bind(function (xFormDef) {
+                        var childrenXOpenFr = _this.openChildren(formXOpen);
+                        var childrenXPaneDefsFr = _this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
+                        var childrenActiveColDefsFr = _this.fetchChildrenActiveColDefs(formXOpen);
+                        var childrenMenuDefsFr = _this.fetchChildrenMenuDefs(formXOpen);
+                        return Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr]);
+                    });
+                    return Future.sequence([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
+                });
+                //debug
+                return openAllFr.bind(function (value) {
+                    var formDefTry = completeOpenPromise(value);
+                    Log.debug('openall value is :' + ObjUtil.formatRecAttr(value));
+                    return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
+                });
+            };
+            FormContextBuilder.prototype.completeOpenPromise = function (openAllResults) {
+                var flattenedTry = Try.flatten(openAllResults);
+                if (flattenedTry.isFailure) {
+                    return new Failure('FormContextBuilder::build: ' + ObjUtil.formatRecAttr(flattenedTry.failure));
+                }
+                var flattened = flattenedTry.success;
+                if (flattened.length != 4)
+                    return new Failure('FormContextBuilder::build: Open form should have resulted in 4 elements');
+                var formXOpen = flattened[0];
+                var formXFormDef = flattened[1];
+                var formMenuDefs = flattened[2];
+                var formChildren = flattened[3];
+                if (formChildren.length != 4)
+                    return new Failure('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
+                var childrenXOpens = formChildren[0];
+                var childrenXPaneDefs = formChildren[1];
+                var childrenXActiveColDefs = formChildren[2];
+                var childrenMenuDefs = formChildren[3];
+            };
+            Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
+                get: function () {
+                    return this._dialogRedirection;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormContextBuilder.prototype, "sessionContext", {
+                get: function () {
+                    return this._sessionContext;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            FormContextBuilder.prototype.fetchChildrenActiveColDefs = function (formXOpen) {
+                var _this = this;
+                var xComps = formXOpen.formModel.children;
+                var seqOfFutures = xComps.map(function (xComp) {
+                    if (xComp.redirection.isQuery) {
+                        return dialog.DialogService.getActiveColumnDefs(xComp.redirection.dialogHandle, _this.sessionContext);
+                    }
+                    else {
+                        return Future.createSuccessfulFuture('FormContextBuilder::fetchChildrenActiveColDefs', null);
+                    }
+                });
+                return Future.sequence(seqOfFutures);
+            };
+            FormContextBuilder.prototype.fetchChildrenMenuDefs = function (formXOpen) {
+                var _this = this;
+                var xComps = formXOpen.formModel.children;
+                var seqOfFutures = xComps.map(function (xComp) {
+                    if (xComp.redirection.isEditor) {
+                        return dialog.DialogService.getEditorModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
+                    }
+                    else {
+                        return dialog.DialogService.getQueryModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
+                    }
+                });
+                return Future.sequence(seqOfFutures);
+            };
+            FormContextBuilder.prototype.fetchChildrenXPaneDefs = function (formXOpen, xFormDef) {
+                var _this = this;
+                var formHandle = formXOpen.formModel.form.redirection.dialogHandle;
+                var xRefs = xFormDef.paneDefRefs;
+                var seqOfFutures = xRefs.map(function (xRef) {
+                    return dialog.DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, _this.sessionContext);
+                });
+                return Future.sequence(seqOfFutures);
+            };
+            FormContextBuilder.prototype.fetchXFormDef = function (xformOpenResult) {
+                var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
+                var formPaneId = xformOpenResult.formPaneId;
+                return dialog.DialogService.getEditorModelPaneDef(dialogHandle, formPaneId, this.sessionContext).bind(function (value) {
+                    if (value instanceof dialog.XFormDef) {
+                        return Future.createSuccessfulFuture('fetchXFormDef/success', value);
+                    }
+                    else {
+                        return Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + ObjUtil.formatRecAttr(value));
+                    }
+                });
+            };
+            FormContextBuilder.prototype.openChildren = function (formXOpen) {
+                var _this = this;
+                var xComps = formXOpen.formModel.children;
+                var seqOfFutures = [];
+                xComps.forEach(function (nextXComp) {
+                    var nextFr = null;
+                    if (nextXComp.redirection.isEditor) {
+                        nextFr = dialog.DialogService.openEditorModelFromRedir(nextXComp.redirection, _this.sessionContext);
+                    }
+                    else {
+                        nextFr = dialog.DialogService.openQueryModelFromRedir(nextXComp.redirection, _this.sessionContext);
+                    }
+                    seqOfFutures.push(nextFr);
+                });
+                return Future.sequence(seqOfFutures);
+            };
+            return FormContextBuilder;
+        })();
+        dialog.FormContextBuilder = FormContextBuilder;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/23/15.
  */
 ///<reference path="../references.ts"/>
@@ -4795,14 +5038,18 @@ var catavolt;
                     var objTry = factoryFn(Otype, obj); //this returns null if there is no custom function
                     if (objTry) {
                         if (objTry.isFailure) {
-                            return new Failure('OType::deserializeObject: factory failed to produce object for ' + Otype + " : " + ObjUtil.formatRecAttr(objTry.failure));
+                            var error = 'OType::deserializeObject: factory failed to produce object for ' + Otype + " : " + ObjUtil.formatRecAttr(objTry.failure);
+                            Log.error(error);
+                            return new Failure(error);
                         }
                         newObj = objTry.success;
                     }
                     else {
                         newObj = OType.typeInstance(Otype);
-                        if (!newObj)
+                        if (!newObj) {
+                            Log.error('OType::deserializeObject: no type constructor found for ' + Otype);
                             return new Failure('OType::deserializeObject: no type constructor found for ' + Otype);
+                        }
                         for (var prop in obj) {
                             var value = obj[prop];
                             //Log.info("prop: " + prop + " is type " + typeof value);
@@ -4916,6 +5163,7 @@ var catavolt;
                 'WSLabelCellValueDef': dialog.LabelCellValueDef,
                 'WSListDef': dialog.XListDef,
                 'WSMapDef': dialog.XMapDef,
+                'WSMenuDef': dialog.MenuDef,
                 'WSOpenEditorModelResult': dialog.XOpenEditorModelResult,
                 'WSOpenQueryModelResult': dialog.XOpenQueryModelResult,
                 'WSPaneDefRef': dialog.XPaneDefRef,
@@ -4972,8 +5220,6 @@ var catavolt;
 ///<reference path="EntityRecImpl.ts"/>
 ///<reference path="XGetSessionListPropertyResult.ts"/>
 ///<reference path="XPaneDefRef.ts"/>
-///<reference path="XFormDef.ts"/>
-///<reference path="XPaneDef.ts"/>
 ///<reference path="ColumnDef.ts"/>
 ///<reference path="XBarcodeScanDef.ts"/>
 ///<reference path="XCalendarDef.ts"/>
@@ -4994,6 +5240,7 @@ var catavolt;
 ///<reference path="XOpenEditorModelResult.ts"/>
 ///<reference path="XOpenQueryModelResult.ts"/>
 ///<reference path="XPaneDef.ts"/>
+///<reference path="XFormDef.ts"/>
 ///<reference path="XPaneDefRef.ts"/>
 ///<reference path="XPropertyChangeResult.ts"/>
 ///<reference path="XQueryResult.ts"/>
@@ -5028,6 +5275,7 @@ var catavolt;
 ///<reference path="WorkbenchService.ts"/>
 ///<reference path="PaneDef.ts"/>
 ///<reference path="FormDef.ts"/>
+///<reference path="DetailsDef.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>
@@ -5051,122 +5299,33 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var FormContextBuilder = (function () {
-            function FormContextBuilder(_dialogRedirection, _actionSource, _sessionContext) {
-                this._dialogRedirection = _dialogRedirection;
-                this._actionSource = _actionSource;
-                this._sessionContext = _sessionContext;
+        var FormDef = (function (_super) {
+            __extends(FormDef, _super);
+            function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+                this._formLayout = _formLayout;
+                this._formStyle = _formStyle;
+                this._borderStyle = _borderStyle;
+                this._headerDef = _headerDef;
+                this._childrenDefs = _childrenDefs;
             }
-            Object.defineProperty(FormContextBuilder.prototype, "actionSource", {
+            Object.defineProperty(FormDef.prototype, "borderStyle", {
                 get: function () {
-                    return this._actionSource;
+                    return this._borderStyle;
                 },
                 enumerable: true,
                 configurable: true
             });
-            FormContextBuilder.prototype.build = function () {
-                var _this = this;
-                if (!this.dialogRedirection.isEditor) {
-                    return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
-                }
-                var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
-                return xOpenFr.bind(function (formXOpen) {
-                    var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
-                    var formXFormDefFr = _this.fetchXFormDef(formXOpen);
-                    var formMenuDefsFr = dialog.DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, _this.sessionContext);
-                    //var formChildrenFr
-                    return formXFormDefFr.bind(function (xFormDef) {
-                        var childrenXOpenFr = _this.openChildren(formXOpen);
-                        var childrenXPaneDefsFr = _this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
-                        var childrenActiveColDefsFr = _this.fetchChildrenActiveColDefs(formXOpen);
-                        var childrenMenuDefsFr = _this.fetchChildrenMenuDefs(fromXOpen);
-                        //debug
-                        return childrenActiveColDefsFr.bind(function (value) {
-                            Log.debug('activeColDefsResult  is :' + ObjUtil.formatRecAttr(value));
-                            return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
-                        });
-                    });
-                });
-            };
-            Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
+            Object.defineProperty(FormDef.prototype, "childrenDefs", {
                 get: function () {
-                    return this._dialogRedirection;
+                    return this._childrenDefs;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(FormContextBuilder.prototype, "sessionContext", {
-                get: function () {
-                    return this._sessionContext;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            FormContextBuilder.prototype.fetchChildrenActiveColDefs = function (formXOpen) {
-                var _this = this;
-                var xComps = formXOpen.formModel.children;
-                var seqOfFutures = xComps.map(function (xComp) {
-                    if (xComp.redirection.isQuery) {
-                        return dialog.DialogService.getActiveColumnDefs(xComp.redirection.dialogHandle, _this.sessionContext);
-                    }
-                    else {
-                        return Future.createSuccessfulFuture('FormContextBuilder::fetchChildrenActiveColDefs', null);
-                    }
-                });
-                return Future.sequence(seqOfFutures);
-            };
-            FormContextBuilder.prototype.fetchChildrenMenuDefs = function (formXOpen) {
-                var _this = this;
-                var xComps = formXOpen.formModel.children;
-                var seqOfFutures = xComps.map(function (xComp) {
-                    if (xComp.redirection.isEditor) {
-                        return dialog.DialogService.getEditorModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
-                    }
-                    else {
-                        return dialog.DialogService.getQuery;
-                    }
-                });
-            };
-            FormContextBuilder.prototype.fetchChildrenXPaneDefs = function (formXOpen, xFormDef) {
-                var _this = this;
-                var formHandle = formXOpen.formModel.form.redirection.dialogHandle;
-                var xRefs = xFormDef.paneDefRefs;
-                var seqOfFutures = xRefs.map(function (xRef) {
-                    return dialog.DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, _this.sessionContext);
-                });
-                return Future.sequence(seqOfFutures);
-            };
-            FormContextBuilder.prototype.fetchXFormDef = function (xformOpenResult) {
-                var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
-                var formPaneId = xformOpenResult.formPaneId;
-                return dialog.DialogService.getEditorModelPaneDef(dialogHandle, formPaneId, this.sessionContext).bind(function (value) {
-                    if (value instanceof dialog.XFormDef) {
-                        return Future.createSuccessfulFuture('fetchXFormDef/success', value);
-                    }
-                    else {
-                        return Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + ObjUtil.formatRecAttr(value));
-                    }
-                });
-            };
-            FormContextBuilder.prototype.openChildren = function (formXOpen) {
-                var _this = this;
-                var xComps = formXOpen.formModel.children;
-                var seqOfFutures = [];
-                xComps.forEach(function (nextXComp) {
-                    var nextFr = null;
-                    if (nextXComp.redirection.isEditor) {
-                        nextFr = dialog.DialogService.openEditorModelFromRedir(nextXComp.redirection, _this.sessionContext);
-                    }
-                    else {
-                        nextFr = dialog.DialogService.openQueryModelFromRedir(nextXComp.redirection, _this.sessionContext);
-                    }
-                    seqOfFutures.push(nextFr);
-                });
-                return Future.sequence(seqOfFutures);
-            };
-            return FormContextBuilder;
-        })();
-        dialog.FormContextBuilder = FormContextBuilder;
+            return FormDef;
+        })(dialog.PaneDef);
+        dialog.FormDef = FormDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

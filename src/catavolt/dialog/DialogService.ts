@@ -54,11 +54,17 @@ module catavolt.dialog {
             });
         }
 
-        /*
         static getQueryModelMenuDefs(dialogHandle:DialogHandle,
-                                     sessionContext:SessionContext):Future<List<MenuDef>> {
-
-        }*/
+                                     sessionContext:SessionContext):Future<Array<MenuDef>> {
+            var method = 'getMenuDefs';
+            var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+            var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                return Future.createCompletedFuture('getQueryModelMenuDefs',
+                    DialogTriple.fromWSDialogObjectsResult<MenuDef>(result, 'WSGetMenuDefsResult', 'WSMenuDef',
+                        'menuDefs', OType.factoryFn));
+            });
+        }
 
         static openEditorModelFromRedir(redirection:DialogRedirection,
                                         sessionContext:SessionContext):Future<XOpenEditorModelResult> {

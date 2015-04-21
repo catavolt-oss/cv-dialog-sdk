@@ -35,6 +35,7 @@ module catavolt.dialog {
             'WSLabelCellValueDef': LabelCellValueDef,
             'WSListDef': XListDef,
             'WSMapDef': XMapDef,
+            'WSMenuDef': MenuDef,
             'WSOpenEditorModelResult': XOpenEditorModelResult,
             'WSOpenQueryModelResult': XOpenQueryModelResult,
             'WSPaneDefRef': XPaneDefRef,
@@ -83,13 +84,18 @@ module catavolt.dialog {
                 var objTry:Try<A> = factoryFn(Otype, obj); //this returns null if there is no custom function
                 if(objTry) {
                     if(objTry.isFailure) {
-                        return new Failure<A>('OType::deserializeObject: factory failed to produce object for '
-                        + Otype + " : " + ObjUtil.formatRecAttr(objTry.failure));
+                        var error = 'OType::deserializeObject: factory failed to produce object for ' + Otype + " : "
+                            + ObjUtil.formatRecAttr(objTry.failure);
+                        Log.error(error);
+                        return new Failure<A>(error);
                     }
                     newObj = objTry.success;
                 } else {
                     newObj = OType.typeInstance(Otype);
-                    if (!newObj) return new Failure<A>('OType::deserializeObject: no type constructor found for ' + Otype);
+                    if (!newObj) {
+                        Log.error('OType::deserializeObject: no type constructor found for ' + Otype);
+                        return new Failure<A>('OType::deserializeObject: no type constructor found for ' + Otype);
+                    }
                     for (var prop in obj) {
                         var value = obj[prop];
                         //Log.info("prop: " + prop + " is type " + typeof value);

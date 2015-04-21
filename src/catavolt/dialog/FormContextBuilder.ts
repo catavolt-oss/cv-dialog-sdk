@@ -22,28 +22,52 @@ module catavolt.dialog {
             }
             var xOpenFr = DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
 
-            return xOpenFr.bind((formXOpen:XOpenEditorModelResult)=>{
+            var openAllFr:Future<Array<Try<any>>> = xOpenFr.bind((formXOpen:XOpenEditorModelResult)=>{
 
                 var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
                 var formXFormDefFr = this.fetchXFormDef(formXOpen);
                 var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
-                //var formChildrenFr
-                return formXFormDefFr.bind((xFormDef:XFormDef)=>{
-
+                var formChildrenFr = formXFormDefFr.bind((xFormDef:XFormDef)=>{
                     var childrenXOpenFr = this.openChildren(formXOpen);
                     var childrenXPaneDefsFr = this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
                     var childrenActiveColDefsFr = this.fetchChildrenActiveColDefs(formXOpen);
-                    var childrenMenuDefsFr = this.fetchChildrenMenuDefs(fromXOpen);
-
-                    //debug
-                    return childrenActiveColDefsFr.bind((value:Array<Try<XGetActiveColumnDefsResult>>)=>{
-                      Log.debug('activeColDefsResult  is :' + ObjUtil.formatRecAttr(value));
-                        return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
-                    });
+                    var childrenMenuDefsFr = this.fetchChildrenMenuDefs(formXOpen);
+                    return Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr]);
                 });
-
-
+                return Future.sequence<any>([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
             });
+
+            //debug
+            return openAllFr.bind((value:Array<Try<any>>)=>{
+                var formDefTry = completeOpenPromise(value);
+
+                Log.debug('openall value is :' + ObjUtil.formatRecAttr(value));
+                return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
+            });
+
+        }
+
+        private completeOpenPromise(openAllResults:Array<Try<any>>):Try<FormDef> {
+
+            var flattenedTry:Try<Array<any>> = Try.flatten(openAllResults);
+            if (flattenedTry.isFailure) {
+                return new Failure<FormDef>('FormContextBuilder::build: ' + ObjUtil.formatRecAttr(flattenedTry.failure));
+            }
+            var flattened = flattenedTry.success;
+
+            if(flattened.length != 4) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 4 elements');
+
+            var formXOpen:XOpenEditorModelResult = flattened[0];
+            var formXFormDef:XFormDef = flattened[1];
+            var formMenuDefs:Array<MenuDef> = flattened[2];
+            var formChildren:Array<any> = flattened[3];
+
+            if(formChildren.length != 4) return new Failure('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
+
+            var childrenXOpens:Array<XOpenDialogModelResult> = formChildren[0];
+            var childrenXPaneDefs:Array<XPaneDef> = formChildren[1];
+            var childrenXActiveColDefs:Array<XGetActiveColumnDefsResult> = formChildren[2];
+            var childrenMenuDefs:Array<Array<MenuDef>> = formChildren[3];
 
         }
 
@@ -73,9 +97,10 @@ module catavolt.dialog {
                 if(xComp.redirection.isEditor) {
                    return DialogService.getEditorModelMenuDefs(xComp.redirection.dialogHandle, this.sessionContext);
                 } else {
-                    return DialogService.getQuery
+                    return DialogService.getQueryModelMenuDefs(xComp.redirection.dialogHandle, this.sessionContext);
                 }
             });
+            return Future.sequence(seqOfFutures);
         }
 
         private fetchChildrenXPaneDefs(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):Future<Array<Try<XPaneDef>>> {
