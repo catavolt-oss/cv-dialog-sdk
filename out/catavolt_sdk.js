@@ -3215,6 +3215,9 @@ var catavolt;
                 get: function () {
                     return this.overrideGML;
                 },
+                set: function (graphicalMarkup) {
+                    this.overrideGML = graphicalMarkup;
+                },
                 enumerable: true,
                 configurable: true
             });
@@ -4747,6 +4750,11 @@ var catavolt;
                 this._dialogRedirection = _dialogRedirection;
                 this._settings = _settings;
             }
+            PaneDef.fromOpenPaneResult = function (childXOpenResult, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs) {
+                var settings = [];
+                ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
+                var newPaneDef;
+            };
             Object.defineProperty(PaneDef.prototype, "dialogHandle", {
                 get: function () {
                     return this._dialogRedirection.dialogHandle;
@@ -4802,23 +4810,258 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 4/21/15.
+ * Created by rburson on 3/30/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var FormDef = (function (_super) {
+            __extends(FormDef, _super);
+            function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+                this._formLayout = _formLayout;
+                this._formStyle = _formStyle;
+                this._borderStyle = _borderStyle;
+                this._headerDef = _headerDef;
+                this._childrenDefs = _childrenDefs;
+            }
+            FormDef.fromOpenFormResult = function (formXOpenResult, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs) {
+                var settings = { 'open': true };
+                ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
+                var headerDef = null;
+                for (var i = 0; i < childrenXOpens.length; i++) {
+                    var childXOpen = childrenXOpens[i];
+                    var childXPaneDef = childrenXPaneDefs[i];
+                    var childXActiveColDefs = childrenXActiveColDefs[i];
+                    var childMenuDefs = childrenMenuDefs[i];
+                    var childXComp = formXOpenResult.formModel.children[i];
+                    var childXPaneDefRef = formXFormDef.paneDefRefs[i];
+                    var paneDefTry = dialog.PaneDef.fromOpenPaneResult();
+                }
+            };
+            Object.defineProperty(FormDef.prototype, "borderStyle", {
+                get: function () {
+                    return this._borderStyle;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "childrenDefs", {
+                get: function () {
+                    return this._childrenDefs;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "formLayout", {
+                get: function () {
+                    return this._formLayout;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "formStyle", {
+                get: function () {
+                    return this._formStyle;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "headerDef", {
+                get: function () {
+                    return this._headerDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isFlowingLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'FLOWING';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isFlowingTopDownLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'FLOWING_TOP_DOWN';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isFourBoxSquareLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'FOUR_BOX_SQUARE';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isHorizontalLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'H';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isOptionsFormLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'OPTIONS_FORM';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isTabsLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'TABS';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isThreeBoxOneLeftLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'THREE_ONE_LEFT';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isThreeBoxOneOverLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'THREE_ONE_OVER';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isThreeBoxOneRightLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'THREE_ONE_RIGHT';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isThreeBoxOneUnderLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'THREE_ONE_UNDER';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isTopDownLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'TOP_DOWN';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormDef.prototype, "isTwoVerticalLayout", {
+                get: function () {
+                    return this.formLayout && this.formLayout === 'H(2,V)';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return FormDef;
+        })(dialog.PaneDef);
+        dialog.FormDef = FormDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/22/15.
  */
 ///<reference path="../references.ts"/>
 /* @TODO */
 var catavolt;
 (function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var DetailsDef = (function (_super) {
-            __extends(DetailsDef, _super);
-            function DetailsDef() {
-                _super.call(this);
-            }
-            return DetailsDef;
-        })(dialog.PaneDef);
-        dialog.DetailsDef = DetailsDef;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+    var MapDef = (function () {
+        function MapDef() {
+        }
+        return MapDef;
+    })();
+    catavolt.MapDef = MapDef;
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/22/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var GraphDef = (function () {
+        function GraphDef() {
+        }
+        return GraphDef;
+    })();
+    catavolt.GraphDef = GraphDef;
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/22/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var GeoFixDef = (function () {
+        function GeoFixDef() {
+        }
+        return GeoFixDef;
+    })();
+    catavolt.GeoFixDef = GeoFixDef;
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/22/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var GeoLocationDef = (function () {
+        function GeoLocationDef() {
+        }
+        return GeoLocationDef;
+    })();
+    catavolt.GeoLocationDef = GeoLocationDef;
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/22/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var BarcodeScanDef = (function () {
+        function BarcodeScanDef() {
+        }
+        return BarcodeScanDef;
+    })();
+    catavolt.BarcodeScanDef = BarcodeScanDef;
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/22/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var CalendarDef = (function () {
+        function CalendarDef() {
+        }
+        return CalendarDef;
+    })();
+    catavolt.CalendarDef = CalendarDef;
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/22/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var ImagePickerDef = (function () {
+        function ImagePickerDef() {
+        }
+        return ImagePickerDef;
+    })();
+    catavolt.ImagePickerDef = ImagePickerDef;
 })(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 3/30/15.
@@ -5275,7 +5518,14 @@ var catavolt;
 ///<reference path="WorkbenchService.ts"/>
 ///<reference path="PaneDef.ts"/>
 ///<reference path="FormDef.ts"/>
-///<reference path="DetailsDef.ts"/>
+///<reference path="ListDef.ts"/>
+///<reference path="MapDef.ts"/>
+///<reference path="GraphDef.ts"/>
+///<reference path="GeoFixDef.ts"/>
+///<reference path="GeoLocationDef.ts"/>
+///<reference path="BarcodeScanDef.ts"/>
+///<reference path="CalendarDef.ts"/>
+///<reference path="ImagePickerDef.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>
@@ -5292,40 +5542,28 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 3/30/15.
+ * Created by rburson on 4/22/15.
  */
 ///<reference path="../references.ts"/>
+/* @TODO */
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var FormDef = (function (_super) {
-            __extends(FormDef, _super);
-            function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs) {
-                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
-                this._formLayout = _formLayout;
-                this._formStyle = _formStyle;
-                this._borderStyle = _borderStyle;
-                this._headerDef = _headerDef;
-                this._childrenDefs = _childrenDefs;
+        var ListDef = (function (_super) {
+            __extends(ListDef, _super);
+            function ListDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _style, _initialColumns, _activeColumnDefs, _columnsStyle, _defaultActionId, _graphicalMarkup) {
+                _super.call(this);
+                this._style = _style;
+                this._initialColumns = _initialColumns;
+                this._activeColumnDefs = _activeColumnDefs;
+                this._columnsStyle = _columnsStyle;
+                this._defaultActionId = _defaultActionId;
+                this._graphicalMarkup = _graphicalMarkup;
             }
-            Object.defineProperty(FormDef.prototype, "borderStyle", {
-                get: function () {
-                    return this._borderStyle;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(FormDef.prototype, "childrenDefs", {
-                get: function () {
-                    return this._childrenDefs;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return FormDef;
+            return ListDef;
         })(dialog.PaneDef);
-        dialog.FormDef = FormDef;
+        dialog.ListDef = ListDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

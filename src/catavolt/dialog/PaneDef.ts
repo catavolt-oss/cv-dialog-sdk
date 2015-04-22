@@ -8,6 +8,22 @@ module catavolt.dialog {
 
     export class PaneDef {
 
+        static fromOpenPaneResult(childXOpenResult:XOpenDialogModelResult,
+                                  childXComp:XFormModelComp,
+                                  childXPaneDefRef:XPaneDefRef,
+                                  childXPaneDef:XPaneDef,
+                                  childXActiveColDefs:XGetActiveColumnDefsResult,
+                                  childMenuDefs:Array<MenuDef>) {
+            var settings = [];
+            ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
+
+            var newPaneDef:PaneDef;
+
+
+
+
+        }
+
         constructor(private _paneId:string,
                     private _name:string,
                     private _label:string,

@@ -82,7 +82,14 @@
 ///<reference path="WorkbenchService.ts"/>
 ///<reference path="PaneDef.ts"/>
 ///<reference path="FormDef.ts"/>
-///<reference path="DetailsDef.ts"/>
+///<reference path="ListDef.ts"/>
+///<reference path="MapDef.ts"/>
+///<reference path="GraphDef.ts"/>
+///<reference path="GeoFixDef.ts"/>
+///<reference path="GeoLocationDef.ts"/>
+///<reference path="BarcodeScanDef.ts"/>
+///<reference path="CalendarDef.ts"/>
+///<reference path="ImagePickerDef.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>

@@ -22,5 +22,9 @@ module catavolt.dialog {
             return this.overrideGML;
         }
 
+        set graphicalMarkup(graphicalMarkup:string) {
+            this.overrideGML = graphicalMarkup;
+        }
+
     }
 }

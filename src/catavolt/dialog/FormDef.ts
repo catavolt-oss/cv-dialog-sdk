@@ -8,16 +8,38 @@ module catavolt.dialog {
 
     export class FormDef extends PaneDef {
 
-        constructor(
-            paneId:string,
-            name:string,
-            label:string,
-            title:string,
-            menuDefs:Array<MenuDef>,
-            entityRecDef:EntityRecDef,
-            dialogRedirection:DialogRedirection,
-            settings:StringDictionary,
-            private _formLayout:string,
+        static fromOpenFormResult(formXOpenResult:XOpenEditorModelResult,
+                                  formXFormDef:XFormDef,
+                                  formMenuDefs:Array<MenuDef>,
+                                  childrenXOpens:Array<XOpenDialogModelResult>,
+                                  childrenXPaneDefs:Array<XPaneDef>,
+                                  childrenXActiveColDefs:Array<XGetActiveColumnDefsResult>,
+                                  childrenMenuDefs:Array<Array<MenuDef>>) {
+
+            var settings = {'open': true};
+            ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
+            var headerDef:DetailsDef = null;
+            for(var i = 0; i < childrenXOpens.length; i++) {
+                var childXOpen = childrenXOpens[i];
+                var childXPaneDef = childrenXPaneDefs[i];
+                var childXActiveColDefs = childrenXActiveColDefs[i];
+                var childMenuDefs = childrenMenuDefs[i];
+                var childXComp = formXOpenResult.formModel.children[i];
+                var childXPaneDefRef = formXFormDef.paneDefRefs[i];
+                var paneDefTry = PaneDef.fromOpenPaneResult()
+            }
+
+        }
+
+        constructor(paneId:string,
+                    name:string,
+                    label:string,
+                    title:string,
+                    menuDefs:Array<MenuDef>,
+                    entityRecDef:EntityRecDef,
+                    dialogRedirection:DialogRedirection,
+                    settings:StringDictionary,
+                    private _formLayout:string,
                     private _formStyle:string,
                     private _borderStyle:string,
                     private _headerDef:DetailsDef,
@@ -35,6 +57,64 @@ module catavolt.dialog {
             return this._childrenDefs;
         }
 
-        get 
+        get formLayout():string {
+            return this._formLayout;
+        }
+
+        get formStyle():string {
+            return this._formStyle;
+        }
+
+        get headerDef():DetailsDef {
+            return this._headerDef;
+        }
+
+        get isFlowingLayout():boolean{
+            return this.formLayout && this.formLayout === 'FLOWING';
+        }
+
+        get isFlowingTopDownLayout():boolean{
+            return this.formLayout && this.formLayout === 'FLOWING_TOP_DOWN';
+        }
+
+        get isFourBoxSquareLayout():boolean{
+            return this.formLayout && this.formLayout === 'FOUR_BOX_SQUARE';
+        }
+
+        get isHorizontalLayout():boolean{
+            return this.formLayout && this.formLayout === 'H';
+        }
+
+        get isOptionsFormLayout():boolean{
+            return this.formLayout && this.formLayout === 'OPTIONS_FORM';
+        }
+
+        get isTabsLayout():boolean{
+            return this.formLayout && this.formLayout === 'TABS';
+        }
+
+        get isThreeBoxOneLeftLayout():boolean{
+            return this.formLayout && this.formLayout === 'THREE_ONE_LEFT';
+        }
+
+        get isThreeBoxOneOverLayout():boolean{
+            return this.formLayout && this.formLayout === 'THREE_ONE_OVER';
+        }
+
+        get isThreeBoxOneRightLayout():boolean{
+            return this.formLayout && this.formLayout === 'THREE_ONE_RIGHT';
+        }
+
+        get isThreeBoxOneUnderLayout():boolean{
+            return this.formLayout && this.formLayout === 'THREE_ONE_UNDER';
+        }
+
+        get isTopDownLayout():boolean{
+            return this.formLayout && this.formLayout === 'TOP_DOWN';
+        }
+
+        get isTwoVerticalLayout():boolean{
+            return this.formLayout && this.formLayout === 'H(2,V)';
+        }
     }
 }
