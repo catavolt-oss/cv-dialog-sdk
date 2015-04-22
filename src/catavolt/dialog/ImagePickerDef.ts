@@ -5,12 +5,22 @@
 ///<reference path="../references.ts"/>
 
 /* @TODO */
-module catavolt {
+module catavolt.dialog {
 
-    export class ImagePickerDef {
+    export class ImagePickerDef extends PaneDef {
 
-        constructor() {
+        constructor(paneId:string,
+                    name:string,
+                    label:string,
+                    title:string,
+                    menuDefs:Array<MenuDef>,
+                    entityRecDef:EntityRecDef,
+                    dialogRedirection:DialogRedirection,
+                    settings:StringDictionary,
+                    private _URLPropName:string,
+                    private _defaultActionId:string) {
+            super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+
         }
-
     }
 }

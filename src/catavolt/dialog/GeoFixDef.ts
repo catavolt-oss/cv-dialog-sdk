@@ -5,12 +5,21 @@
 ///<reference path="../references.ts"/>
 
 /* @TODO */
-module catavolt {
+module catavolt.dialog {
 
-    export class GeoFixDef {
+    export class GeoFixDef extends PaneDef {
 
-        constructor() {
+        constructor(paneId:string,
+                    name:string,
+                    label:string,
+                    title:string,
+                    menuDefs:Array<MenuDef>,
+                    entityRecDef:EntityRecDef,
+                    dialogRedirection:DialogRedirection,
+                    settings:StringDictionary) {
+
+            super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+
         }
-
     }
 }

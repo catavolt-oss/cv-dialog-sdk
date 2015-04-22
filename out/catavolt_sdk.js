@@ -4972,12 +4972,93 @@ var catavolt;
 /* @TODO */
 var catavolt;
 (function (catavolt) {
-    var MapDef = (function () {
-        function MapDef() {
-        }
-        return MapDef;
-    })();
-    catavolt.MapDef = MapDef;
+    var dialog;
+    (function (dialog) {
+        var ListDef = (function (_super) {
+            __extends(ListDef, _super);
+            function ListDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _style, _initialColumns, _activeColumnDefs, _columnsStyle, _defaultActionId, _graphicalMarkup) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+                this._style = _style;
+                this._initialColumns = _initialColumns;
+                this._activeColumnDefs = _activeColumnDefs;
+                this._columnsStyle = _columnsStyle;
+                this._defaultActionId = _defaultActionId;
+                this._graphicalMarkup = _graphicalMarkup;
+            }
+            Object.defineProperty(ListDef.prototype, "activeColumnDefs", {
+                get: function () {
+                    return this._activeColumnDefs;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "columnsStyle", {
+                get: function () {
+                    return this._columnsStyle;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "defaultActionId", {
+                get: function () {
+                    return this._defaultActionId;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "graphicalMarkup", {
+                get: function () {
+                    return this._graphicalMarkup;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "initialColumns", {
+                get: function () {
+                    return this._initialColumns;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "isDefaultStyle", {
+                get: function () {
+                    return this.style && this.style === 'DEFAULT';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "isDetailsFormStyle", {
+                get: function () {
+                    return this.style && this.style === 'DETAILS_FORM';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "isFormStyle", {
+                get: function () {
+                    return this.style && this.style === 'FORM';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "isTabularStyle", {
+                get: function () {
+                    return this.style && this.style === 'TABULAR';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ListDef.prototype, "style", {
+                get: function () {
+                    return this._style;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return ListDef;
+        })(dialog.PaneDef);
+        dialog.ListDef = ListDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 4/22/15.
@@ -4986,12 +5067,24 @@ var catavolt;
 /* @TODO */
 var catavolt;
 (function (catavolt) {
-    var GraphDef = (function () {
-        function GraphDef() {
-        }
-        return GraphDef;
-    })();
-    catavolt.GraphDef = GraphDef;
+    var dialog;
+    (function (dialog) {
+        var MapDef = (function (_super) {
+            __extends(MapDef, _super);
+            function MapDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _descriptionPropName, _streetPropName, _cityPropName, _statePropName, _postalCodePropName, _latitudePropName, _longitudePropName) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+                this._descriptionPropName = _descriptionPropName;
+                this._streetPropName = _streetPropName;
+                this._cityPropName = _cityPropName;
+                this._statePropName = _statePropName;
+                this._postalCodePropName = _postalCodePropName;
+                this._latitudePropName = _latitudePropName;
+                this._longitudePropName = _longitudePropName;
+            }
+            return MapDef;
+        })(dialog.PaneDef);
+        dialog.MapDef = MapDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 4/22/15.
@@ -5000,12 +5093,23 @@ var catavolt;
 /* @TODO */
 var catavolt;
 (function (catavolt) {
-    var GeoFixDef = (function () {
-        function GeoFixDef() {
-        }
-        return GeoFixDef;
-    })();
-    catavolt.GeoFixDef = GeoFixDef;
+    var dialog;
+    (function (dialog) {
+        var GraphDef = (function (_super) {
+            __extends(GraphDef, _super);
+            function GraphDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _graphType, _identityDataPointDef, _groupingDataPointDef, _dataPointDefs, _filterDataPointDefs, _sampleModel) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+                this._graphType = _graphType;
+                this._identityDataPointDef = _identityDataPointDef;
+                this._groupingDataPointDef = _groupingDataPointDef;
+                this._dataPointDefs = _dataPointDefs;
+                this._filterDataPointDefs = _filterDataPointDefs;
+                this._sampleModel = _sampleModel;
+            }
+            return GraphDef;
+        })(dialog.PaneDef);
+        dialog.GraphDef = GraphDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 4/22/15.
@@ -5014,12 +5118,17 @@ var catavolt;
 /* @TODO */
 var catavolt;
 (function (catavolt) {
-    var GeoLocationDef = (function () {
-        function GeoLocationDef() {
-        }
-        return GeoLocationDef;
-    })();
-    catavolt.GeoLocationDef = GeoLocationDef;
+    var dialog;
+    (function (dialog) {
+        var GeoFixDef = (function (_super) {
+            __extends(GeoFixDef, _super);
+            function GeoFixDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+            }
+            return GeoFixDef;
+        })(dialog.PaneDef);
+        dialog.GeoFixDef = GeoFixDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 4/22/15.
@@ -5028,12 +5137,17 @@ var catavolt;
 /* @TODO */
 var catavolt;
 (function (catavolt) {
-    var BarcodeScanDef = (function () {
-        function BarcodeScanDef() {
-        }
-        return BarcodeScanDef;
-    })();
-    catavolt.BarcodeScanDef = BarcodeScanDef;
+    var dialog;
+    (function (dialog) {
+        var GeoLocationDef = (function (_super) {
+            __extends(GeoLocationDef, _super);
+            function GeoLocationDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+            }
+            return GeoLocationDef;
+        })(dialog.PaneDef);
+        dialog.GeoLocationDef = GeoLocationDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 4/22/15.
@@ -5042,12 +5156,17 @@ var catavolt;
 /* @TODO */
 var catavolt;
 (function (catavolt) {
-    var CalendarDef = (function () {
-        function CalendarDef() {
-        }
-        return CalendarDef;
-    })();
-    catavolt.CalendarDef = CalendarDef;
+    var dialog;
+    (function (dialog) {
+        var BarcodeScanDef = (function (_super) {
+            __extends(BarcodeScanDef, _super);
+            function BarcodeScanDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+            }
+            return BarcodeScanDef;
+        })(dialog.PaneDef);
+        dialog.BarcodeScanDef = BarcodeScanDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 4/22/15.
@@ -5056,12 +5175,17 @@ var catavolt;
 /* @TODO */
 var catavolt;
 (function (catavolt) {
-    var ImagePickerDef = (function () {
-        function ImagePickerDef() {
-        }
-        return ImagePickerDef;
-    })();
-    catavolt.ImagePickerDef = ImagePickerDef;
+    var dialog;
+    (function (dialog) {
+        var CalendarDef = (function (_super) {
+            __extends(CalendarDef, _super);
+            function CalendarDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, descriptionPropName, initialStyle, startDatePropName, startTimePropName, endDatePropName, endTimePropName, occurDatePropName, occurTimePropName, defaultActionId) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+            }
+            return CalendarDef;
+        })(dialog.PaneDef);
+        dialog.CalendarDef = CalendarDef;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 3/30/15.
@@ -5550,20 +5674,16 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var ListDef = (function (_super) {
-            __extends(ListDef, _super);
-            function ListDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _style, _initialColumns, _activeColumnDefs, _columnsStyle, _defaultActionId, _graphicalMarkup) {
-                _super.call(this);
-                this._style = _style;
-                this._initialColumns = _initialColumns;
-                this._activeColumnDefs = _activeColumnDefs;
-                this._columnsStyle = _columnsStyle;
+        var ImagePickerDef = (function (_super) {
+            __extends(ImagePickerDef, _super);
+            function ImagePickerDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _URLPropName, _defaultActionId) {
+                _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+                this._URLPropName = _URLPropName;
                 this._defaultActionId = _defaultActionId;
-                this._graphicalMarkup = _graphicalMarkup;
             }
-            return ListDef;
+            return ImagePickerDef;
         })(dialog.PaneDef);
-        dialog.ListDef = ListDef;
+        dialog.ImagePickerDef = ImagePickerDef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

@@ -5,11 +5,28 @@
 ///<reference path="../references.ts"/>
 
 /* @TODO */
-module catavolt {
+module catavolt.dialog {
 
-    export class MapDef {
+    export class MapDef extends PaneDef {
 
-        constructor() {
+        constructor(paneId:string,
+                    name:string,
+                    label:string,
+                    title:string,
+                    menuDefs:Array<MenuDef>,
+                    entityRecDef:EntityRecDef,
+                    dialogRedirection:DialogRedirection,
+                    settings:StringDictionary,
+                    private _descriptionPropName:string,
+                    private _streetPropName:string,
+                    private _cityPropName:string,
+                    private _statePropName:string,
+                    private _postalCodePropName:string,
+                    private _latitudePropName:string,
+                    private _longitudePropName:string) {
+
+            super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+
         }
 
     }
