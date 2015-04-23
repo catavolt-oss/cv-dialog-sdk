@@ -14,11 +14,12 @@ module catavolt.dialog {
                                   childrenXOpens:Array<XOpenDialogModelResult>,
                                   childrenXPaneDefs:Array<XPaneDef>,
                                   childrenXActiveColDefs:Array<XGetActiveColumnDefsResult>,
-                                  childrenMenuDefs:Array<Array<MenuDef>>) {
+                                  childrenMenuDefs:Array<Array<MenuDef>>):Try<FormDef> {
 
-            var settings = {'open': true};
+            var settings:StringDictionary = {'open': true};
             ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
             var headerDef:DetailsDef = null;
+            var childrenDefs:Array<PaneDef> = [];
             for(var i = 0; i < childrenXOpens.length; i++) {
                 var childXOpen = childrenXOpens[i];
                 var childXPaneDef = childrenXPaneDefs[i];
@@ -26,8 +27,18 @@ module catavolt.dialog {
                 var childMenuDefs = childrenMenuDefs[i];
                 var childXComp = formXOpenResult.formModel.children[i];
                 var childXPaneDefRef = formXFormDef.paneDefRefs[i];
-                var paneDefTry = PaneDef.fromOpenPaneResult()
+                var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef,
+                    childXActiveColDefs, childMenuDefs);
+                if (paneDefTry.isFailure) {
+                    return new Failure<FormDef>(paneDefTry.failure);
+                } else {
+                    childrenDefs.push(paneDefTry.success);
+                }
             }
+
+            return new Success(new FormDef(formXFormDef.paneId, formXFormDef.name, formXOpenResult.formModel.form.label,
+                formXFormDef.title, formMenuDefs, formXOpenResult.entityRecDef, formXOpenResult.formRedirection,
+                settings, formXFormDef.formLayout, formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childrenDefs));
 
         }
 

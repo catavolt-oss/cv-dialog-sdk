@@ -6,7 +6,7 @@
 
 module catavolt.dialog {
 
-    export class XFormDef {
+    export class XFormDef extends XPaneDef{
 
         constructor(public borderStyle:string,
                     public formLayout:string,
@@ -16,6 +16,7 @@ module catavolt.dialog {
                     public title:string,
                     public headerDefRef:XPaneDefRef,
                     public paneDefRefs:Array<XPaneDefRef>) {
+            super();
         }
     }
 }

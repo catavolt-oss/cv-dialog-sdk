@@ -19,8 +19,17 @@ module catavolt.dialog {
                     settings:StringDictionary,
                     private _URLPropName:string,
                     private _defaultActionId:string) {
+
             super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
 
+        }
+
+        get defaultActionId():string {
+            return this._defaultActionId;
+        }
+
+        get URLPropName():string {
+            return this._URLPropName;
         }
     }
 }

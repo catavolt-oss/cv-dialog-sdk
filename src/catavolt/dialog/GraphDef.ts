@@ -27,5 +27,25 @@ module catavolt.dialog {
             super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
 
         }
+
+        get dataPointDefs():Array<GraphDataPointDef> {
+            return this._dataPointDefs;
+        }
+
+        get filterDataPointDefs():Array<GraphDataPointDef> {
+            return this._filterDataPointDefs;
+        }
+
+        get identityDataPointDef():GraphDataPointDef {
+            return this._identityDataPointDef;
+        }
+
+        get groupingDataPointDef():GraphDataPointDef {
+            return this._groupingDataPointDef;
+        }
+
+        get sampleModel():string {
+            return this._sampleModel;
+        }
     }
 }

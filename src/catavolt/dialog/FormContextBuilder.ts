@@ -37,9 +37,16 @@ module catavolt.dialog {
                 return Future.sequence<any>([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
             });
 
-            //debug
             return openAllFr.bind((value:Array<Try<any>>)=>{
-                var formDefTry = completeOpenPromise(value);
+                var formDefTry = this.completeOpenPromise(value);
+
+                var formContextTry:Try<FormContext> = null;
+                if(formDefTry.isFailure) {
+                   formContextTry = new Failure<FormContext>(formDefTry.failure);
+                } else {
+                    var formDef:FormDef = formDefTry.success;
+
+                }
 
                 Log.debug('openall value is :' + ObjUtil.formatRecAttr(value));
                 return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
@@ -62,12 +69,15 @@ module catavolt.dialog {
             var formMenuDefs:Array<MenuDef> = flattened[2];
             var formChildren:Array<any> = flattened[3];
 
-            if(formChildren.length != 4) return new Failure('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
+            if(formChildren.length != 4) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
 
             var childrenXOpens:Array<XOpenDialogModelResult> = formChildren[0];
             var childrenXPaneDefs:Array<XPaneDef> = formChildren[1];
             var childrenXActiveColDefs:Array<XGetActiveColumnDefsResult> = formChildren[2];
             var childrenMenuDefs:Array<Array<MenuDef>> = formChildren[3];
+
+            return FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens,
+                childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs);
 
         }
 

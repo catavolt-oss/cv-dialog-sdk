@@ -26,5 +26,29 @@ module catavolt.dialog {
             super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         }
 
+        get cancelButtonText():string {
+            return this._cancelButtonText;
+        }
+
+        get commitButtonText():string {
+            return this._commitButtonText;
+        }
+
+        get editable():boolean {
+            return this._editable;
+        }
+
+        get focusPropName():string {
+            return this._focusPropName;
+        }
+
+        get graphicalMarkup():string {
+            return this._graphicalMarkup;
+        }
+
+        get rows():Array<Array<CellDef>> {
+            return this._rows;
+        }
+
     }
 }

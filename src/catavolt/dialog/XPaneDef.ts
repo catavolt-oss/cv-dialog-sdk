@@ -37,5 +37,7 @@ module catavolt.dialog {
             }
         }
 
+        constructor(){}
+
     }
 }

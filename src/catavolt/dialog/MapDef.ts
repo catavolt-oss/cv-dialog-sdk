@@ -29,5 +29,33 @@ module catavolt.dialog {
 
         }
 
+        get cityPropName():string {
+            return this._cityPropName;
+        }
+
+        get descriptionPropName():string {
+            return this._descriptionPropName;
+        }
+
+        get latitudePropName():string {
+            return this._latitudePropName;
+        }
+
+        get longitudePropName():string {
+            return this._longitudePropName;
+        }
+
+        get postalCodePropName():string {
+            return this._postalCodePropName;
+        }
+
+        get statePropName():string {
+            return this._statePropName;
+        }
+
+        get streetPropName():string {
+            return this._streetPropName;
+        }
+
     }
 }
