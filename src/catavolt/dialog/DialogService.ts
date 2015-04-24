@@ -14,6 +14,10 @@ module catavolt.dialog {
         private static QUERY_SERVICE_NAME:string = 'QueryService';
         private static QUERY_SERVICE_PATH:string = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
 
+        static closeEditorModel(dialogHandle:DialogHandle, sessionContext:SessionContext):Future<VoidResult> {
+
+        }
+
         static getActiveColumnDefs(dialogHandle:DialogHandle,
                                    sessionContext:SessionContext):Future<XGetActiveColumnDefsResult> {
 
@@ -94,6 +98,11 @@ module catavolt.dialog {
                 return Future.createCompletedFuture('openQueryModelFromRedir',
                     DialogTriple.fromWSDialogObject<XOpenQueryModelResult>(result, 'WSOpenQueryModelResult', OType.factoryFn));
             });
+
+        }
+
+        static performEditorAction(dialogHandle:DialogHandle, actionId:string,
+                                   pendingWrites:EntityRec, sessionContext:SessionContext):Future<Redirection> {
 
         }
 

@@ -17,6 +17,8 @@ module catavolt.dialog {
                 return OType.deserializeObject<DialogRedirection>(jsonObj, 'WSDialogRedirection', OType.factoryFn);
             }
         }
+
+        fromDialogProperties:StringDictionary;
     }
 
 }

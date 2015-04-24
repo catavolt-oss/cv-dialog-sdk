@@ -99,6 +99,10 @@ module catavolt.dialog {
             return this._dialogRedirection;
         }
 
+        get entityRecDef():EntityRecDef {
+            return this._entityRecDef;
+        }
+
         get label():string {
             return this._label;
         }
@@ -117,6 +121,10 @@ module catavolt.dialog {
 
         get settings():StringDictionary {
             return this._settings;
+        }
+
+        get title():string {
+            return this._title;
         }
     }
 

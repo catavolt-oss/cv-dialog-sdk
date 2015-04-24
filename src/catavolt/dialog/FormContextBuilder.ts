@@ -45,13 +45,21 @@ module catavolt.dialog {
                    formContextTry = new Failure<FormContext>(formDefTry.failure);
                 } else {
                     var formDef:FormDef = formDefTry.success;
-
+                    var childContexts = createChildrenContexts(formDef);
                 }
 
                 Log.debug('openall value is :' + ObjUtil.formatRecAttr(value));
                 return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
             });
 
+        }
+
+        get dialogRedirection():DialogRedirection {
+            return this._dialogRedirection;
+        }
+
+        get sessionContext():SessionContext {
+            return this._sessionContext;
         }
 
         private completeOpenPromise(openAllResults:Array<Try<any>>):Try<FormDef> {
@@ -81,12 +89,14 @@ module catavolt.dialog {
 
         }
 
-        get dialogRedirection():DialogRedirection {
-            return this._dialogRedirection;
-        }
-
-        get sessionContext():SessionContext {
-            return this._sessionContext;
+        private createChildContexts(formDef:FormDef):Array<PaneContext> {
+            var result:Array<PaneContext> = [];
+            formDef.childrenDefs.forEach((paneDef:PaneDef, i)=>{
+                if(paneDef instanceof ListDef) {
+                    result.push(new ListContext(i));
+                }
+            });
+            return result;
         }
 
         private fetchChildrenActiveColDefs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XGetActiveColumnDefsResult>>> {

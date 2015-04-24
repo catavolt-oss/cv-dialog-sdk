@@ -25,6 +25,7 @@
 ///<reference path="SortPropDef.ts"/>
 ///<reference path="GraphDataPointDef.ts"/>
 ///<reference path="EntityRecImpl.ts"/>
+///<reference path="NullEntityRec.ts"/>
 ///<reference path="ColumnDef.ts"/>
 ///<reference path="XPaneDef.ts"/>
 ///<reference path="XBarcodeScanDef.ts"/>
