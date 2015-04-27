@@ -48,6 +48,10 @@ module catavolt.dialog {
             return this._fromDialogProperties;
         }
 
+        set fromDialogProperties(props:StringDictionary){
+            this._fromDialogProperties = props;
+        }
+
         get isEditor():boolean {
             return this._dialogType === 'EDITOR';
         }

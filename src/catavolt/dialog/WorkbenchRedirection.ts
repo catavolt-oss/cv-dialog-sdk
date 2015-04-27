@@ -24,5 +24,10 @@ module catavolt.dialog {
             return this._fromDialogProperties;
         }
 
+        set fromDialogProperties(props:StringDictionary){
+            this._fromDialogProperties = props;
+        }
+
+
     }
 }

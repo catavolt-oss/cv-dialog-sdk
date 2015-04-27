@@ -8,7 +8,7 @@ module catavolt.dialog {
 
     export class XOpenQueryModelResult implements XOpenDialogModelResult{
 
-        static fromWS(otype:string, jsonObj):Try<Redirection> {
+        static fromWS(otype:string, jsonObj):Try<XOpenQueryModelResult> {
 
             var queryRecDefJson = jsonObj['queryRecordDef'];
             var defaultActionId = queryRecDefJson['defaultActionId'];

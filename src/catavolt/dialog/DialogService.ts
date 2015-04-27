@@ -16,6 +16,12 @@ module catavolt.dialog {
 
         static closeEditorModel(dialogHandle:DialogHandle, sessionContext:SessionContext):Future<VoidResult> {
 
+            var method = 'close';
+            var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                return Future.createSuccessfulFuture<VoidResult>('closeEditorModel', result);
+            });
         }
 
         static getActiveColumnDefs(dialogHandle:DialogHandle,
@@ -104,6 +110,20 @@ module catavolt.dialog {
         static performEditorAction(dialogHandle:DialogHandle, actionId:string,
                                    pendingWrites:EntityRec, sessionContext:SessionContext):Future<Redirection> {
 
+            var method = 'performAction';
+            var params:StringDictionary = {'actionId':actionId, 'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+            if(pendingWrites) params['pendingWrites'] = pendingWrites.toWSEditorRecord();
+
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                var redirectionTry = DialogTriple.extractRedirection(result, 'WSPerformActionResult');
+                if(redirectionTry.isSuccess) {
+                    var r = redirectionTry.success;
+                    r.fromDialogProperties = result['dialogProperties'];
+                    redirectionTry = new Success(r);
+                }
+                return Future.createCompletedFuture('performEditorAction', redirectionTry);
+            });
         }
 
     }

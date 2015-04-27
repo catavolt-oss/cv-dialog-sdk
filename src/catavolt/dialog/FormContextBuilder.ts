@@ -45,11 +45,12 @@ module catavolt.dialog {
                    formContextTry = new Failure<FormContext>(formDefTry.failure);
                 } else {
                     var formDef:FormDef = formDefTry.success;
-                    var childContexts = createChildrenContexts(formDef);
+                    var childContexts = this.createChildrenContexts(formDef);
+                    var formContext = new FormContext(this.dialogRedirection,
+                        this._actionSource, formDef, childContexts, false, false, this.sessionContext);
+                    formContextTry = new Success(formContext);
                 }
-
-                Log.debug('openall value is :' + ObjUtil.formatRecAttr(value));
-                return Future.createSuccessfulFuture('FormContextBuilder::build', new FormContext());
+                return Future.createCompletedFuture('FormContextBuilder::build', formContextTry);
             });
 
         }
@@ -89,7 +90,7 @@ module catavolt.dialog {
 
         }
 
-        private createChildContexts(formDef:FormDef):Array<PaneContext> {
+        private createChildrenContexts(formDef:FormDef):Array<PaneContext> {
             var result:Array<PaneContext> = [];
             formDef.childrenDefs.forEach((paneDef:PaneDef, i)=>{
                 if(paneDef instanceof ListDef) {

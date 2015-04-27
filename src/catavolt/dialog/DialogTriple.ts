@@ -47,7 +47,7 @@ module catavolt.dialog {
                 var triple = tripleTry.success;
                 answer = triple.isLeft ? new Success(triple.left) : new Success(triple.right);
             } else {
-                answer = new Failure(tripleTry.failure);
+                answer = new Failure<Redirection>(tripleTry.failure);
             }
             return answer;
         }
@@ -156,7 +156,8 @@ module catavolt.dialog {
                             var dialogException:DialogException = jsonObject['exception'];
                             return new Failure<Either<Redirection,A>>(dialogException);
                         } else if (jsonObject['redirection'] && !ignoreRedirection) {
-                            var drt:Try<Redirection> = DialogTriple.fromWSDialogObject(jsonObject['redirection'], 'WSRedirection', OType.factoryFn);
+                            var drt:Try<Redirection> = DialogTriple.fromWSDialogObject<Redirection>(jsonObject['redirection'],
+                                'WSRedirection', OType.factoryFn);
                             if (drt.isFailure) {
                                 return new Failure<Either<Redirection,A>>(drt.failure);
                             } else {
@@ -172,7 +173,7 @@ module catavolt.dialog {
                     if (valueTry.isFailure) {
                         result = new Failure<Either<Redirection,A>>(valueTry.failure);
                     } else {
-                        result = new Success(Either.right(valueTry.success));
+                        result = new Success(Either.right<Redirection, A>(valueTry.success));
                     }
                 } else {
                     result = new Failure<Either<Redirection,A>>('DialogTriple::extractTriple: Triple is not an exception or redirection and no value extractor was provided');

@@ -23,6 +23,7 @@
 ///<reference path="Prop.ts"/>
 ///<reference path="PropDef.ts"/>
 ///<reference path="SortPropDef.ts"/>
+///<reference path="PropFormatter.ts"/>
 ///<reference path="GraphDataPointDef.ts"/>
 ///<reference path="EntityRecImpl.ts"/>
 ///<reference path="NullEntityRec.ts"/>
@@ -92,6 +93,8 @@
 ///<reference path="CalendarDef.ts"/>
 ///<reference path="ImagePickerDef.ts"/>
 ///<reference path="PaneContext.ts"/>
+///<reference path="EditorContext.ts"/>
+///<reference path="QueryContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>
 ///<reference path="OType.ts"/>

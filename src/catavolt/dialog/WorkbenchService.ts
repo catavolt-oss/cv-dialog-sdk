@@ -58,7 +58,7 @@ module catavolt.dialog {
             return call.perform().bind(
                 (result:StringDictionary)=>{
                    return Future.createCompletedFuture("performLaunchAction/extractRedirection",
-                       DialogTriple.fromWSDialogObject<Try<Redirection>>(result['redirection'], 'WSRedirection', OType.factoryFn)
+                       DialogTriple.fromWSDialogObject<Redirection>(result['redirection'], 'WSRedirection', OType.factoryFn)
                    );
                 }
             );

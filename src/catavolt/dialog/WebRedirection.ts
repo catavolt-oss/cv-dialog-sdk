@@ -12,5 +12,16 @@ module catavolt.dialog {
             private _open:boolean,
             private _dialogProperties:StringDictionary,
             private _fromDialogProperties:StringDictionary){ super(); }
+
+        get fromDialogProperties():StringDictionary{
+            return this._fromDialogProperties;
+        }
+
+        set fromDialogProperties(props:StringDictionary){
+            this._fromDialogProperties = props;
+        }
+
+
+
     }
 }

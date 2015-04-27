@@ -16,7 +16,7 @@ module catavolt.dialog {
                     private _offlineData:boolean, private _sessionContext:SessionContext){
             super(null);
             this._childrenContexts = _childrenContexts || [];
-            this._childrenContexts.forEach((c:PaneContext)=>{c.setParentContext(this)});
+            this._childrenContexts.forEach((c:PaneContext)=>{c.parentContext = this});
         }
 
         get actionSource():ActionSource {
@@ -58,8 +58,6 @@ module catavolt.dialog {
                    var ca:ContextAction = new ContextAction(menuDef.actionId, this.dialogRedirection.objectId, this.actionSource);
                    return NavRequest.Util.fromRedirection(value, ca, this.sessionContext);
                });
-
-
         }
 
         get isDestroyed():boolean {
@@ -90,16 +88,15 @@ module catavolt.dialog {
 
         /** --------------------- MODULE ------------------------------*/
         //*** let's pretend this has module level visibility (no such thing (yet!))
-       /*
-           @TODO
-           after editorcontext and querycontext
-       */
-        /*get isAnyChildDestroyed():boolean {
-            this.childrenContexts.some((paneContext:PaneContext)=>{
-                if(paneContext instanceof EditorContext){
+
+        get isAnyChildDestroyed():boolean {
+            return this.childrenContexts.some((paneContext:PaneContext)=>{
+                if(paneContext instanceof EditorContext || paneContext instanceof QueryContext){
+                    return paneContext.isDestroyed;
                 }
+                return false;
             });
-        }*/
+        }
 
         processNavRequestForDestroyed(navRequest:NavRequest) {
 

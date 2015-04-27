@@ -959,37 +959,9 @@ var catavolt;
                 this._directive = _directive;
                 this._menuDefs = _menuDefs;
             }
-            Object.defineProperty(MenuDef.prototype, "name", {
-                get: function () {
-                    return this._name;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(MenuDef.prototype, "type", {
-                get: function () {
-                    return this._type;
-                },
-                enumerable: true,
-                configurable: true
-            });
             Object.defineProperty(MenuDef.prototype, "actionId", {
                 get: function () {
                     return this._actionId;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(MenuDef.prototype, "mode", {
-                get: function () {
-                    return this._mode;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(MenuDef.prototype, "iconName", {
-                get: function () {
-                    return this._iconName;
                 },
                 enumerable: true,
                 configurable: true
@@ -1001,9 +973,75 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
+            MenuDef.prototype.findAtId = function (actionId) {
+                if (this.actionId === actionId)
+                    return this;
+                var result = null;
+                this.menuDefs.some(function (md) {
+                    result = md.findAtId(actionId);
+                    return result != null;
+                });
+                return result;
+            };
+            Object.defineProperty(MenuDef.prototype, "iconName", {
+                get: function () {
+                    return this._iconName;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "isPresaveDirective", {
+                get: function () {
+                    return this._directive && this._directive === 'PRESAVE';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "isRead", {
+                get: function () {
+                    return this._mode && this._mode.indexOf('R') > -1;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "isSeparator", {
+                get: function () {
+                    return this._type && this._type === 'separator';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "isWrite", {
+                get: function () {
+                    return this._mode && this._mode.indexOf('W') > -1;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(MenuDef.prototype, "menuDefs", {
                 get: function () {
                     return this._menuDefs;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "mode", {
+                get: function () {
+                    return this._mode;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "name", {
+                get: function () {
+                    return this._name;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(MenuDef.prototype, "type", {
+                get: function () {
+                    return this._type;
                 },
                 enumerable: true,
                 configurable: true
@@ -2499,6 +2537,88 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 4/27/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var PropFormatter = (function () {
+            function PropFormatter() {
+            }
+            PropFormatter.formatForRead = function (prop, propDef) {
+                return 'R:' + prop ? PropFormatter.toString(prop) : '';
+            };
+            PropFormatter.formatForWrite = function (prop, propDef) {
+                return prop ? PropFormatter.toString(prop) : '';
+            };
+            PropFormatter.parse = function (value, propDef) {
+                var propValue = value;
+                if (propDef.isDecimalType) {
+                    propValue = Number(value);
+                }
+                else if (propDef.isLongType) {
+                    propValue = Number(value);
+                }
+                else if (propDef.isBooleanType) {
+                    propValue = value !== 'false';
+                }
+                else if (propDef.isDateType) {
+                    propValue = new Date(value);
+                }
+                else if (propDef.isDateTimeType) {
+                    propValue = new Date(value);
+                }
+                else if (propDef.isTimeType) {
+                    propValue = new Date(value);
+                }
+                else if (propDef.isObjRefType) {
+                    propValue = dialog.ObjectRef.fromFormattedValue(value);
+                }
+                else if (propDef.isCodeRefType) {
+                    propValue = dialog.CodeRef.fromFormattedValue(value);
+                }
+                else if (propDef.isGeoFixType) {
+                    propValue = dialog.GeoFix.fromFormattedValue(value);
+                }
+                else if (propDef.isGeoLocationType) {
+                    propValue = catavolt.GeoLocation.fromFormattedValue(value);
+                }
+                return propValue;
+            };
+            PropFormatter.toString = function (o) {
+                if (typeof o === 'number') {
+                    return String(o);
+                }
+                else if (typeof o === 'object') {
+                    if (o instanceof Date) {
+                        return o.toUTCString();
+                    }
+                    else if (o instanceof dialog.CodeRef) {
+                        return o.toString();
+                    }
+                    else if (o instanceof dialog.ObjectRef) {
+                        return o.toString();
+                    }
+                    else if (o instanceof dialog.GeoFix) {
+                        return o.toString();
+                    }
+                    else if (o instanceof catavolt.GeoLocation) {
+                        o.toString();
+                    }
+                }
+                else {
+                    return String(o);
+                }
+            };
+            return PropFormatter;
+        })();
+        dialog.PropFormatter = PropFormatter;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 4/1/15.
  */
 ///<reference path="../references.ts"/>
@@ -3919,6 +4039,9 @@ var catavolt;
                 get: function () {
                     return this._fromDialogProperties;
                 },
+                set: function (props) {
+                    this._fromDialogProperties = props;
+                },
                 enumerable: true,
                 configurable: true
             });
@@ -3998,6 +4121,16 @@ var catavolt;
                 this._dialogProperties = _dialogProperties;
                 this._fromDialogProperties = _fromDialogProperties;
             }
+            Object.defineProperty(WebRedirection.prototype, "fromDialogProperties", {
+                get: function () {
+                    return this._fromDialogProperties;
+                },
+                set: function (props) {
+                    this._fromDialogProperties = props;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return WebRedirection;
         })(dialog.Redirection);
         dialog.WebRedirection = WebRedirection;
@@ -4036,6 +4169,9 @@ var catavolt;
             Object.defineProperty(WorkbenchRedirection.prototype, "fromDialogProperties", {
                 get: function () {
                     return this._fromDialogProperties;
+                },
+                set: function (props) {
+                    this._fromDialogProperties = props;
                 },
                 enumerable: true,
                 configurable: true
@@ -4235,6 +4371,104 @@ var catavolt;
  * Created by rburson on 3/27/15.
  */
 ///<reference path="references.ts"/>
+/**
+ * Created by rburson on 4/14/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var DialogService = (function () {
+            function DialogService() {
+            }
+            DialogService.closeEditorModel = function (dialogHandle, sessionContext) {
+                var method = 'close';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createSuccessfulFuture('closeEditorModel', result);
+                });
+            };
+            DialogService.getActiveColumnDefs = function (dialogHandle, sessionContext) {
+                var method = 'getActiveColumnDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getActiveColumnDefs', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.getEditorModelMenuDefs = function (dialogHandle, sessionContext) {
+                var method = 'getMenuDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getEditorModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.getEditorModelPaneDef = function (dialogHandle, paneId, sessionContext) {
+                var method = 'getPaneDef';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                params['paneId'] = paneId;
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getEditorModelPaneDef', dialog.DialogTriple.fromWSDialogObjectResult(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.getQueryModelMenuDefs = function (dialogHandle, sessionContext) {
+                var method = 'getMenuDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getQueryModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
+                var method = 'open2';
+                var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
+                if (redirection.objectId)
+                    params['objectId'] = redirection.objectId;
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('openEditorModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.openQueryModelFromRedir = function (redirection, sessionContext) {
+                if (!redirection.isQuery)
+                    return Future.createFailedFuture('DialogService::openQueryModelFromRedir', 'Redirection must be a query');
+                var method = 'open';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('openQueryModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenQueryModelResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.performEditorAction = function (dialogHandle, actionId, pendingWrites, sessionContext) {
+                var method = 'performAction';
+                var params = { 'actionId': actionId, 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                if (pendingWrites)
+                    params['pendingWrites'] = pendingWrites.toWSEditorRecord();
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    var redirectionTry = dialog.DialogTriple.extractRedirection(result, 'WSPerformActionResult');
+                    if (redirectionTry.isSuccess) {
+                        var r = redirectionTry.success;
+                        r.fromDialogProperties = result['dialogProperties'];
+                        redirectionTry = new Success(r);
+                    }
+                    return Future.createCompletedFuture('performEditorAction', redirectionTry);
+                });
+            };
+            DialogService.EDITOR_SERVICE_NAME = 'EditorService';
+            DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
+            DialogService.QUERY_SERVICE_NAME = 'QueryService';
+            DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
+            return DialogService;
+        })();
+        dialog.DialogService = DialogService;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 3/27/15.
  */
@@ -4988,6 +5222,15 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
+            PaneDef.prototype.findTitle = function () {
+                var result = this._title ? this._title.trim() : '';
+                result = result === 'null' ? '' : result;
+                if (result === '') {
+                    result = this._label ? this._label.trim() : '';
+                    result = result === 'null' ? '' : result;
+                }
+                return result;
+            };
             Object.defineProperty(PaneDef.prototype, "label", {
                 get: function () {
                     return this._label;
@@ -5689,7 +5932,7 @@ var catavolt;
     (function (dialog) {
         var PaneContext = (function () {
             function PaneContext(paneRef) {
-                this._lastRefreshTime = null;
+                this._lastRefreshTime = new Date(0);
                 this._parentContext = null;
                 this._paneRef = paneRef;
                 this._binaryCache = {};
@@ -5701,13 +5944,61 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(PaneContext.prototype, "lastRefreshTime", {
-                //get dialogAlias():string { }
-                /*get formDef():FormDef {
+            Object.defineProperty(PaneContext.prototype, "dialogAlias", {
+                get: function () {
+                    return this.dialogRedirection.dialogProperties['dialogAlias'];
+                },
+                enumerable: true,
+                configurable: true
+            });
+            PaneContext.prototype.findMenuDefAt = function (actionId) {
+                var result = null;
+                this.menuDefs.some(function (md) {
+                    result = md.findAtId(actionId);
+                    return result != null;
+                });
+                return result;
+            };
+            PaneContext.prototype.formatForRead = function (propValue, propName) {
+                return dialog.PropFormatter.formatForRead(propValue, this.propDefAtName(propName));
+            };
+            PaneContext.prototype.formatForWrite = function (propValue, propName) {
+                return dialog.PropFormatter.formatForWrite(propValue, this.propDefAtName(propName));
+            };
+            Object.defineProperty(PaneContext.prototype, "formDef", {
+                get: function () {
                     return this.parentContext.formDef();
-                }*/
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "isRefreshNeeded", {
+                get: function () {
+                    return this._lastRefreshTime.getTime() < dialog.AppContext.singleton.lastMaintenanceTime.getTime();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "lastRefreshTime", {
                 get: function () {
                     return this._lastRefreshTime;
+                },
+                set: function (time) {
+                    this._lastRefreshTime = time;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "menuDefs", {
+                get: function () {
+                    return this.paneDef.menuDefs;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "offlineCapable", {
+                get: function () {
+                    return this._parentContext && this._parentContext.offlineCapable;
                 },
                 enumerable: true,
                 configurable: true
@@ -5722,16 +6013,38 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(PaneContext.prototype, "paneRef", {
-                /*get paneDef():PaneDef {
-                    if(this.paneRef) {
+            Object.defineProperty(PaneContext.prototype, "paneDef", {
+                get: function () {
+                    if (this.paneRef) {
                         return this.formDef.headerDef();
-                    } else {
+                    }
+                    else {
                         return this.formDef.childrenDefs[this.paneRef];
                     }
-                }*/
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "paneRef", {
                 get: function () {
                     return this._paneRef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PaneContext.prototype, "paneTitle", {
+                get: function () {
+                    return this.paneDef.findTitle();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            PaneContext.prototype.propDefAtName = function (propName) {
+                return this.entityRecDef.propDefAtName(propName);
+            };
+            Object.defineProperty(PaneContext.prototype, "sessionContext", {
+                get: function () {
+                    return this.parentContext.sessionContext;
                 },
                 enumerable: true,
                 configurable: true
@@ -5750,6 +6063,54 @@ var catavolt;
             return PaneContext;
         })();
         dialog.PaneContext = PaneContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/27/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var EditorState;
+        (function (EditorState) {
+            EditorState[EditorState["READ"] = 0] = "READ";
+            EditorState[EditorState["WRITE"] = 1] = "WRITE";
+            EditorState[EditorState["DESTROYED"] = 2] = "DESTROYED";
+        })(EditorState || (EditorState = {}));
+        ;
+        var EditorContext = (function (_super) {
+            __extends(EditorContext, _super);
+            function EditorContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
+            EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
+            return EditorContext;
+        })(dialog.PaneContext);
+        dialog.EditorContext = EditorContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/27/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var QueryContext = (function (_super) {
+            __extends(QueryContext, _super);
+            function QueryContext(paneRef, settings) {
+                if (settings === void 0) { settings = {}; }
+                _super.call(this, paneRef);
+            }
+            return QueryContext;
+        })(dialog.PaneContext);
+        dialog.QueryContext = QueryContext;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -5776,7 +6137,7 @@ var catavolt;
                 this._offlineProps = {};
                 this._childrenContexts = _childrenContexts || [];
                 this._childrenContexts.forEach(function (c) {
-                    c.setParentContext(_this);
+                    c.parentContext = _this;
                 });
             }
             Object.defineProperty(FormContext.prototype, "actionSource", {
@@ -5877,18 +6238,20 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
-            /** --------------------- MODULE ------------------------------*/
-            //*** let's pretend this has module level visibility (no such thing (yet!))
-            /*
-                @TODO
-                after editorcontext and querycontext
-            */
-            /*get isAnyChildDestroyed():boolean {
-                this.childrenContexts.some((paneContext:PaneContext)=>{
-                    if(paneContext instanceof EditorContext){
-                    }
-                });
-            }*/
+            Object.defineProperty(FormContext.prototype, "isAnyChildDestroyed", {
+                /** --------------------- MODULE ------------------------------*/
+                //*** let's pretend this has module level visibility (no such thing (yet!))
+                get: function () {
+                    return this.childrenContexts.some(function (paneContext) {
+                        if (paneContext instanceof dialog.EditorContext || paneContext instanceof dialog.QueryContext) {
+                            return paneContext.isDestroyed;
+                        }
+                        return false;
+                    });
+                },
+                enumerable: true,
+                configurable: true
+            });
             FormContext.prototype.processNavRequestForDestroyed = function (navRequest) {
                 var fromDialogProps = {};
                 if (navRequest instanceof FormContext) {
@@ -5959,10 +6322,11 @@ var catavolt;
                     }
                     else {
                         var formDef = formDefTry.success;
-                        var childContexts = createChildrenContexts(formDef);
+                        var childContexts = _this.createChildrenContexts(formDef);
+                        var formContext = new dialog.FormContext(_this.dialogRedirection, _this._actionSource, formDef, childContexts, false, false, _this.sessionContext);
+                        formContextTry = new Success(formContext);
                     }
-                    Log.debug('openall value is :' + ObjUtil.formatRecAttr(value));
-                    return Future.createSuccessfulFuture('FormContextBuilder::build', new dialog.FormContext());
+                    return Future.createCompletedFuture('FormContextBuilder::build', formContextTry);
                 });
             };
             Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
@@ -5999,7 +6363,7 @@ var catavolt;
                 var childrenMenuDefs = formChildren[3];
                 return dialog.FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs);
             };
-            FormContextBuilder.prototype.createChildContexts = function (formDef) {
+            FormContextBuilder.prototype.createChildrenContexts = function (formDef) {
                 var result = [];
                 formDef.childrenDefs.forEach(function (paneDef, i) {
                     if (paneDef instanceof dialog.ListDef) {
@@ -6286,6 +6650,7 @@ var catavolt;
 ///<reference path="Prop.ts"/>
 ///<reference path="PropDef.ts"/>
 ///<reference path="SortPropDef.ts"/>
+///<reference path="PropFormatter.ts"/>
 ///<reference path="GraphDataPointDef.ts"/>
 ///<reference path="EntityRecImpl.ts"/>
 ///<reference path="NullEntityRec.ts"/>
@@ -6355,6 +6720,8 @@ var catavolt;
 ///<reference path="CalendarDef.ts"/>
 ///<reference path="ImagePickerDef.ts"/>
 ///<reference path="PaneContext.ts"/>
+///<reference path="EditorContext.ts"/>
+///<reference path="QueryContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>
 ///<reference path="OType.ts"/>
@@ -6370,7 +6737,7 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 4/14/15.
+ * Created by rburson on 4/27/15.
  */
 ///<reference path="../references.ts"/>
 /* @TODO */
@@ -6378,73 +6745,214 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var DialogService = (function () {
-            function DialogService() {
+        var EntityBuffer = (function () {
+            function EntityBuffer(_before, _after) {
+                this._before = _before;
+                this._after = _after;
+                if (!_before)
+                    throw new Error('_before is null in EntityBuffer');
+                if (!_after)
+                    this._after = _before;
             }
-            DialogService.closeEditorModel = function (dialogHandle, sessionContext) {
+            EntityBuffer.createEntityBuffer = function (objectId, before, after) {
+                return new EntityBuffer(dialog.EntityRec.Util.newEntityRec(objectId, before), dialog.EntityRec.Util.newEntityRec(objectId, after));
             };
-            DialogService.getActiveColumnDefs = function (dialogHandle, sessionContext) {
-                var method = 'getActiveColumnDefs';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getActiveColumnDefs', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', dialog.OType.factoryFn));
-                });
+            Object.defineProperty(EntityBuffer.prototype, "after", {
+                get: function () {
+                    return this._after;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "annos", {
+                get: function () {
+                    return this._after.annos;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.annosAtName = function (propName) {
+                return this._after.annosAtName(propName);
             };
-            DialogService.getEditorModelMenuDefs = function (dialogHandle, sessionContext) {
-                var method = 'getMenuDefs';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getEditorModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
-                });
+            EntityBuffer.prototype.afterEffects = function (afterAnother) {
+                if (afterAnother) {
+                    return this._after.afterEffects(afterAnother);
+                }
+                else {
+                    return this._before.afterEffects(this._after);
+                }
             };
-            DialogService.getEditorModelPaneDef = function (dialogHandle, paneId, sessionContext) {
-                var method = 'getPaneDef';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                params['paneId'] = paneId;
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getEditorModelPaneDef', dialog.DialogTriple.fromWSDialogObjectResult(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', dialog.OType.factoryFn));
-                });
+            Object.defineProperty(EntityBuffer.prototype, "backgroundColor", {
+                get: function () {
+                    return this._after.backgroundColor;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.backgroundColorFor = function (propName) {
+                return this._after.backgroundColorFor(propName);
             };
-            DialogService.getQueryModelMenuDefs = function (dialogHandle, sessionContext) {
-                var method = 'getMenuDefs';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getQueryModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
-                });
+            Object.defineProperty(EntityBuffer.prototype, "before", {
+                get: function () {
+                    return this._before;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "foregroundColor", {
+                get: function () {
+                    return this._after.foregroundColor;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.foregroundColorFor = function (propName) {
             };
-            DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
-                var method = 'open2';
-                var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
-                if (redirection.objectId)
-                    params['objectId'] = redirection.objectId;
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('openEditorModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', dialog.OType.factoryFn));
-                });
+            Object.defineProperty(EntityBuffer.prototype, "imageName", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.imageNameFor = function (propName) {
             };
-            DialogService.openQueryModelFromRedir = function (redirection, sessionContext) {
-                if (!redirection.isQuery)
-                    return Future.createFailedFuture('DialogService::openQueryModelFromRedir', 'Redirection must be a query');
-                var method = 'open';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('openQueryModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenQueryModelResult', dialog.OType.factoryFn));
-                });
+            Object.defineProperty(EntityBuffer.prototype, "imagePlacement", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.imagePlacementFor = function (propName) {
             };
-            DialogService.performEditorAction = function (dialogHandle, actionId, pendingWrites, sessionContext) {
+            Object.defineProperty(EntityBuffer.prototype, "isBoldText", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isBoldTextFor = function (propName) {
             };
-            DialogService.EDITOR_SERVICE_NAME = 'EditorService';
-            DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
-            DialogService.QUERY_SERVICE_NAME = 'QueryService';
-            DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
-            return DialogService;
+            EntityBuffer.prototype.isChanged = function (name) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isItalicText", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isItalicTextFor = function (propName) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementCenter", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementCenterFor = function (propName) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementLeft", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementLeftFor = function (propName) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementRight", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementRightFor = function (propName) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementStretchUnder", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementStretchUnderFor = function (propName) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementUnder", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementUnderFor = function (propName) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isUnderline", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isUnderlineFor = function (propName) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "objectId", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "overrideText", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.overrideTextFor = function (propName) {
+            };
+            EntityBuffer.prototype.propAtIndex = function (index) {
+            };
+            EntityBuffer.prototype.propAtName = function (propName) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "propCount", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "propNames", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "props", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "propValues", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.setValue = function (name, value) {
+            };
+            Object.defineProperty(EntityBuffer.prototype, "tipText", {
+                get: function () {
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.tipTextFor = function (propName) {
+            };
+            EntityBuffer.prototype.toEntityRec = function () {
+            };
+            EntityBuffer.prototype.toWSEditorRecord = function () {
+            };
+            EntityBuffer.prototype.toWS = function () {
+            };
+            EntityBuffer.prototype.valueAtName = function (propName) {
+            };
+            return EntityBuffer;
         })();
-        dialog.DialogService = DialogService;
+        dialog.EntityBuffer = EntityBuffer;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

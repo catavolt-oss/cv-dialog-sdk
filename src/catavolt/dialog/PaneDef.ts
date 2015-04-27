@@ -103,6 +103,16 @@ module catavolt.dialog {
             return this._entityRecDef;
         }
 
+        findTitle():string {
+            var result:string = this._title ? this._title.trim() : '';
+            result = result === 'null' ? '' : result;
+            if(result === '') {
+                result = this._label ? this._label.trim() : '';
+                result = result === 'null' ? '' : result;
+            }
+            return result;
+        }
+
         get label():string {
             return this._label;
         }
