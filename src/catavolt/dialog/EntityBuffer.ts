@@ -53,153 +53,159 @@ module catavolt.dialog {
         }
 
         foregroundColorFor(propName:string):string {
-            return this._after.
+            return this._after.foregroundColor(propName);
         }
 
         get imageName():string {
-            return this._after.
+            return this._after.imageName;
         }
 
         imageNameFor(propName:string):string {
-            return this._after.
+            return this._after.imageNameFor(propName);
         }
 
         get imagePlacement():string {
-            return this._after.
+            return this._after.imagePlacement;
         }
 
         imagePlacementFor(propName:string):string {
-            return this._after.
+            return this._after.imagePlacement;
         }
 
         get isBoldText():boolean {
-            return this._after.
+            return this._after.isBoldText;
         }
 
         isBoldTextFor(propName:string):boolean {
-            return this._after.
+            return this._after.isBoldTextFor(propName);
         }
 
         isChanged(name:string):boolean {
-
-            return this._after.
+            var before = this._before.propAtName(name);
+            var after = this._after.propAtName(name);
+            return (before && after) ? !before.equals(after) : !(!before && !after);
         }
 
         get isItalicText():boolean {
-            return this._after.
+            return this._after.isItalicText;
         }
 
         isItalicTextFor(propName:string):boolean {
-            return this._after.
+            return this._after.isItalicTextFor(propName);
         }
 
         get isPlacementCenter():boolean {
-            return this._after.
+            return this._after.isPlacementCenter;
         }
 
         isPlacementCenterFor(propName:string):boolean {
-            return this._after.
+            return this._after.isPlacementCenterFor(propName);
         }
 
         get isPlacementLeft():boolean {
-            return this._after.
+            return this._after.isPlacementLeft;
         }
 
         isPlacementLeftFor(propName:string):boolean {
-            return this._after.
+            return this._after.isPlacementLeftFor(propName);
         }
 
         get isPlacementRight():boolean {
-            return this._after.
+            return this._after.isPlacementRight;
         }
 
         isPlacementRightFor(propName:string):boolean {
-            return this._after.
+            return this._after.isPlacementRightFor(propName);
         }
 
         get isPlacementStretchUnder():boolean {
-            return this._after.
+            return this._after.isPlacementStretchUnder;
         }
 
         isPlacementStretchUnderFor(propName:string):boolean {
-            return this._after.
+            return this._after.isPlacementStretchUnderFor(propName);
         }
 
         get isPlacementUnder():boolean {
-            return this._after.
+            return this._after.isPlacementUnder;
         }
 
         isPlacementUnderFor(propName:string):boolean {
-            return this._after.
+            return this._after.isPlacementUnderFor(propName);
         }
 
         get isUnderline():boolean {
-            return this._after.
+            return this._after.isUnderline;
         }
 
         isUnderlineFor(propName:string):boolean {
-            return this._after.
+            return this._after.isUnderlineFor(propName);
         }
 
-        get objectId():string { }
+        get objectId():string { return this._after.objectId; }
 
         get overrideText():string  {
-            return this._after.
+            return this._after.overrideText;
         }
 
         overrideTextFor(propName:string):string  {
-            return this._after.
+            return this._after.overrideTextFor(propName);
         }
 
         propAtIndex(index:number):Prop {
-            return this._after.
+            return this.props[index];
         }
 
         propAtName(propName:string):Prop {
-            return this._after.
+            return this._after.propAtName(propName);
         }
 
         get propCount():number {
-            return this._after.
+            return this._after.propCount;
         }
 
         get propNames():Array<string> {
-            return this._after.
+            return this._after.propNames;
         }
 
-        get props():Array<Prop> { }
+        get props():Array<Prop> { return this._after.props; }
 
         get propValues():Array<any> {
-            return this._after.
+            return this._after.propValues;
         }
 
         setValue(name:string, value) {
-            return this._after.
-
+            this.props.some((prop:Prop)=>{
+                if(prop.name === name) {
+                    prop.value = value;
+                    return true;
+                }
+                return false;
+            });
         }
 
         get tipText():string {
-            return this._after.
+            return this._after.tipText;
         }
 
         tipTextFor(propName:string):string {
-            return this._after.
+            return this._after.tipTextFor(propName);
         }
 
         toEntityRec():EntityRec {
-            return this._after.
+            return EntityRec.Util.newEntityRec(this.objectId, this.props);
         }
 
         toWSEditorRecord():StringDictionary {
-            return this._after.
+            return this.afterEffects().toWSEditorRecord();
         }
 
         toWS():StringDictionary {
-            return this._after.
+            return this.afterEffects().toWS();
         }
 
         valueAtName(propName:string):any {
-            return this._after.
+            return this._after.valueAtName(propName);
         }
 
     }

@@ -191,7 +191,6 @@ module catavolt.dialog {
             return this;
         }
 
-
         toWSEditorRecord():StringDictionary {
             var result:StringDictionary = {'WS_OTYPE':'WSEditorRecord'};
             if(this.objectId) result['objectId'] = this.objectId;

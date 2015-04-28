@@ -69,6 +69,7 @@ module catavolt.dialog {
         props:Array<Prop>;
 
         tipText:string;
+        tipTextFor(propName:string):string;
 
         toEntityRec():EntityRec;
 
