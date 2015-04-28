@@ -942,6 +942,21 @@ var catavolt;
 var Call = catavolt.ws.Call;
 var Get = catavolt.ws.Get;
 /**
+ * Created by rburson on 4/28/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        (function (PaneMode) {
+            PaneMode[PaneMode["READ"] = 0] = "READ";
+            PaneMode[PaneMode["WRITE"] = 1] = "WRITE";
+        })(dialog.PaneMode || (dialog.PaneMode = {}));
+        var PaneMode = dialog.PaneMode;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/30/15.
  */
 ///<reference path="../references.ts"/>
@@ -1341,6 +1356,38 @@ var catavolt;
                     return annos ? new dialog.EntityRecImpl(objectId, props, annos) : new dialog.EntityRecImpl(objectId, props);
                 }
                 Util.newEntityRec = newEntityRec;
+                function fromWSEditorRecord(otype, jsonObj) {
+                    var objectId = jsonObj['objectId'];
+                    var namesJson = jsonObj['names'];
+                    if (namesJson['WS_LTYPE'] !== 'String') {
+                        return new Failure('fromWSEditorRecord: Expected WS_LTYPE of String but found ' + namesJson['WS_LTYPE']);
+                    }
+                    var namesRaw = namesJson['values'];
+                    var propsJson = jsonObj['properties'];
+                    if (propsJson['WS_LTYPE'] !== 'Object') {
+                        return new Failure('fromWSEditorRecord: Expected WS_LTYPE of Object but found ' + propsJson['WS_LTYPE']);
+                    }
+                    var propsRaw = propsJson['values'];
+                    var propsTry = dialog.Prop.fromWSNamesAndValues(namesRaw, propsRaw);
+                    if (propsTry.isFailure)
+                        return new Failure(propsTry.failure);
+                    var props = propsTry.success;
+                    if (jsonObj['propertyAnnotations']) {
+                        var propAnnosObj = jsonObj['propertyAnnotations'];
+                        var annotatedPropsTry = dialog.DataAnno.annotatePropsUsingWSDataAnnotation(props, propAnnosObj);
+                        if (annotatedPropsTry.isFailure)
+                            return new Failure(annotatedPropsTry.failure);
+                    }
+                    var recAnnos = null;
+                    if (jsonObj['recordAnnotation']) {
+                        var recAnnosTry = dialog.DataAnno.fromWS('WSDataAnnotation', jsonObj['recordAnnotation']);
+                        if (recAnnosTry.isFailure)
+                            return new Failure(recAnnosTry.failure);
+                        recAnnos = recAnnosTry.success;
+                    }
+                    return new Success(new dialog.EntityRecImpl(objectId, props, recAnnos));
+                }
+                Util.fromWSEditorRecord = fromWSEditorRecord;
             })(Util = EntityRec.Util || (EntityRec.Util = {}));
         })(EntityRec = dialog.EntityRec || (dialog.EntityRec = {}));
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
@@ -2901,6 +2948,271 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 4/27/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var EntityBuffer = (function () {
+            function EntityBuffer(_before, _after) {
+                this._before = _before;
+                this._after = _after;
+                if (!_before)
+                    throw new Error('_before is null in EntityBuffer');
+                if (!_after)
+                    this._after = _before;
+            }
+            EntityBuffer.createEntityBuffer = function (objectId, before, after) {
+                return new EntityBuffer(dialog.EntityRec.Util.newEntityRec(objectId, before), dialog.EntityRec.Util.newEntityRec(objectId, after));
+            };
+            Object.defineProperty(EntityBuffer.prototype, "after", {
+                get: function () {
+                    return this._after;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "annos", {
+                get: function () {
+                    return this._after.annos;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.annosAtName = function (propName) {
+                return this._after.annosAtName(propName);
+            };
+            EntityBuffer.prototype.afterEffects = function (afterAnother) {
+                if (afterAnother) {
+                    return this._after.afterEffects(afterAnother);
+                }
+                else {
+                    return this._before.afterEffects(this._after);
+                }
+            };
+            Object.defineProperty(EntityBuffer.prototype, "backgroundColor", {
+                get: function () {
+                    return this._after.backgroundColor;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.backgroundColorFor = function (propName) {
+                return this._after.backgroundColorFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "before", {
+                get: function () {
+                    return this._before;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "foregroundColor", {
+                get: function () {
+                    return this._after.foregroundColor;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.foregroundColorFor = function (propName) {
+                return this._after.foregroundColor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "imageName", {
+                get: function () {
+                    return this._after.imageName;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.imageNameFor = function (propName) {
+                return this._after.imageNameFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "imagePlacement", {
+                get: function () {
+                    return this._after.imagePlacement;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.imagePlacementFor = function (propName) {
+                return this._after.imagePlacement;
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isBoldText", {
+                get: function () {
+                    return this._after.isBoldText;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isBoldTextFor = function (propName) {
+                return this._after.isBoldTextFor(propName);
+            };
+            EntityBuffer.prototype.isChanged = function (name) {
+                var before = this._before.propAtName(name);
+                var after = this._after.propAtName(name);
+                return (before && after) ? !before.equals(after) : !(!before && !after);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isItalicText", {
+                get: function () {
+                    return this._after.isItalicText;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isItalicTextFor = function (propName) {
+                return this._after.isItalicTextFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementCenter", {
+                get: function () {
+                    return this._after.isPlacementCenter;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementCenterFor = function (propName) {
+                return this._after.isPlacementCenterFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementLeft", {
+                get: function () {
+                    return this._after.isPlacementLeft;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementLeftFor = function (propName) {
+                return this._after.isPlacementLeftFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementRight", {
+                get: function () {
+                    return this._after.isPlacementRight;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementRightFor = function (propName) {
+                return this._after.isPlacementRightFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementStretchUnder", {
+                get: function () {
+                    return this._after.isPlacementStretchUnder;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementStretchUnderFor = function (propName) {
+                return this._after.isPlacementStretchUnderFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isPlacementUnder", {
+                get: function () {
+                    return this._after.isPlacementUnder;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isPlacementUnderFor = function (propName) {
+                return this._after.isPlacementUnderFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "isUnderline", {
+                get: function () {
+                    return this._after.isUnderline;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.isUnderlineFor = function (propName) {
+                return this._after.isUnderlineFor(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "objectId", {
+                get: function () {
+                    return this._after.objectId;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "overrideText", {
+                get: function () {
+                    return this._after.overrideText;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.overrideTextFor = function (propName) {
+                return this._after.overrideTextFor(propName);
+            };
+            EntityBuffer.prototype.propAtIndex = function (index) {
+                return this.props[index];
+            };
+            EntityBuffer.prototype.propAtName = function (propName) {
+                return this._after.propAtName(propName);
+            };
+            Object.defineProperty(EntityBuffer.prototype, "propCount", {
+                get: function () {
+                    return this._after.propCount;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "propNames", {
+                get: function () {
+                    return this._after.propNames;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "props", {
+                get: function () {
+                    return this._after.props;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EntityBuffer.prototype, "propValues", {
+                get: function () {
+                    return this._after.propValues;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.setValue = function (name, value) {
+                this.props.some(function (prop) {
+                    if (prop.name === name) {
+                        prop.value = value;
+                        return true;
+                    }
+                    return false;
+                });
+            };
+            Object.defineProperty(EntityBuffer.prototype, "tipText", {
+                get: function () {
+                    return this._after.tipText;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EntityBuffer.prototype.tipTextFor = function (propName) {
+                return this._after.tipTextFor(propName);
+            };
+            EntityBuffer.prototype.toEntityRec = function () {
+                return dialog.EntityRec.Util.newEntityRec(this.objectId, this.props);
+            };
+            EntityBuffer.prototype.toWSEditorRecord = function () {
+                return this.afterEffects().toWSEditorRecord();
+            };
+            EntityBuffer.prototype.toWS = function () {
+                return this.afterEffects().toWS();
+            };
+            EntityBuffer.prototype.valueAtName = function (propName) {
+                return this._after.valueAtName(propName);
+            };
+            return EntityBuffer;
+        })();
+        dialog.EntityBuffer = EntityBuffer;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 4/24/15.
  */
 ///<reference path="../references.ts"/>
@@ -3773,33 +4085,6 @@ var catavolt;
  * Created by rburson on 4/1/15.
  */
 ///<reference path="../references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var XPropertyChangeResult = (function () {
-            function XPropertyChangeResult(availableValueChanges, propertyName, sideEffects, editorRecordDef) {
-                this.availableValueChanges = availableValueChanges;
-                this.propertyName = propertyName;
-                this.sideEffects = sideEffects;
-                this.editorRecordDef = editorRecordDef;
-            }
-            Object.defineProperty(XPropertyChangeResult.prototype, "sideEffectsDef", {
-                get: function () {
-                    return this.editorRecordDef;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return XPropertyChangeResult;
-        })();
-        dialog.XPropertyChangeResult = XPropertyChangeResult;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 4/1/15.
- */
-///<reference path="../references.ts"/>
 /* @TODO */
 var catavolt;
 (function (catavolt) {
@@ -3895,8 +4180,32 @@ var catavolt;
     var dialog;
     (function (dialog) {
         var XReadResult = (function () {
-            function XReadResult() {
+            function XReadResult(_editorRecord, _editorRecordDef, _dialogProperties) {
+                this._editorRecord = _editorRecord;
+                this._editorRecordDef = _editorRecordDef;
+                this._dialogProperties = _dialogProperties;
             }
+            Object.defineProperty(XReadResult.prototype, "entityRec", {
+                get: function () {
+                    return this._editorRecord;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(XReadResult.prototype, "entityRecDef", {
+                get: function () {
+                    return this._editorRecordDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(XReadResult.prototype, "dialogProps", {
+                get: function () {
+                    return this._dialogProperties;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return XReadResult;
         })();
         dialog.XReadResult = XReadResult;
@@ -4458,6 +4767,14 @@ var catavolt;
                         redirectionTry = new Success(r);
                     }
                     return Future.createCompletedFuture('performEditorAction', redirectionTry);
+                });
+            };
+            DialogService.processSideEffects = function (dialogHandle, sessionContext, propertyName, propertyValue, pendingWrites) {
+                var method = 'handlePropertyChange';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'propertyName': propertyName, 'propertyValue': dialog.Prop.toWSProperty(propertyValue), 'pendingWrites': pendingWrites.toWSEditorRecord() };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('processSideEffects', dialog.DialogTriple.fromWSDialogObject(result, 'WSHandlePropertyChangeResult', dialog.OType.factoryFn));
                 });
             };
             DialogService.EDITOR_SERVICE_NAME = 'EditorService';
@@ -5937,6 +6254,20 @@ var catavolt;
                 this._paneRef = paneRef;
                 this._binaryCache = {};
             }
+            PaneContext.resolveSettingsFromNavRequest = function (initialSettings, navRequest) {
+                var result = ObjUtil.addAllProps(initialSettings, {});
+                if (navRequest instanceof dialog.FormContext) {
+                    ObjUtil.addAllProps(navRequest.dialogRedirection.fromDialogProperties, result);
+                    ObjUtil.addAllProps(navRequest.offlineProps, result);
+                }
+                else if (navRequest instanceof dialog.NullNavRequest) {
+                    ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
+                }
+                var destroyed = result['fromDialogDestroyed'];
+                if (destroyed)
+                    result['destroyed'] = true;
+                return result;
+            };
             Object.defineProperty(PaneContext.prototype, "actionSource", {
                 get: function () {
                     return this.parentContext ? this.parentContext.actionSource : null;
@@ -6086,6 +6417,164 @@ var catavolt;
             function EditorContext(paneRef) {
                 _super.call(this, paneRef);
             }
+            Object.defineProperty(EditorContext.prototype, "buffer", {
+                get: function () {
+                    if (!this._buffer) {
+                        this._buffer = new dialog.EntityBuffer(dialog.NullEntityRec.singleton);
+                    }
+                    return this._buffer;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.changePaneMode = function (paneMode) {
+            };
+            Object.defineProperty(EditorContext.prototype, "entityRec", {
+                get: function () {
+                    return this._buffer.toEntityRec();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "entityRecNow", {
+                get: function () {
+                    return this.entityRec;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "entityRecDef", {
+                get: function () {
+                    return this._entityRecDef;
+                },
+                set: function (entityRecDef) {
+                    this._entityRecDef = entityRecDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.getAvailableValues = function (propName) {
+            };
+            EditorContext.prototype.isBinary = function (cellValueDef) {
+                var propDef = this.propDefAtName(cellValueDef.propertyName);
+                return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValueDef.isInlineMediaStyle));
+            };
+            Object.defineProperty(EditorContext.prototype, "isDestroyed", {
+                get: function () {
+                    return this._editorState === 2 /* DESTROYED */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isReadMode", {
+                get: function () {
+                    return this._editorState === 0 /* READ */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.isReadModeFor = function (propName) {
+                if (!this.isReadMode) {
+                    var propDef = this.propDefAtName(propName);
+                    return !propDef || !propDef.maintainable || !propDef.writeEnabled;
+                }
+                return true;
+            };
+            Object.defineProperty(EditorContext.prototype, "isWriteMode", {
+                get: function () {
+                    return this._editorState === 1 /* WRITE */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.performMenuAction = function (menuDef, pendingWrites) {
+                var _this = this;
+                return dialog.DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId, pendingWrites, this.sessionContext).bind(function (redirection) {
+                    var ca = new dialog.ContextAction(menuDef.actionId, _this.parentContext.dialogRedirection.objectId, _this.actionSource);
+                    return dialog.NavRequest.Util.fromRedirection(redirection, ca, _this.sessionContext).map(function (navRequest) {
+                        _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, navRequest);
+                        if (_this.isDestroyedSetting) {
+                            _this._editorState = 2 /* DESTROYED */;
+                        }
+                        if (_this.isRefreshSetting) {
+                            dialog.AppContext.singleton.lastMaintenanceTime = new Date();
+                        }
+                        return navRequest;
+                    });
+                });
+            };
+            EditorContext.prototype.processSideEffects = function (propertyName, value) {
+                dialog.DialogService.process;
+            };
+            //Module level methods
+            EditorContext.prototype.initialize = function () {
+                this._entityRecDef = this.paneDef.entityRecDef;
+                this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
+                this._editorState = this.isReadModeSetting ? 0 /* READ */ : 1 /* WRITE */;
+            };
+            Object.defineProperty(EditorContext.prototype, "settings", {
+                get: function () {
+                    return this._settings;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            //Private methods
+            EditorContext.prototype.initBuffer = function (entityRec) {
+                this._buffer = entityRec ? new dialog.EntityBuffer(entityRec) : new dialog.EntityBuffer(dialog.NullEntityRec.singleton);
+            };
+            Object.defineProperty(EditorContext.prototype, "isDestroyedSetting", {
+                get: function () {
+                    var str = this._settings['destroyed'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isGlobalRefreshSetting", {
+                get: function () {
+                    var str = this._settings['globalRefresh'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isLocalRefreshSetting", {
+                get: function () {
+                    var str = this._settings['localRefresh'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isReadModeSetting", {
+                get: function () {
+                    var paneMode = this.paneModeSetting;
+                    return paneMode && paneMode.toLowerCase() === 'read';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isRefreshSetting", {
+                get: function () {
+                    return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "paneModeSetting", {
+                get: function () {
+                    return this._settings['paneMode'];
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.putSetting = function (key, value) {
+                this._settings[key] = value;
+            };
+            EditorContext.prototype.putSettings = function (settings) {
+                ObjUtil.addAllProps(settings, this._settings);
+            };
             EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
             EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
             return EditorContext;
@@ -6593,6 +7082,7 @@ var catavolt;
                 'WSGetSessionListPropertyResult': dialog.XGetSessionListPropertyResult,
                 'WSGraphDataPointDef': dialog.GraphDataPointDef,
                 'WSGraphDef': dialog.XGraphDef,
+                'WSHandlePropertyChangeResult': dialog.XPropertyChangeResult,
                 'WSImagePickerDef': dialog.XImagePickerDef,
                 'WSLabelCellValueDef': dialog.LabelCellValueDef,
                 'WSListDef': dialog.XListDef,
@@ -6603,6 +7093,7 @@ var catavolt;
                 'WSPaneDefRef': dialog.XPaneDefRef,
                 'WSPropertyDef': dialog.PropDef,
                 'WSQueryRecordDef': dialog.EntityRecDef,
+                'WSReadResult': dialog.XReadResult,
                 'WSSortPropertyDef': dialog.SortPropDef,
                 'WSSubstitutionCellValueDef': dialog.SubstitutionCellValueDef,
                 'WSTabCellValueDef': dialog.TabCellValueDef,
@@ -6614,12 +7105,14 @@ var catavolt;
             OType.typeFns = {
                 'WSCellValueDef': dialog.CellValueDef.fromWS,
                 'WSDataAnnotation': dialog.DataAnno.fromWS,
+                'WSEditorRecord': dialog.EntityRec.Util.fromWSEditorRecord,
                 'WSFormModel': dialog.XFormModel.fromWS,
                 'WSPaneDef': dialog.XPaneDef.fromWS,
                 'WSOpenQueryModelResult': dialog.XOpenQueryModelResult.fromWS,
                 'WSProp': dialog.Prop.fromWS,
                 'WSQueryResult': dialog.XQueryResult.fromWS,
-                'WSRedirection': dialog.Redirection.fromWS
+                'WSRedirection': dialog.Redirection.fromWS,
+                'WSReadResult': dialog.XReadResult.fromWS
             };
             return OType;
         })();
@@ -6631,6 +7124,7 @@ var catavolt;
  */
 //dialog
 //note - these have a dependency-based ordering
+///<reference path="PaneMode.ts"/>
 ///<reference path="MenuDef.ts"/>
 ///<reference path="CellValueDef.ts"/>
 ///<reference path="AttributeCellValueDef.ts"/>
@@ -6653,6 +7147,7 @@ var catavolt;
 ///<reference path="PropFormatter.ts"/>
 ///<reference path="GraphDataPointDef.ts"/>
 ///<reference path="EntityRecImpl.ts"/>
+///<reference path="EntityBuffer.ts"/>
 ///<reference path="NullEntityRec.ts"/>
 ///<reference path="ColumnDef.ts"/>
 ///<reference path="XPaneDef.ts"/>
@@ -6737,268 +7232,30 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 4/27/15.
+ * Created by rburson on 4/1/15.
  */
 ///<reference path="../references.ts"/>
-/* @TODO */
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var EntityBuffer = (function () {
-            function EntityBuffer(_before, _after) {
-                this._before = _before;
-                this._after = _after;
-                if (!_before)
-                    throw new Error('_before is null in EntityBuffer');
-                if (!_after)
-                    this._after = _before;
+        var XPropertyChangeResult = (function () {
+            function XPropertyChangeResult(availableValueChanges, propertyName, sideEffects, editorRecordDef) {
+                this.availableValueChanges = availableValueChanges;
+                this.propertyName = propertyName;
+                this.sideEffects = sideEffects;
+                this.editorRecordDef = editorRecordDef;
             }
-            EntityBuffer.createEntityBuffer = function (objectId, before, after) {
-                return new EntityBuffer(dialog.EntityRec.Util.newEntityRec(objectId, before), dialog.EntityRec.Util.newEntityRec(objectId, after));
-            };
-            Object.defineProperty(EntityBuffer.prototype, "after", {
+            Object.defineProperty(XPropertyChangeResult.prototype, "sideEffectsDef", {
                 get: function () {
-                    return this._after;
+                    return this.editorRecordDef;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(EntityBuffer.prototype, "annos", {
-                get: function () {
-                    return this._after.annos;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.annosAtName = function (propName) {
-                return this._after.annosAtName(propName);
-            };
-            EntityBuffer.prototype.afterEffects = function (afterAnother) {
-                if (afterAnother) {
-                    return this._after.afterEffects(afterAnother);
-                }
-                else {
-                    return this._before.afterEffects(this._after);
-                }
-            };
-            Object.defineProperty(EntityBuffer.prototype, "backgroundColor", {
-                get: function () {
-                    return this._after.backgroundColor;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.backgroundColorFor = function (propName) {
-                return this._after.backgroundColorFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "before", {
-                get: function () {
-                    return this._before;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EntityBuffer.prototype, "foregroundColor", {
-                get: function () {
-                    return this._after.foregroundColor;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.foregroundColorFor = function (propName) {
-                return this._after.foregroundColor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "imageName", {
-                get: function () {
-                    return this._after.imageName;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.imageNameFor = function (propName) {
-                return this._after.imageNameFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "imagePlacement", {
-                get: function () {
-                    return this._after.imagePlacement;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.imagePlacementFor = function (propName) {
-                return this._after.imagePlacement;
-            };
-            Object.defineProperty(EntityBuffer.prototype, "isBoldText", {
-                get: function () {
-                    return this._after.isBoldText;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.isBoldTextFor = function (propName) {
-                return this._after.isBoldTextFor(propName);
-            };
-            EntityBuffer.prototype.isChanged = function (name) {
-                var before = this._before.propAtName(name);
-                var after = this._after.propAtName(name);
-                return (before && after) ? !before.equals(after) : !(!before && !after);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "isItalicText", {
-                get: function () {
-                    return this._after.isItalicText;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.isItalicTextFor = function (propName) {
-                return this._after.isItalicTextFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "isPlacementCenter", {
-                get: function () {
-                    return this._after.isPlacementCenter;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.isPlacementCenterFor = function (propName) {
-                return this._after.isPlacementCenterFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "isPlacementLeft", {
-                get: function () {
-                    return this._after.isPlacementLeft;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.isPlacementLeftFor = function (propName) {
-                return this._after.isPlacementLeftFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "isPlacementRight", {
-                get: function () {
-                    return this._after.isPlacementRight;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.isPlacementRightFor = function (propName) {
-                return this._after.isPlacementRightFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "isPlacementStretchUnder", {
-                get: function () {
-                    return this._after.isPlacementStretchUnder;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.isPlacementStretchUnderFor = function (propName) {
-                return this._after.isPlacementStretchUnderFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "isPlacementUnder", {
-                get: function () {
-                    return this._after.isPlacementUnder;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.isPlacementUnderFor = function (propName) {
-                return this._after.isPlacementUnderFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "isUnderline", {
-                get: function () {
-                    return this._after.isUnderline;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.isUnderlineFor = function (propName) {
-                return this._after.isUnderlineFor(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "objectId", {
-                get: function () {
-                    return this._after.objectId;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EntityBuffer.prototype, "overrideText", {
-                get: function () {
-                    return this._after.overrideText;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.overrideTextFor = function (propName) {
-                return this._after.overrideTextFor(propName);
-            };
-            EntityBuffer.prototype.propAtIndex = function (index) {
-                return this.props[index];
-            };
-            EntityBuffer.prototype.propAtName = function (propName) {
-                return this._after.propAtName(propName);
-            };
-            Object.defineProperty(EntityBuffer.prototype, "propCount", {
-                get: function () {
-                    return this._after.propCount;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EntityBuffer.prototype, "propNames", {
-                get: function () {
-                    return this._after.propNames;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EntityBuffer.prototype, "props", {
-                get: function () {
-                    return this._after.props;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EntityBuffer.prototype, "propValues", {
-                get: function () {
-                    return this._after.propValues;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.setValue = function (name, value) {
-                this.props.some(function (prop) {
-                    if (prop.name === name) {
-                        prop.value = value;
-                        return true;
-                    }
-                    return false;
-                });
-            };
-            Object.defineProperty(EntityBuffer.prototype, "tipText", {
-                get: function () {
-                    return this._after.tipText;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EntityBuffer.prototype.tipTextFor = function (propName) {
-                return this._after.tipTextFor(propName);
-            };
-            EntityBuffer.prototype.toEntityRec = function () {
-                return dialog.EntityRec.Util.newEntityRec(this.objectId, this.props);
-            };
-            EntityBuffer.prototype.toWSEditorRecord = function () {
-                return this.afterEffects().toWSEditorRecord();
-            };
-            EntityBuffer.prototype.toWS = function () {
-                return this.afterEffects().toWS();
-            };
-            EntityBuffer.prototype.valueAtName = function (propName) {
-                return this._after.valueAtName(propName);
-            };
-            return EntityBuffer;
+            return XPropertyChangeResult;
         })();
-        dialog.EntityBuffer = EntityBuffer;
+        dialog.XPropertyChangeResult = XPropertyChangeResult;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

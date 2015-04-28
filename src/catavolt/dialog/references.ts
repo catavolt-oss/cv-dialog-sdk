@@ -4,6 +4,7 @@
 
 //dialog
 //note - these have a dependency-based ordering
+///<reference path="PaneMode.ts"/>
 ///<reference path="MenuDef.ts"/>
 ///<reference path="CellValueDef.ts"/>
 ///<reference path="AttributeCellValueDef.ts"/>
@@ -26,6 +27,7 @@
 ///<reference path="PropFormatter.ts"/>
 ///<reference path="GraphDataPointDef.ts"/>
 ///<reference path="EntityRecImpl.ts"/>
+///<reference path="EntityBuffer.ts"/>
 ///<reference path="NullEntityRec.ts"/>
 ///<reference path="ColumnDef.ts"/>
 ///<reference path="XPaneDef.ts"/>

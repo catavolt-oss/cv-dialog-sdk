@@ -85,5 +85,37 @@ module catavolt.dialog {
         export function newEntityRec(objectId:string, props:Array<Prop>, annos?:Array<DataAnno>):EntityRec {
            return annos ? new EntityRecImpl(objectId, props, annos) : new EntityRecImpl(objectId, props);
         }
+
+        export function fromWSEditorRecord(otype:string, jsonObj):Try<EntityRec> {
+
+            var objectId = jsonObj['objectId'];
+            var namesJson:StringDictionary = jsonObj['names'];
+            if(namesJson['WS_LTYPE'] !== 'String'){
+                return new Failure<EntityRec>('fromWSEditorRecord: Expected WS_LTYPE of String but found ' + namesJson['WS_LTYPE']);
+            }
+            var namesRaw:Array<string> = namesJson['values'];
+            var propsJson = jsonObj['properties'];
+            if(propsJson['WS_LTYPE'] !== 'Object'){
+                return new Failure<EntityRec>('fromWSEditorRecord: Expected WS_LTYPE of Object but found ' + propsJson['WS_LTYPE']);
+            }
+            var propsRaw:Array<any> = propsJson['values'];
+
+            var propsTry = Prop.fromWSNamesAndValues(namesRaw, propsRaw);
+            if(propsTry.isFailure) return new Failure<EntityRec>(propsTry.failure);
+
+            var props:Array<Prop> = propsTry.success;
+            if(jsonObj['propertyAnnotations'])  {
+                var propAnnosObj = jsonObj['propertyAnnotations'];
+                var annotatedPropsTry:Try<Array<Prop>> = DataAnno.annotatePropsUsingWSDataAnnotation(props, propAnnosObj);
+                if(annotatedPropsTry.isFailure) return new Failure<EntityRec>(annotatedPropsTry.failure);
+            }
+            var recAnnos:Array<DataAnno> = null;
+            if(jsonObj['recordAnnotation']) {
+                var recAnnosTry:Try<Array<DataAnno>> = DataAnno.fromWS('WSDataAnnotation', jsonObj['recordAnnotation']);
+                if(recAnnosTry.isFailure) return new Failure<EntityRec>(recAnnosTry.failure);
+                recAnnos = recAnnosTry.success;
+            }
+            return new Success(new EntityRecImpl(objectId, props, recAnnos));
+        }
     }
 }

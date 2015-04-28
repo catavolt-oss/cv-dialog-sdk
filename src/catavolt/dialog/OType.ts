@@ -31,6 +31,7 @@ module catavolt.dialog {
             'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
             'WSGraphDataPointDef': GraphDataPointDef,
             'WSGraphDef': XGraphDef,
+            'WSHandlePropertyChangeResult': XPropertyChangeResult,
             'WSImagePickerDef': XImagePickerDef,
             'WSLabelCellValueDef': LabelCellValueDef,
             'WSListDef': XListDef,
@@ -41,6 +42,7 @@ module catavolt.dialog {
             'WSPaneDefRef': XPaneDefRef,
             'WSPropertyDef': PropDef,
             'WSQueryRecordDef': EntityRecDef,
+            'WSReadResult': XReadResult,
             'WSSortPropertyDef': SortPropDef,
             'WSSubstitutionCellValueDef': SubstitutionCellValueDef,
             'WSTabCellValueDef': TabCellValueDef,
@@ -53,12 +55,14 @@ module catavolt.dialog {
         private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {
             'WSCellValueDef': CellValueDef.fromWS,
             'WSDataAnnotation': DataAnno.fromWS,
+            'WSEditorRecord': EntityRec.Util.fromWSEditorRecord,
             'WSFormModel': XFormModel.fromWS,
             'WSPaneDef': XPaneDef.fromWS,
             'WSOpenQueryModelResult': XOpenQueryModelResult.fromWS,
             'WSProp': Prop.fromWS,
             'WSQueryResult': XQueryResult.fromWS,
-            'WSRedirection': Redirection.fromWS
+            'WSRedirection': Redirection.fromWS,
+            'WSReadResult': XReadResult.fromWS
        }
 
         private static typeInstance(name) {

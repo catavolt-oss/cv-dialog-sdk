@@ -126,5 +126,22 @@ module catavolt.dialog {
             });
         }
 
+        static processSideEffects(dialogHandle:DialogHandle, sessionContext:SessionContext,
+                                  propertyName:string, propertyValue:any, pendingWrites:EntityRec) {
+
+            var method = 'handlePropertyChange';
+            var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                'propertyName':propertyName,
+                'propertyValue':Prop.toWSProperty(propertyValue),
+                'pendingWrites':pendingWrites.toWSEditorRecord()
+            };
+
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+               return Future.createCompletedFuture('processSideEffects', DialogTriple.fromWSDialogObject(result,
+                   'WSHandlePropertyChangeResult', OType.factoryFn));
+            });
+        }
+
     }
 }

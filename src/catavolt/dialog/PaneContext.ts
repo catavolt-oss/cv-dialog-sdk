@@ -18,6 +18,22 @@ module catavolt.dialog {
         private _parentContext:FormContext = null;
         private _paneRef:number;
 
+        static resolveSettingsFromNavRequest(initialSettings:StringDictionary,
+                                             navRequest:NavRequest):StringDictionary {
+
+            var result:StringDictionary = ObjUtil.addAllProps(initialSettings, {});
+            if(navRequest instanceof FormContext) {
+                ObjUtil.addAllProps(navRequest.dialogRedirection.fromDialogProperties, result);
+                ObjUtil.addAllProps(navRequest.offlineProps, result);
+            } else if (navRequest instanceof  NullNavRequest) {
+                ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
+            }
+            var destroyed = result['fromDialogDestroyed'];
+            if(destroyed) result['destroyed'] = true;
+            return result;
+
+        }
+
         constructor(paneRef:number) {
             this._paneRef = paneRef;
             this._binaryCache = {};

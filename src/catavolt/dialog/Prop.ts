@@ -27,7 +27,7 @@ module catavolt.dialog {
             return new Success<Prop>(new Prop(name, propTry.success));
         }
 
-        static fromWSNamesAndValues(names:Array<string>, values:Array<string>):Try<Array<Prop>> {
+        static fromWSNamesAndValues(names:Array<string>, values:Array<any>):Try<Array<Prop>> {
             if(names.length != values.length) {
                 return new Failure<Array<Prop>>("Prop::fromWSNamesAndValues: names and values must be of same length");
             }
