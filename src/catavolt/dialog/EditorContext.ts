@@ -97,7 +97,24 @@ module catavolt.dialog {
         }
 
         processSideEffects(propertyName:string, value:any):Future<void> {
-           DialogService.process
+
+            var sideEffectsFr:Future<EntityRec> = DialogService.processSideEffects(this.paneDef.dialogHandle,
+               this.sessionContext, propertyName, value, this.buffer.afterEffects()).map((changeResult:XPropertyChangeResult)=>{
+                   return changeResult.sideEffects ? changeResult.sideEffects.entityRec : new NullEntityRec();
+               });
+
+            return sideEffectsFr.map((sideEffectsRec:EntityRec)=>{
+                var originalProps = this.buffer.before.props;
+                var userEffects = this.buffer.afterEffects().props;
+                var sideEffects = sideEffectsRec.props;
+                sideEffects = sideEffects.filter((prop:Prop)=>{
+                    return prop.name !== propertyName;
+                });
+                this._buffer = EntityBuffer.createEntityBuffer(this.buffer.objectId,
+                    EntityRec.Util.union(originalProps, sideEffects),
+                    EntityRec.Util.union(originalProps, EntityRec.Util.union(userEffects, sideEffects)));
+                return null;
+            });
         }
 
         //Module level methods

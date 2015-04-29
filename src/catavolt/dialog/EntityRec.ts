@@ -86,6 +86,25 @@ module catavolt.dialog {
            return annos ? new EntityRecImpl(objectId, props, annos) : new EntityRecImpl(objectId, props);
         }
 
+        export function union(l1:Array<Prop>, l2:Array<Prop>):Array<Prop> {
+            var result:Array<Prop> = ArrayUtil.copy(l1);
+            l2.forEach((p2:Prop)=>{
+                if(!l1.some((p1:Prop, i)=>{
+                    if(p1.name === p2.name) {
+                        result[i] = p2;
+                        return true;
+                    }
+                    return false;
+                })) {
+                    result.push(p2);
+                }
+            });
+            return result;
+        }
+
+
+        //module level functions
+
         export function fromWSEditorRecord(otype:string, jsonObj):Try<EntityRec> {
 
             var objectId = jsonObj['objectId'];
