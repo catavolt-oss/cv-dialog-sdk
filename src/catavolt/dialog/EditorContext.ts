@@ -117,6 +117,36 @@ module catavolt.dialog {
             });
         }
 
+        read():Future<EntityRec> {
+
+            return DialogService.readEditorModel(this.paneDef.dialogHandle,
+                this.sessionContext).map((readResult:XReadResult)=>{
+                    this.entityRecDef = readResult.entityRecDef;
+                    return readResult.entityRec;
+            }).map((entityRec:EntityRec)=>{
+                    this.initBuffer(entityRec);
+                    this.lastRefreshTime =  new Date();
+                    return entityRec;
+                });
+        }
+
+        requestedAccuracy():number {
+            var accuracyStr = this.paneDef.settings[EditorContext.GPS_ACCURACY];
+            return accuracyStr ? Number(accuracyStr) : 500;
+        }
+
+        requestedTimeoutSeconds():number {
+            var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
+            return timeoutStr ? Number(timeoutStr) : 30;
+        }
+
+        write():Future<Either<NavRequest,EntityRec>> {
+
+            var result:Future<Either<NavRequest,EntityRec>>;
+            var afterEffects:EntityRec = this.buffer.afterEffects();
+            var fr:Future<Either<Redirection,XWriteResult>> = DialogService.writeDi
+        }
+
         //Module level methods
 
         initialize() {

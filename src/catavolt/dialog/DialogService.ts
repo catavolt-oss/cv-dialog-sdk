@@ -143,5 +143,31 @@ module catavolt.dialog {
             });
         }
 
+        static readEditorModel(dialogHandle:DialogHandle, sessionContext:SessionContext):Future<XReadResult> {
+
+            var method = 'read';
+            var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind<XReadResult>((result:StringDictionary)=>{
+                return Future.createCompletedFuture<XPaneDef>('readEditorModel',
+                    DialogTriple.fromWSDialogObject<XReadResult>(result, 'WSReadResult', OType.factoryFn));
+            });
+        }
+
+        static writeEditorModel(dialogHandle:DialogHandle, entityRec:EntityRec,
+                                sessionContext:SessionContext):Future<Either<Redirection,XWriteResult>> {
+            var method = 'write';
+            var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                'editorRecord':entityRec.toWSEditorRecord()
+            };
+
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                var writeResultTry:Try<Either<Redirection,XWriteResult>> =
+                    DialogTriple.fromWSDialogObject<Either<Redirection,XWriteResult>>(result, 'WSWriteResult', OType.factoryFn);
+                
+            });
+        }
+
     }
 }

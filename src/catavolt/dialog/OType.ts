@@ -49,7 +49,8 @@ module catavolt.dialog {
             'WSWebRedirection': WebRedirection,
             'WSWorkbench': Workbench,
             'WSWorkbenchRedirection': WorkbenchRedirection,
-            'WSWorkbenchLaunchAction': WorkbenchLaunchAction
+            'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
+            'XWriteResult': XWriteResult
         };
 
         private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {
@@ -62,7 +63,7 @@ module catavolt.dialog {
             'WSProp': Prop.fromWS,
             'WSQueryResult': XQueryResult.fromWS,
             'WSRedirection': Redirection.fromWS,
-            'WSReadResult': XReadResult.fromWS
+            'WSWriteResult': XWriteResult.fromWS
        }
 
         private static typeInstance(name) {
