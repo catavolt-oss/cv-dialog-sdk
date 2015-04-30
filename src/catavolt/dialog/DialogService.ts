@@ -149,7 +149,7 @@ module catavolt.dialog {
             var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')};
             var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
             return call.perform().bind<XReadResult>((result:StringDictionary)=>{
-                return Future.createCompletedFuture<XPaneDef>('readEditorModel',
+                return Future.createCompletedFuture('readEditorModel',
                     DialogTriple.fromWSDialogObject<XReadResult>(result, 'WSReadResult', OType.factoryFn));
             });
         }
@@ -165,7 +165,12 @@ module catavolt.dialog {
             return call.perform().bind((result:StringDictionary)=>{
                 var writeResultTry:Try<Either<Redirection,XWriteResult>> =
                     DialogTriple.fromWSDialogObject<Either<Redirection,XWriteResult>>(result, 'WSWriteResult', OType.factoryFn);
-                
+                    if(writeResultTry.isSuccess && writeResultTry.success.isLeft) {
+                        var redirection = writeResultTry.success.left;
+                        redirection.fromDialogProperties = result['dialogProperties'] || {};
+                        writeResultTry = new Success(Either.left<Redirection, XWriteResult>(redirection));
+                    }
+                return Future.createCompletedFuture('writeEditorModel', writeResultTry);
             });
         }
 

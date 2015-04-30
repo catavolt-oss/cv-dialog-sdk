@@ -142,9 +142,42 @@ module catavolt.dialog {
 
         write():Future<Either<NavRequest,EntityRec>> {
 
-            var result:Future<Either<NavRequest,EntityRec>>;
-            var afterEffects:EntityRec = this.buffer.afterEffects();
-            var fr:Future<Either<Redirection,XWriteResult>> = DialogService.writeDi
+            var result = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, this.buffer.afterEffects(),
+                this.sessionContext).bind((either:Either<Redirection,XWriteResult>)=>{
+                   if(either.isLeft) {
+                       var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
+                       var navRequestFr:Future<NavRequest> =
+                           NavRequest.Util.fromRedirection(either.left, ca,
+                               this.sessionContext).map((navRequest:NavRequest)=>{
+                                   return Either.left<NavRequest,EntityRec>(navRequest);
+                               });
+                   } else {
+                      var writeResult:XWriteResult = either.right;
+                       this.putSettings(writeResult.dialogProps);
+                       this.entityRecDef = writeResult.entityRecDef;
+                       return Future.createSuccessfulFuture('EditorContext::write', Either.right(writeResult.entityRec));
+                   }
+                });
+
+            return result.map((successfulWrite:Either<NavRequest,EntityRec>)=>{
+                var now = new Date();
+                AppContext.singleton.lastMaintenanceTime = now;
+                this.lastRefreshTime = now;
+                if(successfulWrite.isLeft) {
+                    this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
+                } else {
+                    this.initBuffer(successfulWrite.right);
+                }
+                if(this.isDestroyedSetting) {
+                    this._editorState = EditorState.DESTROYED;
+                } else {
+                    if(this.isReadModeSetting) {
+                        this._editorState = EditorState.READ;
+                    }
+                }
+                return successfulWrite;
+            });
+
         }
 
         //Module level methods
