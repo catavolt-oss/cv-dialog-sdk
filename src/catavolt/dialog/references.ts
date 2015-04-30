@@ -96,6 +96,8 @@
 ///<reference path="ImagePickerDef.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="EditorContext.ts"/>
+///<reference path="QueryResult.ts"/>
+///<reference path="QueryScroller.ts"/>
 ///<reference path="QueryContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>

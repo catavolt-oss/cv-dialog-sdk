@@ -6553,11 +6553,312 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
+        var EditorState;
+        (function (EditorState) {
+            EditorState[EditorState["READ"] = 0] = "READ";
+            EditorState[EditorState["WRITE"] = 1] = "WRITE";
+            EditorState[EditorState["DESTROYED"] = 2] = "DESTROYED";
+        })(EditorState || (EditorState = {}));
+        ;
+        var EditorContext = (function (_super) {
+            __extends(EditorContext, _super);
+            function EditorContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(EditorContext.prototype, "buffer", {
+                get: function () {
+                    if (!this._buffer) {
+                        this._buffer = new dialog.EntityBuffer(dialog.NullEntityRec.singleton);
+                    }
+                    return this._buffer;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.changePaneMode = function (paneMode) {
+                var _this = this;
+                return dialog.DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode, this.sessionContext).bind(function (changePaneModeResult) {
+                    _this.putSettings(changePaneModeResult.dialogProps);
+                    if (_this.isDestroyedSetting) {
+                        _this._editorState = 2 /* DESTROYED */;
+                    }
+                    else {
+                        _this.entityRecDef = changePaneModeResult.entityRecDef;
+                        if (_this.isReadModeSetting) {
+                            _this._editorState = 0 /* READ */;
+                        }
+                        else {
+                            _this._editorState = 1 /* WRITE */;
+                        }
+                    }
+                    return Future.createSuccessfulFuture('EditorContext::changePaneMode', _this.entityRecDef);
+                });
+            };
+            Object.defineProperty(EditorContext.prototype, "entityRec", {
+                get: function () {
+                    return this._buffer.toEntityRec();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "entityRecNow", {
+                get: function () {
+                    return this.entityRec;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "entityRecDef", {
+                get: function () {
+                    return this._entityRecDef;
+                },
+                set: function (entityRecDef) {
+                    this._entityRecDef = entityRecDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.getAvailableValues = function (propName) {
+                return dialog.DialogService.getAvailableValues(this.paneDef.dialogHandle, propName, this.buffer.afterEffects(), this.sessionContext).map(function (valuesResult) {
+                    return valuesResult.list;
+                });
+            };
+            EditorContext.prototype.isBinary = function (cellValueDef) {
+                var propDef = this.propDefAtName(cellValueDef.propertyName);
+                return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValueDef.isInlineMediaStyle));
+            };
+            Object.defineProperty(EditorContext.prototype, "isDestroyed", {
+                get: function () {
+                    return this._editorState === 2 /* DESTROYED */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isReadMode", {
+                get: function () {
+                    return this._editorState === 0 /* READ */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.isReadModeFor = function (propName) {
+                if (!this.isReadMode) {
+                    var propDef = this.propDefAtName(propName);
+                    return !propDef || !propDef.maintainable || !propDef.writeEnabled;
+                }
+                return true;
+            };
+            Object.defineProperty(EditorContext.prototype, "isWriteMode", {
+                get: function () {
+                    return this._editorState === 1 /* WRITE */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.performMenuAction = function (menuDef, pendingWrites) {
+                var _this = this;
+                return dialog.DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId, pendingWrites, this.sessionContext).bind(function (redirection) {
+                    var ca = new dialog.ContextAction(menuDef.actionId, _this.parentContext.dialogRedirection.objectId, _this.actionSource);
+                    return dialog.NavRequest.Util.fromRedirection(redirection, ca, _this.sessionContext).map(function (navRequest) {
+                        _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, navRequest);
+                        if (_this.isDestroyedSetting) {
+                            _this._editorState = 2 /* DESTROYED */;
+                        }
+                        if (_this.isRefreshSetting) {
+                            dialog.AppContext.singleton.lastMaintenanceTime = new Date();
+                        }
+                        return navRequest;
+                    });
+                });
+            };
+            EditorContext.prototype.processSideEffects = function (propertyName, value) {
+                var _this = this;
+                var sideEffectsFr = dialog.DialogService.processSideEffects(this.paneDef.dialogHandle, this.sessionContext, propertyName, value, this.buffer.afterEffects()).map(function (changeResult) {
+                    return changeResult.sideEffects ? changeResult.sideEffects.entityRec : new dialog.NullEntityRec();
+                });
+                return sideEffectsFr.map(function (sideEffectsRec) {
+                    var originalProps = _this.buffer.before.props;
+                    var userEffects = _this.buffer.afterEffects().props;
+                    var sideEffects = sideEffectsRec.props;
+                    sideEffects = sideEffects.filter(function (prop) {
+                        return prop.name !== propertyName;
+                    });
+                    _this._buffer = dialog.EntityBuffer.createEntityBuffer(_this.buffer.objectId, dialog.EntityRec.Util.union(originalProps, sideEffects), dialog.EntityRec.Util.union(originalProps, dialog.EntityRec.Util.union(userEffects, sideEffects)));
+                    return null;
+                });
+            };
+            EditorContext.prototype.read = function () {
+                var _this = this;
+                return dialog.DialogService.readEditorModel(this.paneDef.dialogHandle, this.sessionContext).map(function (readResult) {
+                    _this.entityRecDef = readResult.entityRecDef;
+                    return readResult.entityRec;
+                }).map(function (entityRec) {
+                    _this.initBuffer(entityRec);
+                    _this.lastRefreshTime = new Date();
+                    return entityRec;
+                });
+            };
+            EditorContext.prototype.requestedAccuracy = function () {
+                var accuracyStr = this.paneDef.settings[EditorContext.GPS_ACCURACY];
+                return accuracyStr ? Number(accuracyStr) : 500;
+            };
+            EditorContext.prototype.requestedTimeoutSeconds = function () {
+                var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
+                return timeoutStr ? Number(timeoutStr) : 30;
+            };
+            EditorContext.prototype.write = function () {
+                var _this = this;
+                var result = dialog.DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, this.buffer.afterEffects(), this.sessionContext).bind(function (either) {
+                    if (either.isLeft) {
+                        var ca = new dialog.ContextAction('#write', _this.parentContext.dialogRedirection.objectId, _this.actionSource);
+                        var navRequestFr = dialog.NavRequest.Util.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
+                            return Either.left(navRequest);
+                        });
+                    }
+                    else {
+                        var writeResult = either.right;
+                        _this.putSettings(writeResult.dialogProps);
+                        _this.entityRecDef = writeResult.entityRecDef;
+                        return Future.createSuccessfulFuture('EditorContext::write', Either.right(writeResult.entityRec));
+                    }
+                });
+                return result.map(function (successfulWrite) {
+                    var now = new Date();
+                    dialog.AppContext.singleton.lastMaintenanceTime = now;
+                    _this.lastRefreshTime = now;
+                    if (successfulWrite.isLeft) {
+                        _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, successfulWrite.left);
+                    }
+                    else {
+                        _this.initBuffer(successfulWrite.right);
+                    }
+                    if (_this.isDestroyedSetting) {
+                        _this._editorState = 2 /* DESTROYED */;
+                    }
+                    else {
+                        if (_this.isReadModeSetting) {
+                            _this._editorState = 0 /* READ */;
+                        }
+                    }
+                    return successfulWrite;
+                });
+            };
+            //Module level methods
+            EditorContext.prototype.initialize = function () {
+                this._entityRecDef = this.paneDef.entityRecDef;
+                this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
+                this._editorState = this.isReadModeSetting ? 0 /* READ */ : 1 /* WRITE */;
+            };
+            Object.defineProperty(EditorContext.prototype, "settings", {
+                get: function () {
+                    return this._settings;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            //Private methods
+            EditorContext.prototype.initBuffer = function (entityRec) {
+                this._buffer = entityRec ? new dialog.EntityBuffer(entityRec) : new dialog.EntityBuffer(dialog.NullEntityRec.singleton);
+            };
+            Object.defineProperty(EditorContext.prototype, "isDestroyedSetting", {
+                get: function () {
+                    var str = this._settings['destroyed'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isGlobalRefreshSetting", {
+                get: function () {
+                    var str = this._settings['globalRefresh'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isLocalRefreshSetting", {
+                get: function () {
+                    var str = this._settings['localRefresh'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isReadModeSetting", {
+                get: function () {
+                    var paneMode = this.paneModeSetting;
+                    return paneMode && paneMode.toLowerCase() === 'read';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "isRefreshSetting", {
+                get: function () {
+                    return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(EditorContext.prototype, "paneModeSetting", {
+                get: function () {
+                    return this._settings['paneMode'];
+                },
+                enumerable: true,
+                configurable: true
+            });
+            EditorContext.prototype.putSetting = function (key, value) {
+                this._settings[key] = value;
+            };
+            EditorContext.prototype.putSettings = function (settings) {
+                ObjUtil.addAllProps(settings, this._settings);
+            };
+            EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
+            EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
+            return EditorContext;
+        })(dialog.PaneContext);
+        dialog.EditorContext = EditorContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/30/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var QueryResult = (function () {
+            function QueryResult(entityRecs, hasMore) {
+                this.entityRecs = entityRecs;
+                this.hasMore = hasMore;
+            }
+            return QueryResult;
+        })();
+        dialog.QueryResult = QueryResult;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/27/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var QueryState;
+        (function (QueryState) {
+            QueryState[QueryState["ACTIVE"] = 0] = "ACTIVE";
+            QueryState[QueryState["DESTROYED"] = 1] = "DESTROYED";
+        })(QueryState || (QueryState = {}));
         var QueryContext = (function (_super) {
             __extends(QueryContext, _super);
-            function QueryContext(paneRef, settings) {
-                if (settings === void 0) { settings = {}; }
+            function QueryContext(paneRef, _offlineRecs, _settings) {
+                if (_settings === void 0) { _settings = {}; }
                 _super.call(this, paneRef);
+                this._offlineRecs = _offlineRecs;
+                this._settings = _settings;
             }
             return QueryContext;
         })(dialog.PaneContext);
@@ -7026,9 +7327,10 @@ var catavolt;
                 'WSBarcodeScanDef': dialog.XBarcodeScanDef,
                 'WSCalendarDef': dialog.XCalendarDef,
                 'WSCellDef': dialog.CellDef,
-                'WSCreateSessionResult': dialog.SessionContextImpl,
+                'WSChangePaneModeResult': dialog.XChangePaneModeResult,
                 'WSColumnDef': dialog.ColumnDef,
                 'WSContextAction': dialog.ContextAction,
+                'WSCreateSessionResult': dialog.SessionContextImpl,
                 'WSDialogHandle': dialog.DialogHandle,
                 'WSDataAnno': dialog.DataAnno,
                 'WSDetailsDef': dialog.XDetailsDef,
@@ -7071,7 +7373,6 @@ var catavolt;
                 'WSEditorRecord': dialog.EntityRec.Util.fromWSEditorRecord,
                 'WSFormModel': dialog.XFormModel.fromWS,
                 'WSGetAvailableValuesResult': dialog.XGetAvailableValuesResult.fromWS,
-                'WSFormModel': XFormModel.fromWS,
                 'WSPaneDef': dialog.XPaneDef.fromWS,
                 'WSOpenQueryModelResult': dialog.XOpenQueryModelResult.fromWS,
                 'WSProp': dialog.Prop.fromWS,
@@ -7181,6 +7482,8 @@ var catavolt;
 ///<reference path="ImagePickerDef.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="EditorContext.ts"/>
+///<reference path="QueryResult.ts"/>
+///<reference path="QueryScroller.ts"/>
 ///<reference path="QueryContext.ts"/>
 ///<reference path="FormContext.ts"/>
 ///<reference path="FormContextBuilder.ts"/>
@@ -7197,7 +7500,7 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 4/27/15.
+ * Created by rburson on 4/30/15.
  */
 ///<reference path="../references.ts"/>
 /* @TODO */
@@ -7205,270 +7508,29 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var EditorState;
-        (function (EditorState) {
-            EditorState[EditorState["READ"] = 0] = "READ";
-            EditorState[EditorState["WRITE"] = 1] = "WRITE";
-            EditorState[EditorState["DESTROYED"] = 2] = "DESTROYED";
-        })(EditorState || (EditorState = {}));
-        ;
-        var EditorContext = (function (_super) {
-            __extends(EditorContext, _super);
-            function EditorContext(paneRef) {
-                _super.call(this, paneRef);
+        (function (QueryMarkerOption) {
+            QueryMarkerOption[QueryMarkerOption["None"] = 0] = "None";
+            QueryMarkerOption[QueryMarkerOption["IsEmpty"] = 1] = "IsEmpty";
+            QueryMarkerOption[QueryMarkerOption["HasMore"] = 2] = "HasMore";
+        })(dialog.QueryMarkerOption || (dialog.QueryMarkerOption = {}));
+        var QueryMarkerOption = dialog.QueryMarkerOption;
+        var QueryScroller = (function () {
+            function QueryScroller(_context, _pageSize, _firstObjectId, _markerOptions) {
+                if (_markerOptions === void 0) { _markerOptions = []; }
+                this._context = _context;
+                this._pageSize = _pageSize;
+                this._firstObjectId = _firstObjectId;
+                this._markerOptions = _markerOptions;
+                this.clear();
             }
-            Object.defineProperty(EditorContext.prototype, "buffer", {
-                get: function () {
-                    if (!this._buffer) {
-                        this._buffer = new dialog.EntityBuffer(dialog.NullEntityRec.singleton);
-                    }
-                    return this._buffer;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EditorContext.prototype.changePaneMode = function (paneMode) {
-                var _this = this;
-                return dialog.DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode, this.sessionContext).bind(function (changePaneModeResult) {
-                    _this.putSettings(changePaneModeResult.dialogProps);
-                    if (_this.isDestroyedSetting) {
-                        _this._editorState = 2 /* DESTROYED */;
-                    }
-                    else {
-                        _this.entityRecDef = changePaneModeResult.entityRecDef;
-                        if (_this.isReadModeSetting) {
-                            _this._editorState = 0 /* READ */;
-                        }
-                        else {
-                            _this._editorState = 1 /* WRITE */;
-                        }
-                    }
-                    return Future.createSuccessfulFuture('EditorContext::changePaneMode', _this.entityRecDef);
-                });
+            QueryScroller.prototype.clear = function () {
+                this._hasMoreBackward = !!this._firstObjectId;
+                this._hasMoreForward = true;
+                this._buffer = [];
             };
-            Object.defineProperty(EditorContext.prototype, "entityRec", {
-                get: function () {
-                    return this._buffer.toEntityRec();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EditorContext.prototype, "entityRecNow", {
-                get: function () {
-                    return this.entityRec;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EditorContext.prototype, "entityRecDef", {
-                get: function () {
-                    return this._entityRecDef;
-                },
-                set: function (entityRecDef) {
-                    this._entityRecDef = entityRecDef;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EditorContext.prototype.getAvailableValues = function (propName) {
-                return dialog.DialogService.getAvailableValues(this.paneDef.dialogHandle, propName, this.buffer.afterEffects(), this.sessionContext).map(function (valuesResult) {
-                    return valuesResult.list;
-                });
-            };
-            EditorContext.prototype.isBinary = function (cellValueDef) {
-                var propDef = this.propDefAtName(cellValueDef.propertyName);
-                return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValueDef.isInlineMediaStyle));
-            };
-            Object.defineProperty(EditorContext.prototype, "isDestroyed", {
-                get: function () {
-                    return this._editorState === 2 /* DESTROYED */;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EditorContext.prototype, "isReadMode", {
-                get: function () {
-                    return this._editorState === 0 /* READ */;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EditorContext.prototype.isReadModeFor = function (propName) {
-                if (!this.isReadMode) {
-                    var propDef = this.propDefAtName(propName);
-                    return !propDef || !propDef.maintainable || !propDef.writeEnabled;
-                }
-                return true;
-            };
-            Object.defineProperty(EditorContext.prototype, "isWriteMode", {
-                get: function () {
-                    return this._editorState === 1 /* WRITE */;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EditorContext.prototype.performMenuAction = function (menuDef, pendingWrites) {
-                var _this = this;
-                return dialog.DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId, pendingWrites, this.sessionContext).bind(function (redirection) {
-                    var ca = new dialog.ContextAction(menuDef.actionId, _this.parentContext.dialogRedirection.objectId, _this.actionSource);
-                    return dialog.NavRequest.Util.fromRedirection(redirection, ca, _this.sessionContext).map(function (navRequest) {
-                        _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, navRequest);
-                        if (_this.isDestroyedSetting) {
-                            _this._editorState = 2 /* DESTROYED */;
-                        }
-                        if (_this.isRefreshSetting) {
-                            dialog.AppContext.singleton.lastMaintenanceTime = new Date();
-                        }
-                        return navRequest;
-                    });
-                });
-            };
-            EditorContext.prototype.processSideEffects = function (propertyName, value) {
-                var _this = this;
-                var sideEffectsFr = dialog.DialogService.processSideEffects(this.paneDef.dialogHandle, this.sessionContext, propertyName, value, this.buffer.afterEffects()).map(function (changeResult) {
-                    return changeResult.sideEffects ? changeResult.sideEffects.entityRec : new dialog.NullEntityRec();
-                });
-                return sideEffectsFr.map(function (sideEffectsRec) {
-                    var originalProps = _this.buffer.before.props;
-                    var userEffects = _this.buffer.afterEffects().props;
-                    var sideEffects = sideEffectsRec.props;
-                    sideEffects = sideEffects.filter(function (prop) {
-                        return prop.name !== propertyName;
-                    });
-                    _this._buffer = dialog.EntityBuffer.createEntityBuffer(_this.buffer.objectId, dialog.EntityRec.Util.union(originalProps, sideEffects), dialog.EntityRec.Util.union(originalProps, dialog.EntityRec.Util.union(userEffects, sideEffects)));
-                    return null;
-                });
-            };
-            EditorContext.prototype.read = function () {
-                var _this = this;
-                return dialog.DialogService.readEditorModel(this.paneDef.dialogHandle, this.sessionContext).map(function (readResult) {
-                    _this.entityRecDef = readResult.entityRecDef;
-                    return readResult.entityRec;
-                }).map(function (entityRec) {
-                    _this.initBuffer(entityRec);
-                    _this.lastRefreshTime = new Date();
-                    return entityRec;
-                });
-            };
-            EditorContext.prototype.requestedAccuracy = function () {
-                var accuracyStr = this.paneDef.settings[EditorContext.GPS_ACCURACY];
-                return accuracyStr ? Number(accuracyStr) : 500;
-            };
-            EditorContext.prototype.requestedTimeoutSeconds = function () {
-                var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
-                return timeoutStr ? Number(timeoutStr) : 30;
-            };
-            EditorContext.prototype.write = function () {
-                var _this = this;
-                var result = dialog.DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, this.buffer.afterEffects(), this.sessionContext).bind(function (either) {
-                    if (either.isLeft) {
-                        var ca = new dialog.ContextAction('#write', _this.parentContext.dialogRedirection.objectId, _this.actionSource);
-                        var navRequestFr = dialog.NavRequest.Util.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
-                            return Either.left(navRequest);
-                        });
-                    }
-                    else {
-                        var writeResult = either.right;
-                        _this.putSettings(writeResult.dialogProps);
-                        _this.entityRecDef = writeResult.entityRecDef;
-                        return Future.createSuccessfulFuture('EditorContext::write', Either.right(writeResult.entityRec));
-                    }
-                });
-                return result.map(function (successfulWrite) {
-                    var now = new Date();
-                    dialog.AppContext.singleton.lastMaintenanceTime = now;
-                    _this.lastRefreshTime = now;
-                    if (successfulWrite.isLeft) {
-                        _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, successfulWrite.left);
-                    }
-                    else {
-                        _this.initBuffer(successfulWrite.right);
-                    }
-                    if (_this.isDestroyedSetting) {
-                        _this._editorState = 2 /* DESTROYED */;
-                    }
-                    else {
-                        if (_this.isReadModeSetting) {
-                            _this._editorState = 0 /* READ */;
-                        }
-                    }
-                    return successfulWrite;
-                });
-            };
-            //Module level methods
-            EditorContext.prototype.initialize = function () {
-                this._entityRecDef = this.paneDef.entityRecDef;
-                this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
-                this._editorState = this.isReadModeSetting ? 0 /* READ */ : 1 /* WRITE */;
-            };
-            Object.defineProperty(EditorContext.prototype, "settings", {
-                get: function () {
-                    return this._settings;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            //Private methods
-            EditorContext.prototype.initBuffer = function (entityRec) {
-                this._buffer = entityRec ? new dialog.EntityBuffer(entityRec) : new dialog.EntityBuffer(dialog.NullEntityRec.singleton);
-            };
-            Object.defineProperty(EditorContext.prototype, "isDestroyedSetting", {
-                get: function () {
-                    var str = this._settings['destroyed'];
-                    return str && str.toLowerCase() === 'true';
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EditorContext.prototype, "isGlobalRefreshSetting", {
-                get: function () {
-                    var str = this._settings['globalRefresh'];
-                    return str && str.toLowerCase() === 'true';
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EditorContext.prototype, "isLocalRefreshSetting", {
-                get: function () {
-                    var str = this._settings['localRefresh'];
-                    return str && str.toLowerCase() === 'true';
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EditorContext.prototype, "isReadModeSetting", {
-                get: function () {
-                    var paneMode = this.paneModeSetting;
-                    return paneMode && paneMode.toLowerCase() === 'read';
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EditorContext.prototype, "isRefreshSetting", {
-                get: function () {
-                    return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(EditorContext.prototype, "paneModeSetting", {
-                get: function () {
-                    return this._settings['paneMode'];
-                },
-                enumerable: true,
-                configurable: true
-            });
-            EditorContext.prototype.putSetting = function (key, value) {
-                this._settings[key] = value;
-            };
-            EditorContext.prototype.putSettings = function (settings) {
-                ObjUtil.addAllProps(settings, this._settings);
-            };
-            EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
-            EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
-            return EditorContext;
-        })(dialog.PaneContext);
-        dialog.EditorContext = EditorContext;
+            return QueryScroller;
+        })();
+        dialog.QueryScroller = QueryScroller;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map
