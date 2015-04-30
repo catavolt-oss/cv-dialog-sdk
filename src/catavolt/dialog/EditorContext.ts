@@ -31,6 +31,21 @@ module catavolt.dialog {
         }
 
         changePaneMode(paneMode:PaneMode):Future<EntityRecDef> {
+            return DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode,
+                this.sessionContext).bind((changePaneModeResult:XChangePaneModeResult)=>{
+                    this.putSettings(changePaneModeResult.dialogProps);
+                    if(this.isDestroyedSetting) {
+                        this._editorState = EditorState.DESTROYED;
+                    } else {
+                        this.entityRecDef = changePaneModeResult.entityRecDef;
+                        if(this.isReadModeSetting) {
+                            this._editorState = EditorState.READ;
+                        } else {
+                            this._editorState = EditorState.WRITE;
+                        }
+                    }
+                    return Future.createSuccessfulFuture('EditorContext::changePaneMode', this.entityRecDef);
+                });
         }
 
         get entityRec():EntityRec {
@@ -50,6 +65,12 @@ module catavolt.dialog {
         }
 
         getAvailableValues(propName:string):Future<Array<Object>> {
+
+            return DialogService.getAvailableValues(this.paneDef.dialogHandle, propName,
+                this.buffer.afterEffects(), this.sessionContext).map((valuesResult:XGetAvailableValuesResult)=>{
+                    return valuesResult.list;
+                });
+
         }
 
         isBinary(cellValueDef:AttributeCellValueDef):boolean {

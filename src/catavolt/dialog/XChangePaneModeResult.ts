@@ -12,5 +12,13 @@ module catavolt.dialog {
                     public dialogProperties:StringDictionary) {
         }
 
+        get entityRecDef():EntityRecDef {
+            return this.editorRecordDef;
+        }
+
+        get dialogProps():StringDictionary {
+            return this.dialogProperties;
+        }
+
     }
 }

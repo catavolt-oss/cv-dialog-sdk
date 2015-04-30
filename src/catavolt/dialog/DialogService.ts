@@ -14,6 +14,21 @@ module catavolt.dialog {
         private static QUERY_SERVICE_NAME:string = 'QueryService';
         private static QUERY_SERVICE_PATH:string = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
 
+        static changePaneMode(dialogHandle:DialogHandle, paneMode:PaneMode,
+                              sessionContext:SessionContext):Future<XChangePaneModeResult> {
+            var method = 'changePaneMode';
+            var params:StringDictionary = {
+                'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                'paneMode':PaneMode[paneMode]
+            };
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                return Future.createCompletedFuture('changePaneMode',
+                    DialogTriple.fromWSDialogObject<XChangePaneModeResult>(result, 'WSChangePaneModeResult', OType.factoryFn)
+                );
+            });
+        }
+
         static closeEditorModel(dialogHandle:DialogHandle, sessionContext:SessionContext):Future<VoidResult> {
 
             var method = 'close';
@@ -21,6 +36,23 @@ module catavolt.dialog {
             var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
             return call.perform().bind((result:StringDictionary)=>{
                 return Future.createSuccessfulFuture<VoidResult>('closeEditorModel', result);
+            });
+        }
+
+        static getAvailableValues(dialogHandle:DialogHandle, propertyName:string, pendingWrites:EntityRec,
+                                  sessionContext:SessionContext):Future<XGetAvailableValuesResult> {
+
+            var method = 'getAvailableValues';
+            var params:StringDictionary = {
+                'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                'propertyName':propertyName
+            };
+            if(pendingWrites) params['pendingWrites'] = pendingWrites.toWSEditorRecord();
+            var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                return Future.createCompletedFuture('getAvailableValues',
+                    DialogTriple.fromWSDialogObject<XGetAvailableValuesResult>(result, 'WSGetAvailableValuesResult',
+                        OType.factoryFn));
             });
         }
 

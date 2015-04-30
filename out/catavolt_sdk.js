@@ -3859,6 +3859,20 @@ var catavolt;
                 this.editorRecordDef = editorRecordDef;
                 this.dialogProperties = dialogProperties;
             }
+            Object.defineProperty(XChangePaneModeResult.prototype, "entityRecDef", {
+                get: function () {
+                    return this.editorRecordDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(XChangePaneModeResult.prototype, "dialogProps", {
+                get: function () {
+                    return this.dialogProperties;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return XChangePaneModeResult;
         })();
         dialog.XChangePaneModeResult = XChangePaneModeResult;
@@ -4001,6 +4015,13 @@ var catavolt;
             function XGetAvailableValuesResult(list) {
                 this.list = list;
             }
+            XGetAvailableValuesResult.fromWS = function (otype, jsonObj) {
+                var listJson = jsonObj['list'];
+                var valuesJson = listJson['values'];
+                return dialog.Prop.fromListOfWSValue(valuesJson).bind(function (values) {
+                    return new Success(new XGetAvailableValuesResult(values));
+                });
+            };
             return XGetAvailableValuesResult;
         })();
         dialog.XGetAvailableValuesResult = XGetAvailableValuesResult;
@@ -4773,12 +4794,36 @@ var catavolt;
         var DialogService = (function () {
             function DialogService() {
             }
+            DialogService.changePaneMode = function (dialogHandle, paneMode, sessionContext) {
+                var method = 'changePaneMode';
+                var params = {
+                    'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                    'paneMode': dialog.PaneMode[paneMode]
+                };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('changePaneMode', dialog.DialogTriple.fromWSDialogObject(result, 'WSChangePaneModeResult', dialog.OType.factoryFn));
+                });
+            };
             DialogService.closeEditorModel = function (dialogHandle, sessionContext) {
                 var method = 'close';
                 var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
                 var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
                     return Future.createSuccessfulFuture('closeEditorModel', result);
+                });
+            };
+            DialogService.getAvailableValues = function (dialogHandle, propertyName, pendingWrites, sessionContext) {
+                var method = 'getAvailableValues';
+                var params = {
+                    'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                    'propertyName': propertyName
+                };
+                if (pendingWrites)
+                    params['pendingWrites'] = pendingWrites.toWSEditorRecord();
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getAvailableValues', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetAvailableValuesResult', dialog.OType.factoryFn));
                 });
             };
             DialogService.getActiveColumnDefs = function (dialogHandle, sessionContext) {
@@ -7025,6 +7070,8 @@ var catavolt;
                 'WSDataAnnotation': dialog.DataAnno.fromWS,
                 'WSEditorRecord': dialog.EntityRec.Util.fromWSEditorRecord,
                 'WSFormModel': dialog.XFormModel.fromWS,
+                'WSGetAvailableValuesResult': dialog.XGetAvailableValuesResult.fromWS,
+                'WSFormModel': XFormModel.fromWS,
                 'WSPaneDef': dialog.XPaneDef.fromWS,
                 'WSOpenQueryModelResult': dialog.XOpenQueryModelResult.fromWS,
                 'WSProp': dialog.Prop.fromWS,
@@ -7181,6 +7228,23 @@ var catavolt;
                 configurable: true
             });
             EditorContext.prototype.changePaneMode = function (paneMode) {
+                var _this = this;
+                return dialog.DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode, this.sessionContext).bind(function (changePaneModeResult) {
+                    _this.putSettings(changePaneModeResult.dialogProps);
+                    if (_this.isDestroyedSetting) {
+                        _this._editorState = 2 /* DESTROYED */;
+                    }
+                    else {
+                        _this.entityRecDef = changePaneModeResult.entityRecDef;
+                        if (_this.isReadModeSetting) {
+                            _this._editorState = 0 /* READ */;
+                        }
+                        else {
+                            _this._editorState = 1 /* WRITE */;
+                        }
+                    }
+                    return Future.createSuccessfulFuture('EditorContext::changePaneMode', _this.entityRecDef);
+                });
             };
             Object.defineProperty(EditorContext.prototype, "entityRec", {
                 get: function () {
@@ -7207,6 +7271,9 @@ var catavolt;
                 configurable: true
             });
             EditorContext.prototype.getAvailableValues = function (propName) {
+                return dialog.DialogService.getAvailableValues(this.paneDef.dialogHandle, propName, this.buffer.afterEffects(), this.sessionContext).map(function (valuesResult) {
+                    return valuesResult.list;
+                });
             };
             EditorContext.prototype.isBinary = function (cellValueDef) {
                 var propDef = this.propDefAtName(cellValueDef.propertyName);

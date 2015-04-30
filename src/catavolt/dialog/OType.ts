@@ -58,6 +58,8 @@ module catavolt.dialog {
             'WSDataAnnotation': DataAnno.fromWS,
             'WSEditorRecord': EntityRec.Util.fromWSEditorRecord,
             'WSFormModel': XFormModel.fromWS,
+            'WSGetAvailableValuesResult': XGetAvailableValuesResult.fromWS,
+            'WSFormModel': XFormModel.fromWS,
             'WSPaneDef': XPaneDef.fromWS,
             'WSOpenQueryModelResult': XOpenQueryModelResult.fromWS,
             'WSProp': Prop.fromWS,
