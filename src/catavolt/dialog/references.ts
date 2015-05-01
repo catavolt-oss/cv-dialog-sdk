@@ -67,8 +67,6 @@
 ///<reference path="WorkbenchRedirection.ts"/>
 ///<reference path="DialogTriple.ts"/>
 ///<reference path="ActionSource.ts"/>
-///<reference path="DialogService.ts"/>
-///<reference path="ContextAction.ts"/>
 ///<reference path="ContextAction.ts"/>
 ///<reference path="NavRequest.ts"/>
 ///<reference path="NullNavRequest.ts"/>
@@ -94,6 +92,7 @@
 ///<reference path="BarcodeScanDef.ts"/>
 ///<reference path="CalendarDef.ts"/>
 ///<reference path="ImagePickerDef.ts"/>
+///<reference path="DialogService.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="EditorContext.ts"/>
 ///<reference path="QueryResult.ts"/>

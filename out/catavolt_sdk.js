@@ -4783,158 +4783,6 @@ var catavolt;
  */
 ///<reference path="references.ts"/>
 /**
- * Created by rburson on 4/14/15.
- */
-///<reference path="../references.ts"/>
-/* @TODO */
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var DialogService = (function () {
-            function DialogService() {
-            }
-            DialogService.changePaneMode = function (dialogHandle, paneMode, sessionContext) {
-                var method = 'changePaneMode';
-                var params = {
-                    'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
-                    'paneMode': dialog.PaneMode[paneMode]
-                };
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('changePaneMode', dialog.DialogTriple.fromWSDialogObject(result, 'WSChangePaneModeResult', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.closeEditorModel = function (dialogHandle, sessionContext) {
-                var method = 'close';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createSuccessfulFuture('closeEditorModel', result);
-                });
-            };
-            DialogService.getAvailableValues = function (dialogHandle, propertyName, pendingWrites, sessionContext) {
-                var method = 'getAvailableValues';
-                var params = {
-                    'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
-                    'propertyName': propertyName
-                };
-                if (pendingWrites)
-                    params['pendingWrites'] = pendingWrites.toWSEditorRecord();
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getAvailableValues', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetAvailableValuesResult', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.getActiveColumnDefs = function (dialogHandle, sessionContext) {
-                var method = 'getActiveColumnDefs';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getActiveColumnDefs', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.getEditorModelMenuDefs = function (dialogHandle, sessionContext) {
-                var method = 'getMenuDefs';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getEditorModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.getEditorModelPaneDef = function (dialogHandle, paneId, sessionContext) {
-                var method = 'getPaneDef';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                params['paneId'] = paneId;
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getEditorModelPaneDef', dialog.DialogTriple.fromWSDialogObjectResult(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.getQueryModelMenuDefs = function (dialogHandle, sessionContext) {
-                var method = 'getMenuDefs';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('getQueryModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
-                var method = 'open2';
-                var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
-                if (redirection.objectId)
-                    params['objectId'] = redirection.objectId;
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('openEditorModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.openQueryModelFromRedir = function (redirection, sessionContext) {
-                if (!redirection.isQuery)
-                    return Future.createFailedFuture('DialogService::openQueryModelFromRedir', 'Redirection must be a query');
-                var method = 'open';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('openQueryModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenQueryModelResult', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.performEditorAction = function (dialogHandle, actionId, pendingWrites, sessionContext) {
-                var method = 'performAction';
-                var params = { 'actionId': actionId, 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                if (pendingWrites)
-                    params['pendingWrites'] = pendingWrites.toWSEditorRecord();
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    var redirectionTry = dialog.DialogTriple.extractRedirection(result, 'WSPerformActionResult');
-                    if (redirectionTry.isSuccess) {
-                        var r = redirectionTry.success;
-                        r.fromDialogProperties = result['dialogProperties'];
-                        redirectionTry = new Success(r);
-                    }
-                    return Future.createCompletedFuture('performEditorAction', redirectionTry);
-                });
-            };
-            DialogService.processSideEffects = function (dialogHandle, sessionContext, propertyName, propertyValue, pendingWrites) {
-                var method = 'handlePropertyChange';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'propertyName': propertyName, 'propertyValue': dialog.Prop.toWSProperty(propertyValue), 'pendingWrites': pendingWrites.toWSEditorRecord() };
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('processSideEffects', dialog.DialogTriple.fromWSDialogObject(result, 'WSHandlePropertyChangeResult', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.readEditorModel = function (dialogHandle, sessionContext) {
-                var method = 'read';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    return Future.createCompletedFuture('readEditorModel', dialog.DialogTriple.fromWSDialogObject(result, 'WSReadResult', dialog.OType.factoryFn));
-                });
-            };
-            DialogService.writeEditorModel = function (dialogHandle, entityRec, sessionContext) {
-                var method = 'write';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'editorRecord': entityRec.toWSEditorRecord() };
-                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
-                return call.perform().bind(function (result) {
-                    var writeResultTry = dialog.DialogTriple.fromWSDialogObject(result, 'WSWriteResult', dialog.OType.factoryFn);
-                    if (writeResultTry.isSuccess && writeResultTry.success.isLeft) {
-                        var redirection = writeResultTry.success.left;
-                        redirection.fromDialogProperties = result['dialogProperties'] || {};
-                        writeResultTry = new Success(Either.left(redirection));
-                    }
-                    return Future.createCompletedFuture('writeEditorModel', writeResultTry);
-                });
-            };
-            DialogService.EDITOR_SERVICE_NAME = 'EditorService';
-            DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
-            DialogService.QUERY_SERVICE_NAME = 'QueryService';
-            DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
-            return DialogService;
-        })();
-        dialog.DialogService = DialogService;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
  * Created by rburson on 3/27/15.
  */
 ///<reference path="references.ts"/>
@@ -6388,6 +6236,173 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 4/14/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var DialogService = (function () {
+            function DialogService() {
+            }
+            DialogService.changePaneMode = function (dialogHandle, paneMode, sessionContext) {
+                var method = 'changePaneMode';
+                var params = {
+                    'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                    'paneMode': dialog.PaneMode[paneMode]
+                };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('changePaneMode', dialog.DialogTriple.fromWSDialogObject(result, 'WSChangePaneModeResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.closeEditorModel = function (dialogHandle, sessionContext) {
+                var method = 'close';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createSuccessfulFuture('closeEditorModel', result);
+                });
+            };
+            DialogService.getAvailableValues = function (dialogHandle, propertyName, pendingWrites, sessionContext) {
+                var method = 'getAvailableValues';
+                var params = {
+                    'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                    'propertyName': propertyName
+                };
+                if (pendingWrites)
+                    params['pendingWrites'] = pendingWrites.toWSEditorRecord();
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getAvailableValues', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetAvailableValuesResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.getActiveColumnDefs = function (dialogHandle, sessionContext) {
+                var method = 'getActiveColumnDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getActiveColumnDefs', dialog.DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.getEditorModelMenuDefs = function (dialogHandle, sessionContext) {
+                var method = 'getMenuDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getEditorModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.getEditorModelPaneDef = function (dialogHandle, paneId, sessionContext) {
+                var method = 'getPaneDef';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                params['paneId'] = paneId;
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getEditorModelPaneDef', dialog.DialogTriple.fromWSDialogObjectResult(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.getQueryModelMenuDefs = function (dialogHandle, sessionContext) {
+                var method = 'getMenuDefs';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('getQueryModelMenuDefs', dialog.DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
+                var method = 'open2';
+                var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
+                if (redirection.objectId)
+                    params['objectId'] = redirection.objectId;
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('openEditorModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.openQueryModelFromRedir = function (redirection, sessionContext) {
+                if (!redirection.isQuery)
+                    return Future.createFailedFuture('DialogService::openQueryModelFromRedir', 'Redirection must be a query');
+                var method = 'open';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('openQueryModelFromRedir', dialog.DialogTriple.fromWSDialogObject(result, 'WSOpenQueryModelResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.performEditorAction = function (dialogHandle, actionId, pendingWrites, sessionContext) {
+                var method = 'performAction';
+                var params = { 'actionId': actionId, 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                if (pendingWrites)
+                    params['pendingWrites'] = pendingWrites.toWSEditorRecord();
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    var redirectionTry = dialog.DialogTriple.extractRedirection(result, 'WSPerformActionResult');
+                    if (redirectionTry.isSuccess) {
+                        var r = redirectionTry.success;
+                        r.fromDialogProperties = result['dialogProperties'];
+                        redirectionTry = new Success(r);
+                    }
+                    return Future.createCompletedFuture('performEditorAction', redirectionTry);
+                });
+            };
+            DialogService.processSideEffects = function (dialogHandle, sessionContext, propertyName, propertyValue, pendingWrites) {
+                var method = 'handlePropertyChange';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'propertyName': propertyName, 'propertyValue': dialog.Prop.toWSProperty(propertyValue), 'pendingWrites': pendingWrites.toWSEditorRecord() };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('processSideEffects', dialog.DialogTriple.fromWSDialogObject(result, 'WSHandlePropertyChangeResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.queryQueryModel = function (dialogHandle, direction, maxRows, fromObjectId, sessionContext) {
+                var method = 'query';
+                var params = {
+                    'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                    'maxRows': maxRows,
+                    'direction': direction === 1 /* BACKWARD */ ? 'BACKWARD' : 'FORWARD'
+                };
+                if (fromObjectId && fromObjectId.trim() !== '') {
+                    params['fromObjectId'] = fromObjectId.trim();
+                }
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('DialogService::queryQueryModel', dialog.DialogTriple.fromWSDialogObject(result, 'WSQueryResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.readEditorModel = function (dialogHandle, sessionContext) {
+                var method = 'read';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createCompletedFuture('readEditorModel', dialog.DialogTriple.fromWSDialogObject(result, 'WSReadResult', dialog.OType.factoryFn));
+                });
+            };
+            DialogService.writeEditorModel = function (dialogHandle, entityRec, sessionContext) {
+                var method = 'write';
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'editorRecord': entityRec.toWSEditorRecord() };
+                var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    var writeResultTry = dialog.DialogTriple.fromWSDialogObject(result, 'WSWriteResult', dialog.OType.factoryFn);
+                    if (writeResultTry.isSuccess && writeResultTry.success.isLeft) {
+                        var redirection = writeResultTry.success.left;
+                        redirection.fromDialogProperties = result['dialogProperties'] || {};
+                        writeResultTry = new Success(Either.left(redirection));
+                    }
+                    return Future.createCompletedFuture('writeEditorModel', writeResultTry);
+                });
+            };
+            DialogService.EDITOR_SERVICE_NAME = 'EditorService';
+            DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
+            DialogService.QUERY_SERVICE_NAME = 'QueryService';
+            DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
+            return DialogService;
+        })();
+        dialog.DialogService = DialogService;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/30/15.
  */
 ///<reference path="../references.ts"/>
@@ -6852,6 +6867,11 @@ var catavolt;
             QueryState[QueryState["ACTIVE"] = 0] = "ACTIVE";
             QueryState[QueryState["DESTROYED"] = 1] = "DESTROYED";
         })(QueryState || (QueryState = {}));
+        (function (QueryDirection) {
+            QueryDirection[QueryDirection["FORWARD"] = 0] = "FORWARD";
+            QueryDirection[QueryDirection["BACKWARD"] = 1] = "BACKWARD";
+        })(dialog.QueryDirection || (dialog.QueryDirection = {}));
+        var QueryDirection = dialog.QueryDirection;
         var QueryContext = (function (_super) {
             __extends(QueryContext, _super);
             function QueryContext(paneRef, _offlineRecs, _settings) {
@@ -6860,6 +6880,16 @@ var catavolt;
                 this._offlineRecs = _offlineRecs;
                 this._settings = _settings;
             }
+            QueryContext.prototype.query = function (maxRows, direction, fromObjectId) {
+                var _this = this;
+                return dialog.DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows, fromObjectId, this.sessionContext).bind(function (value) {
+                    var result = new dialog.QueryResult(value.entityRecs, value.hasMore);
+                    if (_this.lastRefreshTime === new Date(0)) {
+                        _this.lastRefreshTime = new Date();
+                    }
+                    return Future.createSuccessfulFuture('QueryContext::query', result);
+                });
+            };
             return QueryContext;
         })(dialog.PaneContext);
         dialog.QueryContext = QueryContext;
@@ -7453,8 +7483,6 @@ var catavolt;
 ///<reference path="WorkbenchRedirection.ts"/>
 ///<reference path="DialogTriple.ts"/>
 ///<reference path="ActionSource.ts"/>
-///<reference path="DialogService.ts"/>
-///<reference path="ContextAction.ts"/>
 ///<reference path="ContextAction.ts"/>
 ///<reference path="NavRequest.ts"/>
 ///<reference path="NullNavRequest.ts"/>
@@ -7480,6 +7508,7 @@ var catavolt;
 ///<reference path="BarcodeScanDef.ts"/>
 ///<reference path="CalendarDef.ts"/>
 ///<reference path="ImagePickerDef.ts"/>
+///<reference path="DialogService.ts"/>
 ///<reference path="PaneContext.ts"/>
 ///<reference path="EditorContext.ts"/>
 ///<reference path="QueryResult.ts"/>
@@ -7508,6 +7537,24 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
+        var HasMoreQueryMarker = (function (_super) {
+            __extends(HasMoreQueryMarker, _super);
+            function HasMoreQueryMarker() {
+                _super.apply(this, arguments);
+            }
+            HasMoreQueryMarker.singleton = new HasMoreQueryMarker();
+            return HasMoreQueryMarker;
+        })(dialog.NullEntityRec);
+        dialog.HasMoreQueryMarker = HasMoreQueryMarker;
+        var IsEmptyQueryMarker = (function (_super) {
+            __extends(IsEmptyQueryMarker, _super);
+            function IsEmptyQueryMarker() {
+                _super.apply(this, arguments);
+            }
+            IsEmptyQueryMarker.singleton = new IsEmptyQueryMarker();
+            return IsEmptyQueryMarker;
+        })(dialog.NullEntityRec);
+        dialog.IsEmptyQueryMarker = IsEmptyQueryMarker;
         (function (QueryMarkerOption) {
             QueryMarkerOption[QueryMarkerOption["None"] = 0] = "None";
             QueryMarkerOption[QueryMarkerOption["IsEmpty"] = 1] = "IsEmpty";
@@ -7523,6 +7570,191 @@ var catavolt;
                 this._markerOptions = _markerOptions;
                 this.clear();
             }
+            Object.defineProperty(QueryScroller.prototype, "buffer", {
+                get: function () {
+                    return this._buffer;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "bufferWithMarkers", {
+                get: function () {
+                    var result = ArrayUtil.copy(this._buffer);
+                    if (this.isComplete) {
+                        if (this._markerOptions.indexOf(1 /* IsEmpty */) > -1) {
+                            if (this.isEmpty) {
+                                result.push(IsEmptyQueryMarker.singleton);
+                            }
+                        }
+                    }
+                    else if (this._markerOptions.indexOf(2 /* HasMore */) > -1) {
+                        if (result.length === 0) {
+                            result.push(HasMoreQueryMarker.singleton);
+                        }
+                        else {
+                            if (this._hasMoreBackward) {
+                                result.unshift(HasMoreQueryMarker.singleton);
+                            }
+                            if (this._hasMoreForward) {
+                                result.push(HasMoreQueryMarker.singleton);
+                            }
+                        }
+                    }
+                    return result;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "context", {
+                get: function () {
+                    return this._context;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "firstObjectId", {
+                get: function () {
+                    return this._firstObjectId;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "hasMoreBackward", {
+                get: function () {
+                    return this._hasMoreBackward;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "hasMoreForward", {
+                get: function () {
+                    return this._hasMoreForward;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "isComplete", {
+                get: function () {
+                    return !this._hasMoreBackward && !this._hasMoreForward;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "isCompleteAndEmpty", {
+                get: function () {
+                    return this.isComplete && this._buffer.length === 0;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "isEmpty", {
+                get: function () {
+                    return this._buffer.length === 0;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            QueryScroller.prototype.pageBackward = function () {
+                var _this = this;
+                if (!this._hasMoreBackward) {
+                    return Future.createSuccessfulFuture('QueryScroller::pageBackward', []);
+                }
+                if (!this._prevPageFr || this._prevPageFr.isComplete) {
+                    var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
+                    this._prevPageFr = this._context.query(this._pageSize, 1 /* BACKWARD */, fromObjectId);
+                }
+                else {
+                    this._prevPageFr = this._prevPageFr.bind(function (queryResult) {
+                        var fromObjectId = _this._buffer.length === 0 ? null : _this._buffer[0].objectId;
+                        return _this._context.query(_this._pageSize, 1 /* BACKWARD */, fromObjectId);
+                    });
+                }
+                var beforeSize = this._buffer.length;
+                return this._prevPageFr.map(function (queryResult) {
+                    var afterSize = beforeSize;
+                    _this._hasMoreBackward = queryResult.hasMore;
+                    if (queryResult.entityRecs.length > 0) {
+                        var newBuffer = [];
+                        for (var i = queryResult.entityRecs.length - 1; i > -1; i--) {
+                            newBuffer.push(queryResult.entityRecs[i]);
+                        }
+                        _this._buffer.forEach(function (entityRec) {
+                            newBuffer.push(entityRec);
+                        });
+                        _this._buffer = newBuffer;
+                        afterSize = _this._buffer.length;
+                    }
+                    return queryResult.entityRecs;
+                });
+            };
+            QueryScroller.prototype.pageForward = function () {
+                var _this = this;
+                if (!this._hasMoreForward) {
+                    return Future.createSuccessfulFuture('QueryScroller::pageForward', []);
+                }
+                if (!this._nextPageFr || this._nextPageFr.isComplete) {
+                    var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
+                    this._nextPageFr = this._context.query(this._pageSize, 0 /* FORWARD */, fromObjectId);
+                }
+                else {
+                    this._nextPageFr = this._nextPageFr.bind(function (queryResult) {
+                        var fromObjectId = _this._buffer.length === 0 ? null : _this._buffer[_this._buffer.length - 1].objectId;
+                        return _this._context.query(_this._pageSize, 0 /* FORWARD */, fromObjectId);
+                    });
+                }
+                var beforeSize = this._buffer.length;
+                return this._nextPageFr.map(function (queryResult) {
+                    var afterSize = beforeSize;
+                    _this._hasMoreForward = queryResult.hasMore;
+                    if (queryResult.entityRecs.length > 0) {
+                        var newBuffer = [];
+                        _this._buffer.forEach(function (entityRec) {
+                            newBuffer.push(entityRec);
+                        });
+                        queryResult.entityRecs.forEach(function (entityRec) {
+                            newBuffer.push(entityRec);
+                        });
+                        _this._buffer = newBuffer;
+                        afterSize = _this._buffer.length;
+                    }
+                    return queryResult.entityRecs;
+                });
+            };
+            Object.defineProperty(QueryScroller.prototype, "pageSize", {
+                get: function () {
+                    return this._pageSize;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            QueryScroller.prototype.refresh = function () {
+                var _this = this;
+                this.clear();
+                return this.pageForward().map(function (entityRecList) {
+                    _this.context.lastRefreshTime = new Date();
+                    return entityRecList;
+                });
+            };
+            QueryScroller.prototype.trimFirst = function (n) {
+                var newBuffer = [];
+                for (var i = n; i < this._buffer.length; i++) {
+                    newBuffer.push(this._buffer[i]);
+                }
+                this._buffer = newBuffer;
+                this._hasMoreBackward = true;
+                if (this._buffer.length === 0)
+                    this._hasMoreForward = true;
+            };
+            QueryScroller.prototype.trimLast = function (n) {
+                var newBuffer = [];
+                for (var i = 0; i < this._buffer.length - n; i++) {
+                    newBuffer.push(this._buffer[i]);
+                }
+                this._buffer = newBuffer;
+                this._hasMoreForward = true;
+                if (this._buffer.length === 0)
+                    this._hasMoreBackward = true;
+            };
             QueryScroller.prototype.clear = function () {
                 this._hasMoreBackward = !!this._firstObjectId;
                 this._hasMoreForward = true;

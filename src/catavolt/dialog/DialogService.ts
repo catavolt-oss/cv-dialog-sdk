@@ -175,6 +175,30 @@ module catavolt.dialog {
             });
         }
 
+        static queryQueryModel(dialogHandle:DialogHandle,
+                               direction:QueryDirection,
+                               maxRows:number,
+                               fromObjectId:string,
+                               sessionContext:SessionContext):Future<XQueryResult> {
+
+            var method = 'query';
+            var params:StringDictionary = {
+                'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                'maxRows':maxRows,
+                'direction':direction === QueryDirection.BACKWARD ? 'BACKWARD' : 'FORWARD'
+            };
+            if(fromObjectId && fromObjectId.trim() !== '') {
+               params['fromObjectId'] = fromObjectId.trim();
+            }
+
+            var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                return Future.createCompletedFuture('DialogService::queryQueryModel',
+                    DialogTriple.fromWSDialogObject<XQueryResult>(result, 'WSQueryResult', OType.factoryFn));
+            });
+
+        }
+
         static readEditorModel(dialogHandle:DialogHandle, sessionContext:SessionContext):Future<XReadResult> {
 
             var method = 'read';
