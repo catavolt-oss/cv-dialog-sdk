@@ -6348,6 +6348,26 @@ var catavolt;
                     return Future.createCompletedFuture('performEditorAction', redirectionTry);
                 });
             };
+            DialogService.performQueryAction = function (dialogHandle, actionId, targets, sessionContext) {
+                var method = 'performAction';
+                var params = {
+                    'actionId': actionId,
+                    'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle')
+                };
+                if (targets) {
+                    params['targets'] = targets;
+                }
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    var redirectionTry = dialog.DialogTriple.fromWSDialogObject(result, 'WSRedirection', dialog.OType.factoryFn);
+                    if (redirectionTry.isSuccess) {
+                        var r = redirectionTry.success;
+                        r.fromDialogProperties = result['dialogProperties'];
+                        redirectionTry = new Success(r);
+                    }
+                    return Future.createCompletedFuture('performQueryAction', redirectionTry);
+                });
+            };
             DialogService.processSideEffects = function (dialogHandle, sessionContext, propertyName, propertyValue, pendingWrites) {
                 var method = 'handlePropertyChange';
                 var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'propertyName': propertyName, 'propertyValue': dialog.Prop.toWSProperty(propertyValue), 'pendingWrites': pendingWrites.toWSEditorRecord() };
@@ -6854,7 +6874,7 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 4/27/15.
+ * Created by rburson on 4/30/15.
  */
 ///<reference path="../references.ts"/>
 /* @TODO */
@@ -6862,37 +6882,232 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var QueryState;
-        (function (QueryState) {
-            QueryState[QueryState["ACTIVE"] = 0] = "ACTIVE";
-            QueryState[QueryState["DESTROYED"] = 1] = "DESTROYED";
-        })(QueryState || (QueryState = {}));
-        (function (QueryDirection) {
-            QueryDirection[QueryDirection["FORWARD"] = 0] = "FORWARD";
-            QueryDirection[QueryDirection["BACKWARD"] = 1] = "BACKWARD";
-        })(dialog.QueryDirection || (dialog.QueryDirection = {}));
-        var QueryDirection = dialog.QueryDirection;
-        var QueryContext = (function (_super) {
-            __extends(QueryContext, _super);
-            function QueryContext(paneRef, _offlineRecs, _settings) {
-                if (_settings === void 0) { _settings = {}; }
-                _super.call(this, paneRef);
-                this._offlineRecs = _offlineRecs;
-                this._settings = _settings;
+        var HasMoreQueryMarker = (function (_super) {
+            __extends(HasMoreQueryMarker, _super);
+            function HasMoreQueryMarker() {
+                _super.apply(this, arguments);
             }
-            QueryContext.prototype.query = function (maxRows, direction, fromObjectId) {
-                var _this = this;
-                return dialog.DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows, fromObjectId, this.sessionContext).bind(function (value) {
-                    var result = new dialog.QueryResult(value.entityRecs, value.hasMore);
-                    if (_this.lastRefreshTime === new Date(0)) {
-                        _this.lastRefreshTime = new Date();
+            HasMoreQueryMarker.singleton = new HasMoreQueryMarker();
+            return HasMoreQueryMarker;
+        })(dialog.NullEntityRec);
+        dialog.HasMoreQueryMarker = HasMoreQueryMarker;
+        var IsEmptyQueryMarker = (function (_super) {
+            __extends(IsEmptyQueryMarker, _super);
+            function IsEmptyQueryMarker() {
+                _super.apply(this, arguments);
+            }
+            IsEmptyQueryMarker.singleton = new IsEmptyQueryMarker();
+            return IsEmptyQueryMarker;
+        })(dialog.NullEntityRec);
+        dialog.IsEmptyQueryMarker = IsEmptyQueryMarker;
+        (function (QueryMarkerOption) {
+            QueryMarkerOption[QueryMarkerOption["None"] = 0] = "None";
+            QueryMarkerOption[QueryMarkerOption["IsEmpty"] = 1] = "IsEmpty";
+            QueryMarkerOption[QueryMarkerOption["HasMore"] = 2] = "HasMore";
+        })(dialog.QueryMarkerOption || (dialog.QueryMarkerOption = {}));
+        var QueryMarkerOption = dialog.QueryMarkerOption;
+        var QueryScroller = (function () {
+            function QueryScroller(_context, _pageSize, _firstObjectId, _markerOptions) {
+                if (_markerOptions === void 0) { _markerOptions = []; }
+                this._context = _context;
+                this._pageSize = _pageSize;
+                this._firstObjectId = _firstObjectId;
+                this._markerOptions = _markerOptions;
+                this.clear();
+            }
+            Object.defineProperty(QueryScroller.prototype, "buffer", {
+                get: function () {
+                    return this._buffer;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "bufferWithMarkers", {
+                get: function () {
+                    var result = ArrayUtil.copy(this._buffer);
+                    if (this.isComplete) {
+                        if (this._markerOptions.indexOf(1 /* IsEmpty */) > -1) {
+                            if (this.isEmpty) {
+                                result.push(IsEmptyQueryMarker.singleton);
+                            }
+                        }
                     }
-                    return Future.createSuccessfulFuture('QueryContext::query', result);
+                    else if (this._markerOptions.indexOf(2 /* HasMore */) > -1) {
+                        if (result.length === 0) {
+                            result.push(HasMoreQueryMarker.singleton);
+                        }
+                        else {
+                            if (this._hasMoreBackward) {
+                                result.unshift(HasMoreQueryMarker.singleton);
+                            }
+                            if (this._hasMoreForward) {
+                                result.push(HasMoreQueryMarker.singleton);
+                            }
+                        }
+                    }
+                    return result;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "context", {
+                get: function () {
+                    return this._context;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "firstObjectId", {
+                get: function () {
+                    return this._firstObjectId;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "hasMoreBackward", {
+                get: function () {
+                    return this._hasMoreBackward;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "hasMoreForward", {
+                get: function () {
+                    return this._hasMoreForward;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "isComplete", {
+                get: function () {
+                    return !this._hasMoreBackward && !this._hasMoreForward;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "isCompleteAndEmpty", {
+                get: function () {
+                    return this.isComplete && this._buffer.length === 0;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryScroller.prototype, "isEmpty", {
+                get: function () {
+                    return this._buffer.length === 0;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            QueryScroller.prototype.pageBackward = function () {
+                var _this = this;
+                if (!this._hasMoreBackward) {
+                    return Future.createSuccessfulFuture('QueryScroller::pageBackward', []);
+                }
+                if (!this._prevPageFr || this._prevPageFr.isComplete) {
+                    var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
+                    this._prevPageFr = this._context.query(this._pageSize, 1 /* BACKWARD */, fromObjectId);
+                }
+                else {
+                    this._prevPageFr = this._prevPageFr.bind(function (queryResult) {
+                        var fromObjectId = _this._buffer.length === 0 ? null : _this._buffer[0].objectId;
+                        return _this._context.query(_this._pageSize, 1 /* BACKWARD */, fromObjectId);
+                    });
+                }
+                var beforeSize = this._buffer.length;
+                return this._prevPageFr.map(function (queryResult) {
+                    var afterSize = beforeSize;
+                    _this._hasMoreBackward = queryResult.hasMore;
+                    if (queryResult.entityRecs.length > 0) {
+                        var newBuffer = [];
+                        for (var i = queryResult.entityRecs.length - 1; i > -1; i--) {
+                            newBuffer.push(queryResult.entityRecs[i]);
+                        }
+                        _this._buffer.forEach(function (entityRec) {
+                            newBuffer.push(entityRec);
+                        });
+                        _this._buffer = newBuffer;
+                        afterSize = _this._buffer.length;
+                    }
+                    return queryResult.entityRecs;
                 });
             };
-            return QueryContext;
-        })(dialog.PaneContext);
-        dialog.QueryContext = QueryContext;
+            QueryScroller.prototype.pageForward = function () {
+                var _this = this;
+                if (!this._hasMoreForward) {
+                    return Future.createSuccessfulFuture('QueryScroller::pageForward', []);
+                }
+                if (!this._nextPageFr || this._nextPageFr.isComplete) {
+                    var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
+                    this._nextPageFr = this._context.query(this._pageSize, 0 /* FORWARD */, fromObjectId);
+                }
+                else {
+                    this._nextPageFr = this._nextPageFr.bind(function (queryResult) {
+                        var fromObjectId = _this._buffer.length === 0 ? null : _this._buffer[_this._buffer.length - 1].objectId;
+                        return _this._context.query(_this._pageSize, 0 /* FORWARD */, fromObjectId);
+                    });
+                }
+                var beforeSize = this._buffer.length;
+                return this._nextPageFr.map(function (queryResult) {
+                    var afterSize = beforeSize;
+                    _this._hasMoreForward = queryResult.hasMore;
+                    if (queryResult.entityRecs.length > 0) {
+                        var newBuffer = [];
+                        _this._buffer.forEach(function (entityRec) {
+                            newBuffer.push(entityRec);
+                        });
+                        queryResult.entityRecs.forEach(function (entityRec) {
+                            newBuffer.push(entityRec);
+                        });
+                        _this._buffer = newBuffer;
+                        afterSize = _this._buffer.length;
+                    }
+                    return queryResult.entityRecs;
+                });
+            };
+            Object.defineProperty(QueryScroller.prototype, "pageSize", {
+                get: function () {
+                    return this._pageSize;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            QueryScroller.prototype.refresh = function () {
+                var _this = this;
+                this.clear();
+                return this.pageForward().map(function (entityRecList) {
+                    _this.context.lastRefreshTime = new Date();
+                    return entityRecList;
+                });
+            };
+            QueryScroller.prototype.trimFirst = function (n) {
+                var newBuffer = [];
+                for (var i = n; i < this._buffer.length; i++) {
+                    newBuffer.push(this._buffer[i]);
+                }
+                this._buffer = newBuffer;
+                this._hasMoreBackward = true;
+                if (this._buffer.length === 0)
+                    this._hasMoreForward = true;
+            };
+            QueryScroller.prototype.trimLast = function (n) {
+                var newBuffer = [];
+                for (var i = 0; i < this._buffer.length - n; i++) {
+                    newBuffer.push(this._buffer[i]);
+                }
+                this._buffer = newBuffer;
+                this._hasMoreForward = true;
+                if (this._buffer.length === 0)
+                    this._hasMoreBackward = true;
+            };
+            QueryScroller.prototype.clear = function () {
+                this._hasMoreBackward = !!this._firstObjectId;
+                this._hasMoreForward = true;
+                this._buffer = [];
+            };
+            return QueryScroller;
+        })();
+        dialog.QueryScroller = QueryScroller;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -7529,7 +7744,7 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 4/30/15.
+ * Created by rburson on 4/27/15.
  */
 ///<reference path="../references.ts"/>
 /* @TODO */
@@ -7537,232 +7752,124 @@ var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var HasMoreQueryMarker = (function (_super) {
-            __extends(HasMoreQueryMarker, _super);
-            function HasMoreQueryMarker() {
-                _super.apply(this, arguments);
+        var QueryState;
+        (function (QueryState) {
+            QueryState[QueryState["ACTIVE"] = 0] = "ACTIVE";
+            QueryState[QueryState["DESTROYED"] = 1] = "DESTROYED";
+        })(QueryState || (QueryState = {}));
+        (function (QueryDirection) {
+            QueryDirection[QueryDirection["FORWARD"] = 0] = "FORWARD";
+            QueryDirection[QueryDirection["BACKWARD"] = 1] = "BACKWARD";
+        })(dialog.QueryDirection || (dialog.QueryDirection = {}));
+        var QueryDirection = dialog.QueryDirection;
+        var QueryContext = (function (_super) {
+            __extends(QueryContext, _super);
+            function QueryContext(paneRef, _offlineRecs, _settings) {
+                if (_settings === void 0) { _settings = {}; }
+                _super.call(this, paneRef);
+                this._offlineRecs = _offlineRecs;
+                this._settings = _settings;
             }
-            HasMoreQueryMarker.singleton = new HasMoreQueryMarker();
-            return HasMoreQueryMarker;
-        })(dialog.NullEntityRec);
-        dialog.HasMoreQueryMarker = HasMoreQueryMarker;
-        var IsEmptyQueryMarker = (function (_super) {
-            __extends(IsEmptyQueryMarker, _super);
-            function IsEmptyQueryMarker() {
-                _super.apply(this, arguments);
-            }
-            IsEmptyQueryMarker.singleton = new IsEmptyQueryMarker();
-            return IsEmptyQueryMarker;
-        })(dialog.NullEntityRec);
-        dialog.IsEmptyQueryMarker = IsEmptyQueryMarker;
-        (function (QueryMarkerOption) {
-            QueryMarkerOption[QueryMarkerOption["None"] = 0] = "None";
-            QueryMarkerOption[QueryMarkerOption["IsEmpty"] = 1] = "IsEmpty";
-            QueryMarkerOption[QueryMarkerOption["HasMore"] = 2] = "HasMore";
-        })(dialog.QueryMarkerOption || (dialog.QueryMarkerOption = {}));
-        var QueryMarkerOption = dialog.QueryMarkerOption;
-        var QueryScroller = (function () {
-            function QueryScroller(_context, _pageSize, _firstObjectId, _markerOptions) {
-                if (_markerOptions === void 0) { _markerOptions = []; }
-                this._context = _context;
-                this._pageSize = _pageSize;
-                this._firstObjectId = _firstObjectId;
-                this._markerOptions = _markerOptions;
-                this.clear();
-            }
-            Object.defineProperty(QueryScroller.prototype, "buffer", {
+            Object.defineProperty(QueryContext.prototype, "entityRecDef", {
                 get: function () {
-                    return this._buffer;
+                    return this.paneDef.entityRecDef;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(QueryScroller.prototype, "bufferWithMarkers", {
+            QueryContext.prototype.isBinary = function (columnDef) {
+                var propDef = this.propDefAtName(columnDef.name);
+                return propDef && (propDef.isBinaryType || (propDef.isURLType && columnDef.isInlineMediaStyle));
+            };
+            Object.defineProperty(QueryContext.prototype, "isDestroyed", {
                 get: function () {
-                    var result = ArrayUtil.copy(this._buffer);
-                    if (this.isComplete) {
-                        if (this._markerOptions.indexOf(1 /* IsEmpty */) > -1) {
-                            if (this.isEmpty) {
-                                result.push(IsEmptyQueryMarker.singleton);
-                            }
-                        }
-                    }
-                    else if (this._markerOptions.indexOf(2 /* HasMore */) > -1) {
-                        if (result.length === 0) {
-                            result.push(HasMoreQueryMarker.singleton);
-                        }
-                        else {
-                            if (this._hasMoreBackward) {
-                                result.unshift(HasMoreQueryMarker.singleton);
-                            }
-                            if (this._hasMoreForward) {
-                                result.push(HasMoreQueryMarker.singleton);
-                            }
-                        }
-                    }
-                    return result;
+                    return this._queryState === 1 /* DESTROYED */;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(QueryScroller.prototype, "context", {
+            Object.defineProperty(QueryContext.prototype, "lastQueryFr", {
                 get: function () {
-                    return this._context;
+                    return this._lastQueryFr;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(QueryScroller.prototype, "firstObjectId", {
+            Object.defineProperty(QueryContext.prototype, "offlineRecs", {
                 get: function () {
-                    return this._firstObjectId;
+                    return this._offlineRecs;
+                },
+                set: function (offlineRecs) {
+                    this._offlineRecs = offlineRecs;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(QueryScroller.prototype, "hasMoreBackward", {
+            Object.defineProperty(QueryContext.prototype, "paneMode", {
                 get: function () {
-                    return this._hasMoreBackward;
+                    return this._settings['paneMode'];
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(QueryScroller.prototype, "hasMoreForward", {
-                get: function () {
-                    return this._hasMoreForward;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryScroller.prototype, "isComplete", {
-                get: function () {
-                    return !this._hasMoreBackward && !this._hasMoreForward;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryScroller.prototype, "isCompleteAndEmpty", {
-                get: function () {
-                    return this.isComplete && this._buffer.length === 0;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryScroller.prototype, "isEmpty", {
-                get: function () {
-                    return this._buffer.length === 0;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            QueryScroller.prototype.pageBackward = function () {
+            QueryContext.prototype.performMenuAction = function (menuDef, targets) {
                 var _this = this;
-                if (!this._hasMoreBackward) {
-                    return Future.createSuccessfulFuture('QueryScroller::pageBackward', []);
-                }
-                if (!this._prevPageFr || this._prevPageFr.isComplete) {
-                    var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
-                    this._prevPageFr = this._context.query(this._pageSize, 1 /* BACKWARD */, fromObjectId);
-                }
-                else {
-                    this._prevPageFr = this._prevPageFr.bind(function (queryResult) {
-                        var fromObjectId = _this._buffer.length === 0 ? null : _this._buffer[0].objectId;
-                        return _this._context.query(_this._pageSize, 1 /* BACKWARD */, fromObjectId);
-                    });
-                }
-                var beforeSize = this._buffer.length;
-                return this._prevPageFr.map(function (queryResult) {
-                    var afterSize = beforeSize;
-                    _this._hasMoreBackward = queryResult.hasMore;
-                    if (queryResult.entityRecs.length > 0) {
-                        var newBuffer = [];
-                        for (var i = queryResult.entityRecs.length - 1; i > -1; i--) {
-                            newBuffer.push(queryResult.entityRecs[i]);
-                        }
-                        _this._buffer.forEach(function (entityRec) {
-                            newBuffer.push(entityRec);
-                        });
-                        _this._buffer = newBuffer;
-                        afterSize = _this._buffer.length;
+                return dialog.DialogService.performQueryAction(this.paneDef.dialogHandle, menuDef.actionId, targets, this.sessionContext).bind(function (redirection) {
+                    var target = targets.length > 0 ? targets[0] : null;
+                    var ca = new dialog.ContextAction(menuDef.actionId, target, _this.actionSource);
+                    return dialog.NavRequest.Util.fromRedirection(redirection, ca, _this.sessionContext);
+                }).map(function (navRequest) {
+                    _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, navRequest);
+                    if (_this.isDestroyedSetting) {
+                        _this._queryState = 1 /* DESTROYED */;
                     }
-                    return queryResult.entityRecs;
+                    return navRequest;
                 });
             };
-            QueryScroller.prototype.pageForward = function () {
+            QueryContext.prototype.query = function (maxRows, direction, fromObjectId) {
                 var _this = this;
-                if (!this._hasMoreForward) {
-                    return Future.createSuccessfulFuture('QueryScroller::pageForward', []);
-                }
-                if (!this._nextPageFr || this._nextPageFr.isComplete) {
-                    var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
-                    this._nextPageFr = this._context.query(this._pageSize, 0 /* FORWARD */, fromObjectId);
-                }
-                else {
-                    this._nextPageFr = this._nextPageFr.bind(function (queryResult) {
-                        var fromObjectId = _this._buffer.length === 0 ? null : _this._buffer[_this._buffer.length - 1].objectId;
-                        return _this._context.query(_this._pageSize, 0 /* FORWARD */, fromObjectId);
-                    });
-                }
-                var beforeSize = this._buffer.length;
-                return this._nextPageFr.map(function (queryResult) {
-                    var afterSize = beforeSize;
-                    _this._hasMoreForward = queryResult.hasMore;
-                    if (queryResult.entityRecs.length > 0) {
-                        var newBuffer = [];
-                        _this._buffer.forEach(function (entityRec) {
-                            newBuffer.push(entityRec);
-                        });
-                        queryResult.entityRecs.forEach(function (entityRec) {
-                            newBuffer.push(entityRec);
-                        });
-                        _this._buffer = newBuffer;
-                        afterSize = _this._buffer.length;
+                return dialog.DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows, fromObjectId, this.sessionContext).bind(function (value) {
+                    var result = new dialog.QueryResult(value.entityRecs, value.hasMore);
+                    if (_this.lastRefreshTime === new Date(0)) {
+                        _this.lastRefreshTime = new Date();
                     }
-                    return queryResult.entityRecs;
+                    return Future.createSuccessfulFuture('QueryContext::query', result);
                 });
             };
-            Object.defineProperty(QueryScroller.prototype, "pageSize", {
+            Object.defineProperty(QueryContext.prototype, "isDestroyedSetting", {
                 get: function () {
-                    return this._pageSize;
+                    var str = this._settings['destroyed'];
+                    return str && str.toLowerCase() === 'true';
                 },
                 enumerable: true,
                 configurable: true
             });
-            QueryScroller.prototype.refresh = function () {
-                var _this = this;
-                this.clear();
-                return this.pageForward().map(function (entityRecList) {
-                    _this.context.lastRefreshTime = new Date();
-                    return entityRecList;
-                });
-            };
-            QueryScroller.prototype.trimFirst = function (n) {
-                var newBuffer = [];
-                for (var i = n; i < this._buffer.length; i++) {
-                    newBuffer.push(this._buffer[i]);
-                }
-                this._buffer = newBuffer;
-                this._hasMoreBackward = true;
-                if (this._buffer.length === 0)
-                    this._hasMoreForward = true;
-            };
-            QueryScroller.prototype.trimLast = function (n) {
-                var newBuffer = [];
-                for (var i = 0; i < this._buffer.length - n; i++) {
-                    newBuffer.push(this._buffer[i]);
-                }
-                this._buffer = newBuffer;
-                this._hasMoreForward = true;
-                if (this._buffer.length === 0)
-                    this._hasMoreBackward = true;
-            };
-            QueryScroller.prototype.clear = function () {
-                this._hasMoreBackward = !!this._firstObjectId;
-                this._hasMoreForward = true;
-                this._buffer = [];
-            };
-            return QueryScroller;
-        })();
-        dialog.QueryScroller = QueryScroller;
+            Object.defineProperty(QueryContext.prototype, "isGlobalRefreshSetting", {
+                get: function () {
+                    var str = this._settings['globalRefresh'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryContext.prototype, "isLocalRefreshSetting", {
+                get: function () {
+                    var str = this._settings['localRefresh'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryContext.prototype, "isRefreshSetting", {
+                get: function () {
+                    return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return QueryContext;
+        })(dialog.PaneContext);
+        dialog.QueryContext = QueryContext;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

@@ -158,6 +158,29 @@ module catavolt.dialog {
             });
         }
 
+        static performQueryAction(dialogHandle:DialogHandle, actionId:string, targets:Array<string>,
+                                  sessionContext:SessionContext):Future<Redirection> {
+
+            var method = 'performAction';
+            var params:StringDictionary = {
+                'actionId':actionId,
+                'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle')
+            };
+            if(targets) {
+               params['targets'] = targets;
+            }
+            var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind((result:StringDictionary)=>{
+                var redirectionTry = DialogTriple.fromWSDialogObject<Redirection>(result, 'WSRedirection', OType.factoryFn);
+                if(redirectionTry.isSuccess) {
+                    var r = redirectionTry.success;
+                    r.fromDialogProperties = result['dialogProperties'];
+                    redirectionTry = new Success(r);
+                }
+                return Future.createCompletedFuture('performQueryAction', redirectionTry);
+            });
+        }
+
         static processSideEffects(dialogHandle:DialogHandle, sessionContext:SessionContext,
                                   propertyName:string, propertyValue:any, pendingWrites:EntityRec) {
 
