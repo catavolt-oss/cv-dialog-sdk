@@ -65,7 +65,7 @@ module catavolt.dialog {
         }
 
         get formDef():FormDef {
-            return this.parentContext.formDef();
+            return this.parentContext.formDef;
         }
 
         get isRefreshNeeded():boolean {
@@ -88,13 +88,9 @@ module catavolt.dialog {
             return this._parentContext && this._parentContext.offlineCapable;
         }
 
-        get parentContext():FormContext {
-            return this._parentContext;
-        }
-
         get paneDef():PaneDef {
             if(this.paneRef) {
-                return this.formDef.headerDef();
+                return this.formDef.headerDef;
             } else {
                 return this.formDef.childrenDefs[this.paneRef];
             }
@@ -106,6 +102,14 @@ module catavolt.dialog {
 
         get paneTitle():string {
             return this.paneDef.findTitle();
+        }
+
+        get parentContext():FormContext {
+            return this._parentContext;
+        }
+
+        parseValue(formattedValue:string, propName:string):any {
+            return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
         }
 
         propDefAtName(propName:string):PropDef {

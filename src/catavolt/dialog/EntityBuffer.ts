@@ -53,7 +53,7 @@ module catavolt.dialog {
         }
 
         foregroundColorFor(propName:string):string {
-            return this._after.foregroundColor(propName);
+            return this._after.foregroundColorFor(propName);
         }
 
         get imageName():string {

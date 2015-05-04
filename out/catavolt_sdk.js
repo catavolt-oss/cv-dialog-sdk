@@ -3035,7 +3035,7 @@ var catavolt;
                 configurable: true
             });
             EntityBuffer.prototype.foregroundColorFor = function (propName) {
-                return this._after.foregroundColor(propName);
+                return this._after.foregroundColorFor(propName);
             };
             Object.defineProperty(EntityBuffer.prototype, "imageName", {
                 get: function () {
@@ -6481,7 +6481,7 @@ var catavolt;
             };
             Object.defineProperty(PaneContext.prototype, "formDef", {
                 get: function () {
-                    return this.parentContext.formDef();
+                    return this.parentContext.formDef;
                 },
                 enumerable: true,
                 configurable: true
@@ -6517,20 +6517,10 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(PaneContext.prototype, "parentContext", {
-                get: function () {
-                    return this._parentContext;
-                },
-                set: function (parentContext) {
-                    this._parentContext = parentContext;
-                },
-                enumerable: true,
-                configurable: true
-            });
             Object.defineProperty(PaneContext.prototype, "paneDef", {
                 get: function () {
                     if (this.paneRef) {
-                        return this.formDef.headerDef();
+                        return this.formDef.headerDef;
                     }
                     else {
                         return this.formDef.childrenDefs[this.paneRef];
@@ -6553,6 +6543,19 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(PaneContext.prototype, "parentContext", {
+                get: function () {
+                    return this._parentContext;
+                },
+                set: function (parentContext) {
+                    this._parentContext = parentContext;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            PaneContext.prototype.parseValue = function (formattedValue, propName) {
+                return dialog.PropFormatter.parse(formattedValue, this.propDefAtName(propName));
+            };
             PaneContext.prototype.propDefAtName = function (propName) {
                 return this.entityRecDef.propDefAtName(propName);
             };
@@ -7111,6 +7114,160 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 4/27/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var QueryState;
+        (function (QueryState) {
+            QueryState[QueryState["ACTIVE"] = 0] = "ACTIVE";
+            QueryState[QueryState["DESTROYED"] = 1] = "DESTROYED";
+        })(QueryState || (QueryState = {}));
+        (function (QueryDirection) {
+            QueryDirection[QueryDirection["FORWARD"] = 0] = "FORWARD";
+            QueryDirection[QueryDirection["BACKWARD"] = 1] = "BACKWARD";
+        })(dialog.QueryDirection || (dialog.QueryDirection = {}));
+        var QueryDirection = dialog.QueryDirection;
+        var QueryContext = (function (_super) {
+            __extends(QueryContext, _super);
+            function QueryContext(paneRef, _offlineRecs, _settings) {
+                if (_offlineRecs === void 0) { _offlineRecs = []; }
+                if (_settings === void 0) { _settings = {}; }
+                _super.call(this, paneRef);
+                this._offlineRecs = _offlineRecs;
+                this._settings = _settings;
+            }
+            Object.defineProperty(QueryContext.prototype, "entityRecDef", {
+                get: function () {
+                    return this.paneDef.entityRecDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            QueryContext.prototype.isBinary = function (columnDef) {
+                var propDef = this.propDefAtName(columnDef.name);
+                return propDef && (propDef.isBinaryType || (propDef.isURLType && columnDef.isInlineMediaStyle));
+            };
+            Object.defineProperty(QueryContext.prototype, "isDestroyed", {
+                get: function () {
+                    return this._queryState === 1 /* DESTROYED */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryContext.prototype, "lastQueryFr", {
+                get: function () {
+                    return this._lastQueryFr;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryContext.prototype, "offlineRecs", {
+                get: function () {
+                    return this._offlineRecs;
+                },
+                set: function (offlineRecs) {
+                    this._offlineRecs = offlineRecs;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryContext.prototype, "paneMode", {
+                get: function () {
+                    return this._settings['paneMode'];
+                },
+                enumerable: true,
+                configurable: true
+            });
+            QueryContext.prototype.performMenuAction = function (menuDef, targets) {
+                var _this = this;
+                return dialog.DialogService.performQueryAction(this.paneDef.dialogHandle, menuDef.actionId, targets, this.sessionContext).bind(function (redirection) {
+                    var target = targets.length > 0 ? targets[0] : null;
+                    var ca = new dialog.ContextAction(menuDef.actionId, target, _this.actionSource);
+                    return dialog.NavRequest.Util.fromRedirection(redirection, ca, _this.sessionContext);
+                }).map(function (navRequest) {
+                    _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, navRequest);
+                    if (_this.isDestroyedSetting) {
+                        _this._queryState = 1 /* DESTROYED */;
+                    }
+                    return navRequest;
+                });
+            };
+            QueryContext.prototype.query = function (maxRows, direction, fromObjectId) {
+                var _this = this;
+                return dialog.DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows, fromObjectId, this.sessionContext).bind(function (value) {
+                    var result = new dialog.QueryResult(value.entityRecs, value.hasMore);
+                    if (_this.lastRefreshTime === new Date(0)) {
+                        _this.lastRefreshTime = new Date();
+                    }
+                    return Future.createSuccessfulFuture('QueryContext::query', result);
+                });
+            };
+            QueryContext.prototype.refresh = function () {
+                return this._scroller.refresh();
+            };
+            Object.defineProperty(QueryContext.prototype, "scroller", {
+                get: function () {
+                    if (!this._scroller) {
+                        this._scroller = this.newScroller();
+                    }
+                    return this._scroller;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            QueryContext.prototype.setScroller = function (pageSize, firstObjectId, markerOptions) {
+                this._scroller = new dialog.QueryScroller(this, pageSize, firstObjectId, markerOptions);
+                return this._scroller;
+            };
+            //module level methods
+            QueryContext.prototype.newScroller = function () {
+                return this.setScroller(50, null, [0 /* None */]);
+            };
+            QueryContext.prototype.settings = function () {
+                return this._settings;
+            };
+            Object.defineProperty(QueryContext.prototype, "isDestroyedSetting", {
+                get: function () {
+                    var str = this._settings['destroyed'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryContext.prototype, "isGlobalRefreshSetting", {
+                get: function () {
+                    var str = this._settings['globalRefresh'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryContext.prototype, "isLocalRefreshSetting", {
+                get: function () {
+                    var str = this._settings['localRefresh'];
+                    return str && str.toLowerCase() === 'true';
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(QueryContext.prototype, "isRefreshSetting", {
+                get: function () {
+                    return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return QueryContext;
+        })(dialog.PaneContext);
+        dialog.QueryContext = QueryContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/30/15.
  */
 ///<reference path="../references.ts"/>
@@ -7272,169 +7429,267 @@ var catavolt;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 3/30/15.
+ * Created by rburson on 5/4/15.
  */
 ///<reference path="../references.ts"/>
+/* @TODO */
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var FormContextBuilder = (function () {
-            function FormContextBuilder(_dialogRedirection, _actionSource, _sessionContext) {
-                this._dialogRedirection = _dialogRedirection;
-                this._actionSource = _actionSource;
-                this._sessionContext = _sessionContext;
+        var ListContext = (function (_super) {
+            __extends(ListContext, _super);
+            function ListContext(paneRef, offlineRecs, settings) {
+                if (offlineRecs === void 0) { offlineRecs = []; }
+                if (settings === void 0) { settings = {}; }
+                _super.call(this, paneRef, offlineRecs, settings);
             }
-            Object.defineProperty(FormContextBuilder.prototype, "actionSource", {
+            Object.defineProperty(ListContext.prototype, "columnHeadings", {
                 get: function () {
-                    return this._actionSource;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            FormContextBuilder.prototype.build = function () {
-                var _this = this;
-                if (!this.dialogRedirection.isEditor) {
-                    return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
-                }
-                var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
-                var openAllFr = xOpenFr.bind(function (formXOpen) {
-                    var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
-                    var formXFormDefFr = _this.fetchXFormDef(formXOpen);
-                    var formMenuDefsFr = dialog.DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, _this.sessionContext);
-                    var formChildrenFr = formXFormDefFr.bind(function (xFormDef) {
-                        var childrenXOpenFr = _this.openChildren(formXOpen);
-                        var childrenXPaneDefsFr = _this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
-                        var childrenActiveColDefsFr = _this.fetchChildrenActiveColDefs(formXOpen);
-                        var childrenMenuDefsFr = _this.fetchChildrenMenuDefs(formXOpen);
-                        return Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr]);
+                    return this.listDef.activeColumnDefs.map(function (cd) {
+                        return cd.heading;
                     });
-                    return Future.sequence([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
-                });
-                return openAllFr.bind(function (value) {
-                    var formDefTry = _this.completeOpenPromise(value);
-                    var formContextTry = null;
-                    if (formDefTry.isFailure) {
-                        formContextTry = new Failure(formDefTry.failure);
-                    }
-                    else {
-                        var formDef = formDefTry.success;
-                        var childContexts = _this.createChildrenContexts(formDef);
-                        var formContext = new dialog.FormContext(_this.dialogRedirection, _this._actionSource, formDef, childContexts, false, false, _this.sessionContext);
-                        formContextTry = new Success(formContext);
-                    }
-                    return Future.createCompletedFuture('FormContextBuilder::build', formContextTry);
-                });
-            };
-            Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
-                get: function () {
-                    return this._dialogRedirection;
                 },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(FormContextBuilder.prototype, "sessionContext", {
+            Object.defineProperty(ListContext.prototype, "listDef", {
                 get: function () {
-                    return this._sessionContext;
+                    return this.paneDef;
                 },
                 enumerable: true,
                 configurable: true
             });
-            FormContextBuilder.prototype.completeOpenPromise = function (openAllResults) {
-                var flattenedTry = Try.flatten(openAllResults);
-                if (flattenedTry.isFailure) {
-                    return new Failure('FormContextBuilder::build: ' + ObjUtil.formatRecAttr(flattenedTry.failure));
-                }
-                var flattened = flattenedTry.success;
-                if (flattened.length != 4)
-                    return new Failure('FormContextBuilder::build: Open form should have resulted in 4 elements');
-                var formXOpen = flattened[0];
-                var formXFormDef = flattened[1];
-                var formMenuDefs = flattened[2];
-                var formChildren = flattened[3];
-                if (formChildren.length != 4)
-                    return new Failure('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
-                var childrenXOpens = formChildren[0];
-                var childrenXPaneDefs = formChildren[1];
-                var childrenXActiveColDefs = formChildren[2];
-                var childrenMenuDefs = formChildren[3];
-                return dialog.FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs);
-            };
-            FormContextBuilder.prototype.createChildrenContexts = function (formDef) {
-                var result = [];
-                formDef.childrenDefs.forEach(function (paneDef, i) {
-                    if (paneDef instanceof dialog.ListDef) {
-                        result.push(new ListContext(i));
-                    }
-                });
-                return result;
-            };
-            FormContextBuilder.prototype.fetchChildrenActiveColDefs = function (formXOpen) {
-                var _this = this;
-                var xComps = formXOpen.formModel.children;
-                var seqOfFutures = xComps.map(function (xComp) {
-                    if (xComp.redirection.isQuery) {
-                        return dialog.DialogService.getActiveColumnDefs(xComp.redirection.dialogHandle, _this.sessionContext);
-                    }
-                    else {
-                        return Future.createSuccessfulFuture('FormContextBuilder::fetchChildrenActiveColDefs', null);
-                    }
-                });
-                return Future.sequence(seqOfFutures);
-            };
-            FormContextBuilder.prototype.fetchChildrenMenuDefs = function (formXOpen) {
-                var _this = this;
-                var xComps = formXOpen.formModel.children;
-                var seqOfFutures = xComps.map(function (xComp) {
-                    if (xComp.redirection.isEditor) {
-                        return dialog.DialogService.getEditorModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
-                    }
-                    else {
-                        return dialog.DialogService.getQueryModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
-                    }
-                });
-                return Future.sequence(seqOfFutures);
-            };
-            FormContextBuilder.prototype.fetchChildrenXPaneDefs = function (formXOpen, xFormDef) {
-                var _this = this;
-                var formHandle = formXOpen.formModel.form.redirection.dialogHandle;
-                var xRefs = xFormDef.paneDefRefs;
-                var seqOfFutures = xRefs.map(function (xRef) {
-                    return dialog.DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, _this.sessionContext);
-                });
-                return Future.sequence(seqOfFutures);
-            };
-            FormContextBuilder.prototype.fetchXFormDef = function (xformOpenResult) {
-                var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
-                var formPaneId = xformOpenResult.formPaneId;
-                return dialog.DialogService.getEditorModelPaneDef(dialogHandle, formPaneId, this.sessionContext).bind(function (value) {
-                    if (value instanceof dialog.XFormDef) {
-                        return Future.createSuccessfulFuture('fetchXFormDef/success', value);
-                    }
-                    else {
-                        return Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + ObjUtil.formatRecAttr(value));
-                    }
+            ListContext.prototype.rowValues = function (entityRec) {
+                return this.listDef.activeColumnDefs.map(function (cd) {
+                    return entityRec.valueAtName(cd.name);
                 });
             };
-            FormContextBuilder.prototype.openChildren = function (formXOpen) {
-                var _this = this;
-                var xComps = formXOpen.formModel.children;
-                var seqOfFutures = [];
-                xComps.forEach(function (nextXComp) {
-                    var nextFr = null;
-                    if (nextXComp.redirection.isEditor) {
-                        nextFr = dialog.DialogService.openEditorModelFromRedir(nextXComp.redirection, _this.sessionContext);
-                    }
-                    else {
-                        nextFr = dialog.DialogService.openQueryModelFromRedir(nextXComp.redirection, _this.sessionContext);
-                    }
-                    seqOfFutures.push(nextFr);
-                });
-                return Future.sequence(seqOfFutures);
-            };
-            return FormContextBuilder;
-        })();
-        dialog.FormContextBuilder = FormContextBuilder;
+            Object.defineProperty(ListContext.prototype, "style", {
+                get: function () {
+                    return this.listDef.style;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return ListContext;
+        })(dialog.QueryContext);
+        dialog.ListContext = ListContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/4/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var DetailsContext = (function (_super) {
+            __extends(DetailsContext, _super);
+            function DetailsContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(DetailsContext.prototype, "detailsDef", {
+                get: function () {
+                    return this.paneDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DetailsContext.prototype, "printMarkupURL", {
+                get: function () {
+                    return this.paneDef.dialogRedirection.dialogProperties['formsURL'];
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return DetailsContext;
+        })(dialog.EditorContext);
+        dialog.DetailsContext = DetailsContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/4/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var MapContext = (function (_super) {
+            __extends(MapContext, _super);
+            function MapContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(MapContext.prototype, "mapDef", {
+                get: function () {
+                    return this.paneDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return MapContext;
+        })(dialog.QueryContext);
+        dialog.MapContext = MapContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/4/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var GraphContext = (function (_super) {
+            __extends(GraphContext, _super);
+            function GraphContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(GraphContext.prototype, "graphDef", {
+                get: function () {
+                    return this.paneDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return GraphContext;
+        })(dialog.QueryContext);
+        dialog.GraphContext = GraphContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/4/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var CalendarContext = (function (_super) {
+            __extends(CalendarContext, _super);
+            function CalendarContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(CalendarContext.prototype, "calendarDef", {
+                get: function () {
+                    return this.paneDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return CalendarContext;
+        })(dialog.QueryContext);
+        dialog.CalendarContext = CalendarContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/4/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var ImagePickerContext = (function (_super) {
+            __extends(ImagePickerContext, _super);
+            function ImagePickerContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(ImagePickerContext.prototype, "imagePickerDef", {
+                get: function () {
+                    return this.paneDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return ImagePickerContext;
+        })(dialog.QueryContext);
+        dialog.ImagePickerContext = ImagePickerContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/4/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var BarcodeScanContext = (function (_super) {
+            __extends(BarcodeScanContext, _super);
+            function BarcodeScanContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(BarcodeScanContext.prototype, "barcodeScanDef", {
+                get: function () {
+                    return this.paneDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return BarcodeScanContext;
+        })(dialog.EditorContext);
+        dialog.BarcodeScanContext = BarcodeScanContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/4/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var GeoFixContext = (function (_super) {
+            __extends(GeoFixContext, _super);
+            function GeoFixContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(GeoFixContext.prototype, "geoFixDef", {
+                get: function () {
+                    return this.paneDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return GeoFixContext;
+        })(dialog.EditorContext);
+        dialog.GeoFixContext = GeoFixContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/4/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var dialog;
+    (function (dialog) {
+        var GeoLocationContext = (function (_super) {
+            __extends(GeoLocationContext, _super);
+            function GeoLocationContext(paneRef) {
+                _super.call(this, paneRef);
+            }
+            Object.defineProperty(GeoLocationContext.prototype, "geoLocationDef", {
+                get: function () {
+                    return this.paneDef;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return GeoLocationContext;
+        })(dialog.EditorContext);
+        dialog.GeoLocationContext = GeoLocationContext;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -7730,6 +7985,17 @@ var catavolt;
 ///<reference path="QueryScroller.ts"/>
 ///<reference path="QueryContext.ts"/>
 ///<reference path="FormContext.ts"/>
+///<reference path="ListContext.ts"/>
+///<reference path="DetailsContext.ts"/>
+///<reference path="MapContext.ts"/>
+///<reference path="DetailsContext.ts"/>
+///<reference path="GraphContext.ts"/>
+///<reference path="CalendarContext.ts"/>
+///<reference path="ImagePickerContext.ts"/>
+///<reference path="BarcodeScanContext.ts"/>
+///<reference path="GeoFixContext.ts"/>
+///<reference path="GeoLocationContext.ts"/>
+///<reference path="FormContextBuilder.ts"/>
 ///<reference path="FormContextBuilder.ts"/>
 ///<reference path="OType.ts"/>
 /**
@@ -7744,132 +8010,169 @@ var catavolt;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 4/27/15.
+ * Created by rburson on 3/30/15.
  */
 ///<reference path="../references.ts"/>
-/* @TODO */
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var QueryState;
-        (function (QueryState) {
-            QueryState[QueryState["ACTIVE"] = 0] = "ACTIVE";
-            QueryState[QueryState["DESTROYED"] = 1] = "DESTROYED";
-        })(QueryState || (QueryState = {}));
-        (function (QueryDirection) {
-            QueryDirection[QueryDirection["FORWARD"] = 0] = "FORWARD";
-            QueryDirection[QueryDirection["BACKWARD"] = 1] = "BACKWARD";
-        })(dialog.QueryDirection || (dialog.QueryDirection = {}));
-        var QueryDirection = dialog.QueryDirection;
-        var QueryContext = (function (_super) {
-            __extends(QueryContext, _super);
-            function QueryContext(paneRef, _offlineRecs, _settings) {
-                if (_settings === void 0) { _settings = {}; }
-                _super.call(this, paneRef);
-                this._offlineRecs = _offlineRecs;
-                this._settings = _settings;
+        var FormContextBuilder = (function () {
+            function FormContextBuilder(_dialogRedirection, _actionSource, _sessionContext) {
+                this._dialogRedirection = _dialogRedirection;
+                this._actionSource = _actionSource;
+                this._sessionContext = _sessionContext;
             }
-            Object.defineProperty(QueryContext.prototype, "entityRecDef", {
+            Object.defineProperty(FormContextBuilder.prototype, "actionSource", {
                 get: function () {
-                    return this.paneDef.entityRecDef;
+                    return this._actionSource;
                 },
                 enumerable: true,
                 configurable: true
             });
-            QueryContext.prototype.isBinary = function (columnDef) {
-                var propDef = this.propDefAtName(columnDef.name);
-                return propDef && (propDef.isBinaryType || (propDef.isURLType && columnDef.isInlineMediaStyle));
-            };
-            Object.defineProperty(QueryContext.prototype, "isDestroyed", {
-                get: function () {
-                    return this._queryState === 1 /* DESTROYED */;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryContext.prototype, "lastQueryFr", {
-                get: function () {
-                    return this._lastQueryFr;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryContext.prototype, "offlineRecs", {
-                get: function () {
-                    return this._offlineRecs;
-                },
-                set: function (offlineRecs) {
-                    this._offlineRecs = offlineRecs;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryContext.prototype, "paneMode", {
-                get: function () {
-                    return this._settings['paneMode'];
-                },
-                enumerable: true,
-                configurable: true
-            });
-            QueryContext.prototype.performMenuAction = function (menuDef, targets) {
+            FormContextBuilder.prototype.build = function () {
                 var _this = this;
-                return dialog.DialogService.performQueryAction(this.paneDef.dialogHandle, menuDef.actionId, targets, this.sessionContext).bind(function (redirection) {
-                    var target = targets.length > 0 ? targets[0] : null;
-                    var ca = new dialog.ContextAction(menuDef.actionId, target, _this.actionSource);
-                    return dialog.NavRequest.Util.fromRedirection(redirection, ca, _this.sessionContext);
-                }).map(function (navRequest) {
-                    _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, navRequest);
-                    if (_this.isDestroyedSetting) {
-                        _this._queryState = 1 /* DESTROYED */;
+                if (!this.dialogRedirection.isEditor) {
+                    return Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
+                }
+                var xOpenFr = dialog.DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
+                var openAllFr = xOpenFr.bind(function (formXOpen) {
+                    var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
+                    var formXFormDefFr = _this.fetchXFormDef(formXOpen);
+                    var formMenuDefsFr = dialog.DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, _this.sessionContext);
+                    var formChildrenFr = formXFormDefFr.bind(function (xFormDef) {
+                        var childrenXOpenFr = _this.openChildren(formXOpen);
+                        var childrenXPaneDefsFr = _this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
+                        var childrenActiveColDefsFr = _this.fetchChildrenActiveColDefs(formXOpen);
+                        var childrenMenuDefsFr = _this.fetchChildrenMenuDefs(formXOpen);
+                        return Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr]);
+                    });
+                    return Future.sequence([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
+                });
+                return openAllFr.bind(function (value) {
+                    var formDefTry = _this.completeOpenPromise(value);
+                    var formContextTry = null;
+                    if (formDefTry.isFailure) {
+                        formContextTry = new Failure(formDefTry.failure);
                     }
-                    return navRequest;
+                    else {
+                        var formDef = formDefTry.success;
+                        var childContexts = _this.createChildrenContexts(formDef);
+                        var formContext = new dialog.FormContext(_this.dialogRedirection, _this._actionSource, formDef, childContexts, false, false, _this.sessionContext);
+                        formContextTry = new Success(formContext);
+                    }
+                    return Future.createCompletedFuture('FormContextBuilder::build', formContextTry);
                 });
             };
-            QueryContext.prototype.query = function (maxRows, direction, fromObjectId) {
-                var _this = this;
-                return dialog.DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows, fromObjectId, this.sessionContext).bind(function (value) {
-                    var result = new dialog.QueryResult(value.entityRecs, value.hasMore);
-                    if (_this.lastRefreshTime === new Date(0)) {
-                        _this.lastRefreshTime = new Date();
+            Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
+                get: function () {
+                    return this._dialogRedirection;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FormContextBuilder.prototype, "sessionContext", {
+                get: function () {
+                    return this._sessionContext;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            FormContextBuilder.prototype.completeOpenPromise = function (openAllResults) {
+                var flattenedTry = Try.flatten(openAllResults);
+                if (flattenedTry.isFailure) {
+                    return new Failure('FormContextBuilder::build: ' + ObjUtil.formatRecAttr(flattenedTry.failure));
+                }
+                var flattened = flattenedTry.success;
+                if (flattened.length != 4)
+                    return new Failure('FormContextBuilder::build: Open form should have resulted in 4 elements');
+                var formXOpen = flattened[0];
+                var formXFormDef = flattened[1];
+                var formMenuDefs = flattened[2];
+                var formChildren = flattened[3];
+                if (formChildren.length != 4)
+                    return new Failure('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
+                var childrenXOpens = formChildren[0];
+                var childrenXPaneDefs = formChildren[1];
+                var childrenXActiveColDefs = formChildren[2];
+                var childrenMenuDefs = formChildren[3];
+                return dialog.FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs);
+            };
+            FormContextBuilder.prototype.createChildrenContexts = function (formDef) {
+                var result = [];
+                formDef.childrenDefs.forEach(function (paneDef, i) {
+                    if (paneDef instanceof dialog.ListDef) {
+                        result.push(new dialog.ListContext(i));
                     }
-                    return Future.createSuccessfulFuture('QueryContext::query', result);
+                });
+                return result;
+            };
+            FormContextBuilder.prototype.fetchChildrenActiveColDefs = function (formXOpen) {
+                var _this = this;
+                var xComps = formXOpen.formModel.children;
+                var seqOfFutures = xComps.map(function (xComp) {
+                    if (xComp.redirection.isQuery) {
+                        return dialog.DialogService.getActiveColumnDefs(xComp.redirection.dialogHandle, _this.sessionContext);
+                    }
+                    else {
+                        return Future.createSuccessfulFuture('FormContextBuilder::fetchChildrenActiveColDefs', null);
+                    }
+                });
+                return Future.sequence(seqOfFutures);
+            };
+            FormContextBuilder.prototype.fetchChildrenMenuDefs = function (formXOpen) {
+                var _this = this;
+                var xComps = formXOpen.formModel.children;
+                var seqOfFutures = xComps.map(function (xComp) {
+                    if (xComp.redirection.isEditor) {
+                        return dialog.DialogService.getEditorModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
+                    }
+                    else {
+                        return dialog.DialogService.getQueryModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
+                    }
+                });
+                return Future.sequence(seqOfFutures);
+            };
+            FormContextBuilder.prototype.fetchChildrenXPaneDefs = function (formXOpen, xFormDef) {
+                var _this = this;
+                var formHandle = formXOpen.formModel.form.redirection.dialogHandle;
+                var xRefs = xFormDef.paneDefRefs;
+                var seqOfFutures = xRefs.map(function (xRef) {
+                    return dialog.DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, _this.sessionContext);
+                });
+                return Future.sequence(seqOfFutures);
+            };
+            FormContextBuilder.prototype.fetchXFormDef = function (xformOpenResult) {
+                var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
+                var formPaneId = xformOpenResult.formPaneId;
+                return dialog.DialogService.getEditorModelPaneDef(dialogHandle, formPaneId, this.sessionContext).bind(function (value) {
+                    if (value instanceof dialog.XFormDef) {
+                        return Future.createSuccessfulFuture('fetchXFormDef/success', value);
+                    }
+                    else {
+                        return Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + ObjUtil.formatRecAttr(value));
+                    }
                 });
             };
-            Object.defineProperty(QueryContext.prototype, "isDestroyedSetting", {
-                get: function () {
-                    var str = this._settings['destroyed'];
-                    return str && str.toLowerCase() === 'true';
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryContext.prototype, "isGlobalRefreshSetting", {
-                get: function () {
-                    var str = this._settings['globalRefresh'];
-                    return str && str.toLowerCase() === 'true';
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryContext.prototype, "isLocalRefreshSetting", {
-                get: function () {
-                    var str = this._settings['localRefresh'];
-                    return str && str.toLowerCase() === 'true';
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(QueryContext.prototype, "isRefreshSetting", {
-                get: function () {
-                    return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return QueryContext;
-        })(dialog.PaneContext);
-        dialog.QueryContext = QueryContext;
+            FormContextBuilder.prototype.openChildren = function (formXOpen) {
+                var _this = this;
+                var xComps = formXOpen.formModel.children;
+                var seqOfFutures = [];
+                xComps.forEach(function (nextXComp) {
+                    var nextFr = null;
+                    if (nextXComp.redirection.isEditor) {
+                        nextFr = dialog.DialogService.openEditorModelFromRedir(nextXComp.redirection, _this.sessionContext);
+                    }
+                    else {
+                        nextFr = dialog.DialogService.openQueryModelFromRedir(nextXComp.redirection, _this.sessionContext);
+                    }
+                    seqOfFutures.push(nextFr);
+                });
+                return Future.sequence(seqOfFutures);
+            };
+            return FormContextBuilder;
+        })();
+        dialog.FormContextBuilder = FormContextBuilder;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 //# sourceMappingURL=catavolt_sdk.js.map

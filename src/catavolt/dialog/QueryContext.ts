@@ -17,7 +17,7 @@ module catavolt.dialog {
         private _queryState:QueryState;
         private _scroller:QueryScroller;
 
-        constructor(paneRef:number, private _offlineRecs:Array<EntityRec>, private _settings:StringDictionary={}) {
+        constructor(paneRef:number, private _offlineRecs:Array<EntityRec>=[], private _settings:StringDictionary={}) {
             super(paneRef);
         }
 
@@ -74,6 +74,32 @@ module catavolt.dialog {
                     }
                     return Future.createSuccessfulFuture('QueryContext::query', result);
                 });
+        }
+
+        refresh():Future<Array<EntityRec>> {
+            return this._scroller.refresh();
+        }
+
+        get scroller():QueryScroller {
+            if(!this._scroller) {
+                this._scroller = this.newScroller();
+            }
+            return this._scroller;
+        }
+
+        setScroller(pageSize:number, firstObjectId:string, markerOptions:Array<QueryMarkerOption>) {
+            this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
+            return this._scroller;
+        }
+
+        //module level methods
+
+        newScroller():QueryScroller {
+            return this.setScroller(50, null, [QueryMarkerOption.None]);
+        }
+
+        settings():StringDictionary {
+            return this._settings;
         }
 
         private get isDestroyedSetting():boolean {

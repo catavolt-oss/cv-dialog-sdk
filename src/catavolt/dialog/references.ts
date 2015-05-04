@@ -99,5 +99,16 @@
 ///<reference path="QueryScroller.ts"/>
 ///<reference path="QueryContext.ts"/>
 ///<reference path="FormContext.ts"/>
+///<reference path="ListContext.ts"/>
+///<reference path="DetailsContext.ts"/>
+///<reference path="MapContext.ts"/>
+///<reference path="DetailsContext.ts"/>
+///<reference path="GraphContext.ts"/>
+///<reference path="CalendarContext.ts"/>
+///<reference path="ImagePickerContext.ts"/>
+///<reference path="BarcodeScanContext.ts"/>
+///<reference path="GeoFixContext.ts"/>
+///<reference path="GeoLocationContext.ts"/>
+///<reference path="FormContextBuilder.ts"/>
 ///<reference path="FormContextBuilder.ts"/>
 ///<reference path="OType.ts"/>
