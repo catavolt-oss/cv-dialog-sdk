@@ -26,7 +26,9 @@ module catavolt.ws {
 
         jsonCall(targetUrl:string, jsonObj?:StringDictionary, method = 'GET', timeoutMillis = 30000):Future<StringDictionary> {
 
-            var promise = new Promise<StringDictionary>("XMLHttpClient::jsonCall");
+            var body = jsonObj && JSON.stringify(jsonObj);
+            //var promise = new Promise<StringDictionary>("XMLHttpClient::jsonCall");
+            var promise = new Promise<StringDictionary>("XMLHttpClient::" + targetUrl + ":" + body);
 
             if (method !== 'GET' && method !== 'POST') {
                 promise.failure(method + " method not supported.");
@@ -82,8 +84,6 @@ module catavolt.ws {
                     wRequestTimer = setTimeout(timeoutCallback, timeoutMillis);
                 }
             }
-
-            var body = jsonObj && JSON.stringify(jsonObj);
 
             Log.info("XmlHttpClient: Calling: " + targetUrl);
             Log.info("XmlHttpClient: body: " + body);

@@ -13,7 +13,7 @@ module catavolt.fp {
             var failures = [];
             tryList.forEach((t:Try<A>)=>{
                 if(t.isFailure) {
-                   failures.push(t);
+                   failures.push(t.failure);
                 } else {
                     if(Array.isArray(t.success) && Try.isListOfTry(<any>t.success)){
                         var flattened = Try.flatten(<any>t.success);

@@ -31,6 +31,7 @@ module catavolt.dialog {
         it("should peform launch action successfully", function (done) {
             var launchAction:WorkbenchLaunchAction = AppContext.singleton.appWinDefTry.success.workbenches[0].workbenchLaunchActions[0];
             AppContext.singleton.performLaunchAction(launchAction).onComplete((navRequestTry:Try<NavRequest>)=>{
+                Log.debug("completed with: " + navRequestTry);
                 if(navRequestTry.isFailure) {
                     Log.debug(navRequestTry.failure);
                 }

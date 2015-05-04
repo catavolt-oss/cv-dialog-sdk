@@ -26,9 +26,7 @@ module catavolt.dialog {
             } else if(redirection instanceof DialogRedirection) {
                 var dr:DialogRedirection = redirection;
                 var fcb:FormContextBuilder = new FormContextBuilder(dr, actionSource, sessionContext);
-                result = fcb.build().map((formContext:FormContext)=>{
-                    return formContext;
-                });
+                result = fcb.build();
             } else if(redirection instanceof NullRedirection) {
                 var nullRedir:NullRedirection = redirection;
                 var nullNavRequest:NullNavRequest = new NullNavRequest();

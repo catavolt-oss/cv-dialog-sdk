@@ -11,6 +11,7 @@ module catavolt.dialog {
                     private _type:string,
                     private _actionId:string,
                     private _mode:string,
+                    private _label:string,
                     private _iconName:string,
                     private _directive:string,
                     private _menuDefs:Array<MenuDef>
@@ -53,6 +54,10 @@ module catavolt.dialog {
 
         get isWrite():boolean {
             return this._mode && this._mode.indexOf('W') > -1;
+        }
+
+        get label():string {
+            return this._label;
         }
 
         get menuDefs():Array<MenuDef> {

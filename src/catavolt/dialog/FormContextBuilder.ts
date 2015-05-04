@@ -95,6 +95,22 @@ module catavolt.dialog {
             formDef.childrenDefs.forEach((paneDef:PaneDef, i)=>{
                 if(paneDef instanceof ListDef) {
                     result.push(new ListContext(i));
+                } else if (paneDef instanceof DetailsDef) {
+                    result.push(new DetailsContext(i));
+                } else if (paneDef instanceof MapDef) {
+                    result.push(new MapContext(i));
+                } else if (paneDef instanceof GraphDef) {
+                    result.push(new GraphContext(i));
+                } else if (paneDef instanceof CalendarDef) {
+                    result.push(new CalendarContext(i));
+                } else if (paneDef instanceof ImagePickerDef) {
+                    result.push(new ImagePickerContext(i));
+                } else if (paneDef instanceof BarcodeScanDef) {
+                    result.push(new BarcodeScanContext(i));
+                } else if (paneDef instanceof GeoFixDef) {
+                    result.push(new GeoFixContext(i));
+                } else if (paneDef instanceof GeoLocationDef) {
+                    result.push(new GeoLocationContext(i));
                 }
             });
             return result;
