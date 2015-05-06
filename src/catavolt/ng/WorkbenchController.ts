@@ -40,13 +40,12 @@ module catavolt.ng {
                 Catavolt.performLaunchAction(launchAction).onComplete((launchTry:Try<NavRequest>)=>{
                     if(launchTry.isFailure) {
                         alert('Handle Launch Failure!');
-                        Log.debug(ObjUtil.formatRecAttr(launchTry.failure));
+                        Log.error(launchTry.failure);
                     } else {
                         if(launchTry.success instanceof FormContext) {
-                            alert('Successfully navigated to FormContext');
-                            Log.debug(ObjUtil.formatRecAttr(launchTry.success));
+                            Log.info('Succeded with ' + launchTry.success);
                         } else {
-                            alert('Unhandled type of NavRequest ' + ObjUtil.formatRecAttr(launchTry.success));
+                            alert('Unhandled type of NavRequest ' + launchTry.success);
                         }
                     }
                 });
