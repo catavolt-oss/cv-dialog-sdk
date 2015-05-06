@@ -14,3 +14,6 @@
 //dialog
 ///<reference path="dialog/references.ts"/>
 
+//angular
+///<reference path="ng/references.ts"/>
+

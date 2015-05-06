@@ -89,6 +89,26 @@ module catavolt.dialog {
 
         }
 
+        loginDirectly(url:string,
+                      tenantId:string,
+                      clientType:string,
+                      userId:string,
+                      password:string):Future<AppWinDef>{
+
+            if(this._appContextState === AppContextState.LOGGED_IN) {
+                return Future.createFailedFuture<AppWinDef>("AppContext::loginDirectly", "User is already logged in");
+            }
+
+            return this.loginFromSystemContext(new SystemContextImpl(url), tenantId, userId,
+                password, this.deviceProps, clientType).bind(
+                (appContextValues:AppContextValues)=>{
+                    this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
+                }
+            );
+        }
+
+
         performLaunchAction(launchAction:WorkbenchLaunchAction):Future<NavRequest> {
             if(this._appContextState === AppContextState.LOGGED_OUT) {
                 return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");

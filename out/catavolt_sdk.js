@@ -943,6 +943,123 @@ var catavolt;
 var Call = catavolt.ws.Call;
 var Get = catavolt.ws.Get;
 /**
+ * Created by rburson on 5/5/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var ng;
+    (function (ng) {
+        var LoginController = (function () {
+            function LoginController($scope, $location, $rootScope, $timeout, Catavolt) {
+                //prefill the form for now...
+                $scope.creds = { tenantId: '***REMOVED***z', gatewayUrl: 'www.catavolt.net', userId: 'sales', password: '***REMOVED***', clientType: 'LIMITED_ACCESS' };
+                $scope.loginMessage = "";
+                $scope.loggingIn = false;
+                $scope.loggedIn = Catavolt.isLoggedIn;
+                $scope.login = function (creds) {
+                    $scope.loginMessage = "";
+                    $scope.loggingIn = true;
+                    if (Catavolt.loggedIn) {
+                        $scope.loggedIn = Catavolt.isLoggedIn;
+                        $location.path('/main');
+                    }
+                    else {
+                        Catavolt.login(creds.gatewayUrl, creds.tenantId, creds.clientType, creds.userId, creds.password).onComplete(function (appWinDefTry) {
+                            $rootScope.$apply(function () {
+                                $scope.loggingIn = false;
+                                if (appWinDefTry.isFailure) {
+                                    $scope.loginMessage = "Invalid Login";
+                                    $scope.loggedIn = Catavolt.isLoggedIn;
+                                }
+                                else {
+                                    $scope.loggedIn = Catavolt.isLoggedIn;
+                                    $timeout(function () {
+                                        $location.path('/main');
+                                    }, 800);
+                                }
+                            });
+                        });
+                    }
+                };
+            }
+            return LoginController;
+        })();
+        ng.LoginController = LoginController;
+    })(ng = catavolt.ng || (catavolt.ng = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/6/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var ng;
+    (function (ng) {
+        var WorkbenchController = (function () {
+            function WorkbenchController($scope, $location, $rootScope, $timeout, Catavolt) {
+                $scope.launchActions = [];
+                var workbenches = Catavolt.appWinDefTry.success.workbenches;
+                var launchActions = workbenches.length ? workbenches[0].workbenchLaunchActions : [];
+                //preload images
+                var loader = new PxLoader();
+                loader.addCompletionListener(function () {
+                    addLaunchers(launchActions);
+                });
+                for (var i = 0; i < launchActions.length; i++) {
+                    loader.addImage(launchActions[i].iconBase);
+                }
+                loader.start();
+                function addLaunchers(launchActions) {
+                    launchActions.forEach(function (item, i) {
+                        $timeout(function () {
+                            $scope.launchActions.push(item);
+                        }, i * 200);
+                    });
+                }
+                $scope.performLaunchAction = function (launchAction) {
+                    Catavolt.performLaunchAction(launchAction).onComplete(function (launchTry) {
+                        if (launchTry.isFailure) {
+                            alert('Handle Launch Failure!');
+                            Log.debug(ObjUtil.formatRecAttr(launchTry.failure));
+                        }
+                        else {
+                            if (launchTry.success instanceof FormContext) {
+                                alert('Successfully navigated to FormContext');
+                                Log.debug(ObjUtil.formatRecAttr(launchTry.success));
+                            }
+                            else {
+                                alert('Unhandled type of NavRequest ' + ObjUtil.formatRecAttr(launchTry.success));
+                            }
+                        }
+                    });
+                };
+            }
+            return WorkbenchController;
+        })();
+        ng.WorkbenchController = WorkbenchController;
+    })(ng = catavolt.ng || (catavolt.ng = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+//ng
+///<reference path="LoginController.ts"/>
+///<reference path="WorkbenchController.ts"/>
+/**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="util/references.ts"/>
+//fp
+///<reference path="fp/references.ts"/>
+//ws
+///<reference path="ws/references.ts"/>
+//dialog
+///<reference path="dialog/references.ts"/>
+//angular
+///<reference path="ng/references.ts"/>
+/**
  * Created by rburson on 4/28/15.
  */
 ///<reference path="../references.ts"/>
@@ -4882,170 +4999,6 @@ var catavolt;
  * Created by rburson on 3/12/15.
  */
 /**
- * Created by rburson on 3/13/15.
- */
-///<reference path="references.ts"/>
-///<reference path="../fp/references.ts"/>
-///<reference path="../util/references.ts"/>
-///<reference path="../ws/references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var AppContextState;
-        (function (AppContextState) {
-            AppContextState[AppContextState["LOGGED_OUT"] = 0] = "LOGGED_OUT";
-            AppContextState[AppContextState["LOGGED_IN"] = 1] = "LOGGED_IN";
-        })(AppContextState || (AppContextState = {}));
-        var AppContextValues = (function () {
-            function AppContextValues(sessionContext, appWinDef, tenantSettings) {
-                this.sessionContext = sessionContext;
-                this.appWinDef = appWinDef;
-                this.tenantSettings = tenantSettings;
-            }
-            return AppContextValues;
-        })();
-        var AppContext = (function () {
-            function AppContext() {
-                if (AppContext._singleton) {
-                    throw new Error("Singleton instance already created");
-                }
-                this._deviceProps = [];
-                this.setAppContextStateToLoggedOut();
-                AppContext._singleton = this;
-            }
-            Object.defineProperty(AppContext, "defaultTTLInMillis", {
-                get: function () {
-                    return AppContext.ONE_DAY_IN_MILLIS;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext, "singleton", {
-                get: function () {
-                    if (!AppContext._singleton) {
-                        AppContext._singleton = new AppContext();
-                    }
-                    return AppContext._singleton;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "appWinDefTry", {
-                get: function () {
-                    return this._appWinDefTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "deviceProps", {
-                get: function () {
-                    return this._deviceProps;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "isLoggedIn", {
-                get: function () {
-                    return this._appContextState === 1 /* LOGGED_IN */;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
-                if (this._appContextState === 0 /* LOGGED_OUT */) {
-                    return Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
-                }
-                return dialog.WorkbenchService.getWorkbench(sessionContext, workbenchId);
-            };
-            AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
-                var _this = this;
-                if (this._appContextState === 1 /* LOGGED_IN */) {
-                    return Future.createFailedFuture("AppContext::login", "User is already logged in");
-                }
-                var answer;
-                var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
-                return appContextValuesFr.bind(function (appContextValues) {
-                    _this.setAppContextStateToLoggedIn(appContextValues);
-                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
-                });
-            };
-            AppContext.prototype.performLaunchAction = function (launchAction) {
-                if (this._appContextState === 0 /* LOGGED_OUT */) {
-                    return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
-                }
-                return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
-            };
-            Object.defineProperty(AppContext.prototype, "sessionContextTry", {
-                get: function () {
-                    return this._sessionContextTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "tenantSettingsTry", {
-                get: function () {
-                    return this._tenantSettingsTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            AppContext.prototype.finalizeContext = function (sessionContext, deviceProps) {
-                var devicePropName = "com.catavolt.session.property.DeviceProperties";
-                return dialog.SessionService.setSessionListProperty(devicePropName, deviceProps, sessionContext).bind(function (setPropertyListResult) {
-                    var listPropName = "com.catavolt.session.property.TenantProperties";
-                    return dialog.SessionService.getSessionListProperty(listPropName, sessionContext).bind(function (listPropertyResult) {
-                        return dialog.WorkbenchService.getAppWinDef(sessionContext).bind(function (appWinDef) {
-                            return Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
-                        });
-                    });
-                });
-            };
-            AppContext.prototype.loginOnline = function (gatewayHost, tenantId, clientType, userId, password, deviceProps) {
-                var _this = this;
-                var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
-                return systemContextFr.bind(function (sc) {
-                    return _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
-                });
-            };
-            AppContext.prototype.loginFromSystemContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
-                var _this = this;
-                var sessionContextFuture = dialog.SessionService.createSession(tenantId, userId, password, clientType, systemContext);
-                return sessionContextFuture.bind(function (sessionContext) {
-                    return _this.finalizeContext(sessionContext, deviceProps);
-                });
-            };
-            AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {
-                var serviceEndpoint = dialog.GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
-                return serviceEndpoint.map(function (serviceEndpoint) {
-                    return new dialog.SystemContextImpl(serviceEndpoint.serverAssignment);
-                });
-            };
-            AppContext.prototype.performLaunchActionOnline = function (launchAction, sessionContext) {
-                var redirFr = dialog.WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
-                return redirFr.bind(function (r) {
-                    return dialog.NavRequest.Util.fromRedirection(r, launchAction, sessionContext);
-                });
-            };
-            AppContext.prototype.setAppContextStateToLoggedIn = function (appContextValues) {
-                this._appWinDefTry = new Success(appContextValues.appWinDef);
-                this._tenantSettingsTry = new Success(appContextValues.tenantSettings);
-                this._sessionContextTry = new Success(appContextValues.sessionContext);
-                this._appContextState = 1 /* LOGGED_IN */;
-            };
-            AppContext.prototype.setAppContextStateToLoggedOut = function () {
-                this._appWinDefTry = new Failure("Not logged in");
-                this._tenantSettingsTry = new Failure('Not logged in"');
-                this._sessionContextTry = new Failure('Not loggged in');
-                this._appContextState = 0 /* LOGGED_OUT */;
-            };
-            AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
-            return AppContext;
-        })();
-        dialog.AppContext = AppContext;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -8085,165 +8038,238 @@ var catavolt;
 /**
  * Created by rburson on 3/6/15.
  */
-//dialog
-//note - these have a dependency-based ordering
-///<reference path="PaneMode.ts"/>
-///<reference path="MenuDef.ts"/>
-///<reference path="CellValueDef.ts"/>
-///<reference path="AttributeCellValueDef.ts"/>
-///<reference path="ForcedLineCellValueDef.ts"/>
-///<reference path="LabelCellValueDef.ts"/>
-///<reference path="TabCellValueDef.ts"/>
-///<reference path="SubstitutionCellValueDef.ts"/>
-///<reference path="CellDef.ts"/>
-///<reference path="EntityRec.ts"/>
-///<reference path="EntityRecDef.ts"/>
-///<reference path="BinaryRef.ts"/>
-///<reference path="CodeRef.ts"/>
-///<reference path="ObjectRef.ts"/>
-///<reference path="GeoFix.ts"/>
-///<reference path="GeoLocation.ts"/>
-///<reference path="DataAnno.ts"/>
-///<reference path="Prop.ts"/>
-///<reference path="PropDef.ts"/>
-///<reference path="SortPropDef.ts"/>
-///<reference path="PropFormatter.ts"/>
-///<reference path="GraphDataPointDef.ts"/>
-///<reference path="EntityRecImpl.ts"/>
-///<reference path="EntityBuffer.ts"/>
-///<reference path="NullEntityRec.ts"/>
-///<reference path="ColumnDef.ts"/>
-///<reference path="XPaneDef.ts"/>
-///<reference path="XBarcodeScanDef.ts"/>
-///<reference path="XCalendarDef.ts"/>
-///<reference path="XDetailsDef.ts"/>
-///<reference path="XFormDef.ts"/>
-///<reference path="XGeoFixDef.ts"/>
-///<reference path="XGeoLocationDef.ts"/>
-///<reference path="XGraphDef.ts"/>
-///<reference path="XImagePickerDef.ts"/>
-///<reference path="XListDef.ts"/>
-///<reference path="XMapDef.ts"/>
-///<reference path="XChangePaneModeResult.ts"/>
-///<reference path="XFormModel.ts"/>
-///<reference path="XFormModelComp.ts"/>
-///<reference path="XGetSessionListPropertyResult.ts"/>
-///<reference path="XGetActiveColumnDefsResult.ts"/>
-///<reference path="XGetAvailableValuesResult.ts"/>
-///<reference path="XGetSessionListPropertyResult.ts"/>
-///<reference path="XOpenDialogModelResult.ts"/>
-///<reference path="XOpenEditorModelResult.ts"/>
-///<reference path="XOpenQueryModelResult.ts"/>
-///<reference path="XPaneDefRef.ts"/>
-///<reference path="XPropertyChangeResult.ts"/>
-///<reference path="XQueryResult.ts"/>
-///<reference path="XReadPropertyResult.ts"/>
-///<reference path="XReadResult.ts"/>
-///<reference path="XWriteResult.ts"/>
-///<reference path="VoidResult.ts"/>
-///<reference path="DialogException.ts"/>
-///<reference path="Redirection.ts"/>
-///<reference path="DialogHandle.ts"/>
-///<reference path="DialogRedirection.ts"/>
-///<reference path="NullRedirection.ts"/>
-///<reference path="WebRedirection.ts"/>
-///<reference path="WorkbenchRedirection.ts"/>
-///<reference path="DialogTriple.ts"/>
-///<reference path="ActionSource.ts"/>
-///<reference path="ContextAction.ts"/>
-///<reference path="NavRequest.ts"/>
-///<reference path="NullNavRequest.ts"/>
-///<reference path="ServiceEndpoint.ts"/>
-///<reference path="AppContext.ts"/>
-///<reference path="SessionContextImpl.ts"/>
-///<reference path="SystemContextImpl.ts"/>
-///<reference path="Binary.ts"/>
-///<reference path="Workbench.ts"/>
-///<reference path="AppWinDef.ts"/>
-///<reference path="SessionService.ts"/>
-///<reference path="GatewayService.ts"/>
-///<reference path="WorkbenchLaunchAction.ts"/>
-///<reference path="WorkbenchService.ts"/>
-///<reference path="PaneDef.ts"/>
-///<reference path="DetailsDef.ts"/>
-///<reference path="FormDef.ts"/>
-///<reference path="ListDef.ts"/>
-///<reference path="MapDef.ts"/>
-///<reference path="GraphDef.ts"/>
-///<reference path="GeoFixDef.ts"/>
-///<reference path="GeoLocationDef.ts"/>
-///<reference path="BarcodeScanDef.ts"/>
-///<reference path="CalendarDef.ts"/>
-///<reference path="ImagePickerDef.ts"/>
-///<reference path="DialogService.ts"/>
-///<reference path="PaneContext.ts"/>
-///<reference path="EditorContext.ts"/>
-///<reference path="QueryResult.ts"/>
-///<reference path="QueryScroller.ts"/>
-///<reference path="QueryContext.ts"/>
-///<reference path="FormContext.ts"/>
-///<reference path="ListContext.ts"/>
-///<reference path="DetailsContext.ts"/>
-///<reference path="MapContext.ts"/>
-///<reference path="DetailsContext.ts"/>
-///<reference path="GraphContext.ts"/>
-///<reference path="CalendarContext.ts"/>
-///<reference path="ImagePickerContext.ts"/>
-///<reference path="BarcodeScanContext.ts"/>
-///<reference path="GeoFixContext.ts"/>
-///<reference path="GeoLocationContext.ts"/>
-///<reference path="FormContextBuilder.ts"/>
-///<reference path="FormContextBuilder.ts"/>
-///<reference path="OType.ts"/>
+var AppContext = catavolt.dialog.AppContext;
+var AppWinDef = catavolt.dialog.AppWinDef;
+var AttributeCellValueDef = catavolt.dialog.AttributeCellValueDef;
+var BarcodeScanContext = catavolt.dialog.BarcodeScanContext;
+var BarcodeScanDef = catavolt.dialog.BarcodeScanDef;
+var BinaryRef = catavolt.dialog.BinaryRef;
+var CalendarContext = catavolt.dialog.CalendarContext;
+var CalendarDef = catavolt.dialog.CalendarDef;
+var CellDef = catavolt.dialog.CellDef;
+var CellValueDef = catavolt.dialog.CellValueDef;
+var CodeRef = catavolt.dialog.CodeRef;
+var ColumnDef = catavolt.dialog.ColumnDef;
+var ContextAction = catavolt.dialog.ContextAction;
+var DataAnno = catavolt.dialog.DataAnno;
+var DetailsContext = catavolt.dialog.DetailsContext;
+var DialogRedirection = catavolt.dialog.DialogRedirection;
+var DialogService = catavolt.dialog.DialogService;
+var DetailsDef = catavolt.dialog.DetailsDef;
+var EditorContext = catavolt.dialog.EditorContext;
+var EntityRec = catavolt.dialog.EntityRec;
+var EntityRecDef = catavolt.dialog.EntityRecDef;
+var ForcedLineCellValueDef = catavolt.dialog.ForcedLineCellValueDef;
+var FormContext = catavolt.dialog.FormContext;
+var FormContextBuilder = catavolt.dialog.FormContextBuilder;
+var FormDef = catavolt.dialog.FormDef;
+var GeoFix = catavolt.dialog.GeoFix;
+var GeoFixDef = catavolt.dialog.GeoFixDef;
+var GeoFixContext = catavolt.dialog.GeoFixContext;
+var GeoLocationContext = catavolt.dialog.GeoLocationContext;
+var GeoLocationDef = catavolt.dialog.GeoLocationDef;
+var GraphContext = catavolt.dialog.GraphContext;
+var GraphDataPointDef = catavolt.dialog.GraphDataPointDef;
+var GraphDef = catavolt.dialog.GraphDef;
+var ImagePickerContext = catavolt.dialog.ImagePickerContext;
+var ImagePickerDef = catavolt.dialog.ImagePickerDef;
+var LabelCellValueDef = catavolt.dialog.LabelCellValueDef;
+var ListContext = catavolt.dialog.ListContext;
+var ListDef = catavolt.dialog.ListDef;
+var MapContext = catavolt.dialog.MapContext;
+var MapDef = catavolt.dialog.MapDef;
+var MenuDef = catavolt.dialog.MenuDef;
+var NavRequest = catavolt.dialog.NavRequest;
+var NullRedirection = catavolt.dialog.NullRedirection;
+var ObjectRef = catavolt.dialog.ObjectRef;
+var PaneContext = catavolt.dialog.PaneContext;
+var PaneDef = catavolt.dialog.PaneDef; ///<reference path="Redirection.ts"/>
+var PaneMode = catavolt.dialog.PaneMode;
+var Prop = catavolt.dialog.Prop;
+var PropDef = catavolt.dialog.PropDef;
+var PropFormatter = catavolt.dialog.PropFormatter;
+var QueryResult = catavolt.dialog.QueryResult;
+var QueryScroller = catavolt.dialog.QueryScroller;
+var QueryContext = catavolt.dialog.QueryContext;
+var Redirection = catavolt.dialog.Redirection;
+var SortPropDef = catavolt.dialog.SortPropDef;
+var SubstitutionCellValueDef = catavolt.dialog.SubstitutionCellValueDef;
+var TabCellValueDef = catavolt.dialog.TabCellValueDef;
+var WebRedirection = catavolt.dialog.WebRedirection;
+var Workbench = catavolt.dialog.Workbench;
+var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
+var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 /**
- * Created by rburson on 3/6/15.
+ * Created by rburson on 3/13/15.
  */
-//util
-///<reference path="util/references.ts"/>
-//fp
-///<reference path="fp/references.ts"/>
-//ws
-///<reference path="ws/references.ts"/>
-//dialog
-///<reference path="dialog/references.ts"/>
-/**
- * Created by rburson on 3/19/15.
- */
-///<reference path="jasmine.d.ts"/>
-///<reference path="../src/catavolt/references.ts"/>
+///<reference path="references.ts"/>
+///<reference path="../fp/references.ts"/>
+///<reference path="../util/references.ts"/>
+///<reference path="../ws/references.ts"/>
 var catavolt;
 (function (catavolt) {
     var dialog;
     (function (dialog) {
-        var SERVICE_PATH = "www.catavolt.net";
-        var tenantId = "***REMOVED***z";
-        var userId = "sales";
-        var password = "***REMOVED***";
-        var clientType = "LIMITED_ACCESS";
-        describe("AppContext::login", function () {
-            it("should login successfully with valid creds", function (done) {
-                dialog.AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(function (appWinDefTry) {
-                    Log.info(Log.formatRecString(appWinDefTry));
-                    Log.info(Log.formatRecString(dialog.AppContext.singleton.sessionContextTry));
-                    Log.info(Log.formatRecString(dialog.AppContext.singleton.tenantSettingsTry));
-                    expect(dialog.AppContext.singleton.appWinDefTry.success.workbenches.length).toBeGreaterThan(0);
-                    done();
-                });
+        var AppContextState;
+        (function (AppContextState) {
+            AppContextState[AppContextState["LOGGED_OUT"] = 0] = "LOGGED_OUT";
+            AppContextState[AppContextState["LOGGED_IN"] = 1] = "LOGGED_IN";
+        })(AppContextState || (AppContextState = {}));
+        var AppContextValues = (function () {
+            function AppContextValues(sessionContext, appWinDef, tenantSettings) {
+                this.sessionContext = sessionContext;
+                this.appWinDef = appWinDef;
+                this.tenantSettings = tenantSettings;
+            }
+            return AppContextValues;
+        })();
+        var AppContext = (function () {
+            function AppContext() {
+                if (AppContext._singleton) {
+                    throw new Error("Singleton instance already created");
+                }
+                this._deviceProps = [];
+                this.setAppContextStateToLoggedOut();
+                AppContext._singleton = this;
+            }
+            Object.defineProperty(AppContext, "defaultTTLInMillis", {
+                get: function () {
+                    return AppContext.ONE_DAY_IN_MILLIS;
+                },
+                enumerable: true,
+                configurable: true
             });
-        });
-        describe("AppContext::performLaunchAction", function () {
-            it("should peform launch action successfully", function (done) {
-                var launchAction = dialog.AppContext.singleton.appWinDefTry.success.workbenches[0].workbenchLaunchActions[0];
-                dialog.AppContext.singleton.performLaunchAction(launchAction).onComplete(function (navRequestTry) {
-                    Log.debug("completed with: " + navRequestTry);
-                    if (navRequestTry.isFailure) {
-                        Log.debug(navRequestTry.failure);
+            Object.defineProperty(AppContext, "singleton", {
+                get: function () {
+                    if (!AppContext._singleton) {
+                        AppContext._singleton = new AppContext();
                     }
-                    expect(navRequestTry.isSuccess).toBeTruthy();
-                    done();
-                });
+                    return AppContext._singleton;
+                },
+                enumerable: true,
+                configurable: true
             });
-        });
+            Object.defineProperty(AppContext.prototype, "appWinDefTry", {
+                get: function () {
+                    return this._appWinDefTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "deviceProps", {
+                get: function () {
+                    return this._deviceProps;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "isLoggedIn", {
+                get: function () {
+                    return this._appContextState === 1 /* LOGGED_IN */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
+                if (this._appContextState === 0 /* LOGGED_OUT */) {
+                    return Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
+                }
+                return dialog.WorkbenchService.getWorkbench(sessionContext, workbenchId);
+            };
+            AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
+                var _this = this;
+                if (this._appContextState === 1 /* LOGGED_IN */) {
+                    return Future.createFailedFuture("AppContext::login", "User is already logged in");
+                }
+                var answer;
+                var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
+                return appContextValuesFr.bind(function (appContextValues) {
+                    _this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+                });
+            };
+            AppContext.prototype.loginDirectly = function (url, tenantId, clientType, userId, password) {
+                var _this = this;
+                if (this._appContextState === 1 /* LOGGED_IN */) {
+                    return Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
+                }
+                return this.loginFromSystemContext(new dialog.SystemContextImpl(url), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
+                    _this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
+                });
+            };
+            AppContext.prototype.performLaunchAction = function (launchAction) {
+                if (this._appContextState === 0 /* LOGGED_OUT */) {
+                    return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
+                }
+                return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
+            };
+            Object.defineProperty(AppContext.prototype, "sessionContextTry", {
+                get: function () {
+                    return this._sessionContextTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "tenantSettingsTry", {
+                get: function () {
+                    return this._tenantSettingsTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AppContext.prototype.finalizeContext = function (sessionContext, deviceProps) {
+                var devicePropName = "com.catavolt.session.property.DeviceProperties";
+                return dialog.SessionService.setSessionListProperty(devicePropName, deviceProps, sessionContext).bind(function (setPropertyListResult) {
+                    var listPropName = "com.catavolt.session.property.TenantProperties";
+                    return dialog.SessionService.getSessionListProperty(listPropName, sessionContext).bind(function (listPropertyResult) {
+                        return dialog.WorkbenchService.getAppWinDef(sessionContext).bind(function (appWinDef) {
+                            return Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
+                        });
+                    });
+                });
+            };
+            AppContext.prototype.loginOnline = function (gatewayHost, tenantId, clientType, userId, password, deviceProps) {
+                var _this = this;
+                var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
+                return systemContextFr.bind(function (sc) {
+                    return _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
+                });
+            };
+            AppContext.prototype.loginFromSystemContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
+                var _this = this;
+                var sessionContextFuture = dialog.SessionService.createSession(tenantId, userId, password, clientType, systemContext);
+                return sessionContextFuture.bind(function (sessionContext) {
+                    return _this.finalizeContext(sessionContext, deviceProps);
+                });
+            };
+            AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {
+                var serviceEndpoint = dialog.GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
+                return serviceEndpoint.map(function (serviceEndpoint) {
+                    return new dialog.SystemContextImpl(serviceEndpoint.serverAssignment);
+                });
+            };
+            AppContext.prototype.performLaunchActionOnline = function (launchAction, sessionContext) {
+                var redirFr = dialog.WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
+                return redirFr.bind(function (r) {
+                    return dialog.NavRequest.Util.fromRedirection(r, launchAction, sessionContext);
+                });
+            };
+            AppContext.prototype.setAppContextStateToLoggedIn = function (appContextValues) {
+                this._appWinDefTry = new Success(appContextValues.appWinDef);
+                this._tenantSettingsTry = new Success(appContextValues.tenantSettings);
+                this._sessionContextTry = new Success(appContextValues.sessionContext);
+                this._appContextState = 1 /* LOGGED_IN */;
+            };
+            AppContext.prototype.setAppContextStateToLoggedOut = function () {
+                this._appWinDefTry = new Failure("Not logged in");
+                this._tenantSettingsTry = new Failure('Not logged in"');
+                this._sessionContextTry = new Failure('Not loggged in');
+                this._appContextState = 0 /* LOGGED_OUT */;
+            };
+            AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
+            return AppContext;
+        })();
+        dialog.AppContext = AppContext;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
-//# sourceMappingURL=catavolt_sdk.js.map
