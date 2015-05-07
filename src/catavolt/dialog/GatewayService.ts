@@ -4,6 +4,11 @@
 
 ///<reference path="../references.ts"/>
 
+/*
+ @TODO - current the gateway response is mocked, due to cross-domain issues
+    This should be removed (and the commented section uncommented for production!!!
+*/
+
 module catavolt.dialog {
 
     export class GatewayService {
