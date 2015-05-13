@@ -39,15 +39,27 @@ module catavolt.dialog {
         var launchWorkbenchesFuture:Future<any> = Future.createSuccessfulFuture('startSetupWorkbench', null);
         workbenches.forEach((workbench:Workbench)=>{
             Log.info("Examining Workbench: " + workbench.name);
-            workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
+
+            //test the first action
+            launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
+                var launchAction = workbench.workbenchLaunchActions[0];
                 Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
+                return performLaunchAction(launchAction).map((launchActionResult)=>{
+                    Log.info('<<<<< Completed Launch Action ' + launchAction.name);
+                    return launchActionResult;
+                });
+            });
+            /*
+            workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
                 launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
+                    Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
                     return performLaunchAction(launchAction).map((launchActionResult)=>{
                         Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                         return launchActionResult;
                     });
                 });
             });
+            */
         });
         return launchWorkbenchesFuture.map((lastLaunchActionResult)=>{
             Log.info("");
@@ -72,8 +84,8 @@ module catavolt.dialog {
         if(navRequest instanceof FormContext){
             return handleFormContext(navRequest);
         } else {
-            Log.error('NavRequest in not a FormContext ' + navRequest);
-            return Future.createFailedFuture('handleNavRequest', 'NavRequest is not a FormContext ' + navRequest);
+            Log.error('NavRequest in not a FormContext ' + navRequest.constructor['name']);
+            return Future.createFailedFuture('handleNavRequest', 'NavRequest is not a FormContext ' + navRequest.constructor['name']);
         }
     }
 
@@ -81,6 +93,9 @@ module catavolt.dialog {
         displayMenus(formContext);
         var handleContextsFuture:Future<any> = Future.createSuccessfulFuture('startHandleContexts', null);
         formContext.childrenContexts.forEach((context:PaneContext)=>{
+            Log.info('');
+            Log.info('Got a ' + context.constructor['name'] + ' for display');
+            Log.info('');
             if(context instanceof ListContext) {
                handleContextsFuture = handleContextsFuture.bind((lastContextResult)=>{
                    return handleListContext(context);
@@ -91,14 +106,17 @@ module catavolt.dialog {
                 });
 
             } else {
-                Log.error('Not handling context type: ' + context);
-                return Future.createFailedFuture('handleFormContext', 'Not handling context type: ' + context);
+                Log.info('');
+                Log.info('Not yet handling display for ' + context.constructor['name']);
+                Log.info('');
+                handleContextsFuture = handleContextsFuture.map((lastContextResult)=>{ return context });
             }
         });
         return handleContextsFuture;
     }
 
     function displayMenus(paneContext:PaneContext):Future<any> {
+        Log.info('display menus ' + ObjUtil.formatRecAttr(paneContext.menuDefs));
         return null;
     }
 
@@ -108,8 +126,9 @@ module catavolt.dialog {
 
     function handleListContext(listContext:ListContext):Future<any> {
 
-        Log.info('Handling a ListContext ' + listContext.paneTitle + ' : ' + listContext.listDef.name);
+        Log.info('Handling a ListContext... ');
         listContext.setScroller(10, null, [QueryMarkerOption.None]);
+
         return listContext.refresh().bind((entityRec:Array<EntityRec>)=>{
             displayMenus(listContext);
             var columnHeadings = listContext.listDef.activeColumnDefs.map((columnDef:ColumnDef)=>{

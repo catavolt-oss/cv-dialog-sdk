@@ -89,7 +89,7 @@ module catavolt.dialog {
         }
 
         get paneDef():PaneDef {
-            if(this.paneRef) {
+            if(!this.paneRef) {
                 return this.formDef.headerDef;
             } else {
                 return this.formDef.childrenDefs[this.paneRef];

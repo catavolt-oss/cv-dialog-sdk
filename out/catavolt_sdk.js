@@ -299,7 +299,7 @@ var catavolt;
                 return util.ObjUtil.formatRecAttr(o);
             };
             //set default log level here
-            Log.init = Log.logLevel(2 /* INFO */);
+            Log.init = Log.logLevel(3 /* DEBUG */);
             return Log;
         })();
         util.Log = Log;
@@ -6556,7 +6556,7 @@ var catavolt;
             });
             Object.defineProperty(PaneContext.prototype, "paneDef", {
                 get: function () {
-                    if (this.paneRef) {
+                    if (!this.paneRef) {
                         return this.formDef.headerDef;
                     }
                     else {
@@ -8324,15 +8324,26 @@ var catavolt;
             var launchWorkbenchesFuture = Future.createSuccessfulFuture('startSetupWorkbench', null);
             workbenches.forEach(function (workbench) {
                 Log.info("Examining Workbench: " + workbench.name);
-                workbench.workbenchLaunchActions.forEach(function (launchAction) {
+                //test the first action
+                launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
+                    var launchAction = workbench.workbenchLaunchActions[0];
                     Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
-                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
-                        return performLaunchAction(launchAction).map(function (launchActionResult) {
+                    return performLaunchAction(launchAction).map(function (launchActionResult) {
+                        Log.info('<<<<< Completed Launch Action ' + launchAction.name);
+                        return launchActionResult;
+                    });
+                });
+                /*
+                workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
+                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
+                        Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
+                        return performLaunchAction(launchAction).map((launchActionResult)=>{
                             Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                             return launchActionResult;
                         });
                     });
                 });
+                */
             });
             return launchWorkbenchesFuture.map(function (lastLaunchActionResult) {
                 Log.info("");
@@ -8354,14 +8365,17 @@ var catavolt;
                 return handleFormContext(navRequest);
             }
             else {
-                Log.error('NavRequest in not a FormContext ' + navRequest);
-                return Future.createFailedFuture('handleNavRequest', 'NavRequest is not a FormContext ' + navRequest);
+                Log.error('NavRequest in not a FormContext ' + navRequest.constructor['name']);
+                return Future.createFailedFuture('handleNavRequest', 'NavRequest is not a FormContext ' + navRequest.constructor['name']);
             }
         }
         function handleFormContext(formContext) {
             displayMenus(formContext);
             var handleContextsFuture = Future.createSuccessfulFuture('startHandleContexts', null);
             formContext.childrenContexts.forEach(function (context) {
+                Log.info('');
+                Log.info('Got a ' + context.constructor['name'] + ' for display');
+                Log.info('');
                 if (context instanceof dialog.ListContext) {
                     handleContextsFuture = handleContextsFuture.bind(function (lastContextResult) {
                         return handleListContext(context);
@@ -8373,20 +8387,25 @@ var catavolt;
                     });
                 }
                 else {
-                    Log.error('Not handling context type: ' + context);
-                    return Future.createFailedFuture('handleFormContext', 'Not handling context type: ' + context);
+                    Log.info('');
+                    Log.info('Not yet handling display for ' + context.constructor['name']);
+                    Log.info('');
+                    handleContextsFuture = handleContextsFuture.map(function (lastContextResult) {
+                        return context;
+                    });
                 }
             });
             return handleContextsFuture;
         }
         function displayMenus(paneContext) {
+            Log.info('display menus ' + ObjUtil.formatRecAttr(paneContext.menuDefs));
             return null;
         }
         function showMenu(menuDef) {
             return null;
         }
         function handleListContext(listContext) {
-            Log.info('Handling a ListContext ' + listContext.paneTitle + ' : ' + listContext.listDef.name);
+            Log.info('Handling a ListContext... ');
             listContext.setScroller(10, null, [0 /* None */]);
             return listContext.refresh().bind(function (entityRec) {
                 displayMenus(listContext);
