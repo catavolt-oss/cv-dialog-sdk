@@ -42,6 +42,7 @@ module catavolt.util {
         }
 
         static formatRecAttr(o):string {
+            //@TODO - add a filter here to build a cache and detect (and skip) circular references
             return JSON.stringify(o);
         }
 

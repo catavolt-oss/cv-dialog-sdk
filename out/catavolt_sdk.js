@@ -188,6 +188,7 @@ var catavolt;
                 return newObj;
             };
             ObjUtil.formatRecAttr = function (o) {
+                //@TODO - add a filter here to build a cache and detect (and skip) circular references
                 return JSON.stringify(o);
             };
             ObjUtil.newInstance = function (type) {
@@ -8308,34 +8309,41 @@ var catavolt;
             });
         });
         function loginWithAppContext() {
-            dialog.AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(function (appWinDefTry) {
-                if (appWinDefTry.isFailure) {
-                    Log.info('Login failed with ' + Log.formatRecString(appWinDefTry.failure));
-                }
-                else {
-                    Log.info('Login Succeeded');
-                    Log.info('AppWinDef: ' + Log.formatRecString(appWinDefTry.success));
-                    Log.info('SessionContext: ' + Log.formatRecString(dialog.AppContext.singleton.sessionContextTry.success));
-                    Log.info('TenantSettings: ' + Log.formatRecString(dialog.AppContext.singleton.tenantSettingsTry.success));
-                    setupWorkbench().onComplete(function (result) {
-                    });
-                }
+            return dialog.AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).bind(function (appWinDef) {
+                Log.info('Login Succeeded');
+                Log.info('AppWinDef: ' + Log.formatRecString(appWinDef));
+                Log.info('SessionContext: ' + Log.formatRecString(dialog.AppContext.singleton.sessionContextTry.success));
+                Log.info('TenantSettings: ' + Log.formatRecString(dialog.AppContext.singleton.tenantSettingsTry.success));
+                return setupWorkbench().bind(function (result) {
+                    return null;
+                });
             });
         }
         function setupWorkbench() {
-            return null;
-        }
-        function launchWorkbenchActions() {
-            return null;
+            var workbenches = dialog.AppContext.singleton.appWinDefTry.success.workbenches;
+            var launchWorkbenchesFuture = Future.createSuccessfulFuture('startSetupWorkbench', null);
+            workbenches.forEach(function (workbench) {
+                Log.info("Examining Workbench: " + workbench.name);
+                workbench.workbenchLaunchActions.forEach(function (launchAction) {
+                    Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
+                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
+                        return performLaunchAction(launchAction).map(function (launchActionResult) {
+                            Log.info('<<<<< Completed Launch Action ' + launchAction.name);
+                            return launchActionResult;
+                        });
+                    });
+                });
+            });
+            return launchWorkbenchesFuture.map(function (lastLaunchActionResult) {
+                Log.info("");
+                Log.info("Completed all launch Actions");
+                Log.info("");
+            });
         }
         function performLaunchAction(launchAction) {
-            var launchAction = dialog.AppContext.singleton.appWinDefTry.success.workbenches[0].workbenchLaunchActions[0];
-            dialog.AppContext.singleton.performLaunchAction(launchAction).onComplete(function (navRequestTry) {
-                Log.debug("completed with: " + navRequestTry);
-                if (navRequestTry.isFailure) {
-                    Log.debug(navRequestTry.failure);
-                }
-                expect(navRequestTry.isSuccess).toBeTruthy();
+            return dialog.AppContext.singleton.performLaunchAction(launchAction).bind(function (navRequest) {
+                Log.info("Perform Launch Action " + launchAction.name + ' succeeded. Continuing with NavRequest...');
+                return handleNavRequest(navRequest);
             });
         }
         function getLaunchActionByName(name, workbenches) {
@@ -8343,13 +8351,33 @@ var catavolt;
         }
         function handleNavRequest(navRequest) {
             if (navRequest instanceof dialog.FormContext) {
+                return handleFormContext(navRequest);
             }
             else {
+                Log.error('NavRequest in not a FormContext ' + navRequest);
+                return Future.createFailedFuture('handleNavRequest', 'NavRequest is not a FormContext ' + navRequest);
             }
-            return null;
         }
         function handleFormContext(formContext) {
-            return null;
+            displayMenus(formContext);
+            var handleContextsFuture = Future.createSuccessfulFuture('startHandleContexts', null);
+            formContext.childrenContexts.forEach(function (context) {
+                if (context instanceof dialog.ListContext) {
+                    handleContextsFuture = handleContextsFuture.bind(function (lastContextResult) {
+                        return handleListContext(context);
+                    });
+                }
+                else if (context instanceof dialog.DetailsContext) {
+                    handleContextsFuture = handleContextsFuture.bind(function (lastContextResult) {
+                        return handleDetailsContext(context);
+                    });
+                }
+                else {
+                    Log.error('Not handling context type: ' + context);
+                    return Future.createFailedFuture('handleFormContext', 'Not handling context type: ' + context);
+                }
+            });
+            return handleContextsFuture;
         }
         function displayMenus(paneContext) {
             return null;
@@ -8358,7 +8386,23 @@ var catavolt;
             return null;
         }
         function handleListContext(listContext) {
-            return null;
+            Log.info('Handling a ListContext ' + listContext.paneTitle + ' : ' + listContext.listDef.name);
+            listContext.setScroller(10, null, [0 /* None */]);
+            return listContext.refresh().bind(function (entityRec) {
+                displayMenus(listContext);
+                var columnHeadings = listContext.listDef.activeColumnDefs.map(function (columnDef) {
+                    return columnDef.heading;
+                });
+                Log.info(columnHeadings.join('|'));
+                listContext.scroller.buffer.forEach(function (entityRec) {
+                    displayListItem(entityRec, listContext);
+                });
+                return Future.createSuccessfulFuture('handleListContext', listContext);
+            });
+        }
+        function displayListItem(entityRec, listContext) {
+            var rowValues = listContext.rowValues(entityRec);
+            Log.info(rowValues.join('|'));
         }
         function handleDetailsContext(detailsContext) {
             return null;

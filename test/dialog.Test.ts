@@ -13,7 +13,7 @@ module catavolt.dialog {
     var password = "***REMOVED***";
     var clientType = "LIMITED_ACCESS";
 
-    describe("AppContext::login", function () {
+    xdescribe("AppContext::login", function () {
         it("should login successfully with valid creds", function (done) {
             AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(
                 (appWinDefTry:Try<AppWinDef>)=>{
@@ -27,7 +27,7 @@ module catavolt.dialog {
         });
     });
 
-    describe("AppContext::performLaunchAction", function () {
+    xdescribe("AppContext::performLaunchAction", function () {
         it("should peform launch action successfully", function (done) {
             var launchAction:WorkbenchLaunchAction = AppContext.singleton.appWinDefTry.success.workbenches[0].workbenchLaunchActions[0];
             AppContext.singleton.performLaunchAction(launchAction).onComplete((navRequestTry:Try<NavRequest>)=>{

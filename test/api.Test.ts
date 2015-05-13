@@ -17,72 +17,118 @@ module catavolt.dialog {
 
     });
 
-    function loginWithAppContext():Future<void> {
+    function loginWithAppContext():Future<any> {
 
-        AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).onComplete(
-            (appWinDefTry:Try<AppWinDef>)=>{
-                if(appWinDefTry.isFailure) {
-                   Log.info('Login failed with ' + Log.formatRecString(appWinDefTry.failure));
-                } else {
-                    Log.info('Login Succeeded');
-                    Log.info('AppWinDef: ' + Log.formatRecString(appWinDefTry.success));
-                    Log.info('SessionContext: ' + Log.formatRecString(AppContext.singleton.sessionContextTry.success));
-                    Log.info('TenantSettings: ' + Log.formatRecString(AppContext.singleton.tenantSettingsTry.success));
-                    setupWorkbench().onComplete((result:Try<void>)=>{
-
-                    });
-                }
+        return AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).bind(
+            (appWinDef:AppWinDef)=>{
+                Log.info('Login Succeeded');
+                Log.info('AppWinDef: ' + Log.formatRecString(appWinDef));
+                Log.info('SessionContext: ' + Log.formatRecString(AppContext.singleton.sessionContextTry.success));
+                Log.info('TenantSettings: ' + Log.formatRecString(AppContext.singleton.tenantSettingsTry.success));
+                return setupWorkbench().bind((result:any)=>{
+                  return null;
+                });
             }
         );
     }
 
-    function setupWorkbench():Future<void> {
-        return null;
-    }
+    function setupWorkbench():Future<any> {
 
-    function launchWorkbenchActions():Future<void> {
-        return null;
-    }
+        var workbenches = AppContext.singleton.appWinDefTry.success.workbenches;
 
-    function performLaunchAction(launchAction:WorkbenchLaunchAction):Future<void> {
-        var launchAction:WorkbenchLaunchAction = AppContext.singleton.appWinDefTry.success.workbenches[0].workbenchLaunchActions[0];
-        AppContext.singleton.performLaunchAction(launchAction).onComplete((navRequestTry:Try<NavRequest>)=>{
-            Log.debug("completed with: " + navRequestTry);
-            if(navRequestTry.isFailure) {
-                Log.debug(navRequestTry.failure);
-            }
-            expect(navRequestTry.isSuccess).toBeTruthy();
+        var launchWorkbenchesFuture:Future<any> = Future.createSuccessfulFuture('startSetupWorkbench', null);
+        workbenches.forEach((workbench:Workbench)=>{
+            Log.info("Examining Workbench: " + workbench.name);
+            workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
+                Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
+                launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
+                    return performLaunchAction(launchAction).map((launchActionResult)=>{
+                        Log.info('<<<<< Completed Launch Action ' + launchAction.name);
+                        return launchActionResult;
+                    });
+                });
+            });
+        });
+        return launchWorkbenchesFuture.map((lastLaunchActionResult)=>{
+            Log.info("");
+            Log.info("Completed all launch Actions");
+            Log.info("");
         });
     }
 
-    function getLaunchActionByName(name:string, workbenches:Array<Workbench>):Future<void> {
+    function performLaunchAction(launchAction:WorkbenchLaunchAction):Future<any> {
+
+        return AppContext.singleton.performLaunchAction(launchAction).bind((navRequest:NavRequest)=>{
+            Log.info("Perform Launch Action " + launchAction.name + ' succeeded. Continuing with NavRequest...');
+            return handleNavRequest(navRequest);
+        });
+    }
+
+    function getLaunchActionByName(name:string, workbenches:Array<Workbench>):Future<any> {
         return null;
     }
 
-    function handleNavRequest(navRequest:NavRequest):Future<void>{
+    function handleNavRequest(navRequest:NavRequest):Future<any>{
         if(navRequest instanceof FormContext){
+            return handleFormContext(navRequest);
         } else {
+            Log.error('NavRequest in not a FormContext ' + navRequest);
+            return Future.createFailedFuture('handleNavRequest', 'NavRequest is not a FormContext ' + navRequest);
         }
+    }
+
+    function handleFormContext(formContext:FormContext):Future<any> {
+        displayMenus(formContext);
+        var handleContextsFuture:Future<any> = Future.createSuccessfulFuture('startHandleContexts', null);
+        formContext.childrenContexts.forEach((context:PaneContext)=>{
+            if(context instanceof ListContext) {
+               handleContextsFuture = handleContextsFuture.bind((lastContextResult)=>{
+                   return handleListContext(context);
+               });
+            } else if(context instanceof DetailsContext) {
+                handleContextsFuture = handleContextsFuture.bind((lastContextResult)=>{
+                    return handleDetailsContext(context);
+                });
+
+            } else {
+                Log.error('Not handling context type: ' + context);
+                return Future.createFailedFuture('handleFormContext', 'Not handling context type: ' + context);
+            }
+        });
+        return handleContextsFuture;
+    }
+
+    function displayMenus(paneContext:PaneContext):Future<any> {
         return null;
     }
 
-    function handleFormContext(formContext:FormContext):Future<void> {
+    function showMenu(menuDef:MenuDef):Future<any>{
         return null;
     }
 
-    function displayMenus(paneContext:PaneContext):Future<void> {
-        return null;
+    function handleListContext(listContext:ListContext):Future<any> {
+
+        Log.info('Handling a ListContext ' + listContext.paneTitle + ' : ' + listContext.listDef.name);
+        listContext.setScroller(10, null, [QueryMarkerOption.None]);
+        return listContext.refresh().bind((entityRec:Array<EntityRec>)=>{
+            displayMenus(listContext);
+            var columnHeadings = listContext.listDef.activeColumnDefs.map((columnDef:ColumnDef)=>{
+              return columnDef.heading;
+            });
+            Log.info(columnHeadings.join('|'));
+            listContext.scroller.buffer.forEach((entityRec:EntityRec)=>{
+               displayListItem(entityRec, listContext);
+            });
+            return Future.createSuccessfulFuture('handleListContext', listContext);
+        });
     }
 
-    function showMenu(menuDef:MenuDef):Future<void>{
-        return null;
+    function displayListItem(entityRec:EntityRec, listContext:ListContext) {
+        var rowValues = listContext.rowValues(entityRec);
+        Log.info(rowValues.join('|'));
     }
 
-    function handleListContext(listContext:ListContext):Future<void> {
-        return null;
-    }
-
-    function handleDetailsContext(detailsContext:DetailsContext):Future<void> {
+    function handleDetailsContext(detailsContext:DetailsContext):Future<any> {
         return null;
     }
 
