@@ -129,7 +129,8 @@ module catavolt.dialog {
         Log.info('Handling a ListContext... ');
         listContext.setScroller(10, null, [QueryMarkerOption.None]);
 
-        return listContext.refresh().bind((entityRec:Array<EntityRec>)=>{
+        var listFuture = listContext.refresh().bind((entityRec:Array<EntityRec>)=>{
+            Log.info('Finished refresh');
             displayMenus(listContext);
             var columnHeadings = listContext.listDef.activeColumnDefs.map((columnDef:ColumnDef)=>{
               return columnDef.heading;
@@ -140,6 +141,11 @@ module catavolt.dialog {
             });
             return Future.createSuccessfulFuture('handleListContext', listContext);
         });
+
+        listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
+
+        return listFuture;
+
     }
 
     function displayListItem(entityRec:EntityRec, listContext:ListContext) {

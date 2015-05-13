@@ -4719,6 +4719,8 @@ var catavolt;
                 return DialogTriple.extractList(jsonObject, Ltype, function (value) {
                     /*note - we could add a check here to make sure the otype 'is a' ltype, to enforce the generic constraint
                     i.e. list items should be lype assignment compatible*/
+                    if (!value)
+                        return new Success(null);
                     var Otype = value['WS_OTYPE'] || Ltype;
                     return DialogTriple.fromWSDialogObject(value, Otype, factoryFn, ignoreRedirection);
                 });
@@ -6423,8 +6425,10 @@ var catavolt;
                 if (fromObjectId && fromObjectId.trim() !== '') {
                     params['fromObjectId'] = fromObjectId.trim();
                 }
+                Log.info('Running query');
                 var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
+                    var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
                     return Future.createCompletedFuture('DialogService::queryQueryModel', dialog.DialogTriple.fromWSDialogObject(result, 'WSQueryResult', dialog.OType.factoryFn));
                 });
             };
@@ -7942,6 +7946,7 @@ var catavolt;
                 return null;
             };
             OType.deserializeObject = function (obj, Otype, factoryFn) {
+                Log.debug('Deserializing ' + Otype);
                 if (Array.isArray(obj)) {
                     //it's a nested array (no LTYPE!)
                     return OType.handleNestedArray(Otype, obj);
@@ -7965,7 +7970,7 @@ var catavolt;
                         }
                         for (var prop in obj) {
                             var value = obj[prop];
-                            //Log.info("prop: " + prop + " is type " + typeof value);
+                            Log.debug("prop: " + prop + " is type " + typeof value);
                             if (value && typeof value === 'object') {
                                 if ('WS_OTYPE' in value) {
                                     var otypeTry = dialog.DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
@@ -8407,7 +8412,8 @@ var catavolt;
         function handleListContext(listContext) {
             Log.info('Handling a ListContext... ');
             listContext.setScroller(10, null, [0 /* None */]);
-            return listContext.refresh().bind(function (entityRec) {
+            var listFuture = listContext.refresh().bind(function (entityRec) {
+                Log.info('Finished refresh');
                 displayMenus(listContext);
                 var columnHeadings = listContext.listDef.activeColumnDefs.map(function (columnDef) {
                     return columnDef.heading;
@@ -8418,6 +8424,10 @@ var catavolt;
                 });
                 return Future.createSuccessfulFuture('handleListContext', listContext);
             });
+            listFuture.onFailure(function (failure) {
+                Log.error("ListContext failed to render with " + failure);
+            });
+            return listFuture;
         }
         function displayListItem(entityRec, listContext) {
             var rowValues = listContext.rowValues(entityRec);

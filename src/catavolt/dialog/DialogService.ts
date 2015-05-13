@@ -214,8 +214,10 @@ module catavolt.dialog {
                params['fromObjectId'] = fromObjectId.trim();
             }
 
+            Log.info('Running query');
             var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
             return call.perform().bind((result:StringDictionary)=>{
+                var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
                 return Future.createCompletedFuture('DialogService::queryQueryModel',
                     DialogTriple.fromWSDialogObject<XQueryResult>(result, 'WSQueryResult', OType.factoryFn));
             });

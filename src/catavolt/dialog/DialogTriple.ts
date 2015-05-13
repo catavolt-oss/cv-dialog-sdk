@@ -102,6 +102,7 @@ module catavolt.dialog {
                 (value)=>{
                     /*note - we could add a check here to make sure the otype 'is a' ltype, to enforce the generic constraint
                     i.e. list items should be lype assignment compatible*/
+                    if(!value) return new Success(null);
                     var Otype = value['WS_OTYPE'] || Ltype;
                     return DialogTriple.fromWSDialogObject<A>(value, Otype, factoryFn, ignoreRedirection);
                 }

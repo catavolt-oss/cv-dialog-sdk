@@ -83,6 +83,7 @@ module catavolt.dialog {
 
         static deserializeObject<A>(obj, Otype:string, factoryFn:(otype:string, jsonObj?)=>any):Try<A> {
 
+            Log.debug('Deserializing ' + Otype);
             if (Array.isArray(obj)) {
                 //it's a nested array (no LTYPE!)
                 return OType.handleNestedArray<A>(Otype, obj);
@@ -105,7 +106,7 @@ module catavolt.dialog {
                     }
                     for (var prop in obj) {
                         var value = obj[prop];
-                        //Log.info("prop: " + prop + " is type " + typeof value);
+                        Log.debug("prop: " + prop + " is type " + typeof value);
                         if (value && typeof value === 'object') {
                             if ('WS_OTYPE' in value) {
                                 var otypeTry = DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
