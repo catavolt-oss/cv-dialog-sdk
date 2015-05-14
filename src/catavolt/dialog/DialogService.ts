@@ -171,7 +171,7 @@ module catavolt.dialog {
             }
             var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
             return call.perform().bind((result:StringDictionary)=>{
-                var redirectionTry = DialogTriple.fromWSDialogObject<Redirection>(result, 'WSRedirection', OType.factoryFn);
+                var redirectionTry = DialogTriple.extractRedirection(result, 'WSPerformActionResult');
                 if(redirectionTry.isSuccess) {
                     var r = redirectionTry.success;
                     r.fromDialogProperties = result['dialogProperties'];

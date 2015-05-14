@@ -136,11 +136,11 @@ module catavolt.dialog {
         }
 
         private static handleNestedArray<A>(Otype:string, obj):Try<A>{
-
-            var ltype = OType.extractLType(Otype);
-            var newArrayTry = OType.deserializeNestedArray(obj, ltype);
-            if (newArrayTry.isFailure) return new Failure<A>(newArrayTry.failure);
-            return new Success(<any>newArrayTry.success);
+            return OType.extractLType(Otype).bind((ltype:string)=>{
+                var newArrayTry = OType.deserializeNestedArray(obj, ltype);
+                if (newArrayTry.isFailure) return new Failure<A>(newArrayTry.failure);
+                return new Success(<any>newArrayTry.success);
+            });
         }
 
         private static deserializeNestedArray(array, ltype):Try<Array<any>> {
@@ -160,7 +160,7 @@ module catavolt.dialog {
         }
 
         private static extractLType(Otype):Try<string> {
-            if(Otype.length > 5 && Otype.slice(0, 5) === 'List<') {
+            if(Otype.length > 5 && Otype.slice(0, 5) !== 'List<') {
                 return new Failure<string>('Expected OType of List<some_type> but found ' + Otype);
             }
             var ltype = Otype.slice(5, -1);

@@ -45,7 +45,6 @@ module catavolt.dialog {
         workbenches.forEach((workbench:Workbench)=>{
             Log.info("Examining Workbench: " + workbench.name);
 
-            /*
             //test the first action
             launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
                 var launchAction = workbench.workbenchLaunchActions[0];
@@ -54,8 +53,8 @@ module catavolt.dialog {
                     Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                     return launchActionResult;
                 });
-            });*/
-            workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
+            });
+            /*workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
                 launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
                     Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
                     return performLaunchAction(launchAction).map((launchActionResult)=>{
@@ -63,7 +62,7 @@ module catavolt.dialog {
                         return launchActionResult;
                     });
                 });
-            });
+            });*/
         });
         return launchWorkbenchesFuture.map((lastLaunchActionResult)=>{
             Log.info("");
@@ -144,11 +143,13 @@ module catavolt.dialog {
                displayListItem(entityRec, listContext);
             });
 
-            return scrollThroughAllResults(listContext).bind((scrollResult)=>{
+            var scrollResultsFuture = scrollThroughAllResults(listContext).bind((scrollResult)=>{
                 return scrollBackwardThroughAllResults(listContext);
             });
 
-            //return Future.createSuccessfulFuture('handleListContext', listContext);
+            return scrollResultsFuture.bind((result)=>{
+                return handleDefaultActionForListItem(0, listContext);
+            })
         });
 
         listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
@@ -201,6 +202,30 @@ module catavolt.dialog {
     function displayListItem(entityRec:EntityRec, listContext:ListContext) {
         var rowValues = listContext.rowValues(entityRec);
         Log.info(rowValues.join('|'));
+    }
+
+    function handleDefaultActionForListItem(index:number, listContext:ListContext):Future<any> {
+
+        if(!listContext.listDef.defaultActionId) {
+            return Future.createSuccessfulFuture('handleDefaultActionForListItem', listContext);
+        }
+
+        var defaultActionMenuDef = new MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW',
+            listContext.listDef.defaultActionId, null, null, []);
+
+        var entityRecs = listContext.scroller.buffer;
+        if(entityRecs.length > index) {
+            var entityRec = entityRecs[index];
+            Log.info('--------------------------------------------------------------');
+            Log.info('Invoking default action on list item ' + entityRec.objectId);
+            Log.info('--------------------------------------------------------------');
+            var targets =  [entityRec.objectId];
+            return listContext.performMenuAction(defaultActionMenuDef, targets).bind((navRequest)=>{
+                return handleNavRequest(navRequest);
+            });
+        } else {
+            return Future.createFailedFuture('handleDefaultActionForListItem', 'Invalid index for listContext');
+        }
     }
 
     function handleDetailsContext(detailsContext:DetailsContext):Future<any> {

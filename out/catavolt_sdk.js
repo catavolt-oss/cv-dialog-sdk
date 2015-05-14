@@ -6398,7 +6398,7 @@ var catavolt;
                 }
                 var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
-                    var redirectionTry = dialog.DialogTriple.fromWSDialogObject(result, 'WSRedirection', dialog.OType.factoryFn);
+                    var redirectionTry = dialog.DialogTriple.extractRedirection(result, 'WSPerformActionResult');
                     if (redirectionTry.isSuccess) {
                         var r = redirectionTry.success;
                         r.fromDialogProperties = result['dialogProperties'];
@@ -8004,11 +8004,12 @@ var catavolt;
                 });
             };
             OType.handleNestedArray = function (Otype, obj) {
-                var ltype = OType.extractLType(Otype);
-                var newArrayTry = OType.deserializeNestedArray(obj, ltype);
-                if (newArrayTry.isFailure)
-                    return new Failure(newArrayTry.failure);
-                return new Success(newArrayTry.success);
+                return OType.extractLType(Otype).bind(function (ltype) {
+                    var newArrayTry = OType.deserializeNestedArray(obj, ltype);
+                    if (newArrayTry.isFailure)
+                        return new Failure(newArrayTry.failure);
+                    return new Success(newArrayTry.success);
+                });
             };
             OType.deserializeNestedArray = function (array, ltype) {
                 var newArray = [];
@@ -8028,7 +8029,7 @@ var catavolt;
                 return new Success(newArray);
             };
             OType.extractLType = function (Otype) {
-                if (Otype.length > 5 && Otype.slice(0, 5) === 'List<') {
+                if (Otype.length > 5 && Otype.slice(0, 5) !== 'List<') {
                     return new Failure('Expected OType of List<some_type> but found ' + Otype);
                 }
                 var ltype = Otype.slice(5, -1);
@@ -8334,25 +8335,24 @@ var catavolt;
             var launchWorkbenchesFuture = Future.createSuccessfulFuture('startSetupWorkbench', null);
             workbenches.forEach(function (workbench) {
                 Log.info("Examining Workbench: " + workbench.name);
-                /*
                 //test the first action
-                launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
+                launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
                     var launchAction = workbench.workbenchLaunchActions[0];
-                    Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
-                    return performLaunchAction(launchAction).map((launchActionResult)=>{
+                    Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
+                    return performLaunchAction(launchAction).map(function (launchActionResult) {
                         Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                         return launchActionResult;
                     });
-                });*/
-                workbench.workbenchLaunchActions.forEach(function (launchAction) {
-                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
-                        Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
-                        return performLaunchAction(launchAction).map(function (launchActionResult) {
+                });
+                /*workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
+                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
+                        Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
+                        return performLaunchAction(launchAction).map((launchActionResult)=>{
                             Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                             return launchActionResult;
                         });
                     });
-                });
+                });*/
             });
             return launchWorkbenchesFuture.map(function (lastLaunchActionResult) {
                 Log.info("");
@@ -8426,10 +8426,12 @@ var catavolt;
                 listContext.scroller.buffer.forEach(function (entityRec) {
                     displayListItem(entityRec, listContext);
                 });
-                return scrollThroughAllResults(listContext).bind(function (scrollResult) {
+                var scrollResultsFuture = scrollThroughAllResults(listContext).bind(function (scrollResult) {
                     return scrollBackwardThroughAllResults(listContext);
                 });
-                //return Future.createSuccessfulFuture('handleListContext', listContext);
+                return scrollResultsFuture.bind(function (result) {
+                    return handleDefaultActionForListItem(0, listContext);
+                });
             });
             listFuture.onFailure(function (failure) {
                 Log.error("ListContext failed to render with " + failure);
@@ -8481,6 +8483,26 @@ var catavolt;
         function displayListItem(entityRec, listContext) {
             var rowValues = listContext.rowValues(entityRec);
             Log.info(rowValues.join('|'));
+        }
+        function handleDefaultActionForListItem(index, listContext) {
+            if (!listContext.listDef.defaultActionId) {
+                return Future.createSuccessfulFuture('handleDefaultActionForListItem', listContext);
+            }
+            var defaultActionMenuDef = new dialog.MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW', listContext.listDef.defaultActionId, null, null, []);
+            var entityRecs = listContext.scroller.buffer;
+            if (entityRecs.length > index) {
+                var entityRec = entityRecs[index];
+                Log.info('--------------------------------------------------------------');
+                Log.info('Invoking default action on list item ' + entityRec.objectId);
+                Log.info('--------------------------------------------------------------');
+                var targets = [entityRec.objectId];
+                return listContext.performMenuAction(defaultActionMenuDef, targets).bind(function (navRequest) {
+                    return handleNavRequest(navRequest);
+                });
+            }
+            else {
+                return Future.createFailedFuture('handleDefaultActionForListItem', 'Invalid index for listContext');
+            }
         }
         function handleDetailsContext(detailsContext) {
             return null;
