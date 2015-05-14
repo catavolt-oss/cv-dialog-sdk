@@ -11,6 +11,10 @@ module catavolt.dialog {
 
     describe("Api Usage", function () {
 
+        beforeEach(()=>{
+          jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+        });
+
         it("Should run API Examples", function (done) {
             loginWithAppContext();
         });
@@ -26,7 +30,8 @@ module catavolt.dialog {
                 Log.info('SessionContext: ' + Log.formatRecString(AppContext.singleton.sessionContextTry.success));
                 Log.info('TenantSettings: ' + Log.formatRecString(AppContext.singleton.tenantSettingsTry.success));
                 return setupWorkbench().bind((result:any)=>{
-                  return null;
+                    Log.info('Competed all workbenches.');
+                    return null;
                 });
             }
         );
@@ -40,6 +45,7 @@ module catavolt.dialog {
         workbenches.forEach((workbench:Workbench)=>{
             Log.info("Examining Workbench: " + workbench.name);
 
+            /*
             //test the first action
             launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
                 var launchAction = workbench.workbenchLaunchActions[0];
@@ -48,8 +54,7 @@ module catavolt.dialog {
                     Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                     return launchActionResult;
                 });
-            });
-            /*
+            });*/
             workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
                 launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
                     Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
@@ -59,7 +64,6 @@ module catavolt.dialog {
                     });
                 });
             });
-            */
         });
         return launchWorkbenchesFuture.map((lastLaunchActionResult)=>{
             Log.info("");
@@ -139,13 +143,59 @@ module catavolt.dialog {
             listContext.scroller.buffer.forEach((entityRec:EntityRec)=>{
                displayListItem(entityRec, listContext);
             });
-            return Future.createSuccessfulFuture('handleListContext', listContext);
+
+            return scrollThroughAllResults(listContext).bind((scrollResult)=>{
+                return scrollBackwardThroughAllResults(listContext);
+            });
+
+            //return Future.createSuccessfulFuture('handleListContext', listContext);
         });
 
         listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
 
         return listFuture;
 
+    }
+
+    function scrollThroughAllResults(listContext:ListContext):Future<any> {
+       if(listContext.scroller.hasMoreForward) {
+           Log.info('The list has more items to display.  Scrolling forward....');
+           return getNextPageOfResults(listContext).bind((prevPageEntityRecs:Array<EntityRec>)=>{
+               return scrollThroughAllResults(listContext);
+           });
+       } else {
+           Log.info('The list has no more items to display.');
+           return Future.createSuccessfulFuture('scrollThroughAllResults', listContext);
+       }
+    }
+
+    function scrollBackwardThroughAllResults(listContext:ListContext):Future<any> {
+        if(listContext.scroller.hasMoreBackward) {
+            Log.info('The list has previous items to display.  Scrolling backward....');
+            return getPreviousPageOfResults(listContext).bind((prevPageEntityRecs:Array<EntityRec>)=>{
+                return scrollBackwardThroughAllResults(listContext);
+            });
+        } else {
+            Log.info('The list has no more previous items to display.');
+            return Future.createSuccessfulFuture('scrollBackwardThroughAllResults', listContext);
+        }
+    }
+
+
+    function getNextPageOfResults(listContext:ListContext):Future<any> {
+       return listContext.scroller.pageForward().map((entityRecs:Array<EntityRec>)=>{
+           Log.info('Displaying next page of ' + entityRecs.length + ' records.');
+           entityRecs.forEach((entityRec)=>{ displayListItem(entityRec, listContext)});
+           return entityRecs;
+       });
+    }
+
+    function getPreviousPageOfResults(listContext:ListContext):Future<any> {
+        return listContext.scroller.pageBackward().map((entityRecs:Array<EntityRec>)=>{
+            Log.info('Displaying previous page of ' + entityRecs.length + ' records.');
+            entityRecs.forEach((entityRec)=>{ displayListItem(entityRec, listContext)});
+            return entityRecs;
+        });
     }
 
     function displayListItem(entityRec:EntityRec, listContext:ListContext) {

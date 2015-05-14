@@ -44,7 +44,7 @@ module catavolt.dialog {
 
         static fromWSValue(value:any):Try<any> {
             var propValue = value;
-            if('object' === typeof value) {
+            if(value && 'object' === typeof value) {
                 var PType = value['WS_PTYPE'];
                 var strVal = value['value'];
                 if(PType) {

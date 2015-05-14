@@ -16,7 +16,7 @@ module catavolt.dialog {
         private _binaryCache: { [index:string] : Array<Binary> }
         private _lastRefreshTime:Date = new Date(0);
         private _parentContext:FormContext = null;
-        private _paneRef:number;
+        private _paneRef:number = null;
 
         static resolveSettingsFromNavRequest(initialSettings:StringDictionary,
                                              navRequest:NavRequest):StringDictionary {
@@ -89,7 +89,7 @@ module catavolt.dialog {
         }
 
         get paneDef():PaneDef {
-            if(!this.paneRef) {
+            if(this.paneRef == null) {
                 return this.formDef.headerDef;
             } else {
                 return this.formDef.childrenDefs[this.paneRef];

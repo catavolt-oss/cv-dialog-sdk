@@ -52,7 +52,7 @@ module catavolt.dialog {
                                 }
                                 var recAnnos:Array<DataAnno> = null;
                                 if(queryRecValue['recordAnnotation']) {
-                                    var recAnnosTry = DialogTriple.fromWSDialogObject<Array<DataAnno>>(queryRecValue['recoredAnnotation'],
+                                    var recAnnosTry = DialogTriple.fromWSDialogObject<Array<DataAnno>>(queryRecValue['recordAnnotation'],
                                         'WSDataAnnotation', OType.factoryFn);
                                     if(recAnnosTry.isFailure) return new Failure<XQueryResult>(recAnnosTry.failure);
                                     recAnnos = recAnnosTry.success;

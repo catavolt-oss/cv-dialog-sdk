@@ -2048,7 +2048,7 @@ var catavolt;
             };
             Prop.fromWSValue = function (value) {
                 var propValue = value;
-                if ('object' === typeof value) {
+                if (value && 'object' === typeof value) {
                     var PType = value['WS_PTYPE'];
                     var strVal = value['value'];
                     if (PType) {
@@ -4224,7 +4224,7 @@ var catavolt;
                             }
                             var recAnnos = null;
                             if (queryRecValue['recordAnnotation']) {
-                                var recAnnosTry = dialog.DialogTriple.fromWSDialogObject(queryRecValue['recoredAnnotation'], 'WSDataAnnotation', dialog.OType.factoryFn);
+                                var recAnnosTry = dialog.DialogTriple.fromWSDialogObject(queryRecValue['recordAnnotation'], 'WSDataAnnotation', dialog.OType.factoryFn);
                                 if (recAnnosTry.isFailure)
                                     return new Failure(recAnnosTry.failure);
                                 recAnnos = recAnnosTry.success;
@@ -6475,6 +6475,7 @@ var catavolt;
             function PaneContext(paneRef) {
                 this._lastRefreshTime = new Date(0);
                 this._parentContext = null;
+                this._paneRef = null;
                 this._paneRef = paneRef;
                 this._binaryCache = {};
             }
@@ -6560,7 +6561,7 @@ var catavolt;
             });
             Object.defineProperty(PaneContext.prototype, "paneDef", {
                 get: function () {
-                    if (!this.paneRef) {
+                    if (this.paneRef == null) {
                         return this.formDef.headerDef;
                     }
                     else {
@@ -8309,6 +8310,9 @@ var catavolt;
         var password = "***REMOVED***";
         var clientType = "LIMITED_ACCESS";
         describe("Api Usage", function () {
+            beforeEach(function () {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+            });
             it("Should run API Examples", function (done) {
                 loginWithAppContext();
             });
@@ -8320,6 +8324,7 @@ var catavolt;
                 Log.info('SessionContext: ' + Log.formatRecString(dialog.AppContext.singleton.sessionContextTry.success));
                 Log.info('TenantSettings: ' + Log.formatRecString(dialog.AppContext.singleton.tenantSettingsTry.success));
                 return setupWorkbench().bind(function (result) {
+                    Log.info('Competed all workbenches.');
                     return null;
                 });
             });
@@ -8329,26 +8334,25 @@ var catavolt;
             var launchWorkbenchesFuture = Future.createSuccessfulFuture('startSetupWorkbench', null);
             workbenches.forEach(function (workbench) {
                 Log.info("Examining Workbench: " + workbench.name);
+                /*
                 //test the first action
-                launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
+                launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
                     var launchAction = workbench.workbenchLaunchActions[0];
-                    Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
-                    return performLaunchAction(launchAction).map(function (launchActionResult) {
+                    Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
+                    return performLaunchAction(launchAction).map((launchActionResult)=>{
                         Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                         return launchActionResult;
                     });
-                });
-                /*
-                workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
-                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
-                        Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
-                        return performLaunchAction(launchAction).map((launchActionResult)=>{
+                });*/
+                workbench.workbenchLaunchActions.forEach(function (launchAction) {
+                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
+                        Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
+                        return performLaunchAction(launchAction).map(function (launchActionResult) {
                             Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                             return launchActionResult;
                         });
                     });
                 });
-                */
             });
             return launchWorkbenchesFuture.map(function (lastLaunchActionResult) {
                 Log.info("");
@@ -8422,12 +8426,57 @@ var catavolt;
                 listContext.scroller.buffer.forEach(function (entityRec) {
                     displayListItem(entityRec, listContext);
                 });
-                return Future.createSuccessfulFuture('handleListContext', listContext);
+                return scrollThroughAllResults(listContext).bind(function (scrollResult) {
+                    return scrollBackwardThroughAllResults(listContext);
+                });
+                //return Future.createSuccessfulFuture('handleListContext', listContext);
             });
             listFuture.onFailure(function (failure) {
                 Log.error("ListContext failed to render with " + failure);
             });
             return listFuture;
+        }
+        function scrollThroughAllResults(listContext) {
+            if (listContext.scroller.hasMoreForward) {
+                Log.info('The list has more items to display.  Scrolling forward....');
+                return getNextPageOfResults(listContext).bind(function (prevPageEntityRecs) {
+                    return scrollThroughAllResults(listContext);
+                });
+            }
+            else {
+                Log.info('The list has no more items to display.');
+                return Future.createSuccessfulFuture('scrollThroughAllResults', listContext);
+            }
+        }
+        function scrollBackwardThroughAllResults(listContext) {
+            if (listContext.scroller.hasMoreBackward) {
+                Log.info('The list has previous items to display.  Scrolling backward....');
+                return getPreviousPageOfResults(listContext).bind(function (prevPageEntityRecs) {
+                    return scrollBackwardThroughAllResults(listContext);
+                });
+            }
+            else {
+                Log.info('The list has no more previous items to display.');
+                return Future.createSuccessfulFuture('scrollBackwardThroughAllResults', listContext);
+            }
+        }
+        function getNextPageOfResults(listContext) {
+            return listContext.scroller.pageForward().map(function (entityRecs) {
+                Log.info('Displaying next page of ' + entityRecs.length + ' records.');
+                entityRecs.forEach(function (entityRec) {
+                    displayListItem(entityRec, listContext);
+                });
+                return entityRecs;
+            });
+        }
+        function getPreviousPageOfResults(listContext) {
+            return listContext.scroller.pageBackward().map(function (entityRecs) {
+                Log.info('Displaying previous page of ' + entityRecs.length + ' records.');
+                entityRecs.forEach(function (entityRec) {
+                    displayListItem(entityRec, listContext);
+                });
+                return entityRecs;
+            });
         }
         function displayListItem(entityRec, listContext) {
             var rowValues = listContext.rowValues(entityRec);
