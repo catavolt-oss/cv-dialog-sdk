@@ -17,7 +17,7 @@ module catavolt.dialog {
 
             var result:Future<NavRequest>;
             if(redirection instanceof WebRedirection) {
-                result = Future.createFailedFuture('NavRequest::fromRedirection', 'WebRedirection not yet implemented');
+                result = Future.createSuccessfulFuture('NavRequest::fromRedirection', redirection);
             } else if (redirection instanceof WorkbenchRedirection){
                 var wbr:WorkbenchRedirection = redirection;
                 result = AppContext.singleton.getWorkbench(sessionContext, wbr.workbenchId).map((wb:Workbench)=>{

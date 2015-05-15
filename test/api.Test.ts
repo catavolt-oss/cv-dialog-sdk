@@ -12,7 +12,7 @@ module catavolt.dialog {
     describe("Api Usage", function () {
 
         beforeEach(()=>{
-          jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+          jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
         });
 
         it("Should run API Examples", function (done) {
@@ -46,15 +46,15 @@ module catavolt.dialog {
             Log.info("Examining Workbench: " + workbench.name);
 
             //test the first action
-            launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
+            /*launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
                 var launchAction = workbench.workbenchLaunchActions[0];
                 Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
                 return performLaunchAction(launchAction).map((launchActionResult)=>{
                     Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                     return launchActionResult;
                 });
-            });
-            /*workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
+            });*/
+            workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
                 launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
                     Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
                     return performLaunchAction(launchAction).map((launchActionResult)=>{
@@ -62,7 +62,7 @@ module catavolt.dialog {
                         return launchActionResult;
                     });
                 });
-            });*/
+            });
         });
         return launchWorkbenchesFuture.map((lastLaunchActionResult)=>{
             Log.info("");
@@ -87,8 +87,8 @@ module catavolt.dialog {
         if(navRequest instanceof FormContext){
             return handleFormContext(navRequest);
         } else {
-            Log.error('NavRequest in not a FormContext ' + navRequest.constructor['name']);
-            return Future.createFailedFuture('handleNavRequest', 'NavRequest is not a FormContext ' + navRequest.constructor['name']);
+            Log.info('NavRequest in not a FormContext:  ' + navRequest.constructor['name']);
+            return Future.createSuccessfulFuture('handleNavRequest', navRequest);
         }
     }
 
@@ -212,6 +212,7 @@ module catavolt.dialog {
             listContext.listDef.defaultActionId, null, null, []);
 
         var entityRecs = listContext.scroller.buffer;
+        if(entityRecs.length === 0) return Future.createSuccessfulFuture('handleDefaultActionForListItem', listContext);
         if(entityRecs.length > index) {
             var entityRec = entityRecs[index];
             Log.info('--------------------------------------------------------------');

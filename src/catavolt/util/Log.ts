@@ -16,7 +16,7 @@ module catavolt.util {
         public static warn:(message, method?:string, clz?:string)=>void;
 
         //set default log level here
-        static init = Log.logLevel(LogLevel.DEBUG);
+        static init = Log.logLevel(LogLevel.INFO);
 
         static logLevel(level:LogLevel) {
 

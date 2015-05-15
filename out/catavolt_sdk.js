@@ -299,7 +299,7 @@ var catavolt;
                 return util.ObjUtil.formatRecAttr(o);
             };
             //set default log level here
-            Log.init = Log.logLevel(3 /* DEBUG */);
+            Log.init = Log.logLevel(2 /* INFO */);
             return Log;
         })();
         util.Log = Log;
@@ -791,7 +791,7 @@ var catavolt;
                 }
                 var successCallback = function (request) {
                     try {
-                        Log.info("XMLHttpClient: Got successful response: " + request.responseText);
+                        Log.debug("XMLHttpClient: Got successful response: " + request.responseText);
                         var responseObj = JSON.parse(request.responseText);
                         promise.success(responseObj);
                     }
@@ -839,8 +839,8 @@ var catavolt;
                         wRequestTimer = setTimeout(timeoutCallback, timeoutMillis);
                     }
                 }
-                Log.info("XmlHttpClient: Calling: " + targetUrl);
-                Log.info("XmlHttpClient: body: " + body);
+                Log.debug("XmlHttpClient: Calling: " + targetUrl);
+                Log.debug("XmlHttpClient: body: " + body);
                 xmlHttpRequest.open(method, targetUrl, true);
                 if (method === 'POST') {
                     xmlHttpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -2695,7 +2695,10 @@ var catavolt;
                         return o.toString();
                     }
                     else if (o instanceof catavolt.GeoLocation) {
-                        o.toString();
+                        return o.toString();
+                    }
+                    else {
+                        return String(o);
                     }
                 }
                 else {
@@ -4850,7 +4853,7 @@ var catavolt;
                 function fromRedirection(redirection, actionSource, sessionContext) {
                     var result;
                     if (redirection instanceof dialog.WebRedirection) {
-                        result = Future.createFailedFuture('NavRequest::fromRedirection', 'WebRedirection not yet implemented');
+                        result = Future.createSuccessfulFuture('NavRequest::fromRedirection', redirection);
                     }
                     else if (redirection instanceof dialog.WorkbenchRedirection) {
                         var wbr = redirection;
@@ -8312,7 +8315,7 @@ var catavolt;
         var clientType = "LIMITED_ACCESS";
         describe("Api Usage", function () {
             beforeEach(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
             });
             it("Should run API Examples", function (done) {
                 loginWithAppContext();
@@ -8336,23 +8339,23 @@ var catavolt;
             workbenches.forEach(function (workbench) {
                 Log.info("Examining Workbench: " + workbench.name);
                 //test the first action
-                launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
+                /*launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
                     var launchAction = workbench.workbenchLaunchActions[0];
-                    Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
-                    return performLaunchAction(launchAction).map(function (launchActionResult) {
+                    Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
+                    return performLaunchAction(launchAction).map((launchActionResult)=>{
                         Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                         return launchActionResult;
                     });
-                });
-                /*workbench.workbenchLaunchActions.forEach((launchAction:WorkbenchLaunchAction)=>{
-                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
-                        Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
-                        return performLaunchAction(launchAction).map((launchActionResult)=>{
+                });*/
+                workbench.workbenchLaunchActions.forEach(function (launchAction) {
+                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
+                        Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
+                        return performLaunchAction(launchAction).map(function (launchActionResult) {
                             Log.info('<<<<< Completed Launch Action ' + launchAction.name);
                             return launchActionResult;
                         });
                     });
-                });*/
+                });
             });
             return launchWorkbenchesFuture.map(function (lastLaunchActionResult) {
                 Log.info("");
@@ -8374,8 +8377,8 @@ var catavolt;
                 return handleFormContext(navRequest);
             }
             else {
-                Log.error('NavRequest in not a FormContext ' + navRequest.constructor['name']);
-                return Future.createFailedFuture('handleNavRequest', 'NavRequest is not a FormContext ' + navRequest.constructor['name']);
+                Log.info('NavRequest in not a FormContext:  ' + navRequest.constructor['name']);
+                return Future.createSuccessfulFuture('handleNavRequest', navRequest);
             }
         }
         function handleFormContext(formContext) {
@@ -8489,6 +8492,8 @@ var catavolt;
             }
             var defaultActionMenuDef = new dialog.MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW', listContext.listDef.defaultActionId, null, null, []);
             var entityRecs = listContext.scroller.buffer;
+            if (entityRecs.length === 0)
+                return Future.createSuccessfulFuture('handleDefaultActionForListItem', listContext);
             if (entityRecs.length > index) {
                 var entityRec = entityRecs[index];
                 Log.info('--------------------------------------------------------------');

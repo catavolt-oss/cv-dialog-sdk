@@ -61,7 +61,9 @@ module catavolt.dialog {
                 } else if (o instanceof GeoFix) {
                     return o.toString();
                 } else if (o instanceof GeoLocation) {
-                    o.toString();
+                    return o.toString();
+                } else {
+                    return String(o);
                 }
             } else {
                 return String(o);

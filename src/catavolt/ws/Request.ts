@@ -37,7 +37,7 @@ module catavolt.ws {
 
             var successCallback = (request:XMLHttpRequest) => {
                 try {
-                    Log.info("XMLHttpClient: Got successful response: " + request.responseText);
+                    Log.debug("XMLHttpClient: Got successful response: " + request.responseText);
                     var responseObj = JSON.parse(request.responseText);
                     promise.success(responseObj);
                 } catch (error) {
@@ -85,8 +85,8 @@ module catavolt.ws {
                 }
             }
 
-            Log.info("XmlHttpClient: Calling: " + targetUrl);
-            Log.info("XmlHttpClient: body: " + body);
+            Log.debug("XmlHttpClient: Calling: " + targetUrl);
+            Log.debug("XmlHttpClient: body: " + body);
 
             xmlHttpRequest.open(method, targetUrl, true);
             if(method === 'POST'){
