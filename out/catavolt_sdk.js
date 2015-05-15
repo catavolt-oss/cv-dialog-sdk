@@ -8407,11 +8407,10 @@ var catavolt;
             return handleContextsFuture;
         }
         function displayMenus(paneContext) {
-            Log.info('display menus ' + ObjUtil.formatRecAttr(paneContext.menuDefs));
-            return null;
-        }
-        function showMenu(menuDef) {
-            return null;
+            Log.info('----------Menus>>>-------------------------------');
+            Log.info(ObjUtil.formatRecAttr(paneContext.menuDefs));
+            Log.info('----------<<<Menus-------------------------------');
+            return Future.createSuccessfulFuture('displayMenus', paneContext);
         }
         function handleListContext(listContext) {
             Log.info('Handling a ListContext... ');
@@ -8505,7 +8504,109 @@ var catavolt;
             }
         }
         function handleDetailsContext(detailsContext) {
-            return null;
+            Log.info('Handling Details Context...');
+            return detailsContext.read().bind(function (entityRec) {
+                return layoutDetailsPane(detailsContext).map(function (renderedDetailRows) {
+                    renderedDetailRows.forEach(function (row) {
+                        Log.info('Detail Row: ' + row);
+                    });
+                    return renderedDetailRows;
+                });
+            });
+        }
+        function layoutDetailsPane(detailsContext) {
+            var allDefsComplete = Future.createSuccessfulFuture('layoutDetailsPaneStart', '');
+            var renderedDetailRows = [];
+            detailsContext.detailsDef.rows.forEach(function (cellDefRow) {
+                if (isValidDetailsDefRow(cellDefRow)) {
+                    if (isSectionTitleDef(cellDefRow)) {
+                        allDefsComplete = allDefsComplete.map(function (lastRowResult) {
+                            var titleRow = createTitleRow(cellDefRow);
+                            renderedDetailRows.push(titleRow);
+                            return titleRow;
+                        });
+                    }
+                    else {
+                        allDefsComplete = allDefsComplete.bind(function (lastRowResult) {
+                            return createEditorRow(cellDefRow, detailsContext).map(function (editorRow) {
+                                renderedDetailRows.push(editorRow);
+                                return editorRow;
+                            });
+                        });
+                    }
+                }
+                else {
+                    Log.info('Detail row is invalid ' + ObjUtil.formatRecAttr(cellDefRow));
+                }
+            });
+            return allDefsComplete.map(function (lastRowResult) {
+                return renderedDetailRows;
+            });
+        }
+        function isValidDetailsDefRow(row) {
+            return row.length === 2 && row[0].values.length === 1 && row[1].values.length === 1 && (row[0].values[0] instanceof dialog.LabelCellValueDef || row[1].values[0] instanceof dialog.ForcedLineCellValueDef) && (row[1].values[0] instanceof dialog.AttributeCellValueDef || row[1].values[0] instanceof dialog.LabelCellValueDef || row[1].values[0] instanceof dialog.ForcedLineCellValueDef);
+        }
+        function isSectionTitleDef(row) {
+            return row[0].values[0] instanceof dialog.LabelCellValueDef && row[1].values[0] instanceof dialog.LabelCellValueDef;
+        }
+        function createTitleRow(row) {
+            return '<Label>' + row[0].values[0] + '</Label> : <Label>' + row[1].values[0] + '</Label>';
+        }
+        function createEditorRow(row, detailsContext) {
+            var labelDef = row[0].values[0];
+            var label;
+            if (labelDef instanceof dialog.LabelCellValueDef) {
+                label = '<Label>' + labelDef.value + '</Label>';
+            }
+            else {
+                label = '<Label>N/A</Label>';
+            }
+            var valueDef = row[1].values[0];
+            if (valueDef instanceof dialog.AttributeCellValueDef && !detailsContext.isReadModeFor(valueDef.propertyName)) {
+                return createEditorControl(valueDef, detailsContext).map(function (editorCellString) {
+                    return label + editorCellString;
+                });
+            }
+            else if (valueDef instanceof dialog.AttributeCellValueDef) {
+                var value = "";
+                var prop = detailsContext.buffer.propAtName(valueDef.propertyName);
+                if (prop && detailsContext.isBinary(valueDef)) {
+                    value = "<Binary name='" + valueDef.propertyName + "'/>";
+                }
+                else if (prop) {
+                    value = '<Label>' + detailsContext.formatForRead(prop.value, prop.name) + '</Label>';
+                }
+                return Future.createSuccessfulFuture('createEditorRow', label + ' : ' + value);
+            }
+            else if (valueDef instanceof dialog.LabelCellValueDef) {
+                return Future.createSuccessfulFuture('createEditorRow', label + ' : <Label>' + valueDef.value + '</Label>');
+            }
+            else {
+                Future.createSuccessfulFuture('createEditorRow', label + " : ");
+            }
+        }
+        function createEditorControl(attributeDef, detailsContext) {
+            if (attributeDef.isComboBoxEntryMethod) {
+                return detailsContext.getAvailableValues(attributeDef.propertyName).map(function (values) {
+                    return '<ComboBox>' + values.join(", ") + '</ComboBox>';
+                });
+            }
+            else if (attributeDef.isDropDownEntryMethod) {
+                return detailsContext.getAvailableValues(attributeDef.propertyName).map(function (values) {
+                    return '<DropDown>' + values.join(", ") + '</DropDown>';
+                });
+            }
+            else {
+                var entityRec = detailsContext.buffer;
+                var prop = entityRec.propAtName(attributeDef.propertyName);
+                if (prop && detailsContext.isBinary(attributeDef)) {
+                    return Future.createSuccessfulFuture('createEditorControl', "<Binary name='" + prop.name + "' mode='WRITE'/>");
+                }
+                else {
+                    var value = prop ? detailsContext.formatForWrite(prop.value, prop.name) : "";
+                    return Future.createSuccessfulFuture('createEditorControl', '<TextField>' + value + '</TextField>');
+                }
+            }
         }
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
