@@ -30,305 +30,6 @@ var catavolt;
     })(util = catavolt.util || (catavolt.util = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 4/4/15.
- */
-///<reference path="../references.ts"/>
-/*
-    This implementation supports our ECMA 5.1 browser set, including IE9
-    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var Base64 = (function () {
-            function Base64() {
-            }
-            Base64.encode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = Base64._utf8_encode(input);
-                while (i < input.length) {
-                    chr1 = input.charCodeAt(i++);
-                    chr2 = input.charCodeAt(i++);
-                    chr3 = input.charCodeAt(i++);
-                    enc1 = chr1 >> 2;
-                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-                    enc4 = chr3 & 63;
-                    if (isNaN(chr2)) {
-                        enc3 = enc4 = 64;
-                    }
-                    else if (isNaN(chr3)) {
-                        enc4 = 64;
-                    }
-                    output = output + Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) + Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
-                }
-                return output;
-            };
-            Base64.decode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3;
-                var enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-                while (i < input.length) {
-                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
-                    chr1 = (enc1 << 2) | (enc2 >> 4);
-                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-                    chr3 = ((enc3 & 3) << 6) | enc4;
-                    output = output + String.fromCharCode(chr1);
-                    if (enc3 != 64) {
-                        output = output + String.fromCharCode(chr2);
-                    }
-                    if (enc4 != 64) {
-                        output = output + String.fromCharCode(chr3);
-                    }
-                }
-                output = Base64._utf8_decode(output);
-                return output;
-            };
-            Base64._utf8_encode = function (s) {
-                s = s.replace(/\r\n/g, "\n");
-                var utftext = "";
-                for (var n = 0; n < s.length; n++) {
-                    var c = s.charCodeAt(n);
-                    if (c < 128) {
-                        utftext += String.fromCharCode(c);
-                    }
-                    else if ((c > 127) && (c < 2048)) {
-                        utftext += String.fromCharCode((c >> 6) | 192);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                    else {
-                        utftext += String.fromCharCode((c >> 12) | 224);
-                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                }
-                return utftext;
-            };
-            Base64._utf8_decode = function (utftext) {
-                var s = "";
-                var i = 0;
-                var c = 0, c1 = 0, c2 = 0, c3 = 0;
-                while (i < utftext.length) {
-                    c = utftext.charCodeAt(i);
-                    if (c < 128) {
-                        s += String.fromCharCode(c);
-                        i++;
-                    }
-                    else if ((c > 191) && (c < 224)) {
-                        c2 = utftext.charCodeAt(i + 1);
-                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                        i += 2;
-                    }
-                    else {
-                        c2 = utftext.charCodeAt(i + 1);
-                        c3 = utftext.charCodeAt(i + 2);
-                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                        i += 3;
-                    }
-                }
-                return s;
-            };
-            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-            return Base64;
-        })();
-        util.Base64 = Base64;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/20/15.
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var ObjUtil = (function () {
-            function ObjUtil() {
-            }
-            ObjUtil.addAllProps = function (sourceObj, targetObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return targetObj;
-                if (null == targetObj || "object" != typeof targetObj)
-                    return targetObj;
-                for (var attr in sourceObj) {
-                    targetObj[attr] = sourceObj[attr];
-                }
-                return targetObj;
-            };
-            ObjUtil.cloneOwnProps = function (sourceObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return sourceObj;
-                var copy = sourceObj.constructor();
-                for (var attr in sourceObj) {
-                    if (sourceObj.hasOwnProperty(attr)) {
-                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
-                    }
-                }
-                return copy;
-            };
-            ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
-                for (var prop in obj) {
-                    if (!filterFn || filterFn(prop)) {
-                        var type = typeof obj[prop];
-                        if (type !== 'function') {
-                            var val = obj[prop];
-                            if (val) {
-                                newObj[prop] = val;
-                            }
-                        }
-                    }
-                }
-                return newObj;
-            };
-            ObjUtil.formatRecAttr = function (o) {
-                //@TODO - add a filter here to build a cache and detect (and skip) circular references
-                return JSON.stringify(o);
-            };
-            ObjUtil.newInstance = function (type) {
-                return new type;
-            };
-            return ObjUtil;
-        })();
-        util.ObjUtil = ObjUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 4/3/15.
- */
-///<reference path="../references.ts"/>
-/* @TODO */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var StringUtil = (function () {
-            function StringUtil() {
-            }
-            StringUtil.splitSimpleKeyValuePair = function (pairString) {
-                var pair = pairString.split(':');
-                var code = pair[0];
-                var desc = pair.length > 1 ? pair[1] : '';
-                return [code, desc];
-            };
-            return StringUtil;
-        })();
-        util.StringUtil = StringUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/6/15.
- */
-///<reference path="references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        (function (LogLevel) {
-            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
-            LogLevel[LogLevel["WARN"] = 1] = "WARN";
-            LogLevel[LogLevel["INFO"] = 2] = "INFO";
-            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
-        })(util.LogLevel || (util.LogLevel = {}));
-        var LogLevel = util.LogLevel;
-        var Log = (function () {
-            function Log() {
-            }
-            Log.logLevel = function (level) {
-                if (level >= 3 /* DEBUG */) {
-                    Log.debug = function (message, method, clz) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'DEBUG: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.debug = function (message, method, clz) {
-                    };
-                }
-                if (level >= 2 /* INFO */) {
-                    Log.info = function (message, method, clz) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'INFO: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.info = function (message, method, clz) {
-                    };
-                }
-                if (level >= 1 /* WARN */) {
-                    Log.error = function (message, clz, method) {
-                        Log.log(function (o) {
-                            console.error(o);
-                        }, 'ERROR: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.error = function (message, clz, method) {
-                    };
-                }
-                if (level >= 0 /* ERROR */) {
-                    Log.warn = function (message, clz, method) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'WARN: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.warn = function (message, clz, method) {
-                    };
-                }
-            };
-            Log.log = function (logger, message, method, clz) {
-                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
-                if (clz || method) {
-                    logger(clz + "::" + method + " : " + m);
-                }
-                else {
-                    logger(m);
-                }
-            };
-            Log.formatRecString = function (o) {
-                return util.ObjUtil.formatRecAttr(o);
-            };
-            //set default log level here
-            Log.init = Log.logLevel(2 /* INFO */);
-            return Log;
-        })();
-        util.Log = Log;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/9/15.
- */
-/**
- * Created by rburson on 3/16/15.
- */
-/**
- * Created by rburson on 3/6/15.
- */
-//util
-///<reference path="ArrayUtil.ts"/>
-///<reference path="Base64.ts"/>
-///<reference path="ObjUtil.ts"/>
-///<reference path="StringUtil.ts"/>
-///<reference path="Log.ts"/>
-///<reference path="Types.ts"/>
-///<reference path="UserException.ts"/>
-var ArrayUtil = catavolt.util.ArrayUtil;
-var Base64 = catavolt.util.Base64;
-var Log = catavolt.util.Log;
-var LogLevel = catavolt.util.LogLevel;
-var ObjUtil = catavolt.util.ObjUtil;
-var StringUtil = catavolt.util.StringUtil;
-/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -8302,316 +8003,302 @@ var catavolt;
 ///<reference path="dialog/references.ts"/>
 //angular
 ///<reference path="ng/references.ts"/>
-///<reference path="jasmine.d.ts"/>
-///<reference path="../src/catavolt/references.ts"/>
+/**
+ * Created by rburson on 4/4/15.
+ */
+///<reference path="../references.ts"/>
+/*
+    This implementation supports our ECMA 5.1 browser set, including IE9
+    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
+ */
 var catavolt;
 (function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var SERVICE_PATH = "www.catavolt.net";
-        var tenantId = "***REMOVED***z";
-        var userId = "sales";
-        var password = "***REMOVED***";
-        var clientType = "LIMITED_ACCESS";
-        describe("Api Usage", function () {
-            beforeEach(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-            });
-            it("Should run API Examples", function (done) {
-                loginWithAppContext();
-            });
-        });
-        function loginWithAppContext() {
-            return dialog.AppContext.singleton.login(SERVICE_PATH, tenantId, clientType, userId, password).bind(function (appWinDef) {
-                Log.info('Login Succeeded');
-                Log.info('AppWinDef: ' + Log.formatRecString(appWinDef));
-                Log.info('SessionContext: ' + Log.formatRecString(dialog.AppContext.singleton.sessionContextTry.success));
-                Log.info('TenantSettings: ' + Log.formatRecString(dialog.AppContext.singleton.tenantSettingsTry.success));
-                return setupWorkbench().bind(function (result) {
-                    Log.info('Competed all workbenches.');
-                    return null;
-                });
-            });
-        }
-        function setupWorkbench() {
-            var workbenches = dialog.AppContext.singleton.appWinDefTry.success.workbenches;
-            var launchWorkbenchesFuture = Future.createSuccessfulFuture('startSetupWorkbench', null);
-            workbenches.forEach(function (workbench) {
-                Log.info("Examining Workbench: " + workbench.name);
-                //test the first action
-                /*launchWorkbenchesFuture = launchWorkbenchesFuture.bind((lastResult:any)=>{
-                    var launchAction = workbench.workbenchLaunchActions[0];
-                    Log.info(">>>>> Launching Action: " +  launchAction.name + " Icon: " + launchAction.iconBase);
-                    return performLaunchAction(launchAction).map((launchActionResult)=>{
-                        Log.info('<<<<< Completed Launch Action ' + launchAction.name);
-                        return launchActionResult;
-                    });
-                });*/
-                workbench.workbenchLaunchActions.forEach(function (launchAction) {
-                    launchWorkbenchesFuture = launchWorkbenchesFuture.bind(function (lastResult) {
-                        Log.info(">>>>> Launching Action: " + launchAction.name + " Icon: " + launchAction.iconBase);
-                        return performLaunchAction(launchAction).map(function (launchActionResult) {
-                            Log.info('<<<<< Completed Launch Action ' + launchAction.name);
-                            return launchActionResult;
-                        });
-                    });
-                });
-            });
-            return launchWorkbenchesFuture.map(function (lastLaunchActionResult) {
-                Log.info("");
-                Log.info("Completed all launch Actions");
-                Log.info("");
-            });
-        }
-        function performLaunchAction(launchAction) {
-            return dialog.AppContext.singleton.performLaunchAction(launchAction).bind(function (navRequest) {
-                Log.info("Perform Launch Action " + launchAction.name + ' succeeded. Continuing with NavRequest...');
-                return handleNavRequest(navRequest);
-            });
-        }
-        function getLaunchActionByName(name, workbenches) {
-            return null;
-        }
-        function handleNavRequest(navRequest) {
-            if (navRequest instanceof dialog.FormContext) {
-                return handleFormContext(navRequest);
+    var util;
+    (function (util) {
+        var Base64 = (function () {
+            function Base64() {
             }
-            else {
-                Log.info('NavRequest in not a FormContext:  ' + navRequest.constructor['name']);
-                return Future.createSuccessfulFuture('handleNavRequest', navRequest);
-            }
-        }
-        function handleFormContext(formContext) {
-            displayMenus(formContext);
-            var handleContextsFuture = Future.createSuccessfulFuture('startHandleContexts', null);
-            formContext.childrenContexts.forEach(function (context) {
-                Log.info('');
-                Log.info('Got a ' + context.constructor['name'] + ' for display');
-                Log.info('');
-                if (context instanceof dialog.ListContext) {
-                    handleContextsFuture = handleContextsFuture.bind(function (lastContextResult) {
-                        return handleListContext(context);
-                    });
+            Base64.encode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = Base64._utf8_encode(input);
+                while (i < input.length) {
+                    chr1 = input.charCodeAt(i++);
+                    chr2 = input.charCodeAt(i++);
+                    chr3 = input.charCodeAt(i++);
+                    enc1 = chr1 >> 2;
+                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                    enc4 = chr3 & 63;
+                    if (isNaN(chr2)) {
+                        enc3 = enc4 = 64;
+                    }
+                    else if (isNaN(chr3)) {
+                        enc4 = 64;
+                    }
+                    output = output + Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) + Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
                 }
-                else if (context instanceof dialog.DetailsContext) {
-                    handleContextsFuture = handleContextsFuture.bind(function (lastContextResult) {
-                        return handleDetailsContext(context);
-                    });
+                return output;
+            };
+            Base64.decode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3;
+                var enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+                while (i < input.length) {
+                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
+                    chr1 = (enc1 << 2) | (enc2 >> 4);
+                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+                    chr3 = ((enc3 & 3) << 6) | enc4;
+                    output = output + String.fromCharCode(chr1);
+                    if (enc3 != 64) {
+                        output = output + String.fromCharCode(chr2);
+                    }
+                    if (enc4 != 64) {
+                        output = output + String.fromCharCode(chr3);
+                    }
                 }
-                else {
-                    Log.info('');
-                    Log.info('Not yet handling display for ' + context.constructor['name']);
-                    Log.info('');
-                    handleContextsFuture = handleContextsFuture.map(function (lastContextResult) {
-                        return context;
-                    });
-                }
-            });
-            return handleContextsFuture;
-        }
-        function displayMenus(paneContext) {
-            Log.info('----------Menus>>>-------------------------------');
-            Log.info(ObjUtil.formatRecAttr(paneContext.menuDefs));
-            Log.info('----------<<<Menus-------------------------------');
-            return Future.createSuccessfulFuture('displayMenus', paneContext);
-        }
-        function handleListContext(listContext) {
-            Log.info('Handling a ListContext... ');
-            listContext.setScroller(10, null, [0 /* None */]);
-            var listFuture = listContext.refresh().bind(function (entityRec) {
-                Log.info('Finished refresh');
-                displayMenus(listContext);
-                var columnHeadings = listContext.listDef.activeColumnDefs.map(function (columnDef) {
-                    return columnDef.heading;
-                });
-                Log.info(columnHeadings.join('|'));
-                listContext.scroller.buffer.forEach(function (entityRec) {
-                    displayListItem(entityRec, listContext);
-                });
-                var scrollResultsFuture = scrollThroughAllResults(listContext).bind(function (scrollResult) {
-                    return scrollBackwardThroughAllResults(listContext);
-                });
-                return scrollResultsFuture.bind(function (result) {
-                    return handleDefaultActionForListItem(0, listContext);
-                });
-            });
-            listFuture.onFailure(function (failure) {
-                Log.error("ListContext failed to render with " + failure);
-            });
-            return listFuture;
-        }
-        function scrollThroughAllResults(listContext) {
-            if (listContext.scroller.hasMoreForward) {
-                Log.info('The list has more items to display.  Scrolling forward....');
-                return getNextPageOfResults(listContext).bind(function (prevPageEntityRecs) {
-                    return scrollThroughAllResults(listContext);
-                });
-            }
-            else {
-                Log.info('The list has no more items to display.');
-                return Future.createSuccessfulFuture('scrollThroughAllResults', listContext);
-            }
-        }
-        function scrollBackwardThroughAllResults(listContext) {
-            if (listContext.scroller.hasMoreBackward) {
-                Log.info('The list has previous items to display.  Scrolling backward....');
-                return getPreviousPageOfResults(listContext).bind(function (prevPageEntityRecs) {
-                    return scrollBackwardThroughAllResults(listContext);
-                });
-            }
-            else {
-                Log.info('The list has no more previous items to display.');
-                return Future.createSuccessfulFuture('scrollBackwardThroughAllResults', listContext);
-            }
-        }
-        function getNextPageOfResults(listContext) {
-            return listContext.scroller.pageForward().map(function (entityRecs) {
-                Log.info('Displaying next page of ' + entityRecs.length + ' records.');
-                entityRecs.forEach(function (entityRec) {
-                    displayListItem(entityRec, listContext);
-                });
-                return entityRecs;
-            });
-        }
-        function getPreviousPageOfResults(listContext) {
-            return listContext.scroller.pageBackward().map(function (entityRecs) {
-                Log.info('Displaying previous page of ' + entityRecs.length + ' records.');
-                entityRecs.forEach(function (entityRec) {
-                    displayListItem(entityRec, listContext);
-                });
-                return entityRecs;
-            });
-        }
-        function displayListItem(entityRec, listContext) {
-            var rowValues = listContext.rowValues(entityRec);
-            Log.info(rowValues.join('|'));
-        }
-        function handleDefaultActionForListItem(index, listContext) {
-            if (!listContext.listDef.defaultActionId) {
-                return Future.createSuccessfulFuture('handleDefaultActionForListItem', listContext);
-            }
-            var defaultActionMenuDef = new dialog.MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW', listContext.listDef.defaultActionId, null, null, []);
-            var entityRecs = listContext.scroller.buffer;
-            if (entityRecs.length === 0)
-                return Future.createSuccessfulFuture('handleDefaultActionForListItem', listContext);
-            if (entityRecs.length > index) {
-                var entityRec = entityRecs[index];
-                Log.info('--------------------------------------------------------------');
-                Log.info('Invoking default action on list item ' + entityRec.objectId);
-                Log.info('--------------------------------------------------------------');
-                var targets = [entityRec.objectId];
-                return listContext.performMenuAction(defaultActionMenuDef, targets).bind(function (navRequest) {
-                    return handleNavRequest(navRequest);
-                });
-            }
-            else {
-                return Future.createFailedFuture('handleDefaultActionForListItem', 'Invalid index for listContext');
-            }
-        }
-        function handleDetailsContext(detailsContext) {
-            Log.info('Handling Details Context...');
-            return detailsContext.read().bind(function (entityRec) {
-                return layoutDetailsPane(detailsContext).map(function (renderedDetailRows) {
-                    renderedDetailRows.forEach(function (row) {
-                        Log.info('Detail Row: ' + row);
-                    });
-                    return renderedDetailRows;
-                });
-            });
-        }
-        function layoutDetailsPane(detailsContext) {
-            var allDefsComplete = Future.createSuccessfulFuture('layoutDetailsPaneStart', '');
-            var renderedDetailRows = [];
-            detailsContext.detailsDef.rows.forEach(function (cellDefRow) {
-                if (isValidDetailsDefRow(cellDefRow)) {
-                    if (isSectionTitleDef(cellDefRow)) {
-                        allDefsComplete = allDefsComplete.map(function (lastRowResult) {
-                            var titleRow = createTitleRow(cellDefRow);
-                            renderedDetailRows.push(titleRow);
-                            return titleRow;
-                        });
+                output = Base64._utf8_decode(output);
+                return output;
+            };
+            Base64._utf8_encode = function (s) {
+                s = s.replace(/\r\n/g, "\n");
+                var utftext = "";
+                for (var n = 0; n < s.length; n++) {
+                    var c = s.charCodeAt(n);
+                    if (c < 128) {
+                        utftext += String.fromCharCode(c);
+                    }
+                    else if ((c > 127) && (c < 2048)) {
+                        utftext += String.fromCharCode((c >> 6) | 192);
+                        utftext += String.fromCharCode((c & 63) | 128);
                     }
                     else {
-                        allDefsComplete = allDefsComplete.bind(function (lastRowResult) {
-                            return createEditorRow(cellDefRow, detailsContext).map(function (editorRow) {
-                                renderedDetailRows.push(editorRow);
-                                return editorRow;
-                            });
-                        });
+                        utftext += String.fromCharCode((c >> 12) | 224);
+                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                        utftext += String.fromCharCode((c & 63) | 128);
                     }
                 }
+                return utftext;
+            };
+            Base64._utf8_decode = function (utftext) {
+                var s = "";
+                var i = 0;
+                var c = 0, c1 = 0, c2 = 0, c3 = 0;
+                while (i < utftext.length) {
+                    c = utftext.charCodeAt(i);
+                    if (c < 128) {
+                        s += String.fromCharCode(c);
+                        i++;
+                    }
+                    else if ((c > 191) && (c < 224)) {
+                        c2 = utftext.charCodeAt(i + 1);
+                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                        i += 2;
+                    }
+                    else {
+                        c2 = utftext.charCodeAt(i + 1);
+                        c3 = utftext.charCodeAt(i + 2);
+                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                        i += 3;
+                    }
+                }
+                return s;
+            };
+            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            return Base64;
+        })();
+        util.Base64 = Base64;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/20/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var ObjUtil = (function () {
+            function ObjUtil() {
+            }
+            ObjUtil.addAllProps = function (sourceObj, targetObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return targetObj;
+                if (null == targetObj || "object" != typeof targetObj)
+                    return targetObj;
+                for (var attr in sourceObj) {
+                    targetObj[attr] = sourceObj[attr];
+                }
+                return targetObj;
+            };
+            ObjUtil.cloneOwnProps = function (sourceObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return sourceObj;
+                var copy = sourceObj.constructor();
+                for (var attr in sourceObj) {
+                    if (sourceObj.hasOwnProperty(attr)) {
+                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
+                    }
+                }
+                return copy;
+            };
+            ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
+                for (var prop in obj) {
+                    if (!filterFn || filterFn(prop)) {
+                        var type = typeof obj[prop];
+                        if (type !== 'function') {
+                            var val = obj[prop];
+                            if (val) {
+                                newObj[prop] = val;
+                            }
+                        }
+                    }
+                }
+                return newObj;
+            };
+            ObjUtil.formatRecAttr = function (o) {
+                //@TODO - add a filter here to build a cache and detect (and skip) circular references
+                return JSON.stringify(o);
+            };
+            ObjUtil.newInstance = function (type) {
+                return new type;
+            };
+            return ObjUtil;
+        })();
+        util.ObjUtil = ObjUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/3/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var StringUtil = (function () {
+            function StringUtil() {
+            }
+            StringUtil.splitSimpleKeyValuePair = function (pairString) {
+                var pair = pairString.split(':');
+                var code = pair[0];
+                var desc = pair.length > 1 ? pair[1] : '';
+                return [code, desc];
+            };
+            return StringUtil;
+        })();
+        util.StringUtil = StringUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/9/15.
+ */
+/**
+ * Created by rburson on 3/16/15.
+ */
+/**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="ArrayUtil.ts"/>
+///<reference path="Base64.ts"/>
+///<reference path="ObjUtil.ts"/>
+///<reference path="StringUtil.ts"/>
+///<reference path="Log.ts"/>
+///<reference path="Types.ts"/>
+///<reference path="UserException.ts"/>
+var ArrayUtil = catavolt.util.ArrayUtil;
+var Base64 = catavolt.util.Base64;
+var Log = catavolt.util.Log;
+var LogLevel = catavolt.util.LogLevel;
+var ObjUtil = catavolt.util.ObjUtil;
+var StringUtil = catavolt.util.StringUtil;
+/**
+ * Created by rburson on 3/6/15.
+ */
+///<reference path="references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        (function (LogLevel) {
+            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
+            LogLevel[LogLevel["WARN"] = 1] = "WARN";
+            LogLevel[LogLevel["INFO"] = 2] = "INFO";
+            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
+        })(util.LogLevel || (util.LogLevel = {}));
+        var LogLevel = util.LogLevel;
+        var Log = (function () {
+            function Log() {
+            }
+            Log.logLevel = function (level) {
+                if (level >= 3 /* DEBUG */) {
+                    Log.debug = function (message, method, clz) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'DEBUG: ' + message, method, clz);
+                    };
+                }
                 else {
-                    Log.info('Detail row is invalid ' + ObjUtil.formatRecAttr(cellDefRow));
+                    Log.debug = function (message, method, clz) {
+                    };
                 }
-            });
-            return allDefsComplete.map(function (lastRowResult) {
-                return renderedDetailRows;
-            });
-        }
-        function isValidDetailsDefRow(row) {
-            return row.length === 2 && row[0].values.length === 1 && row[1].values.length === 1 && (row[0].values[0] instanceof dialog.LabelCellValueDef || row[1].values[0] instanceof dialog.ForcedLineCellValueDef) && (row[1].values[0] instanceof dialog.AttributeCellValueDef || row[1].values[0] instanceof dialog.LabelCellValueDef || row[1].values[0] instanceof dialog.ForcedLineCellValueDef);
-        }
-        function isSectionTitleDef(row) {
-            return row[0].values[0] instanceof dialog.LabelCellValueDef && row[1].values[0] instanceof dialog.LabelCellValueDef;
-        }
-        function createTitleRow(row) {
-            return '<Label>' + row[0].values[0] + '</Label> : <Label>' + row[1].values[0] + '</Label>';
-        }
-        function createEditorRow(row, detailsContext) {
-            var labelDef = row[0].values[0];
-            var label;
-            if (labelDef instanceof dialog.LabelCellValueDef) {
-                label = '<Label>' + labelDef.value + '</Label>';
-            }
-            else {
-                label = '<Label>N/A</Label>';
-            }
-            var valueDef = row[1].values[0];
-            if (valueDef instanceof dialog.AttributeCellValueDef && !detailsContext.isReadModeFor(valueDef.propertyName)) {
-                return createEditorControl(valueDef, detailsContext).map(function (editorCellString) {
-                    return label + editorCellString;
-                });
-            }
-            else if (valueDef instanceof dialog.AttributeCellValueDef) {
-                var value = "";
-                var prop = detailsContext.buffer.propAtName(valueDef.propertyName);
-                if (prop && detailsContext.isBinary(valueDef)) {
-                    value = "<Binary name='" + valueDef.propertyName + "'/>";
-                }
-                else if (prop) {
-                    value = '<Label>' + detailsContext.formatForRead(prop.value, prop.name) + '</Label>';
-                }
-                return Future.createSuccessfulFuture('createEditorRow', label + ' : ' + value);
-            }
-            else if (valueDef instanceof dialog.LabelCellValueDef) {
-                return Future.createSuccessfulFuture('createEditorRow', label + ' : <Label>' + valueDef.value + '</Label>');
-            }
-            else {
-                Future.createSuccessfulFuture('createEditorRow', label + " : ");
-            }
-        }
-        function createEditorControl(attributeDef, detailsContext) {
-            if (attributeDef.isComboBoxEntryMethod) {
-                return detailsContext.getAvailableValues(attributeDef.propertyName).map(function (values) {
-                    return '<ComboBox>' + values.join(", ") + '</ComboBox>';
-                });
-            }
-            else if (attributeDef.isDropDownEntryMethod) {
-                return detailsContext.getAvailableValues(attributeDef.propertyName).map(function (values) {
-                    return '<DropDown>' + values.join(", ") + '</DropDown>';
-                });
-            }
-            else {
-                var entityRec = detailsContext.buffer;
-                var prop = entityRec.propAtName(attributeDef.propertyName);
-                if (prop && detailsContext.isBinary(attributeDef)) {
-                    return Future.createSuccessfulFuture('createEditorControl', "<Binary name='" + prop.name + "' mode='WRITE'/>");
+                if (level >= 2 /* INFO */) {
+                    Log.info = function (message, method, clz) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'INFO: ' + message, method, clz);
+                    };
                 }
                 else {
-                    var value = prop ? detailsContext.formatForWrite(prop.value, prop.name) : "";
-                    return Future.createSuccessfulFuture('createEditorControl', '<TextField>' + value + '</TextField>');
+                    Log.info = function (message, method, clz) {
+                    };
                 }
-            }
-        }
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
+                if (level >= 1 /* WARN */) {
+                    Log.error = function (message, clz, method) {
+                        Log.log(function (o) {
+                            console.error(o);
+                        }, 'ERROR: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.error = function (message, clz, method) {
+                    };
+                }
+                if (level >= 0 /* ERROR */) {
+                    Log.warn = function (message, clz, method) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'WARN: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.warn = function (message, clz, method) {
+                    };
+                }
+            };
+            Log.log = function (logger, message, method, clz) {
+                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
+                if (clz || method) {
+                    logger(clz + "::" + method + " : " + m);
+                }
+                else {
+                    logger(m);
+                }
+            };
+            Log.formatRecString = function (o) {
+                return util.ObjUtil.formatRecAttr(o);
+            };
+            //set default log level here
+            Log.init = Log.logLevel(2 /* INFO */);
+            return Log;
+        })();
+        util.Log = Log;
+    })(util = catavolt.util || (catavolt.util = {}));
 })(catavolt || (catavolt = {}));
