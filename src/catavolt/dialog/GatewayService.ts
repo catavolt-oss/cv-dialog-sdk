@@ -19,7 +19,7 @@ module catavolt.dialog {
 
 
             //We have to fake this for now, due to cross domain issues
-
+/*
             var fakeResponse = {
                 responseType:"soi-json",
                 tenantId:"***REMOVED***z",
@@ -29,7 +29,8 @@ module catavolt.dialog {
 
             var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
 
-            /*
+            */
+
             var f:Future<StringDictionary> = Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
             var endPointFuture:Future<ServiceEndpoint> = f.bind(
                 (jsonObject:StringDictionary)=>{
@@ -37,7 +38,6 @@ module catavolt.dialog {
                     return Future.createSuccessfulFuture<ServiceEndpoint>("serviceEndpoint", <any>jsonObject);
                 }
             );
-            */
 
             return endPointFuture;
         }

@@ -30,6 +30,305 @@ var catavolt;
     })(util = catavolt.util || (catavolt.util = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 4/4/15.
+ */
+///<reference path="../references.ts"/>
+/*
+    This implementation supports our ECMA 5.1 browser set, including IE9
+    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var Base64 = (function () {
+            function Base64() {
+            }
+            Base64.encode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = Base64._utf8_encode(input);
+                while (i < input.length) {
+                    chr1 = input.charCodeAt(i++);
+                    chr2 = input.charCodeAt(i++);
+                    chr3 = input.charCodeAt(i++);
+                    enc1 = chr1 >> 2;
+                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                    enc4 = chr3 & 63;
+                    if (isNaN(chr2)) {
+                        enc3 = enc4 = 64;
+                    }
+                    else if (isNaN(chr3)) {
+                        enc4 = 64;
+                    }
+                    output = output + Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) + Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
+                }
+                return output;
+            };
+            Base64.decode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3;
+                var enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+                while (i < input.length) {
+                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
+                    chr1 = (enc1 << 2) | (enc2 >> 4);
+                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+                    chr3 = ((enc3 & 3) << 6) | enc4;
+                    output = output + String.fromCharCode(chr1);
+                    if (enc3 != 64) {
+                        output = output + String.fromCharCode(chr2);
+                    }
+                    if (enc4 != 64) {
+                        output = output + String.fromCharCode(chr3);
+                    }
+                }
+                output = Base64._utf8_decode(output);
+                return output;
+            };
+            Base64._utf8_encode = function (s) {
+                s = s.replace(/\r\n/g, "\n");
+                var utftext = "";
+                for (var n = 0; n < s.length; n++) {
+                    var c = s.charCodeAt(n);
+                    if (c < 128) {
+                        utftext += String.fromCharCode(c);
+                    }
+                    else if ((c > 127) && (c < 2048)) {
+                        utftext += String.fromCharCode((c >> 6) | 192);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+                    else {
+                        utftext += String.fromCharCode((c >> 12) | 224);
+                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+                }
+                return utftext;
+            };
+            Base64._utf8_decode = function (utftext) {
+                var s = "";
+                var i = 0;
+                var c = 0, c1 = 0, c2 = 0, c3 = 0;
+                while (i < utftext.length) {
+                    c = utftext.charCodeAt(i);
+                    if (c < 128) {
+                        s += String.fromCharCode(c);
+                        i++;
+                    }
+                    else if ((c > 191) && (c < 224)) {
+                        c2 = utftext.charCodeAt(i + 1);
+                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                        i += 2;
+                    }
+                    else {
+                        c2 = utftext.charCodeAt(i + 1);
+                        c3 = utftext.charCodeAt(i + 2);
+                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                        i += 3;
+                    }
+                }
+                return s;
+            };
+            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            return Base64;
+        })();
+        util.Base64 = Base64;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/20/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var ObjUtil = (function () {
+            function ObjUtil() {
+            }
+            ObjUtil.addAllProps = function (sourceObj, targetObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return targetObj;
+                if (null == targetObj || "object" != typeof targetObj)
+                    return targetObj;
+                for (var attr in sourceObj) {
+                    targetObj[attr] = sourceObj[attr];
+                }
+                return targetObj;
+            };
+            ObjUtil.cloneOwnProps = function (sourceObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return sourceObj;
+                var copy = sourceObj.constructor();
+                for (var attr in sourceObj) {
+                    if (sourceObj.hasOwnProperty(attr)) {
+                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
+                    }
+                }
+                return copy;
+            };
+            ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
+                for (var prop in obj) {
+                    if (!filterFn || filterFn(prop)) {
+                        var type = typeof obj[prop];
+                        if (type !== 'function') {
+                            var val = obj[prop];
+                            if (val) {
+                                newObj[prop] = val;
+                            }
+                        }
+                    }
+                }
+                return newObj;
+            };
+            ObjUtil.formatRecAttr = function (o) {
+                //@TODO - add a filter here to build a cache and detect (and skip) circular references
+                return JSON.stringify(o);
+            };
+            ObjUtil.newInstance = function (type) {
+                return new type;
+            };
+            return ObjUtil;
+        })();
+        util.ObjUtil = ObjUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/3/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var StringUtil = (function () {
+            function StringUtil() {
+            }
+            StringUtil.splitSimpleKeyValuePair = function (pairString) {
+                var pair = pairString.split(':');
+                var code = pair[0];
+                var desc = pair.length > 1 ? pair[1] : '';
+                return [code, desc];
+            };
+            return StringUtil;
+        })();
+        util.StringUtil = StringUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+///<reference path="references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        (function (LogLevel) {
+            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
+            LogLevel[LogLevel["WARN"] = 1] = "WARN";
+            LogLevel[LogLevel["INFO"] = 2] = "INFO";
+            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
+        })(util.LogLevel || (util.LogLevel = {}));
+        var LogLevel = util.LogLevel;
+        var Log = (function () {
+            function Log() {
+            }
+            Log.logLevel = function (level) {
+                if (level >= 3 /* DEBUG */) {
+                    Log.debug = function (message, method, clz) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'DEBUG: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.debug = function (message, method, clz) {
+                    };
+                }
+                if (level >= 2 /* INFO */) {
+                    Log.info = function (message, method, clz) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'INFO: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.info = function (message, method, clz) {
+                    };
+                }
+                if (level >= 1 /* WARN */) {
+                    Log.error = function (message, clz, method) {
+                        Log.log(function (o) {
+                            console.error(o);
+                        }, 'ERROR: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.error = function (message, clz, method) {
+                    };
+                }
+                if (level >= 0 /* ERROR */) {
+                    Log.warn = function (message, clz, method) {
+                        Log.log(function (o) {
+                            console.info(o);
+                        }, 'WARN: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.warn = function (message, clz, method) {
+                    };
+                }
+            };
+            Log.log = function (logger, message, method, clz) {
+                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
+                if (clz || method) {
+                    logger(clz + "::" + method + " : " + m);
+                }
+                else {
+                    logger(m);
+                }
+            };
+            Log.formatRecString = function (o) {
+                return util.ObjUtil.formatRecAttr(o);
+            };
+            //set default log level here
+            Log.init = Log.logLevel(2 /* INFO */);
+            return Log;
+        })();
+        util.Log = Log;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/9/15.
+ */
+/**
+ * Created by rburson on 3/16/15.
+ */
+/**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="ArrayUtil.ts"/>
+///<reference path="Base64.ts"/>
+///<reference path="ObjUtil.ts"/>
+///<reference path="StringUtil.ts"/>
+///<reference path="Log.ts"/>
+///<reference path="Types.ts"/>
+///<reference path="UserException.ts"/>
+var ArrayUtil = catavolt.util.ArrayUtil;
+var Base64 = catavolt.util.Base64;
+var Log = catavolt.util.Log;
+var LogLevel = catavolt.util.LogLevel;
+var ObjUtil = catavolt.util.ObjUtil;
+var StringUtil = catavolt.util.StringUtil;
+/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -645,6 +944,122 @@ var catavolt;
  */
 var Call = catavolt.ws.Call;
 var Get = catavolt.ws.Get;
+/**
+ * Created by rburson on 5/5/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var ng;
+    (function (ng) {
+        var LoginController = (function () {
+            function LoginController($scope, $location, $rootScope, $timeout, Catavolt) {
+                //prefill the form for now...
+                $scope.creds = { tenantId: '***REMOVED***z', gatewayUrl: 'www.catavolt.net', userId: 'sales', password: '***REMOVED***', clientType: 'LIMITED_ACCESS' };
+                $scope.loginMessage = "";
+                $scope.loggingIn = false;
+                $scope.loggedIn = Catavolt.isLoggedIn;
+                $scope.login = function (creds) {
+                    $scope.loginMessage = "";
+                    $scope.loggingIn = true;
+                    if (Catavolt.loggedIn) {
+                        $scope.loggedIn = Catavolt.isLoggedIn;
+                        $location.path('/main');
+                    }
+                    else {
+                        Catavolt.login(creds.gatewayUrl, creds.tenantId, creds.clientType, creds.userId, creds.password).onComplete(function (appWinDefTry) {
+                            $rootScope.$apply(function () {
+                                $scope.loggingIn = false;
+                                if (appWinDefTry.isFailure) {
+                                    $scope.loginMessage = "Invalid Login";
+                                    $scope.loggedIn = Catavolt.isLoggedIn;
+                                }
+                                else {
+                                    $scope.loggedIn = Catavolt.isLoggedIn;
+                                    $timeout(function () {
+                                        $location.path('/main');
+                                    }, 800);
+                                }
+                            });
+                        });
+                    }
+                };
+            }
+            return LoginController;
+        })();
+        ng.LoginController = LoginController;
+    })(ng = catavolt.ng || (catavolt.ng = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 5/6/15.
+ */
+///<reference path="../references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var ng;
+    (function (ng) {
+        var WorkbenchController = (function () {
+            function WorkbenchController($scope, $location, $rootScope, $timeout, Catavolt) {
+                $scope.launchActions = [];
+                var workbenches = Catavolt.appWinDefTry.success.workbenches;
+                var launchActions = workbenches.length ? workbenches[0].workbenchLaunchActions : [];
+                //preload images
+                var loader = new PxLoader();
+                loader.addCompletionListener(function () {
+                    addLaunchers(launchActions);
+                });
+                for (var i = 0; i < launchActions.length; i++) {
+                    loader.addImage(launchActions[i].iconBase);
+                }
+                loader.start();
+                function addLaunchers(launchActions) {
+                    launchActions.forEach(function (item, i) {
+                        $timeout(function () {
+                            $scope.launchActions.push(item);
+                        }, i * 200);
+                    });
+                }
+                $scope.performLaunchAction = function (launchAction) {
+                    Catavolt.performLaunchAction(launchAction).onComplete(function (launchTry) {
+                        if (launchTry.isFailure) {
+                            alert('Handle Launch Failure!');
+                            Log.error(launchTry.failure);
+                        }
+                        else {
+                            if (launchTry.success instanceof FormContext) {
+                                Log.info('Succeded with ' + launchTry.success);
+                            }
+                            else {
+                                alert('Unhandled type of NavRequest ' + launchTry.success);
+                            }
+                        }
+                    });
+                };
+            }
+            return WorkbenchController;
+        })();
+        ng.WorkbenchController = WorkbenchController;
+    })(ng = catavolt.ng || (catavolt.ng = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+//ng
+///<reference path="LoginController.ts"/>
+///<reference path="WorkbenchController.ts"/>
+/**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="util/references.ts"/>
+//fp
+///<reference path="fp/references.ts"/>
+//ws
+///<reference path="ws/references.ts"/>
+//dialog
+///<reference path="dialog/references.ts"/>
+//angular
+///<reference path="ng/references.ts"/>
 /**
  * Created by rburson on 4/28/15.
  */
@@ -4604,180 +5019,6 @@ var catavolt;
  * Created by rburson on 3/12/15.
  */
 /**
- * Created by rburson on 3/13/15.
- */
-///<reference path="references.ts"/>
-///<reference path="../fp/references.ts"/>
-///<reference path="../util/references.ts"/>
-///<reference path="../ws/references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var AppContextState;
-        (function (AppContextState) {
-            AppContextState[AppContextState["LOGGED_OUT"] = 0] = "LOGGED_OUT";
-            AppContextState[AppContextState["LOGGED_IN"] = 1] = "LOGGED_IN";
-        })(AppContextState || (AppContextState = {}));
-        var AppContextValues = (function () {
-            function AppContextValues(sessionContext, appWinDef, tenantSettings) {
-                this.sessionContext = sessionContext;
-                this.appWinDef = appWinDef;
-                this.tenantSettings = tenantSettings;
-            }
-            return AppContextValues;
-        })();
-        var AppContext = (function () {
-            function AppContext() {
-                if (AppContext._singleton) {
-                    throw new Error("Singleton instance already created");
-                }
-                this._deviceProps = [];
-                this.setAppContextStateToLoggedOut();
-                AppContext._singleton = this;
-            }
-            Object.defineProperty(AppContext, "defaultTTLInMillis", {
-                get: function () {
-                    return AppContext.ONE_DAY_IN_MILLIS;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext, "singleton", {
-                get: function () {
-                    if (!AppContext._singleton) {
-                        AppContext._singleton = new AppContext();
-                    }
-                    return AppContext._singleton;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "appWinDefTry", {
-                get: function () {
-                    return this._appWinDefTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "deviceProps", {
-                get: function () {
-                    return this._deviceProps;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "isLoggedIn", {
-                get: function () {
-                    return this._appContextState === 1 /* LOGGED_IN */;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
-                if (this._appContextState === 0 /* LOGGED_OUT */) {
-                    return Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
-                }
-                return dialog.WorkbenchService.getWorkbench(sessionContext, workbenchId);
-            };
-            AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
-                var _this = this;
-                if (this._appContextState === 1 /* LOGGED_IN */) {
-                    return Future.createFailedFuture("AppContext::login", "User is already logged in");
-                }
-                var answer;
-                var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
-                return appContextValuesFr.bind(function (appContextValues) {
-                    _this.setAppContextStateToLoggedIn(appContextValues);
-                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
-                });
-            };
-            AppContext.prototype.loginDirectly = function (url, tenantId, clientType, userId, password) {
-                var _this = this;
-                if (this._appContextState === 1 /* LOGGED_IN */) {
-                    return Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
-                }
-                return this.loginFromSystemContext(new dialog.SystemContextImpl(url), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
-                    _this.setAppContextStateToLoggedIn(appContextValues);
-                    return Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
-                });
-            };
-            AppContext.prototype.performLaunchAction = function (launchAction) {
-                if (this._appContextState === 0 /* LOGGED_OUT */) {
-                    return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
-                }
-                return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
-            };
-            Object.defineProperty(AppContext.prototype, "sessionContextTry", {
-                get: function () {
-                    return this._sessionContextTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "tenantSettingsTry", {
-                get: function () {
-                    return this._tenantSettingsTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            AppContext.prototype.finalizeContext = function (sessionContext, deviceProps) {
-                var devicePropName = "com.catavolt.session.property.DeviceProperties";
-                return dialog.SessionService.setSessionListProperty(devicePropName, deviceProps, sessionContext).bind(function (setPropertyListResult) {
-                    var listPropName = "com.catavolt.session.property.TenantProperties";
-                    return dialog.SessionService.getSessionListProperty(listPropName, sessionContext).bind(function (listPropertyResult) {
-                        return dialog.WorkbenchService.getAppWinDef(sessionContext).bind(function (appWinDef) {
-                            return Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
-                        });
-                    });
-                });
-            };
-            AppContext.prototype.loginOnline = function (gatewayHost, tenantId, clientType, userId, password, deviceProps) {
-                var _this = this;
-                var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
-                return systemContextFr.bind(function (sc) {
-                    return _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
-                });
-            };
-            AppContext.prototype.loginFromSystemContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
-                var _this = this;
-                var sessionContextFuture = dialog.SessionService.createSession(tenantId, userId, password, clientType, systemContext);
-                return sessionContextFuture.bind(function (sessionContext) {
-                    return _this.finalizeContext(sessionContext, deviceProps);
-                });
-            };
-            AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {
-                var serviceEndpoint = dialog.GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
-                return serviceEndpoint.map(function (serviceEndpoint) {
-                    return new dialog.SystemContextImpl(serviceEndpoint.serverAssignment);
-                });
-            };
-            AppContext.prototype.performLaunchActionOnline = function (launchAction, sessionContext) {
-                var redirFr = dialog.WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
-                return redirFr.bind(function (r) {
-                    return dialog.NavRequest.Util.fromRedirection(r, launchAction, sessionContext);
-                });
-            };
-            AppContext.prototype.setAppContextStateToLoggedIn = function (appContextValues) {
-                this._appWinDefTry = new Success(appContextValues.appWinDef);
-                this._tenantSettingsTry = new Success(appContextValues.tenantSettings);
-                this._sessionContextTry = new Success(appContextValues.sessionContext);
-                this._appContextState = 1 /* LOGGED_IN */;
-            };
-            AppContext.prototype.setAppContextStateToLoggedOut = function () {
-                this._appWinDefTry = new Failure("Not logged in");
-                this._tenantSettingsTry = new Failure('Not logged in"');
-                this._sessionContextTry = new Failure('Not loggged in');
-                this._appContextState = 0 /* LOGGED_OUT */;
-            };
-            AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
-            return AppContext;
-        })();
-        dialog.AppContext = AppContext;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -5069,23 +5310,22 @@ var catavolt;
             }
             GatewayService.getServiceEndpoint = function (tenantId, serviceName, gatewayHost) {
                 //We have to fake this for now, due to cross domain issues
-                var fakeResponse = {
-                    responseType: "soi-json",
-                    tenantId: "***REMOVED***z",
-                    serverAssignment: "https://dfw.catavolt.net/vs301",
-                    appVersion: "1.3.262",
-                    soiVersion: "v02"
-                };
-                var endPointFuture = Future.createSuccessfulFuture('serviceEndpoint', fakeResponse);
                 /*
-                var f:Future<StringDictionary> = Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
-                var endPointFuture:Future<ServiceEndpoint> = f.bind(
-                    (jsonObject:StringDictionary)=>{
-                        //'bounce cast' the jsonObject here to coerce into ServiceEndpoint
-                        return Future.createSuccessfulFuture<ServiceEndpoint>("serviceEndpoint", <any>jsonObject);
-                    }
-                );
-                */
+                            var fakeResponse = {
+                                responseType:"soi-json",
+                                tenantId:"***REMOVED***z",
+                                serverAssignment:"https://dfw.catavolt.net/vs301",
+                                appVersion:"1.3.262",soiVersion:"v02"
+                            }
+                
+                            var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
+                
+                            */
+                var f = Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
+                var endPointFuture = f.bind(function (jsonObject) {
+                    //'bounce cast' the jsonObject here to coerce into ServiceEndpoint
+                    return Future.createSuccessfulFuture("serviceEndpoint", jsonObject);
+                });
                 return endPointFuture;
             };
             return GatewayService;
@@ -7888,417 +8128,176 @@ var Workbench = catavolt.dialog.Workbench;
 var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
 var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 /**
- * Created by rburson on 5/5/15.
- */
-///<reference path="../references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var ng;
-    (function (ng) {
-        var LoginController = (function () {
-            function LoginController($scope, $location, $rootScope, $timeout, Catavolt) {
-                //prefill the form for now...
-                $scope.creds = { tenantId: '***REMOVED***z', gatewayUrl: 'www.catavolt.net', userId: 'sales', password: '***REMOVED***', clientType: 'LIMITED_ACCESS' };
-                $scope.loginMessage = "";
-                $scope.loggingIn = false;
-                $scope.loggedIn = Catavolt.isLoggedIn;
-                $scope.login = function (creds) {
-                    $scope.loginMessage = "";
-                    $scope.loggingIn = true;
-                    if (Catavolt.loggedIn) {
-                        $scope.loggedIn = Catavolt.isLoggedIn;
-                        $location.path('/main');
-                    }
-                    else {
-                        Catavolt.login(creds.gatewayUrl, creds.tenantId, creds.clientType, creds.userId, creds.password).onComplete(function (appWinDefTry) {
-                            $rootScope.$apply(function () {
-                                $scope.loggingIn = false;
-                                if (appWinDefTry.isFailure) {
-                                    $scope.loginMessage = "Invalid Login";
-                                    $scope.loggedIn = Catavolt.isLoggedIn;
-                                }
-                                else {
-                                    $scope.loggedIn = Catavolt.isLoggedIn;
-                                    $timeout(function () {
-                                        $location.path('/main');
-                                    }, 800);
-                                }
-                            });
-                        });
-                    }
-                };
-            }
-            return LoginController;
-        })();
-        ng.LoginController = LoginController;
-    })(ng = catavolt.ng || (catavolt.ng = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 5/6/15.
- */
-///<reference path="../references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var ng;
-    (function (ng) {
-        var WorkbenchController = (function () {
-            function WorkbenchController($scope, $location, $rootScope, $timeout, Catavolt) {
-                $scope.launchActions = [];
-                var workbenches = Catavolt.appWinDefTry.success.workbenches;
-                var launchActions = workbenches.length ? workbenches[0].workbenchLaunchActions : [];
-                //preload images
-                var loader = new PxLoader();
-                loader.addCompletionListener(function () {
-                    addLaunchers(launchActions);
-                });
-                for (var i = 0; i < launchActions.length; i++) {
-                    loader.addImage(launchActions[i].iconBase);
-                }
-                loader.start();
-                function addLaunchers(launchActions) {
-                    launchActions.forEach(function (item, i) {
-                        $timeout(function () {
-                            $scope.launchActions.push(item);
-                        }, i * 200);
-                    });
-                }
-                $scope.performLaunchAction = function (launchAction) {
-                    Catavolt.performLaunchAction(launchAction).onComplete(function (launchTry) {
-                        if (launchTry.isFailure) {
-                            alert('Handle Launch Failure!');
-                            Log.error(launchTry.failure);
-                        }
-                        else {
-                            if (launchTry.success instanceof FormContext) {
-                                Log.info('Succeded with ' + launchTry.success);
-                            }
-                            else {
-                                alert('Unhandled type of NavRequest ' + launchTry.success);
-                            }
-                        }
-                    });
-                };
-            }
-            return WorkbenchController;
-        })();
-        ng.WorkbenchController = WorkbenchController;
-    })(ng = catavolt.ng || (catavolt.ng = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/6/15.
- */
-//ng
-///<reference path="LoginController.ts"/>
-///<reference path="WorkbenchController.ts"/>
-/**
- * Created by rburson on 3/6/15.
- */
-//util
-///<reference path="util/references.ts"/>
-//fp
-///<reference path="fp/references.ts"/>
-//ws
-///<reference path="ws/references.ts"/>
-//dialog
-///<reference path="dialog/references.ts"/>
-//angular
-///<reference path="ng/references.ts"/>
-/**
- * Created by rburson on 4/4/15.
- */
-///<reference path="../references.ts"/>
-/*
-    This implementation supports our ECMA 5.1 browser set, including IE9
-    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var Base64 = (function () {
-            function Base64() {
-            }
-            Base64.encode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = Base64._utf8_encode(input);
-                while (i < input.length) {
-                    chr1 = input.charCodeAt(i++);
-                    chr2 = input.charCodeAt(i++);
-                    chr3 = input.charCodeAt(i++);
-                    enc1 = chr1 >> 2;
-                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-                    enc4 = chr3 & 63;
-                    if (isNaN(chr2)) {
-                        enc3 = enc4 = 64;
-                    }
-                    else if (isNaN(chr3)) {
-                        enc4 = 64;
-                    }
-                    output = output + Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) + Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
-                }
-                return output;
-            };
-            Base64.decode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3;
-                var enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-                while (i < input.length) {
-                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
-                    chr1 = (enc1 << 2) | (enc2 >> 4);
-                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-                    chr3 = ((enc3 & 3) << 6) | enc4;
-                    output = output + String.fromCharCode(chr1);
-                    if (enc3 != 64) {
-                        output = output + String.fromCharCode(chr2);
-                    }
-                    if (enc4 != 64) {
-                        output = output + String.fromCharCode(chr3);
-                    }
-                }
-                output = Base64._utf8_decode(output);
-                return output;
-            };
-            Base64._utf8_encode = function (s) {
-                s = s.replace(/\r\n/g, "\n");
-                var utftext = "";
-                for (var n = 0; n < s.length; n++) {
-                    var c = s.charCodeAt(n);
-                    if (c < 128) {
-                        utftext += String.fromCharCode(c);
-                    }
-                    else if ((c > 127) && (c < 2048)) {
-                        utftext += String.fromCharCode((c >> 6) | 192);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                    else {
-                        utftext += String.fromCharCode((c >> 12) | 224);
-                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                }
-                return utftext;
-            };
-            Base64._utf8_decode = function (utftext) {
-                var s = "";
-                var i = 0;
-                var c = 0, c1 = 0, c2 = 0, c3 = 0;
-                while (i < utftext.length) {
-                    c = utftext.charCodeAt(i);
-                    if (c < 128) {
-                        s += String.fromCharCode(c);
-                        i++;
-                    }
-                    else if ((c > 191) && (c < 224)) {
-                        c2 = utftext.charCodeAt(i + 1);
-                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                        i += 2;
-                    }
-                    else {
-                        c2 = utftext.charCodeAt(i + 1);
-                        c3 = utftext.charCodeAt(i + 2);
-                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                        i += 3;
-                    }
-                }
-                return s;
-            };
-            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-            return Base64;
-        })();
-        util.Base64 = Base64;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/20/15.
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var ObjUtil = (function () {
-            function ObjUtil() {
-            }
-            ObjUtil.addAllProps = function (sourceObj, targetObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return targetObj;
-                if (null == targetObj || "object" != typeof targetObj)
-                    return targetObj;
-                for (var attr in sourceObj) {
-                    targetObj[attr] = sourceObj[attr];
-                }
-                return targetObj;
-            };
-            ObjUtil.cloneOwnProps = function (sourceObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return sourceObj;
-                var copy = sourceObj.constructor();
-                for (var attr in sourceObj) {
-                    if (sourceObj.hasOwnProperty(attr)) {
-                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
-                    }
-                }
-                return copy;
-            };
-            ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
-                for (var prop in obj) {
-                    if (!filterFn || filterFn(prop)) {
-                        var type = typeof obj[prop];
-                        if (type !== 'function') {
-                            var val = obj[prop];
-                            if (val) {
-                                newObj[prop] = val;
-                            }
-                        }
-                    }
-                }
-                return newObj;
-            };
-            ObjUtil.formatRecAttr = function (o) {
-                //@TODO - add a filter here to build a cache and detect (and skip) circular references
-                return JSON.stringify(o);
-            };
-            ObjUtil.newInstance = function (type) {
-                return new type;
-            };
-            return ObjUtil;
-        })();
-        util.ObjUtil = ObjUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 4/3/15.
- */
-///<reference path="../references.ts"/>
-/* @TODO */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var StringUtil = (function () {
-            function StringUtil() {
-            }
-            StringUtil.splitSimpleKeyValuePair = function (pairString) {
-                var pair = pairString.split(':');
-                var code = pair[0];
-                var desc = pair.length > 1 ? pair[1] : '';
-                return [code, desc];
-            };
-            return StringUtil;
-        })();
-        util.StringUtil = StringUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/9/15.
- */
-/**
- * Created by rburson on 3/16/15.
- */
-/**
- * Created by rburson on 3/6/15.
- */
-//util
-///<reference path="ArrayUtil.ts"/>
-///<reference path="Base64.ts"/>
-///<reference path="ObjUtil.ts"/>
-///<reference path="StringUtil.ts"/>
-///<reference path="Log.ts"/>
-///<reference path="Types.ts"/>
-///<reference path="UserException.ts"/>
-var ArrayUtil = catavolt.util.ArrayUtil;
-var Base64 = catavolt.util.Base64;
-var Log = catavolt.util.Log;
-var LogLevel = catavolt.util.LogLevel;
-var ObjUtil = catavolt.util.ObjUtil;
-var StringUtil = catavolt.util.StringUtil;
-/**
- * Created by rburson on 3/6/15.
+ * Created by rburson on 3/13/15.
  */
 ///<reference path="references.ts"/>
+///<reference path="../fp/references.ts"/>
+///<reference path="../util/references.ts"/>
+///<reference path="../ws/references.ts"/>
 var catavolt;
 (function (catavolt) {
-    var util;
-    (function (util) {
-        (function (LogLevel) {
-            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
-            LogLevel[LogLevel["WARN"] = 1] = "WARN";
-            LogLevel[LogLevel["INFO"] = 2] = "INFO";
-            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
-        })(util.LogLevel || (util.LogLevel = {}));
-        var LogLevel = util.LogLevel;
-        var Log = (function () {
-            function Log() {
+    var dialog;
+    (function (dialog) {
+        var AppContextState;
+        (function (AppContextState) {
+            AppContextState[AppContextState["LOGGED_OUT"] = 0] = "LOGGED_OUT";
+            AppContextState[AppContextState["LOGGED_IN"] = 1] = "LOGGED_IN";
+        })(AppContextState || (AppContextState = {}));
+        var AppContextValues = (function () {
+            function AppContextValues(sessionContext, appWinDef, tenantSettings) {
+                this.sessionContext = sessionContext;
+                this.appWinDef = appWinDef;
+                this.tenantSettings = tenantSettings;
             }
-            Log.logLevel = function (level) {
-                if (level >= 3 /* DEBUG */) {
-                    Log.debug = function (message, method, clz) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'DEBUG: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.debug = function (message, method, clz) {
-                    };
-                }
-                if (level >= 2 /* INFO */) {
-                    Log.info = function (message, method, clz) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'INFO: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.info = function (message, method, clz) {
-                    };
-                }
-                if (level >= 1 /* WARN */) {
-                    Log.error = function (message, clz, method) {
-                        Log.log(function (o) {
-                            console.error(o);
-                        }, 'ERROR: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.error = function (message, clz, method) {
-                    };
-                }
-                if (level >= 0 /* ERROR */) {
-                    Log.warn = function (message, clz, method) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'WARN: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.warn = function (message, clz, method) {
-                    };
-                }
-            };
-            Log.log = function (logger, message, method, clz) {
-                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
-                if (clz || method) {
-                    logger(clz + "::" + method + " : " + m);
-                }
-                else {
-                    logger(m);
-                }
-            };
-            Log.formatRecString = function (o) {
-                return util.ObjUtil.formatRecAttr(o);
-            };
-            //set default log level here
-            Log.init = Log.logLevel(2 /* INFO */);
-            return Log;
+            return AppContextValues;
         })();
-        util.Log = Log;
-    })(util = catavolt.util || (catavolt.util = {}));
+        var AppContext = (function () {
+            function AppContext() {
+                if (AppContext._singleton) {
+                    throw new Error("Singleton instance already created");
+                }
+                this._deviceProps = [];
+                this.setAppContextStateToLoggedOut();
+                AppContext._singleton = this;
+            }
+            Object.defineProperty(AppContext, "defaultTTLInMillis", {
+                get: function () {
+                    return AppContext.ONE_DAY_IN_MILLIS;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext, "singleton", {
+                get: function () {
+                    if (!AppContext._singleton) {
+                        AppContext._singleton = new AppContext();
+                    }
+                    return AppContext._singleton;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "appWinDefTry", {
+                get: function () {
+                    return this._appWinDefTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "deviceProps", {
+                get: function () {
+                    return this._deviceProps;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "isLoggedIn", {
+                get: function () {
+                    return this._appContextState === 1 /* LOGGED_IN */;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
+                if (this._appContextState === 0 /* LOGGED_OUT */) {
+                    return Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
+                }
+                return dialog.WorkbenchService.getWorkbench(sessionContext, workbenchId);
+            };
+            AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
+                var _this = this;
+                if (this._appContextState === 1 /* LOGGED_IN */) {
+                    return Future.createFailedFuture("AppContext::login", "User is already logged in");
+                }
+                var answer;
+                var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
+                return appContextValuesFr.bind(function (appContextValues) {
+                    _this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+                });
+            };
+            AppContext.prototype.loginDirectly = function (url, tenantId, clientType, userId, password) {
+                var _this = this;
+                if (this._appContextState === 1 /* LOGGED_IN */) {
+                    return Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
+                }
+                return this.loginFromSystemContext(new dialog.SystemContextImpl(url), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
+                    _this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
+                });
+            };
+            AppContext.prototype.performLaunchAction = function (launchAction) {
+                if (this._appContextState === 0 /* LOGGED_OUT */) {
+                    return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
+                }
+                return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
+            };
+            Object.defineProperty(AppContext.prototype, "sessionContextTry", {
+                get: function () {
+                    return this._sessionContextTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "tenantSettingsTry", {
+                get: function () {
+                    return this._tenantSettingsTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AppContext.prototype.finalizeContext = function (sessionContext, deviceProps) {
+                var devicePropName = "com.catavolt.session.property.DeviceProperties";
+                return dialog.SessionService.setSessionListProperty(devicePropName, deviceProps, sessionContext).bind(function (setPropertyListResult) {
+                    var listPropName = "com.catavolt.session.property.TenantProperties";
+                    return dialog.SessionService.getSessionListProperty(listPropName, sessionContext).bind(function (listPropertyResult) {
+                        return dialog.WorkbenchService.getAppWinDef(sessionContext).bind(function (appWinDef) {
+                            return Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
+                        });
+                    });
+                });
+            };
+            AppContext.prototype.loginOnline = function (gatewayHost, tenantId, clientType, userId, password, deviceProps) {
+                var _this = this;
+                var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
+                return systemContextFr.bind(function (sc) {
+                    return _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
+                });
+            };
+            AppContext.prototype.loginFromSystemContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
+                var _this = this;
+                var sessionContextFuture = dialog.SessionService.createSession(tenantId, userId, password, clientType, systemContext);
+                return sessionContextFuture.bind(function (sessionContext) {
+                    return _this.finalizeContext(sessionContext, deviceProps);
+                });
+            };
+            AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {
+                var serviceEndpoint = dialog.GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
+                return serviceEndpoint.map(function (serviceEndpoint) {
+                    return new dialog.SystemContextImpl(serviceEndpoint.serverAssignment);
+                });
+            };
+            AppContext.prototype.performLaunchActionOnline = function (launchAction, sessionContext) {
+                var redirFr = dialog.WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
+                return redirFr.bind(function (r) {
+                    return dialog.NavRequest.Util.fromRedirection(r, launchAction, sessionContext);
+                });
+            };
+            AppContext.prototype.setAppContextStateToLoggedIn = function (appContextValues) {
+                this._appWinDefTry = new Success(appContextValues.appWinDef);
+                this._tenantSettingsTry = new Success(appContextValues.tenantSettings);
+                this._sessionContextTry = new Success(appContextValues.sessionContext);
+                this._appContextState = 1 /* LOGGED_IN */;
+            };
+            AppContext.prototype.setAppContextStateToLoggedOut = function () {
+                this._appWinDefTry = new Failure("Not logged in");
+                this._tenantSettingsTry = new Failure('Not logged in"');
+                this._sessionContextTry = new Failure('Not loggged in');
+                this._appContextState = 0 /* LOGGED_OUT */;
+            };
+            AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
+            return AppContext;
+        })();
+        dialog.AppContext = AppContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
