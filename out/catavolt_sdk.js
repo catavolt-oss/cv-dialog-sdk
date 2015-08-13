@@ -4927,6 +4927,16 @@ var catavolt;
                 enumerable: true,
                 configurable: true
             });
+            Workbench.prototype.getLaunchActionById = function (launchActionId) {
+                var result = null;
+                this.workbenchLaunchActions.some(function (launchAction) {
+                    if (launchAction.id = launchActionId) {
+                        result = launchAction;
+                        return true;
+                    }
+                });
+                return result;
+            };
             Object.defineProperty(Workbench.prototype, "name", {
                 get: function () {
                     return this._name;
