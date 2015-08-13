@@ -135,7 +135,11 @@ module catavolt.fp {
                 }
                 notifyList.forEach(
                     (listener:CompletionListener<A>)=> {
-                        listener(this._result);
+                        try {
+                            listener(this._result);
+                        } catch (error) {
+                            Log.error("CompletionListener failed with " + error);
+                        }
                     }
                 );
             } else {

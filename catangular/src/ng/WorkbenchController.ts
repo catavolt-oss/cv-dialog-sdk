@@ -2,7 +2,7 @@
  * Created by rburson on 5/6/15.
  */
 
-///<reference path="../references.ts"/>
+///<reference path="../../../src/catavolt/references.ts"/>
 
 module catavolt.ng {
 
