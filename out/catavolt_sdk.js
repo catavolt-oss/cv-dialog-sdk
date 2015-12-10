@@ -9,9 +9,7 @@ var catavolt;
             function ArrayUtil() {
             }
             ArrayUtil.copy = function (source) {
-                return source.map(function (e) {
-                    return e;
-                });
+                return source.map(function (e) { return e; });
             };
             ArrayUtil.find = function (source, f) {
                 var value = null;
@@ -63,7 +61,9 @@ var catavolt;
                     else if (isNaN(chr3)) {
                         enc4 = 64;
                     }
-                    output = output + Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) + Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
+                    output = output +
+                        Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
+                        Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
                 }
                 return output;
             };
@@ -241,49 +241,37 @@ var catavolt;
             function Log() {
             }
             Log.logLevel = function (level) {
-                if (level >= 3 /* DEBUG */) {
+                if (level >= LogLevel.DEBUG) {
                     Log.debug = function (message, method, clz) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'DEBUG: ' + message, method, clz);
+                        Log.log(function (o) { console.info(o); }, 'DEBUG: ' + message, method, clz);
                     };
                 }
                 else {
-                    Log.debug = function (message, method, clz) {
-                    };
+                    Log.debug = function (message, method, clz) { };
                 }
-                if (level >= 2 /* INFO */) {
+                if (level >= LogLevel.INFO) {
                     Log.info = function (message, method, clz) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'INFO: ' + message, method, clz);
+                        Log.log(function (o) { console.info(o); }, 'INFO: ' + message, method, clz);
                     };
                 }
                 else {
-                    Log.info = function (message, method, clz) {
-                    };
+                    Log.info = function (message, method, clz) { };
                 }
-                if (level >= 1 /* WARN */) {
+                if (level >= LogLevel.WARN) {
                     Log.error = function (message, clz, method) {
-                        Log.log(function (o) {
-                            console.error(o);
-                        }, 'ERROR: ' + message, method, clz);
+                        Log.log(function (o) { console.error(o); }, 'ERROR: ' + message, method, clz);
                     };
                 }
                 else {
-                    Log.error = function (message, clz, method) {
-                    };
+                    Log.error = function (message, clz, method) { };
                 }
-                if (level >= 0 /* ERROR */) {
+                if (level >= LogLevel.ERROR) {
                     Log.warn = function (message, clz, method) {
-                        Log.log(function (o) {
-                            console.info(o);
-                        }, 'WARN: ' + message, method, clz);
+                        Log.log(function (o) { console.info(o); }, 'WARN: ' + message, method, clz);
                     };
                 }
                 else {
-                    Log.warn = function (message, clz, method) {
-                    };
+                    Log.warn = function (message, clz, method) { };
                 }
             };
             Log.log = function (logger, message, method, clz) {
@@ -299,7 +287,7 @@ var catavolt;
                 return util.ObjUtil.formatRecAttr(o);
             };
             //set default log level here
-            Log.init = Log.logLevel(2 /* INFO */);
+            Log.init = Log.logLevel(LogLevel.INFO);
             return Log;
         })();
         util.Log = Log;
@@ -373,9 +361,7 @@ var catavolt;
                 }
             };
             Try.isListOfTry = function (list) {
-                return list.every(function (value) {
-                    return (value instanceof Try);
-                });
+                return list.every(function (value) { return (value instanceof Try); });
             };
             Try.prototype.bind = function (f) {
                 return this.isFailure ? new fp.Failure(this.failure) : f(this.success);
@@ -419,11 +405,10 @@ var catavolt;
 /**
  * Created by rburson on 3/5/15.
  */
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 ///<reference path="../fp/references.ts"/>
 var catavolt;
@@ -520,30 +505,22 @@ var catavolt;
                 return p.future;
             };
             Object.defineProperty(Future.prototype, "failure", {
-                get: function () {
-                    return this._result ? this._result.failure : null;
-                },
+                get: function () { return this._result ? this._result.failure : null; },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Future.prototype, "isComplete", {
-                get: function () {
-                    return !!this._result;
-                },
+                get: function () { return !!this._result; },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Future.prototype, "isCompleteWithFailure", {
-                get: function () {
-                    return !!this._result && this._result.isFailure;
-                },
+                get: function () { return !!this._result && this._result.isFailure; },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Future.prototype, "isCompleteWithSuccess", {
-                get: function () {
-                    return !!this._result && this._result.isSuccess;
-                },
+                get: function () { return !!this._result && this._result.isSuccess; },
                 enumerable: true,
                 configurable: true
             });
@@ -580,16 +557,12 @@ var catavolt;
                 });
             };
             Object.defineProperty(Future.prototype, "result", {
-                get: function () {
-                    return this._result;
-                },
+                get: function () { return this._result; },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Future.prototype, "success", {
-                get: function () {
-                    return this._result ? this.result.success : null;
-                },
+                get: function () { return this._result ? this.result.success : null; },
                 enumerable: true,
                 configurable: true
             });
@@ -673,9 +646,7 @@ var catavolt;
                 this._future = fp.Future.createFuture(label);
             }
             /** --------------------- PUBLIC ------------------------------*/
-            Promise.prototype.isComplete = function () {
-                return this._future.isComplete;
-            };
+            Promise.prototype.isComplete = function () { return this._future.isComplete; };
             Promise.prototype.complete = function (t) {
                 //Log.debug('Promise calling complete on Future...');
                 this._future.complete(t);
@@ -1480,9 +1451,7 @@ var catavolt;
             });
             Object.defineProperty(EntityRecDef.prototype, "propNames", {
                 get: function () {
-                    return this.propDefs.map(function (p) {
-                        return p.name;
-                    });
+                    return this.propDefs.map(function (p) { return p.name; });
                 },
                 enumerable: true,
                 configurable: true
@@ -1788,44 +1757,28 @@ var catavolt;
                 return result ? result.value : null;
             };
             DataAnno.isBoldText = function (annos) {
-                return annos.some(function (anno) {
-                    return anno.isBoldText;
-                });
+                return annos.some(function (anno) { return anno.isBoldText; });
             };
             DataAnno.isItalicText = function (annos) {
-                return annos.some(function (anno) {
-                    return anno.isItalicText;
-                });
+                return annos.some(function (anno) { return anno.isItalicText; });
             };
             DataAnno.isPlacementCenter = function (annos) {
-                return annos.some(function (anno) {
-                    return anno.isPlacementCenter;
-                });
+                return annos.some(function (anno) { return anno.isPlacementCenter; });
             };
             DataAnno.isPlacementLeft = function (annos) {
-                return annos.some(function (anno) {
-                    return anno.isPlacementLeft;
-                });
+                return annos.some(function (anno) { return anno.isPlacementLeft; });
             };
             DataAnno.isPlacementRight = function (annos) {
-                return annos.some(function (anno) {
-                    return anno.isPlacementRight;
-                });
+                return annos.some(function (anno) { return anno.isPlacementRight; });
             };
             DataAnno.isPlacementStretchUnder = function (annos) {
-                return annos.some(function (anno) {
-                    return anno.isPlacementStretchUnder;
-                });
+                return annos.some(function (anno) { return anno.isPlacementStretchUnder; });
             };
             DataAnno.isPlacementUnder = function (annos) {
-                return annos.some(function (anno) {
-                    return anno.isPlacementUnder;
-                });
+                return annos.some(function (anno) { return anno.isPlacementUnder; });
             };
             DataAnno.isUnderlineText = function (annos) {
-                return annos.some(function (anno) {
-                    return anno.isUnderlineText;
-                });
+                return annos.some(function (anno) { return anno.isUnderlineText; });
             };
             DataAnno.overrideText = function (annos) {
                 var result = ArrayUtil.find(annos, function (anno) {
@@ -1842,9 +1795,7 @@ var catavolt;
             DataAnno.toListOfWSDataAnno = function (annos) {
                 var result = { 'WS_LTYPE': 'WSDataAnno' };
                 var values = [];
-                annos.forEach(function (anno) {
-                    values.push(anno.toWS());
-                });
+                annos.forEach(function (anno) { values.push(anno.toWS()); });
                 result['values'] = values;
                 return result;
             };
@@ -2136,9 +2087,7 @@ var catavolt;
             Prop.toWSListOfProperties = function (list) {
                 var result = { 'WS_LTYPE': 'Object' };
                 var values = [];
-                list.forEach(function (o) {
-                    values.push(Prop.toWSProperty(o));
-                });
+                list.forEach(function (o) { values.push(Prop.toWSProperty(o)); });
                 result['values'] = values;
                 return result;
             };
@@ -2148,9 +2097,7 @@ var catavolt;
             Prop.toListOfWSProp = function (props) {
                 var result = { 'WS_LTYPE': 'WSProp' };
                 var values = [];
-                props.forEach(function (prop) {
-                    values.push(prop.toWS());
-                });
+                props.forEach(function (prop) { values.push(prop.toWS()); });
                 result['values'] = values;
                 return result;
             };
@@ -2334,7 +2281,10 @@ var catavolt;
             });
             Object.defineProperty(PropDef.prototype, "isBarcodeType", {
                 get: function () {
-                    return this.type && this.type === 'STRING' && this.dataDictionaryKey && this.dataDictionaryKey === 'DATA_BARCODE';
+                    return this.type &&
+                        this.type === 'STRING' &&
+                        this.dataDictionaryKey &&
+                        this.dataDictionaryKey === 'DATA_BARCODE';
                 },
                 enumerable: true,
                 configurable: true
@@ -2425,7 +2375,8 @@ var catavolt;
             });
             Object.defineProperty(PropDef.prototype, "isInlineMediaStyle", {
                 get: function () {
-                    return this.style && (this.style === PropDef.STYLE_INLINE_MEDIA || this.style === PropDef.STYLE_INLINE_MEDIA2);
+                    return this.style &&
+                        (this.style === PropDef.STYLE_INLINE_MEDIA || this.style === PropDef.STYLE_INLINE_MEDIA2);
                 },
                 enumerable: true,
                 configurable: true
@@ -2439,7 +2390,10 @@ var catavolt;
             });
             Object.defineProperty(PropDef.prototype, "isLargeBinaryType", {
                 get: function () {
-                    return this.type && this.type === 'com.dgoi.core.domain.BinaryRef' && this.dataDictionaryKey && this.dataDictionaryKey === 'DATA_LARGEBINARY';
+                    return this.type &&
+                        this.type === 'com.dgoi.core.domain.BinaryRef' &&
+                        this.dataDictionaryKey &&
+                        this.dataDictionaryKey === 'DATA_LARGEBINARY';
                 },
                 enumerable: true,
                 configurable: true
@@ -2453,7 +2407,9 @@ var catavolt;
             });
             Object.defineProperty(PropDef.prototype, "isMoneyType", {
                 get: function () {
-                    return this.isNumericType && this.dataDictionaryKey && this.dataDictionaryKey === 'DATA_MONEY';
+                    return this.isNumericType &&
+                        this.dataDictionaryKey &&
+                        this.dataDictionaryKey === 'DATA_MONEY';
                 },
                 enumerable: true,
                 configurable: true
@@ -2474,14 +2430,18 @@ var catavolt;
             });
             Object.defineProperty(PropDef.prototype, "isPasswordType", {
                 get: function () {
-                    return this.isStringType && this.dataDictionaryKey && this.dataDictionaryKey === 'DATA_PASSWORD';
+                    return this.isStringType &&
+                        this.dataDictionaryKey &&
+                        this.dataDictionaryKey === 'DATA_PASSWORD';
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(PropDef.prototype, "isPercentType", {
                 get: function () {
-                    return this.isNumericType && this.dataDictionaryKey && this.dataDictionaryKey === 'DATA_PERCENT';
+                    return this.isNumericType &&
+                        this.dataDictionaryKey &&
+                        this.dataDictionaryKey === 'DATA_PERCENT';
                 },
                 enumerable: true,
                 configurable: true
@@ -2495,7 +2455,9 @@ var catavolt;
             });
             Object.defineProperty(PropDef.prototype, "isTelephoneType", {
                 get: function () {
-                    return this.isStringType && this.dataDictionaryKey && this.dataDictionaryKey === 'DATA_TELEPHONE';
+                    return this.isStringType &&
+                        this.dataDictionaryKey &&
+                        this.dataDictionaryKey === 'DATA_TELEPHONE';
                 },
                 enumerable: true,
                 configurable: true
@@ -2516,14 +2478,18 @@ var catavolt;
             });
             Object.defineProperty(PropDef.prototype, "isUnformattedNumericType", {
                 get: function () {
-                    return this.isNumericType && this.dataDictionaryKey && this.dataDictionaryKey === 'DATA_UNFORMATTED_NUMBER';
+                    return this.isNumericType &&
+                        this.dataDictionaryKey &&
+                        this.dataDictionaryKey === 'DATA_UNFORMATTED_NUMBER';
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(PropDef.prototype, "isURLType", {
                 get: function () {
-                    return this.isStringType && this.dataDictionaryKey && this.dataDictionaryKey === 'DATA_URL';
+                    return this.isStringType &&
+                        this.dataDictionaryKey &&
+                        this.dataDictionaryKey === 'DATA_URL';
                 },
                 enumerable: true,
                 configurable: true
@@ -2934,18 +2900,14 @@ var catavolt;
             });
             Object.defineProperty(EntityRecImpl.prototype, "propNames", {
                 get: function () {
-                    return this.props.map(function (p) {
-                        return p.name;
-                    });
+                    return this.props.map(function (p) { return p.name; });
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(EntityRecImpl.prototype, "propValues", {
                 get: function () {
-                    return this.props.map(function (p) {
-                        return p.value;
-                    });
+                    return this.props.map(function (p) { return p.value; });
                 },
                 enumerable: true,
                 configurable: true
@@ -3026,9 +2988,7 @@ var catavolt;
                 configurable: true
             });
             Object.defineProperty(EntityBuffer.prototype, "annos", {
-                get: function () {
-                    return this._after.annos;
-                },
+                get: function () { return this._after.annos; },
                 enumerable: true,
                 configurable: true
             });
@@ -3176,9 +3136,7 @@ var catavolt;
                 return this._after.isUnderlineFor(propName);
             };
             Object.defineProperty(EntityBuffer.prototype, "objectId", {
-                get: function () {
-                    return this._after.objectId;
-                },
+                get: function () { return this._after.objectId; },
                 enumerable: true,
                 configurable: true
             });
@@ -3213,9 +3171,7 @@ var catavolt;
                 configurable: true
             });
             Object.defineProperty(EntityBuffer.prototype, "props", {
-                get: function () {
-                    return this._after.props;
-                },
+                get: function () { return this._after.props; },
                 enumerable: true,
                 configurable: true
             });
@@ -3275,9 +3231,7 @@ var catavolt;
             function NullEntityRec() {
             }
             Object.defineProperty(NullEntityRec.prototype, "annos", {
-                get: function () {
-                    return [];
-                },
+                get: function () { return []; },
                 enumerable: true,
                 configurable: true
             });
@@ -3408,9 +3362,7 @@ var catavolt;
                 return false;
             };
             Object.defineProperty(NullEntityRec.prototype, "objectId", {
-                get: function () {
-                    return null;
-                },
+                get: function () { return null; },
                 enumerable: true,
                 configurable: true
             });
@@ -3445,9 +3397,7 @@ var catavolt;
                 configurable: true
             });
             Object.defineProperty(NullEntityRec.prototype, "props", {
-                get: function () {
-                    return [];
-                },
+                get: function () { return []; },
                 enumerable: true,
                 configurable: true
             });
@@ -4668,9 +4618,7 @@ var catavolt;
                 return result;
             };
             DialogTriple.extractRedirection = function (jsonObject, Otype) {
-                var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, false, function () {
-                    return new Success(new dialog.NullRedirection({}));
-                });
+                var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, false, function () { return new Success(new dialog.NullRedirection({})); });
                 var answer;
                 if (tripleTry.isSuccess) {
                     var triple = tripleTry.success;
@@ -4941,9 +4889,7 @@ var catavolt;
                 AppContext._singleton = this;
             }
             Object.defineProperty(AppContext, "defaultTTLInMillis", {
-                get: function () {
-                    return AppContext.ONE_DAY_IN_MILLIS;
-                },
+                get: function () { return AppContext.ONE_DAY_IN_MILLIS; },
                 enumerable: true,
                 configurable: true
             });
@@ -4973,20 +4919,20 @@ var catavolt;
             });
             Object.defineProperty(AppContext.prototype, "isLoggedIn", {
                 get: function () {
-                    return this._appContextState === 1 /* LOGGED_IN */;
+                    return this._appContextState === AppContextState.LOGGED_IN;
                 },
                 enumerable: true,
                 configurable: true
             });
             AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
-                if (this._appContextState === 0 /* LOGGED_OUT */) {
+                if (this._appContextState === AppContextState.LOGGED_OUT) {
                     return Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
                 }
                 return dialog.WorkbenchService.getWorkbench(sessionContext, workbenchId);
             };
             AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
                 var _this = this;
-                if (this._appContextState === 1 /* LOGGED_IN */) {
+                if (this._appContextState === AppContextState.LOGGED_IN) {
                     return Future.createFailedFuture("AppContext::login", "User is already logged in");
                 }
                 var answer;
@@ -4998,7 +4944,7 @@ var catavolt;
             };
             AppContext.prototype.loginDirectly = function (url, tenantId, clientType, userId, password) {
                 var _this = this;
-                if (this._appContextState === 1 /* LOGGED_IN */) {
+                if (this._appContextState === AppContextState.LOGGED_IN) {
                     return Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
                 }
                 return this.loginFromSystemContext(new dialog.SystemContextImpl(url), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
@@ -5007,7 +4953,7 @@ var catavolt;
                 });
             };
             AppContext.prototype.performLaunchAction = function (launchAction) {
-                if (this._appContextState === 0 /* LOGGED_OUT */) {
+                if (this._appContextState === AppContextState.LOGGED_OUT) {
                     return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
                 }
                 return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
@@ -5067,13 +5013,13 @@ var catavolt;
                 this._appWinDefTry = new Success(appContextValues.appWinDef);
                 this._tenantSettingsTry = new Success(appContextValues.tenantSettings);
                 this._sessionContextTry = new Success(appContextValues.sessionContext);
-                this._appContextState = 1 /* LOGGED_IN */;
+                this._appContextState = AppContextState.LOGGED_IN;
             };
             AppContext.prototype.setAppContextStateToLoggedOut = function () {
                 this._appWinDefTry = new Failure("Not logged in");
                 this._tenantSettingsTry = new Failure('Not logged in"');
                 this._sessionContextTry = new Failure('Not loggged in');
-                this._appContextState = 0 /* LOGGED_OUT */;
+                this._appContextState = AppContextState.LOGGED_OUT;
             };
             AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
             return AppContext;
@@ -5220,9 +5166,7 @@ var catavolt;
                 this._actions = _actions;
             }
             Object.defineProperty(Workbench.prototype, "alias", {
-                get: function () {
-                    return this._alias;
-                },
+                get: function () { return this._alias; },
                 enumerable: true,
                 configurable: true
             });
@@ -5237,23 +5181,17 @@ var catavolt;
                 return result;
             };
             Object.defineProperty(Workbench.prototype, "name", {
-                get: function () {
-                    return this._name;
-                },
+                get: function () { return this._name; },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Workbench.prototype, "workbenchId", {
-                get: function () {
-                    return this._id;
-                },
+                get: function () { return this._id; },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(Workbench.prototype, "workbenchLaunchActions", {
-                get: function () {
-                    return ArrayUtil.copy(this._actions);
-                },
+                get: function () { return ArrayUtil.copy(this._actions); },
                 enumerable: true,
                 configurable: true
             });
@@ -6370,7 +6308,8 @@ var catavolt;
             };
             DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
                 var method = 'open2';
-                var params = { 'editorMode': redirection.dialogMode, 'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
+                var params = { 'editorMode': redirection.dialogMode,
+                    'dialogHandle': dialog.OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
                 if (redirection.objectId)
                     params['objectId'] = redirection.objectId;
                 var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
@@ -6426,7 +6365,11 @@ var catavolt;
             };
             DialogService.processSideEffects = function (dialogHandle, sessionContext, propertyName, propertyValue, pendingWrites) {
                 var method = 'handlePropertyChange';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'propertyName': propertyName, 'propertyValue': dialog.Prop.toWSProperty(propertyValue), 'pendingWrites': pendingWrites.toWSEditorRecord() };
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                    'propertyName': propertyName,
+                    'propertyValue': dialog.Prop.toWSProperty(propertyValue),
+                    'pendingWrites': pendingWrites.toWSEditorRecord()
+                };
                 var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
                     return Future.createCompletedFuture('processSideEffects', dialog.DialogTriple.fromWSDialogObject(result, 'WSHandlePropertyChangeResult', dialog.OType.factoryFn));
@@ -6437,7 +6380,7 @@ var catavolt;
                 var params = {
                     'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
                     'maxRows': maxRows,
-                    'direction': direction === 1 /* BACKWARD */ ? 'BACKWARD' : 'FORWARD'
+                    'direction': direction === dialog.QueryDirection.BACKWARD ? 'BACKWARD' : 'FORWARD'
                 };
                 if (fromObjectId && fromObjectId.trim() !== '') {
                     params['fromObjectId'] = fromObjectId.trim();
@@ -6459,7 +6402,9 @@ var catavolt;
             };
             DialogService.writeEditorModel = function (dialogHandle, entityRec, sessionContext) {
                 var method = 'write';
-                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'editorRecord': entityRec.toWSEditorRecord() };
+                var params = { 'dialogHandle': dialog.OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+                    'editorRecord': entityRec.toWSEditorRecord()
+                };
                 var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
                 return call.perform().bind(function (result) {
                     var writeResultTry = dialog.DialogTriple.fromWSDialogObject(result, 'WSWriteResult', dialog.OType.factoryFn);
@@ -6677,15 +6622,15 @@ var catavolt;
                 return dialog.DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode, this.sessionContext).bind(function (changePaneModeResult) {
                     _this.putSettings(changePaneModeResult.dialogProps);
                     if (_this.isDestroyedSetting) {
-                        _this._editorState = 2 /* DESTROYED */;
+                        _this._editorState = EditorState.DESTROYED;
                     }
                     else {
                         _this.entityRecDef = changePaneModeResult.entityRecDef;
                         if (_this.isReadModeSetting) {
-                            _this._editorState = 0 /* READ */;
+                            _this._editorState = EditorState.READ;
                         }
                         else {
-                            _this._editorState = 1 /* WRITE */;
+                            _this._editorState = EditorState.WRITE;
                         }
                     }
                     return Future.createSuccessfulFuture('EditorContext::changePaneMode', _this.entityRecDef);
@@ -6726,14 +6671,14 @@ var catavolt;
             };
             Object.defineProperty(EditorContext.prototype, "isDestroyed", {
                 get: function () {
-                    return this._editorState === 2 /* DESTROYED */;
+                    return this._editorState === EditorState.DESTROYED;
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(EditorContext.prototype, "isReadMode", {
                 get: function () {
-                    return this._editorState === 0 /* READ */;
+                    return this._editorState === EditorState.READ;
                 },
                 enumerable: true,
                 configurable: true
@@ -6747,7 +6692,7 @@ var catavolt;
             };
             Object.defineProperty(EditorContext.prototype, "isWriteMode", {
                 get: function () {
-                    return this._editorState === 1 /* WRITE */;
+                    return this._editorState === EditorState.WRITE;
                 },
                 enumerable: true,
                 configurable: true
@@ -6759,7 +6704,7 @@ var catavolt;
                     return dialog.NavRequest.Util.fromRedirection(redirection, ca, _this.sessionContext).map(function (navRequest) {
                         _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, navRequest);
                         if (_this.isDestroyedSetting) {
-                            _this._editorState = 2 /* DESTROYED */;
+                            _this._editorState = EditorState.DESTROYED;
                         }
                         if (_this.isRefreshSetting) {
                             dialog.AppContext.singleton.lastMaintenanceTime = new Date();
@@ -6830,11 +6775,11 @@ var catavolt;
                         _this.initBuffer(successfulWrite.right);
                     }
                     if (_this.isDestroyedSetting) {
-                        _this._editorState = 2 /* DESTROYED */;
+                        _this._editorState = EditorState.DESTROYED;
                     }
                     else {
                         if (_this.isReadModeSetting) {
-                            _this._editorState = 0 /* READ */;
+                            _this._editorState = EditorState.READ;
                         }
                     }
                     return successfulWrite;
@@ -6844,7 +6789,7 @@ var catavolt;
             EditorContext.prototype.initialize = function () {
                 this._entityRecDef = this.paneDef.entityRecDef;
                 this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
-                this._editorState = this.isReadModeSetting ? 0 /* READ */ : 1 /* WRITE */;
+                this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
             };
             Object.defineProperty(EditorContext.prototype, "settings", {
                 get: function () {
@@ -6988,13 +6933,13 @@ var catavolt;
                 get: function () {
                     var result = ArrayUtil.copy(this._buffer);
                     if (this.isComplete) {
-                        if (this._markerOptions.indexOf(1 /* IsEmpty */) > -1) {
+                        if (this._markerOptions.indexOf(QueryMarkerOption.IsEmpty) > -1) {
                             if (this.isEmpty) {
                                 result.push(IsEmptyQueryMarker.singleton);
                             }
                         }
                     }
-                    else if (this._markerOptions.indexOf(2 /* HasMore */) > -1) {
+                    else if (this._markerOptions.indexOf(QueryMarkerOption.HasMore) > -1) {
                         if (result.length === 0) {
                             result.push(HasMoreQueryMarker.singleton);
                         }
@@ -7068,12 +7013,12 @@ var catavolt;
                 }
                 if (!this._prevPageFr || this._prevPageFr.isComplete) {
                     var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
-                    this._prevPageFr = this._context.query(this._pageSize, 1 /* BACKWARD */, fromObjectId);
+                    this._prevPageFr = this._context.query(this._pageSize, dialog.QueryDirection.BACKWARD, fromObjectId);
                 }
                 else {
                     this._prevPageFr = this._prevPageFr.bind(function (queryResult) {
                         var fromObjectId = _this._buffer.length === 0 ? null : _this._buffer[0].objectId;
-                        return _this._context.query(_this._pageSize, 1 /* BACKWARD */, fromObjectId);
+                        return _this._context.query(_this._pageSize, dialog.QueryDirection.BACKWARD, fromObjectId);
                     });
                 }
                 var beforeSize = this._buffer.length;
@@ -7085,9 +7030,7 @@ var catavolt;
                         for (var i = queryResult.entityRecs.length - 1; i > -1; i--) {
                             newBuffer.push(queryResult.entityRecs[i]);
                         }
-                        _this._buffer.forEach(function (entityRec) {
-                            newBuffer.push(entityRec);
-                        });
+                        _this._buffer.forEach(function (entityRec) { newBuffer.push(entityRec); });
                         _this._buffer = newBuffer;
                         afterSize = _this._buffer.length;
                     }
@@ -7101,12 +7044,12 @@ var catavolt;
                 }
                 if (!this._nextPageFr || this._nextPageFr.isComplete) {
                     var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
-                    this._nextPageFr = this._context.query(this._pageSize, 0 /* FORWARD */, fromObjectId);
+                    this._nextPageFr = this._context.query(this._pageSize, dialog.QueryDirection.FORWARD, fromObjectId);
                 }
                 else {
                     this._nextPageFr = this._nextPageFr.bind(function (queryResult) {
                         var fromObjectId = _this._buffer.length === 0 ? null : _this._buffer[_this._buffer.length - 1].objectId;
-                        return _this._context.query(_this._pageSize, 0 /* FORWARD */, fromObjectId);
+                        return _this._context.query(_this._pageSize, dialog.QueryDirection.FORWARD, fromObjectId);
                     });
                 }
                 var beforeSize = this._buffer.length;
@@ -7115,12 +7058,8 @@ var catavolt;
                     _this._hasMoreForward = queryResult.hasMore;
                     if (queryResult.entityRecs.length > 0) {
                         var newBuffer = [];
-                        _this._buffer.forEach(function (entityRec) {
-                            newBuffer.push(entityRec);
-                        });
-                        queryResult.entityRecs.forEach(function (entityRec) {
-                            newBuffer.push(entityRec);
-                        });
+                        _this._buffer.forEach(function (entityRec) { newBuffer.push(entityRec); });
+                        queryResult.entityRecs.forEach(function (entityRec) { newBuffer.push(entityRec); });
                         _this._buffer = newBuffer;
                         afterSize = _this._buffer.length;
                     }
@@ -7213,7 +7152,7 @@ var catavolt;
             };
             Object.defineProperty(QueryContext.prototype, "isDestroyed", {
                 get: function () {
-                    return this._queryState === 1 /* DESTROYED */;
+                    return this._queryState === QueryState.DESTROYED;
                 },
                 enumerable: true,
                 configurable: true
@@ -7251,7 +7190,7 @@ var catavolt;
                 }).map(function (navRequest) {
                     _this._settings = dialog.PaneContext.resolveSettingsFromNavRequest(_this._settings, navRequest);
                     if (_this.isDestroyedSetting) {
-                        _this._queryState = 1 /* DESTROYED */;
+                        _this._queryState = QueryState.DESTROYED;
                     }
                     return navRequest;
                 });
@@ -7285,7 +7224,7 @@ var catavolt;
             };
             //module level methods
             QueryContext.prototype.newScroller = function () {
-                return this.setScroller(50, null, [0 /* None */]);
+                return this.setScroller(50, null, [dialog.QueryMarkerOption.None]);
             };
             QueryContext.prototype.settings = function () {
                 return this._settings;
@@ -7349,9 +7288,7 @@ var catavolt;
                 this._destroyed = false;
                 this._offlineProps = {};
                 this._childrenContexts = _childrenContexts || [];
-                this._childrenContexts.forEach(function (c) {
-                    c.parentContext = _this;
-                });
+                this._childrenContexts.forEach(function (c) { c.parentContext = _this; });
             }
             Object.defineProperty(FormContext.prototype, "actionSource", {
                 get: function () {
@@ -7941,7 +7878,8 @@ var catavolt;
                     var objTry = factoryFn(Otype, obj); //this returns null if there is no custom function
                     if (objTry) {
                         if (objTry.isFailure) {
-                            var error = 'OType::deserializeObject: factory failed to produce object for ' + Otype + " : " + ObjUtil.formatRecAttr(objTry.failure);
+                            var error = 'OType::deserializeObject: factory failed to produce object for ' + Otype + " : "
+                                + ObjUtil.formatRecAttr(objTry.failure);
                             Log.error(error);
                             return new Failure(error);
                         }
