@@ -1,7 +1,12 @@
 {
   "name": "catavoltSdk",
   "version": "0.0.1",
-  "dependencies": {},
+  "dependencies": {
+    "babel-preset-react": "^6.3.13",
+    "babelify": "^7.2.0",
+    "react": "^0.14.3",
+    "react-dom": "^0.14.3"
+  },
   "devDependencies": {
     "jasmine": "^2.4.1",
     "jasmine-core": "^2.4.1",
