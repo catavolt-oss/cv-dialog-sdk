@@ -3,11 +3,20 @@
 <head>
     <meta charset="utf-8">
     <title>CatReact</title>
-    <link rel="stylesheet" href="" />
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="js/catavolt_sdk.js"></script>
+    <script src="lib/pxloader-images.min.js"></script>
 </head>
 <body>
-    <h1>CatReact</h1>
-    <div id="container"></div>
+    <div class="jumbotron logintron fx-fade-up fx-speed-800">
+        <div class="container-fluid">
+            <div class="center-block">
+                <img class="img-responsive center-block" src="img/Catavolt-Logo-retina.png" style="vertical-align: middle;">
+            </div>
+        </div>
+    </div>
+    <div id="root"></div>
     <script src="js/bundle.js"></script>
 </body>
 </html>
