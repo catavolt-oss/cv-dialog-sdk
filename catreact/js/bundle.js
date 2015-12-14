@@ -5,6 +5,16 @@ var ReactDOM = require('react-dom');
 var LoginPane = React.createClass({
     displayName: 'LoginPane',
 
+    getInitialState: function () {
+        return {
+            tenantId: '***REMOVED***z',
+            gatewayUrl: 'www.catavolt.net',
+            userId: 'sales',
+            password: '***REMOVED***',
+            clientType: 'LIMITED_ACCESS'
+        };
+    },
+
     render: function () {
         return React.createElement(
             'div',
@@ -14,19 +24,22 @@ var LoginPane = React.createClass({
                 { className: 'well' },
                 React.createElement(
                     'form',
-                    { className: 'form-horizontal login-form' },
+                    { className: 'form-horizontal login-form', onSubmit: this.handleSubmit },
                     React.createElement(
                         'div',
                         { className: 'form-group' },
                         React.createElement(
                             'label',
-                            { 'for': 'tenantId', className: 'col-sm-2 control-label' },
+                            { htmlFor: 'tenantId', className: 'col-sm-2 control-label' },
                             'Tenant Id:'
                         ),
                         React.createElement(
                             'div',
                             { className: 'col-sm-10' },
-                            React.createElement('input', { id: 'tenantId', type: 'text', className: 'form-control', required: true })
+                            React.createElement('input', { id: 'tenantId', type: 'text', className: 'form-control',
+                                value: this.state.tenantId,
+                                onChange: this.handleChange.bind(this, 'tenantId'),
+                                required: true })
                         )
                     ),
                     React.createElement(
@@ -48,7 +61,11 @@ var LoginPane = React.createClass({
                                     { className: 'input-group-addon', id: 'http-addon' },
                                     'http://'
                                 ),
-                                React.createElement('input', { id: 'gatewayUrl', type: 'text', className: 'form-control', 'aria-describedby': 'http-addon', required: true })
+                                React.createElement('input', { id: 'gatewayUrl', type: 'text', className: 'form-control',
+                                    value: this.state.gatewayUrl,
+                                    onChange: this.handleChange.bind(this, 'gatewayUrl'),
+                                    'aria-describedby': 'http-addon',
+                                    required: true })
                             )
                         )
                     ),
@@ -63,7 +80,10 @@ var LoginPane = React.createClass({
                         React.createElement(
                             'div',
                             { className: 'col-sm-10' },
-                            React.createElement('input', { id: 'userId', type: 'text', className: 'form-control', required: true })
+                            React.createElement('input', { id: 'userId', type: 'text', className: 'form-control',
+                                value: this.state.userId,
+                                onChange: this.handleChange.bind(this, 'userId'),
+                                required: true })
                         )
                     ),
                     React.createElement(
@@ -77,7 +97,10 @@ var LoginPane = React.createClass({
                         React.createElement(
                             'div',
                             { className: 'col-sm-10' },
-                            React.createElement('input', { id: 'password', type: 'password', className: 'form-control', required: true })
+                            React.createElement('input', { id: 'password', type: 'password', className: 'form-control',
+                                value: this.state.password,
+                                onChange: this.handleChange.bind(this, 'password'),
+                                required: true })
                         )
                     ),
                     React.createElement(
@@ -94,13 +117,17 @@ var LoginPane = React.createClass({
                             React.createElement(
                                 'label',
                                 { className: 'radio-inline' },
-                                React.createElement('input', { id: 'clientType', type: 'radio', value: 'LIMITED_ACCESS' }),
+                                React.createElement('input', { id: 'clientType', type: 'radio',
+                                    onChange: this.handleRadioChange.bind(this, 'clientType', 'LIMITED_ACCESS'),
+                                    checked: this.state.clientType === 'LIMITED_ACCESS' }),
                                 'Limited'
                             ),
                             React.createElement(
                                 'label',
                                 { className: 'radio-inline' },
-                                React.createElement('input', { type: 'radio' }),
+                                React.createElement('input', { id: 'clientType', type: 'radio',
+                                    onChange: this.handleRadioChange.bind(this, 'clientType', 'RICH_CLIENT'),
+                                    checked: this.state.clientType === 'RICH_CLIENT' }),
                                 'Rich'
                             )
                         )
@@ -122,6 +149,26 @@ var LoginPane = React.createClass({
                 )
             )
         );
+    },
+
+    handleChange: function (field, e) {
+        var nextState = {};
+        nextState[field] = e.target.value;
+        this.setState(nextState);
+    },
+
+    handleRadioChange: function (field, value, e) {
+        var nextState = {};
+        nextState[field] = value;
+        this.setState(nextState);
+    },
+
+    handleSubmit: function (e) {
+        e.preventDefault();
+        AppContext.singleton.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password).onComplete(function (appWinDefTry) {
+            console.log('test');
+            Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
+        });
     }
 });
 
