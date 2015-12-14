@@ -1,6 +1,12 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
+var Catavolt = catavolt.dialog.AppContext.singleton;
+var AppWinDef = catavolt.dialog.AppWinDef;
+var Try = catavolt.fp.Try;
+var Log = catavolt.util.Log;
+var ObjUtil = catavolt.util.ObjUtil;
+
 var LoginPane = React.createClass({
 
     getInitialState: function() {
@@ -99,9 +105,8 @@ var LoginPane = React.createClass({
 
     handleSubmit: function(e) {
         e.preventDefault();
-        AppContext.singleton.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
+        Catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
             .onComplete(function (appWinDefTry:Try<AppWinDef>) {
-                console.log('test');
                 Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
             });
     }
