@@ -8,8 +8,29 @@ var Try = catavolt.fp.Try;
 var Log = catavolt.util.Log;
 var ObjUtil = catavolt.util.ObjUtil;
 
-var LoginPane = React.createClass({
-    displayName: 'LoginPane',
+var CatavoltPane = React.createClass({
+    displayName: 'CatavoltPane',
+
+    getInitialState: function () {
+        return { loggedIn: false };
+    },
+
+    render: function () {
+        return this.state.loggedIn ? React.createElement(CvAppWindow, { loggedOutFn: this.loggedOut }) : React.createElement(CvLoginPane, { loggedInFn: this.loggedIn });
+    },
+
+    loggedIn: function () {
+        this.setState({ loggedIn: true });
+    },
+
+    loggedOut: function () {
+        this.setState({ loggedIn: false });
+    }
+
+});
+
+var CvLoginPane = React.createClass({
+    displayName: 'CvLoginPane',
 
     getInitialState: function () {
         return {
@@ -171,13 +192,32 @@ var LoginPane = React.createClass({
 
     handleSubmit: function (e) {
         e.preventDefault();
+        var comp = this;
         Catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password).onComplete(function (appWinDefTry) {
             Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
+            comp.props.loggedInFn();
         });
     }
 });
 
-ReactDOM.render(React.createElement(LoginPane, null), document.getElementById('root'));
+var CvAppWindow = React.createClass({
+    displayName: 'CvAppWindow',
+
+    getInitialState: function () {
+        return {};
+    },
+
+    render: function () {
+        return React.createElement(
+            'div',
+            null,
+            'Hello'
+        );
+    }
+
+});
+
+ReactDOM.render(React.createElement(CatavoltPane, null), document.getElementById('root'));
 
 },{"react":158,"react-dom":2}],2:[function(require,module,exports){
 'use strict';

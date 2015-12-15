@@ -7,7 +7,25 @@ var Try = catavolt.fp.Try;
 var Log = catavolt.util.Log;
 var ObjUtil = catavolt.util.ObjUtil;
 
-var LoginPane = React.createClass({
+
+var CatavoltPane = React.createClass({
+
+    getInitialState: function() {
+        return { loggedIn: false }
+    },
+
+    render: function() {
+        return this.state.loggedIn ? <CvAppWindow loggedOutFn={this.loggedOut}/> : <CvLoginPane loggedInFn={this.loggedIn}/>
+    },
+
+    loggedIn: function(){ this.setState({loggedIn: true})},
+
+    loggedOut: function(){ this.setState({loggedIn: false})}
+
+});
+
+
+var CvLoginPane = React.createClass({
 
     getInitialState: function() {
         return {
@@ -105,14 +123,28 @@ var LoginPane = React.createClass({
 
     handleSubmit: function(e) {
         e.preventDefault();
+        var comp = this;
         Catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
             .onComplete(function (appWinDefTry:Try<AppWinDef>) {
                 Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
+                comp.props.loggedInFn();
             });
     }
 });
 
+var CvAppWindow = React.createClass({
+
+    getInitialState: function() {
+        return {}
+    },
+
+    render: function() {
+        return <div>Hello</div>
+    }
+
+});
+
 ReactDOM.render(
-    <LoginPane/>,
+    <CatavoltPane/>,
     document.getElementById('root')
 );
