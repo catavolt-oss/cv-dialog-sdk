@@ -1,7 +1,6 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
-var Catavolt = catavolt.dialog.AppContext.singleton;
 var AppWinDef = catavolt.dialog.AppWinDef;
 var Try = catavolt.fp.Try;
 var Log = catavolt.util.Log;
@@ -10,34 +9,40 @@ var ObjUtil = catavolt.util.ObjUtil;
 
 var CatavoltPane = React.createClass({
 
-    getInitialState: function() {
-        return { loggedIn: false }
+    getInitialState: function () {
+        return {loggedIn: false}
     },
 
-    render: function() {
-        return this.state.loggedIn ? <CvAppWindow loggedOutFn={this.loggedOut}/> : <CvLoginPane loggedInFn={this.loggedIn}/>
+    render: function () {
+        var Catavolt = catavolt.dialog.AppContext.singleton;
+        return this.state.loggedIn ? <CvAppWindow catavolt={Catavolt} loggedOutFn={this.loggedOut}/> :
+            <CvLoginPane catavolt={Catavolt} loggedInFn={this.loggedIn}/>
     },
 
-    loggedIn: function(){ this.setState({loggedIn: true})},
+    loggedIn: function () {
+        this.setState({loggedIn: true})
+    },
 
-    loggedOut: function(){ this.setState({loggedIn: false})}
+    loggedOut: function () {
+        this.setState({loggedIn: false})
+    }
 
 });
 
 
 var CvLoginPane = React.createClass({
 
-    getInitialState: function() {
+    getInitialState: function () {
         return {
-            tenantId:'***REMOVED***z',
-            gatewayUrl:'www.catavolt.net',
-            userId:'sales',
-            password:'***REMOVED***',
+            tenantId: '***REMOVED***z',
+            gatewayUrl: 'www.catavolt.net',
+            userId: 'sales',
+            password: '***REMOVED***',
             clientType: 'LIMITED_ACCESS'
         }
     },
 
-    render: function() {
+    render: function () {
         return (
 
             <div className="container">
@@ -99,7 +104,7 @@ var CvLoginPane = React.createClass({
                         <div className="form-group">
                             <div className="col-sm-10 col-sm-offset-2">
                                 <button type="submit" className="btn btn-default btn-primary btn-block" value="Login">
-                                    Login  <span className="glyphicon glyphicon-log-in" aria-hidden="true"></span>
+                                    Login <span className="glyphicon glyphicon-log-in" aria-hidden="true"></span>
                                 </button>
                             </div>
                         </div>
@@ -109,22 +114,22 @@ var CvLoginPane = React.createClass({
         );
     },
 
-    handleChange: function(field, e) {
+    handleChange: function (field, e) {
         var nextState = {};
         nextState[field] = e.target.value;
         this.setState(nextState);
     },
 
-    handleRadioChange: function(field, value, e) {
+    handleRadioChange: function (field, value, e) {
         var nextState = {};
         nextState[field] = value;
         this.setState(nextState);
     },
 
-    handleSubmit: function(e) {
+    handleSubmit: function (e) {
         e.preventDefault();
         var comp = this;
-        Catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
+        this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
             .onComplete(function (appWinDefTry:Try<AppWinDef>) {
                 Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
                 comp.props.loggedInFn();
@@ -134,14 +139,95 @@ var CvLoginPane = React.createClass({
 
 var CvAppWindow = React.createClass({
 
-    getInitialState: function() {
-        return {}
+    getInitialState: function () {
+        return {workbenches: []}
     },
 
-    render: function() {
-        return <div>Hello</div>
+    render: function () {
+
+        var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
+        return (
+            <div className="container">
+                <div className="container-fluid">
+                    <div className="center-block logo">
+                        <img className="img-responsive center-block" src="img/Catavolt-Logo-retina.png"
+                             style={{verticalAlign: 'middle'}}/>
+                    </div>
+                </div>
+                <div className="panel panel-primary">
+                    <div className="panel-heading">
+                        <h3 className="panel-title">Default Workbench</h3>
+                        <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]}/>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
+});
+
+var CvWorkbench = React.createClass({
+
+    render: function () {
+
+        var launchActions = this.props.workbench.workbenchLaunchActions;
+        var launchComps = [];
+        for(let i=0; i < launchActions.length; i++) {
+            launchComps.push(<CvLauncher launchAction={launchActions[i]}/>);
+        }
+        return (
+            <div className="panel-body">{launchComps}</div>
+        );
+    }
+});
+
+var CvLauncher = React.createClass({
+
+    render: function() {
+        return (
+            <div className="col-md-4 launch-div">
+                <img className="launch-icon img-responsive center-block" src={this.props.launchAction.iconBase} />
+                <h5 className="launch-text small text-center">{this.props.launchAction.name}</h5>
+            </div>
+        );
+    }
+
+});
+
+var CvToolBar = React.createClass({
+    render: function () {
+        return (
+            <nav className="navbar navbar-default navbar-static-top">
+                <div className="container-fluid">
+                    <div className="navbar-header">
+                        <button type="button" className="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                            <span className="sr-only">toggle navigation</span>
+                            <span className="icon-bar"></span>
+                            <span className="icon-bar"></span>
+                            <span className="icon-bar"></span>
+                        </button>
+                        <a className="navbar-brand" href="#">catavolt</a>
+                    </div>
+                    <div id="navbar" className="navbar-collapse collapse">
+                        <ul className="nav navbar-nav navbar-right">
+                            <li className="dropdown">
+                                <a href="" className="dropdown-toggle" data-toggle="dropdown" role="button"
+                                   aria-expanded="true">workbenches<span className="caret"></span></a>
+                                <ul className="dropdown-menu" role="menu">
+                                    <li><a href="#">default</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#">settings</a></li>
+                        </ul>
+                        <form className="navbar-form navbar-right">
+                            <input type="text" className="form-control" placeholder="search help..."/>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+        );
+    }
 });
 
 ReactDOM.render(

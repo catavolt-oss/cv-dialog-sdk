@@ -16,7 +16,7 @@ module catavolt.dialog {
         get alias() { return this._alias; }
         getLaunchActionById(launchActionId:string) {
                 var result = null;
-                this.workbenchLaunchActions.some(function(launchAction){
+                this.workbenchLaunchActions.some(function(launchAction:WorkbenchLaunchAction){
                     if(launchAction.id = launchActionId) {
                         result = launchAction;
                         return true;
@@ -26,7 +26,7 @@ module catavolt.dialog {
         }
         get name() { return this._name; }
         get workbenchId() { return this._id; }
-        get workbenchLaunchActions() { return ArrayUtil.copy(this._actions); }
+        get workbenchLaunchActions():Array<WorkbenchLaunchAction> { return ArrayUtil.copy(this._actions); }
 
     }
 }

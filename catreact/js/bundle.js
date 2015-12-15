@@ -1,8 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+'use strict';
+
 var React = require('react');
 var ReactDOM = require('react-dom');
 
-var Catavolt = catavolt.dialog.AppContext.singleton;
 var AppWinDef = catavolt.dialog.AppWinDef;
 var Try = catavolt.fp.Try;
 var Log = catavolt.util.Log;
@@ -11,19 +12,20 @@ var ObjUtil = catavolt.util.ObjUtil;
 var CatavoltPane = React.createClass({
     displayName: 'CatavoltPane',
 
-    getInitialState: function () {
+    getInitialState: function getInitialState() {
         return { loggedIn: false };
     },
 
-    render: function () {
-        return this.state.loggedIn ? React.createElement(CvAppWindow, { loggedOutFn: this.loggedOut }) : React.createElement(CvLoginPane, { loggedInFn: this.loggedIn });
+    render: function render() {
+        var Catavolt = catavolt.dialog.AppContext.singleton;
+        return this.state.loggedIn ? React.createElement(CvAppWindow, { catavolt: Catavolt, loggedOutFn: this.loggedOut }) : React.createElement(CvLoginPane, { catavolt: Catavolt, loggedInFn: this.loggedIn });
     },
 
-    loggedIn: function () {
+    loggedIn: function loggedIn() {
         this.setState({ loggedIn: true });
     },
 
-    loggedOut: function () {
+    loggedOut: function loggedOut() {
         this.setState({ loggedIn: false });
     }
 
@@ -32,7 +34,7 @@ var CatavoltPane = React.createClass({
 var CvLoginPane = React.createClass({
     displayName: 'CvLoginPane',
 
-    getInitialState: function () {
+    getInitialState: function getInitialState() {
         return {
             tenantId: '***REMOVED***z',
             gatewayUrl: 'www.catavolt.net',
@@ -42,7 +44,7 @@ var CvLoginPane = React.createClass({
         };
     },
 
-    render: function () {
+    render: function render() {
         return React.createElement(
             'div',
             { className: 'container' },
@@ -168,7 +170,7 @@ var CvLoginPane = React.createClass({
                             React.createElement(
                                 'button',
                                 { type: 'submit', className: 'btn btn-default btn-primary btn-block', value: 'Login' },
-                                'Login  ',
+                                'Login ',
                                 React.createElement('span', { className: 'glyphicon glyphicon-log-in', 'aria-hidden': 'true' })
                             )
                         )
@@ -178,22 +180,22 @@ var CvLoginPane = React.createClass({
         );
     },
 
-    handleChange: function (field, e) {
+    handleChange: function handleChange(field, e) {
         var nextState = {};
         nextState[field] = e.target.value;
         this.setState(nextState);
     },
 
-    handleRadioChange: function (field, value, e) {
+    handleRadioChange: function handleRadioChange(field, value, e) {
         var nextState = {};
         nextState[field] = value;
         this.setState(nextState);
     },
 
-    handleSubmit: function (e) {
+    handleSubmit: function handleSubmit(e) {
         e.preventDefault();
         var comp = this;
-        Catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password).onComplete(function (appWinDefTry) {
+        this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password).onComplete(function (appWinDefTry) {
             Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
             comp.props.loggedInFn();
         });
@@ -203,18 +205,162 @@ var CvLoginPane = React.createClass({
 var CvAppWindow = React.createClass({
     displayName: 'CvAppWindow',
 
-    getInitialState: function () {
-        return {};
+    getInitialState: function getInitialState() {
+        return { workbenches: [] };
     },
 
-    render: function () {
+    render: function render() {
+
+        var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
         return React.createElement(
             'div',
-            null,
-            'Hello'
+            { className: 'container' },
+            React.createElement(
+                'div',
+                { className: 'container-fluid' },
+                React.createElement(
+                    'div',
+                    { className: 'center-block logo' },
+                    React.createElement('img', { className: 'img-responsive center-block', src: 'img/Catavolt-Logo-retina.png',
+                        style: { verticalAlign: 'middle' } })
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'panel panel-primary' },
+                React.createElement(
+                    'div',
+                    { className: 'panel-heading' },
+                    React.createElement(
+                        'h3',
+                        { className: 'panel-title' },
+                        'Default Workbench'
+                    ),
+                    React.createElement(CvWorkbench, { catavolt: this.props.catavolt, workbench: workbenches[0] })
+                )
+            )
         );
     }
 
+});
+
+var CvWorkbench = React.createClass({
+    displayName: 'CvWorkbench',
+
+    render: function render() {
+
+        var launchActions = this.props.workbench.workbenchLaunchActions;
+        var launchComps = [];
+        for (var i = 0; i < launchActions.length; i++) {
+            launchComps.push(React.createElement(CvLauncher, { launchAction: launchActions[i] }));
+        }
+        return React.createElement(
+            'div',
+            { className: 'panel-body' },
+            launchComps
+        );
+    }
+});
+
+var CvLauncher = React.createClass({
+    displayName: 'CvLauncher',
+
+    render: function render() {
+        return React.createElement(
+            'div',
+            { className: 'col-md-4 launch-div' },
+            React.createElement('img', { className: 'launch-icon img-responsive center-block', src: this.props.launchAction.iconBase }),
+            React.createElement(
+                'h5',
+                { className: 'launch-text small text-center' },
+                this.props.launchAction.name
+            )
+        );
+    }
+
+});
+
+var CvToolBar = React.createClass({
+    displayName: 'CvToolBar',
+
+    render: function render() {
+        return React.createElement(
+            'nav',
+            { className: 'navbar navbar-default navbar-static-top' },
+            React.createElement(
+                'div',
+                { className: 'container-fluid' },
+                React.createElement(
+                    'div',
+                    { className: 'navbar-header' },
+                    React.createElement(
+                        'button',
+                        { type: 'button', className: 'navbar-toggle collapsed', 'data-toggle': 'collapse',
+                            'data-target': '#navbar', 'aria-expanded': 'false', 'aria-controls': 'navbar' },
+                        React.createElement(
+                            'span',
+                            { className: 'sr-only' },
+                            'toggle navigation'
+                        ),
+                        React.createElement('span', { className: 'icon-bar' }),
+                        React.createElement('span', { className: 'icon-bar' }),
+                        React.createElement('span', { className: 'icon-bar' })
+                    ),
+                    React.createElement(
+                        'a',
+                        { className: 'navbar-brand', href: '#' },
+                        'catavolt'
+                    )
+                ),
+                React.createElement(
+                    'div',
+                    { id: 'navbar', className: 'navbar-collapse collapse' },
+                    React.createElement(
+                        'ul',
+                        { className: 'nav navbar-nav navbar-right' },
+                        React.createElement(
+                            'li',
+                            { className: 'dropdown' },
+                            React.createElement(
+                                'a',
+                                { href: '', className: 'dropdown-toggle', 'data-toggle': 'dropdown', role: 'button',
+                                    'aria-expanded': 'true' },
+                                'workbenches',
+                                React.createElement('span', { className: 'caret' })
+                            ),
+                            React.createElement(
+                                'ul',
+                                { className: 'dropdown-menu', role: 'menu' },
+                                React.createElement(
+                                    'li',
+                                    null,
+                                    React.createElement(
+                                        'a',
+                                        { href: '#' },
+                                        'default'
+                                    )
+                                )
+                            )
+                        ),
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'a',
+                                { href: '#' },
+                                'settings'
+                            )
+                        )
+                    ),
+                    React.createElement(
+                        'form',
+                        { className: 'navbar-form navbar-right' },
+                        React.createElement('input', { type: 'text', className: 'form-control', placeholder: 'search help...' })
+                    )
+                )
+            )
+        );
+    }
 });
 
 ReactDOM.render(React.createElement(CatavoltPane, null), document.getElementById('root'));

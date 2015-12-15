@@ -2,6 +2,7 @@
   "name": "catavoltSdk",
   "version": "0.0.1",
   "dependencies": {
+    "babel-preset-es2015": "^6.3.13",
     "babel-preset-react": "^6.3.13",
     "babelify": "^7.2.0",
     "react": "^0.14.3",
@@ -18,6 +19,6 @@
     "phantomjs": "^1.9.19"
   },
   "scripts": {
-    "start": "watchify -v -t [ babelify --presets [ react ] ] catreact/js/components.js -o catreact/js/bundle.js"
+    "start": "watchify -v -t [ babelify --presets [ es2015 react ] ] catreact/js/components.js -o catreact/js/bundle.js"
   }
 }
