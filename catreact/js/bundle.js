@@ -47,131 +47,136 @@ var CvLoginPane = React.createClass({
     render: function render() {
         return React.createElement(
             'div',
-            { className: 'container' },
+            null,
+            React.createElement(CvHeroHeader, null),
             React.createElement(
                 'div',
-                { className: 'well' },
+                { className: 'container' },
                 React.createElement(
-                    'form',
-                    { className: 'form-horizontal login-form', onSubmit: this.handleSubmit },
+                    'div',
+                    { className: 'well' },
                     React.createElement(
-                        'div',
-                        { className: 'form-group' },
-                        React.createElement(
-                            'label',
-                            { htmlFor: 'tenantId', className: 'col-sm-2 control-label' },
-                            'Tenant Id:'
-                        ),
+                        'form',
+                        { className: 'form-horizontal login-form', onSubmit: this.handleSubmit },
                         React.createElement(
                             'div',
-                            { className: 'col-sm-10' },
-                            React.createElement('input', { id: 'tenantId', type: 'text', className: 'form-control',
-                                value: this.state.tenantId,
-                                onChange: this.handleChange.bind(this, 'tenantId'),
-                                required: true })
-                        )
-                    ),
-                    React.createElement(
-                        'div',
-                        { className: 'form-group' },
-                        React.createElement(
-                            'label',
-                            { htmlFor: 'gatewayUrl', className: 'col-sm-2 control-label' },
-                            'Gateway URL:'
-                        ),
-                        React.createElement(
-                            'div',
-                            { className: 'col-sm-10' },
-                            React.createElement(
-                                'div',
-                                { className: 'input-group' },
-                                React.createElement(
-                                    'span',
-                                    { className: 'input-group-addon', id: 'http-addon' },
-                                    'http://'
-                                ),
-                                React.createElement('input', { id: 'gatewayUrl', type: 'text', className: 'form-control',
-                                    value: this.state.gatewayUrl,
-                                    onChange: this.handleChange.bind(this, 'gatewayUrl'),
-                                    'aria-describedby': 'http-addon',
-                                    required: true })
-                            )
-                        )
-                    ),
-                    React.createElement(
-                        'div',
-                        { className: 'form-group' },
-                        React.createElement(
-                            'label',
-                            { htmlFor: 'userId', className: 'col-sm-2 control-label' },
-                            'User Id:'
-                        ),
-                        React.createElement(
-                            'div',
-                            { className: 'col-sm-10' },
-                            React.createElement('input', { id: 'userId', type: 'text', className: 'form-control',
-                                value: this.state.userId,
-                                onChange: this.handleChange.bind(this, 'userId'),
-                                required: true })
-                        )
-                    ),
-                    React.createElement(
-                        'div',
-                        { className: 'form-group' },
-                        React.createElement(
-                            'label',
-                            { htmlFor: 'password', className: 'col-sm-2 control-label' },
-                            ' Password:'
-                        ),
-                        React.createElement(
-                            'div',
-                            { className: 'col-sm-10' },
-                            React.createElement('input', { id: 'password', type: 'password', className: 'form-control',
-                                value: this.state.password,
-                                onChange: this.handleChange.bind(this, 'password'),
-                                required: true })
-                        )
-                    ),
-                    React.createElement(
-                        'div',
-                        { className: 'form-group' },
-                        React.createElement(
-                            'label',
-                            { htmlFor: 'clientType', className: 'col-sm-2 control-label' },
-                            'Client Type:'
-                        ),
-                        React.createElement(
-                            'div',
-                            { className: 'col-sm-10' },
+                            { className: 'form-group' },
                             React.createElement(
                                 'label',
-                                { className: 'radio-inline' },
-                                React.createElement('input', { id: 'clientType', type: 'radio',
-                                    onChange: this.handleRadioChange.bind(this, 'clientType', 'LIMITED_ACCESS'),
-                                    checked: this.state.clientType === 'LIMITED_ACCESS' }),
-                                'Limited'
+                                { htmlFor: 'tenantId', className: 'col-sm-2 control-label' },
+                                'Tenant Id:'
                             ),
                             React.createElement(
-                                'label',
-                                { className: 'radio-inline' },
-                                React.createElement('input', { id: 'clientType', type: 'radio',
-                                    onChange: this.handleRadioChange.bind(this, 'clientType', 'RICH_CLIENT'),
-                                    checked: this.state.clientType === 'RICH_CLIENT' }),
-                                'Rich'
+                                'div',
+                                { className: 'col-sm-10' },
+                                React.createElement('input', { id: 'tenantId', type: 'text', className: 'form-control',
+                                    value: this.state.tenantId,
+                                    onChange: this.handleChange.bind(this, 'tenantId'),
+                                    required: true })
                             )
-                        )
-                    ),
-                    React.createElement(
-                        'div',
-                        { className: 'form-group' },
+                        ),
                         React.createElement(
                             'div',
-                            { className: 'col-sm-10 col-sm-offset-2' },
+                            { className: 'form-group' },
                             React.createElement(
-                                'button',
-                                { type: 'submit', className: 'btn btn-default btn-primary btn-block', value: 'Login' },
-                                'Login ',
-                                React.createElement('span', { className: 'glyphicon glyphicon-log-in', 'aria-hidden': 'true' })
+                                'label',
+                                { htmlFor: 'gatewayUrl', className: 'col-sm-2 control-label' },
+                                'Gateway URL:'
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'col-sm-10' },
+                                React.createElement(
+                                    'div',
+                                    { className: 'input-group' },
+                                    React.createElement(
+                                        'span',
+                                        { className: 'input-group-addon', id: 'http-addon' },
+                                        'http://'
+                                    ),
+                                    React.createElement('input', { id: 'gatewayUrl', type: 'text', className: 'form-control',
+                                        value: this.state.gatewayUrl,
+                                        onChange: this.handleChange.bind(this, 'gatewayUrl'),
+                                        'aria-describedby': 'http-addon',
+                                        required: true })
+                                )
+                            )
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'form-group' },
+                            React.createElement(
+                                'label',
+                                { htmlFor: 'userId', className: 'col-sm-2 control-label' },
+                                'User Id:'
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'col-sm-10' },
+                                React.createElement('input', { id: 'userId', type: 'text', className: 'form-control',
+                                    value: this.state.userId,
+                                    onChange: this.handleChange.bind(this, 'userId'),
+                                    required: true })
+                            )
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'form-group' },
+                            React.createElement(
+                                'label',
+                                { htmlFor: 'password', className: 'col-sm-2 control-label' },
+                                ' Password:'
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'col-sm-10' },
+                                React.createElement('input', { id: 'password', type: 'password', className: 'form-control',
+                                    value: this.state.password,
+                                    onChange: this.handleChange.bind(this, 'password'),
+                                    required: true })
+                            )
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'form-group' },
+                            React.createElement(
+                                'label',
+                                { htmlFor: 'clientType', className: 'col-sm-2 control-label' },
+                                'Client Type:'
+                            ),
+                            React.createElement(
+                                'div',
+                                { className: 'col-sm-10' },
+                                React.createElement(
+                                    'label',
+                                    { className: 'radio-inline' },
+                                    React.createElement('input', { id: 'clientType', type: 'radio',
+                                        onChange: this.handleRadioChange.bind(this, 'clientType', 'LIMITED_ACCESS'),
+                                        checked: this.state.clientType === 'LIMITED_ACCESS' }),
+                                    'Limited'
+                                ),
+                                React.createElement(
+                                    'label',
+                                    { className: 'radio-inline' },
+                                    React.createElement('input', { id: 'clientType', type: 'radio',
+                                        onChange: this.handleRadioChange.bind(this, 'clientType', 'RICH_CLIENT'),
+                                        checked: this.state.clientType === 'RICH_CLIENT' }),
+                                    'Rich'
+                                )
+                            )
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'form-group' },
+                            React.createElement(
+                                'div',
+                                { className: 'col-sm-10 col-sm-offset-2' },
+                                React.createElement(
+                                    'button',
+                                    { type: 'submit', className: 'btn btn-default btn-primary btn-block', value: 'Login' },
+                                    'Login ',
+                                    React.createElement('span', { className: 'glyphicon glyphicon-log-in', 'aria-hidden': 'true' })
+                                )
                             )
                         )
                     )
@@ -213,28 +218,33 @@ var CvAppWindow = React.createClass({
 
         var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
         return React.createElement(
-            'div',
-            { className: 'container' },
+            'span',
+            null,
+            React.createElement(CvToolbar, null),
             React.createElement(
                 'div',
-                { className: 'container-fluid' },
+                { className: 'container' },
                 React.createElement(
                     'div',
-                    { className: 'center-block logo' },
-                    React.createElement('img', { className: 'img-responsive center-block', src: 'img/Catavolt-Logo-retina.png',
-                        style: { verticalAlign: 'middle' } })
-                )
-            ),
-            React.createElement(
-                'div',
-                { className: 'panel panel-primary' },
-                React.createElement(
-                    'div',
-                    { className: 'panel-heading' },
+                    { className: 'container-fluid' },
                     React.createElement(
-                        'h3',
-                        { className: 'panel-title' },
-                        'Default Workbench'
+                        'div',
+                        { className: 'center-block logo' },
+                        React.createElement('img', { className: 'img-responsive center-block', src: 'img/Catavolt-Logo-retina.png',
+                            style: { verticalAlign: 'middle' } })
+                    )
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'panel panel-primary' },
+                    React.createElement(
+                        'div',
+                        { className: 'panel-heading' },
+                        React.createElement(
+                            'h3',
+                            { className: 'panel-title' },
+                            'Default Workbench'
+                        )
                     ),
                     React.createElement(CvWorkbench, { catavolt: this.props.catavolt, workbench: workbenches[0] })
                 )
@@ -252,7 +262,7 @@ var CvWorkbench = React.createClass({
         var launchActions = this.props.workbench.workbenchLaunchActions;
         var launchComps = [];
         for (var i = 0; i < launchActions.length; i++) {
-            launchComps.push(React.createElement(CvLauncher, { launchAction: launchActions[i] }));
+            launchComps.push(React.createElement(CvLauncher, { launchAction: launchActions[i], key: launchActions[i].actionId }));
         }
         return React.createElement(
             'div',
@@ -280,8 +290,8 @@ var CvLauncher = React.createClass({
 
 });
 
-var CvToolBar = React.createClass({
-    displayName: 'CvToolBar',
+var CvToolbar = React.createClass({
+    displayName: 'CvToolbar',
 
     render: function render() {
         return React.createElement(
@@ -300,16 +310,28 @@ var CvToolBar = React.createClass({
                         React.createElement(
                             'span',
                             { className: 'sr-only' },
-                            'toggle navigation'
+                            'Toggle Navigation'
                         ),
-                        React.createElement('span', { className: 'icon-bar' }),
-                        React.createElement('span', { className: 'icon-bar' }),
-                        React.createElement('span', { className: 'icon-bar' })
+                        React.createElement(
+                            'span',
+                            { className: 'icon-bar' },
+                            ' '
+                        ),
+                        React.createElement(
+                            'span',
+                            { className: 'icon-bar' },
+                            ' '
+                        ),
+                        React.createElement(
+                            'span',
+                            { className: 'icon-bar' },
+                            ' '
+                        )
                     ),
                     React.createElement(
                         'a',
                         { className: 'navbar-brand', href: '#' },
-                        'catavolt'
+                        'Catavolt'
                     )
                 ),
                 React.createElement(
@@ -325,8 +347,12 @@ var CvToolBar = React.createClass({
                                 'a',
                                 { href: '', className: 'dropdown-toggle', 'data-toggle': 'dropdown', role: 'button',
                                     'aria-expanded': 'true' },
-                                'workbenches',
-                                React.createElement('span', { className: 'caret' })
+                                'Workbenches',
+                                React.createElement(
+                                    'span',
+                                    { className: 'caret' },
+                                    ' '
+                                )
                             ),
                             React.createElement(
                                 'ul',
@@ -337,7 +363,7 @@ var CvToolBar = React.createClass({
                                     React.createElement(
                                         'a',
                                         { href: '#' },
-                                        'default'
+                                        'Default'
                                     )
                                 )
                             )
@@ -348,15 +374,35 @@ var CvToolBar = React.createClass({
                             React.createElement(
                                 'a',
                                 { href: '#' },
-                                'settings'
+                                'Settings'
                             )
                         )
                     ),
                     React.createElement(
                         'form',
                         { className: 'navbar-form navbar-right' },
-                        React.createElement('input', { type: 'text', className: 'form-control', placeholder: 'search help...' })
+                        React.createElement('input', { type: 'text', className: 'form-control', placeholder: 'Search For Help On...' })
                     )
+                )
+            )
+        );
+    }
+});
+
+var CvHeroHeader = React.createClass({
+    displayName: 'CvHeroHeader',
+
+    render: function render() {
+        return React.createElement(
+            'div',
+            { className: 'jumbotron logintron' },
+            React.createElement(
+                'div',
+                { className: 'container-fluid' },
+                React.createElement(
+                    'div',
+                    { className: 'center-block' },
+                    React.createElement('img', { className: 'img-responsive center-block', src: 'img/Catavolt-Logo-retina.png', style: { verticalAlign: 'middle' } })
                 )
             )
         );
