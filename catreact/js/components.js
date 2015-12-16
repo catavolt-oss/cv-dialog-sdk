@@ -2,9 +2,10 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 var AppWinDef = catavolt.dialog.AppWinDef;
-var Try = catavolt.fp.Try;
+var FormContext = catavolt.dialog.FormContext;
 var Log = catavolt.util.Log;
 var ObjUtil = catavolt.util.ObjUtil;
+var Try = catavolt.fp.Try;
 
 
 var CatavoltPane = React.createClass({
@@ -15,8 +16,9 @@ var CatavoltPane = React.createClass({
 
     render: function () {
         var Catavolt = catavolt.dialog.AppContext.singleton;
-        return this.state.loggedIn ? <CvAppWindow catavolt={Catavolt} loggedOutFn={this.loggedOut}/> :
-            <CvLoginPane catavolt={Catavolt} loggedInFn={this.loggedIn}/>
+        return this.state.loggedIn ?
+            (<CvAppWindow catavolt={Catavolt} onLogout={this.loggedOut}/>) :
+            (<span><CvHeroHeader/><CvLoginPane catavolt={Catavolt} onLogin={this.loggedIn}/></span>);
     },
 
     loggedIn: function () {
@@ -29,116 +31,6 @@ var CatavoltPane = React.createClass({
 
 });
 
-
-var CvLoginPane = React.createClass({
-
-    getInitialState: function () {
-        return {
-            tenantId: '***REMOVED***z',
-            gatewayUrl: 'www.catavolt.net',
-            userId: 'sales',
-            password: '***REMOVED***',
-            clientType: 'LIMITED_ACCESS'
-        }
-    },
-
-    render: function () {
-        return (
-
-            <div>
-                <CvHeroHeader/>
-                <div className="container">
-                    <div className="well">
-                        <form className="form-horizontal login-form" onSubmit={this.handleSubmit}>
-                            <div className="form-group">
-                                <label htmlFor="tenantId" className="col-sm-2 control-label">Tenant Id:</label>
-                                <div className="col-sm-10">
-                                    <input id="tenantId" type="text" className="form-control"
-                                           value={this.state.tenantId}
-                                           onChange={this.handleChange.bind(this, 'tenantId')}
-                                           required/>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="gatewayUrl" className="col-sm-2 control-label">Gateway URL:</label>
-                                <div className="col-sm-10">
-                                    <div className="input-group">
-                                        <span className="input-group-addon" id="http-addon">http://</span>
-                                        <input id="gatewayUrl" type="text" className="form-control"
-                                               value={this.state.gatewayUrl}
-                                               onChange={this.handleChange.bind(this, 'gatewayUrl')}
-                                               aria-describedby="http-addon"
-                                               required/>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="userId" className="col-sm-2 control-label">User Id:</label>
-                                <div className="col-sm-10">
-                                    <input id="userId" type="text" className="form-control"
-                                           value={this.state.userId}
-                                           onChange={this.handleChange.bind(this, 'userId')}
-                                           required/>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="password" className="col-sm-2 control-label"> Password:</label>
-                                <div className="col-sm-10">
-                                    <input id="password" type="password" className="form-control"
-                                           value={this.state.password}
-                                           onChange={this.handleChange.bind(this, 'password')}
-                                           required/>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="clientType" className="col-sm-2 control-label">Client Type:</label>
-                                <div className="col-sm-10">
-                                    <label className="radio-inline">
-                                        <input id="clientType" type="radio"
-                                               onChange={this.handleRadioChange.bind(this, 'clientType', 'LIMITED_ACCESS')}
-                                               checked={this.state.clientType === 'LIMITED_ACCESS'}/>Limited</label>
-                                    <label className="radio-inline">
-                                        <input id="clientType" type="radio"
-                                               onChange={this.handleRadioChange.bind(this, 'clientType', 'RICH_CLIENT')}
-                                               checked={this.state.clientType === 'RICH_CLIENT'}/>Rich</label>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <div className="col-sm-10 col-sm-offset-2">
-                                    <button type="submit" className="btn btn-default btn-primary btn-block" value="Login">
-                                        Login <span className="glyphicon glyphicon-log-in" aria-hidden="true"></span>
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        );
-    },
-
-    handleChange: function (field, e) {
-        var nextState = {};
-        nextState[field] = e.target.value;
-        this.setState(nextState);
-    },
-
-    handleRadioChange: function (field, value, e) {
-        var nextState = {};
-        nextState[field] = value;
-        this.setState(nextState);
-    },
-
-    handleSubmit: function (e) {
-        e.preventDefault();
-        var comp = this;
-        this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
-            .onComplete(function (appWinDefTry) {
-                Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
-                comp.props.loggedInFn();
-            });
-    }
-});
 
 var CvAppWindow = React.createClass({
 
@@ -172,33 +64,163 @@ var CvAppWindow = React.createClass({
 
 });
 
-var CvWorkbench = React.createClass({
 
-    render: function () {
+var CvHeroHeader = React.createClass({
 
-        var launchActions = this.props.workbench.workbenchLaunchActions;
-        var launchComps = [];
-        for(let i=0; i < launchActions.length; i++) {
-            launchComps.push(<CvLauncher launchAction={launchActions[i]} key={launchActions[i].actionId} />);
-        }
+    render: function() {
         return (
-            <div className="panel-body">{launchComps}</div>
+            <div className="jumbotron logintron">
+                <div className="container-fluid">
+                    <div className="center-block">
+                        <img className="img-responsive center-block" src="img/Catavolt-Logo-retina.png" style={{verticalAlign: 'middle'}}/>
+                    </div>
+                </div>
+            </div>
         );
     }
 });
+
 
 var CvLauncher = React.createClass({
 
     render: function() {
         return (
             <div className="col-md-4 launch-div">
-                <img className="launch-icon img-responsive center-block" src={this.props.launchAction.iconBase} />
-                <h5 className="launch-text small text-center">{this.props.launchAction.name}</h5>
+                <img className="launch-icon img-responsive center-block" src={this.props.launchAction.iconBase} onClick={this.handleClick}/>
+                <h5 className="launch-text small text-center" onClick={this.handleClick}>{this.props.launchAction.name}</h5>
             </div>
         );
+    },
+
+    handleClick: function() {
+        this.props.catavolt.performLaunchAction(this.props.launchAction).onComplete(launchTry => {
+            this.props.onLaunch(launchTry);
+        });
     }
 
 });
+
+var CvNavigation = React.createClass({
+
+    render: function() {
+    }
+
+});
+
+var CvFormContext = React.createClass({
+
+    render: function() {
+    }
+
+});
+
+
+var CvLoginPane = React.createClass({
+
+    getInitialState: function () {
+        return {
+            tenantId: '***REMOVED***z',
+            gatewayUrl: 'www.catavolt.net',
+            userId: 'sales',
+            password: '***REMOVED***',
+            clientType: 'LIMITED_ACCESS'
+        }
+    },
+
+    render: function () {
+        return (
+            <div className="container">
+                <div className="well">
+                    <form className="form-horizontal login-form" onSubmit={this.handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="tenantId" className="col-sm-2 control-label">Tenant Id:</label>
+                            <div className="col-sm-10">
+                                <input id="tenantId" type="text" className="form-control"
+                                       value={this.state.tenantId}
+                                       onChange={this.handleChange.bind(this, 'tenantId')}
+                                       required/>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="gatewayUrl" className="col-sm-2 control-label">Gateway URL:</label>
+                            <div className="col-sm-10">
+                                <div className="input-group">
+                                    <span className="input-group-addon" id="http-addon">http://</span>
+                                    <input id="gatewayUrl" type="text" className="form-control"
+                                           value={this.state.gatewayUrl}
+                                           onChange={this.handleChange.bind(this, 'gatewayUrl')}
+                                           aria-describedby="http-addon"
+                                           required/>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="userId" className="col-sm-2 control-label">User Id:</label>
+                            <div className="col-sm-10">
+                                <input id="userId" type="text" className="form-control"
+                                       value={this.state.userId}
+                                       onChange={this.handleChange.bind(this, 'userId')}
+                                       required/>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="password" className="col-sm-2 control-label"> Password:</label>
+                            <div className="col-sm-10">
+                                <input id="password" type="password" className="form-control"
+                                       value={this.state.password}
+                                       onChange={this.handleChange.bind(this, 'password')}
+                                       required/>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="clientType" className="col-sm-2 control-label">Client Type:</label>
+                            <div className="col-sm-10">
+                                <label className="radio-inline">
+                                    <input id="clientType" type="radio"
+                                           onChange={this.handleRadioChange.bind(this, 'clientType', 'LIMITED_ACCESS')}
+                                           checked={this.state.clientType === 'LIMITED_ACCESS'}/>Limited</label>
+                                <label className="radio-inline">
+                                    <input id="clientType" type="radio"
+                                           onChange={this.handleRadioChange.bind(this, 'clientType', 'RICH_CLIENT')}
+                                           checked={this.state.clientType === 'RICH_CLIENT'}/>Rich</label>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <div className="col-sm-10 col-sm-offset-2">
+                                <button type="submit" className="btn btn-default btn-primary btn-block" value="Login">
+                                    Login <span className="glyphicon glyphicon-log-in" aria-hidden="true"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    },
+
+    handleChange: function (field, e) {
+        var nextState = {};
+        nextState[field] = e.target.value;
+        this.setState(nextState);
+    },
+
+    handleRadioChange: function (field, value, e) {
+        var nextState = {};
+        nextState[field] = value;
+        this.setState(nextState);
+    },
+
+    handleSubmit: function (e) {
+        e.preventDefault();
+        var comp = this;
+        this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
+            .onComplete(appWinDefTry -> {
+                Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
+                comp.props.onLogin();
+            });
+    }
+});
+
 
 var CvToolbar = React.createClass({
     render: function () {
@@ -236,20 +258,38 @@ var CvToolbar = React.createClass({
     }
 });
 
-var CvHeroHeader = React.createClass({
 
-    render: function() {
+var CvWorkbench = React.createClass({
+
+    render: function () {
+
+        var launchActions = this.props.workbench.workbenchLaunchActions;
+        var launchComps = [];
+        for(let i=0; i < launchActions.length; i++) {
+            launchComps.push(
+                <CvLauncher catavolt={this.props.catavolt} launchAction={launchActions[i]} key={launchActions[i].actionId} onLaunch={this.actionLaunched}/>
+            );
+        }
         return (
-            <div className="jumbotron logintron">
-                <div className="container-fluid">
-                    <div className="center-block">
-                        <img className="img-responsive center-block" src="img/Catavolt-Logo-retina.png" style={{verticalAlign: 'middle'}}/>
-                    </div>
-                </div>
-            </div>
+            <div className="panel-body">{launchComps}</div>
         );
+    },
+
+    actionLaunched: function(launchTry) {
+        if(launchTry.isFailure) {
+            alert('Handle Launch Failure!');
+            Log.error(launchTry.failure);
+        } else {
+            if(launchTry.success instanceof FormContext) {
+                Log.info('Succeded with ' + launchTry.success);
+            } else {
+                alert('Unhandled type of NavRequest ' + launchTry.success);
+            }
+        }
     }
+
 });
+
 
 ReactDOM.render(
     <CatavoltPane/>,
