@@ -103,6 +103,11 @@ var CvLauncher = React.createClass({
 var CvNavigation = React.createClass({
 
     render: function() {
+        if(this.props.navRequest instanceof FormContext) {
+            return <CvFormContext catavolt={this.props.catavolt} formContext={this.props.navRequest}/>
+        } else {
+            return <CvMessage message="Unsupported type of NavRequest ${this.props.navRequest}"/>
+        }
     }
 
 });
@@ -110,6 +115,14 @@ var CvNavigation = React.createClass({
 var CvFormContext = React.createClass({
 
     render: function() {
+    }
+
+});
+
+var CvMessage = React.createClass({
+
+    render: function() {
+        return <div>this.props.message</div>
     }
 
 });
@@ -214,7 +227,7 @@ var CvLoginPane = React.createClass({
         e.preventDefault();
         var comp = this;
         this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
-            .onComplete(appWinDefTry -> {
+            .onComplete(appWinDefTry => {
                 Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
                 comp.props.onLogin();
             });
@@ -225,7 +238,7 @@ var CvLoginPane = React.createClass({
 var CvToolbar = React.createClass({
     render: function () {
         return (
-            <nav className="navbar navbar-default navbar-static-top">
+            <nav className="navbar navbar-default navbar-static-top component-chrome">
                 <div className="container-fluid">
                     <div className="navbar-header">
                         <button type="button" className="navbar-toggle collapsed" data-toggle="collapse"
@@ -280,11 +293,7 @@ var CvWorkbench = React.createClass({
             alert('Handle Launch Failure!');
             Log.error(launchTry.failure);
         } else {
-            if(launchTry.success instanceof FormContext) {
-                Log.info('Succeded with ' + launchTry.success);
-            } else {
-                alert('Unhandled type of NavRequest ' + launchTry.success);
-            }
+            Log.info('Succeded with ' + launchTry.success);
         }
     }
 

@@ -26,3 +26,7 @@ body {
     width:30%;
     margin-top: 7px;
 }
+
+.component-chrome {
+   background-color: #e9e9e9;
+}
