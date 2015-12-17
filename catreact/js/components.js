@@ -35,7 +35,8 @@ var CatavoltPane = React.createClass({
 var CvAppWindow = React.createClass({
 
     getInitialState: function () {
-        return {workbenches: []}
+        return {workbenches: [],
+                navRequestTry: null}
     },
 
     render: function () {
@@ -55,12 +56,34 @@ var CvAppWindow = React.createClass({
                     <div className="panel-heading">
                         <h3 className="panel-title">Default Workbench</h3>
                     </div>
-                    <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]}/>
+                    <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]} onNavRequest={this.onNavRequest}/>
                 </div>
+                {(() => {
+                    if(this.state.navRequestTry) {
+                        if(this.state.navRequestTry.isSuccess) {
+                            return <CvNavigation navRequest={this.state.navRequestTry.success}/>
+                        } else {
+                            return <CvMessage message={'Failed to Navigate: ' + navRequestTry.failure}/>
+                        }
+                    } else {
+                        return <span> </span>
+                    }
+                })()}
             </div>
             </span>
         );
+    },
+
+    onNavRequest: function(navRequestTry) {
+        if(navRequestTry.isFailure) {
+            alert('Handle Launch Failure!');
+            Log.error(navRequestTry.failure);
+        } else {
+            Log.info('Succeeded with ' + navRequestTry.success);
+            this.setState({navRequestTry: navRequestTry});
+        }
     }
+
 
 });
 
@@ -114,6 +137,10 @@ var CvNavigation = React.createClass({
 
 var CvFormContext = React.createClass({
 
+    getInitialState: function(){
+        return {statusMessage: ''};
+    },
+
     render: function() {
 
         const formContext = this.props.formContext;
@@ -134,6 +161,7 @@ var CvFormContext = React.createClass({
                     return <CvMessage message={"Not yet handling display for " + context.constructor['name']} key={context.paneRef}/>
                 }
             })}
+            <div className="panel-footer">{this.state.statusMessage}</div>
         </span>
 
         return <CvMessage message="Could not render any contexts!"/>
@@ -159,7 +187,6 @@ var CvListContext = React.createClass({
         listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
 
         */
-
         return (
             <div className="panel panel-primary">
             <span>{listContext.paneDef.title}</span>
@@ -177,15 +204,12 @@ var CvListContext = React.createClass({
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td className="text-center" key="checkbox"><input type="checkbox"/> </td>
-                        {listContext.columnHeadings.map((heading, index) => { return <td key={index}>{heading + "_value"}</td>})}
-                    </tr>
+                        <tr>
+                            <td className="text-center" key="checkbox"><input type="checkbox"/> </td>
+                            {listContext.columnHeadings.map((heading, index) => { return <td key={index}>{heading + "_value"}</td>})}
+                        </tr>
                     </tbody>
                 </table>
-            </div>
-            <div className="panel-footer">
-                {"temp status message"}
             </div>
         </div>);
     }
@@ -381,17 +405,8 @@ var CvToolbar = React.createClass({
 
 var CvWorkbench = React.createClass({
 
-    getInitialState: function() {
-        return {navRequest: null}
-    },
 
     render: function () {
-
-        if(this.state.navRequest) {
-
-            return <CvNavigation navRequest={this.state.navRequest}/>
-
-        } else {
 
             var launchActions = this.props.workbench.workbenchLaunchActions;
             var launchComps = [];
@@ -403,17 +418,10 @@ var CvWorkbench = React.createClass({
             return (
                 <div className="panel-body">{launchComps}</div>
             );
-        }
     },
 
     actionLaunched: function(launchTry) {
-        if(launchTry.isFailure) {
-            alert('Handle Launch Failure!');
-            Log.error(launchTry.failure);
-        } else {
-            Log.info('Succeded with ' + launchTry.success);
-            this.setState({navRequest: launchTry.success});
-        }
+        this.props.onNavRequest(launchTry);
     }
 
 });

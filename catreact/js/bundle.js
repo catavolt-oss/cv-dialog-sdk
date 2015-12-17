@@ -41,10 +41,12 @@ var CvAppWindow = React.createClass({
     displayName: 'CvAppWindow',
 
     getInitialState: function getInitialState() {
-        return { workbenches: [] };
+        return { workbenches: [],
+            navRequestTry: null };
     },
 
     render: function render() {
+        var _this = this;
 
         var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
         return React.createElement(
@@ -76,10 +78,35 @@ var CvAppWindow = React.createClass({
                             'Default Workbench'
                         )
                     ),
-                    React.createElement(CvWorkbench, { catavolt: this.props.catavolt, workbench: workbenches[0] })
-                )
+                    React.createElement(CvWorkbench, { catavolt: this.props.catavolt, workbench: workbenches[0], onNavRequest: this.onNavRequest })
+                ),
+                (function () {
+                    if (_this.state.navRequestTry) {
+                        if (_this.state.navRequestTry.isSuccess) {
+                            return React.createElement(CvNavigation, { navRequest: _this.state.navRequestTry.success });
+                        } else {
+                            return React.createElement(CvMessage, { message: 'Failed to Navigate: ' + navRequestTry.failure });
+                        }
+                    } else {
+                        return React.createElement(
+                            'span',
+                            null,
+                            ' '
+                        );
+                    }
+                })()
             )
         );
+    },
+
+    onNavRequest: function onNavRequest(navRequestTry) {
+        if (navRequestTry.isFailure) {
+            alert('Handle Launch Failure!');
+            Log.error(navRequestTry.failure);
+        } else {
+            Log.info('Succeeded with ' + navRequestTry.success);
+            this.setState({ navRequestTry: navRequestTry });
+        }
     }
 
 });
@@ -121,10 +148,10 @@ var CvLauncher = React.createClass({
     },
 
     handleClick: function handleClick() {
-        var _this = this;
+        var _this2 = this;
 
         this.props.catavolt.performLaunchAction(this.props.launchAction).onComplete(function (launchTry) {
-            _this.props.onLaunch(launchTry);
+            _this2.props.onLaunch(launchTry);
         });
     }
 
@@ -145,6 +172,10 @@ var CvNavigation = React.createClass({
 
 var CvFormContext = React.createClass({
     displayName: 'CvFormContext',
+
+    getInitialState: function getInitialState() {
+        return { statusMessage: '' };
+    },
 
     render: function render() {
 
@@ -167,7 +198,12 @@ var CvFormContext = React.createClass({
                     Log.info('');
                     return React.createElement(CvMessage, { message: "Not yet handling display for " + context.constructor['name'], key: context.paneRef });
                 }
-            })
+            }),
+            React.createElement(
+                'div',
+                { className: 'panel-footer' },
+                this.state.statusMessage
+            )
         );
 
         return React.createElement(CvMessage, { message: 'Could not render any contexts!' });
@@ -191,7 +227,6 @@ var CvListContext = React.createClass({
         });
          listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
          */
-
         return React.createElement(
             'div',
             { className: 'panel panel-primary' },
@@ -259,11 +294,6 @@ var CvListContext = React.createClass({
                         )
                     )
                 )
-            ),
-            React.createElement(
-                'div',
-                { className: 'panel-footer' },
-                "temp status message"
             )
         );
     }
@@ -622,38 +652,22 @@ var CvToolbar = React.createClass({
 var CvWorkbench = React.createClass({
     displayName: 'CvWorkbench',
 
-    getInitialState: function getInitialState() {
-        return { navRequest: null };
-    },
-
     render: function render() {
 
-        if (this.state.navRequest) {
-
-            return React.createElement(CvNavigation, { navRequest: this.state.navRequest });
-        } else {
-
-            var launchActions = this.props.workbench.workbenchLaunchActions;
-            var launchComps = [];
-            for (var i = 0; i < launchActions.length; i++) {
-                launchComps.push(React.createElement(CvLauncher, { catavolt: this.props.catavolt, launchAction: launchActions[i], key: launchActions[i].actionId, onLaunch: this.actionLaunched }));
-            }
-            return React.createElement(
-                'div',
-                { className: 'panel-body' },
-                launchComps
-            );
+        var launchActions = this.props.workbench.workbenchLaunchActions;
+        var launchComps = [];
+        for (var i = 0; i < launchActions.length; i++) {
+            launchComps.push(React.createElement(CvLauncher, { catavolt: this.props.catavolt, launchAction: launchActions[i], key: launchActions[i].actionId, onLaunch: this.actionLaunched }));
         }
+        return React.createElement(
+            'div',
+            { className: 'panel-body' },
+            launchComps
+        );
     },
 
     actionLaunched: function actionLaunched(launchTry) {
-        if (launchTry.isFailure) {
-            alert('Handle Launch Failure!');
-            Log.error(launchTry.failure);
-        } else {
-            Log.info('Succeded with ' + launchTry.success);
-            this.setState({ navRequest: launchTry.success });
-        }
+        this.props.onNavRequest(launchTry);
     }
 
 });
