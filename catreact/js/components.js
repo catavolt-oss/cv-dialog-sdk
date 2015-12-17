@@ -115,14 +115,121 @@ var CvNavigation = React.createClass({
 var CvFormContext = React.createClass({
 
     render: function() {
+
+        const formContext = this.props.formContext;
+
+        return <span>
+            {formContext.childrenContexts.map(context => {
+                Log.info('');
+                Log.info('Got a ' + context.constructor['name'] + ' for display');
+                Log.info('');
+                if (context instanceof ListContext) {
+                    return <CvListContext listContext={context} key={context.paneRef}/>
+                } else if (context instanceof DetailsContext) {
+                    return <CvMessage message="Not yet rendering DetailsContext" key={context.paneRef}/>
+                } else {
+                    Log.info('');
+                    Log.info('Not yet handling display for ' + context.constructor['name']);
+                    Log.info('');
+                    return <CvMessage message={"Not yet handling display for " + context.constructor['name']} key={context.paneRef}/>
+                }
+            })}
+        </span>
+
+        return <CvMessage message="Could not render any contexts!"/>
     }
+
+});
+
+var CvListContext = React.createClass({
+
+
+    render: function(){
+
+        const listContext = this.props.listContext;
+        //var listContext = new ListContext();
+        /*listContext.setScroller(10, null, [QueryMarkerOption.None]);
+        var listFuture = listContext.refresh().bind(entityRec=>{
+            Log.info('Finished refresh');
+            listContext.scroller.buffer.forEach(entityRec=>{
+                displayListItem(entityRec, listContext);
+            });
+        });
+
+        listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
+
+        */
+
+        return (
+            <div className="panel panel-primary">
+            <span>{listContext.paneDef.title}</span>
+            <div className="panel-heading">
+                <div className="pull-right">
+                    {listContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index} menuDef={menuDef}/> })}
+                </div>
+            </div>
+            <div style={{maxHeight: '350px', overflow: 'auto'}}>
+                <table className="table table-striped">
+                    <thead>
+                    <tr>
+                        <th key="nbsp">&nbsp;</th>
+                        {listContext.columnHeadings.map((heading, index) => { return <th key={index}>{heading}</th> })}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td className="text-center" key="checkbox"><input type="checkbox"/> </td>
+                        {listContext.columnHeadings.map((heading, index) => { return <td key={index}>{heading + "_value"}</td>})}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div className="panel-footer">
+                {"temp status message"}
+            </div>
+        </div>);
+    }
+
+});
+
+var CvMenu = React.createClass({
+
+    render: function() {
+
+        const menuDef = this.props.menuDef;
+
+        return (
+            <div className="btn-group">
+                <button type="button" className="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">
+                    <span className="caret"> </span>
+                </button>
+                <ul className="dropdown-menu" role="menu">
+                    <li>
+                        <a onClick={this.performMenuAction(menuDef.actionId)}>{menuDef.label}</a>
+                    </li>
+                    <li className="divider"> </li>
+                    <li><a onClick={this.selectAll()}>Select All</a></li>
+                    <li><a onClick={this.deselectAll()}>Deselect All</a></li>
+                </ul>
+            </div>
+        );
+    },
+
+    performMenuAction() {
+    },
+
+    selectAll: function() {
+    },
+
+    deselectAll: function() {
+    },
 
 });
 
 var CvMessage = React.createClass({
 
     render: function() {
-        return <div>this.props.message</div>
+        return <span>{this.props.message}</span>
     }
 
 });
@@ -274,18 +381,29 @@ var CvToolbar = React.createClass({
 
 var CvWorkbench = React.createClass({
 
+    getInitialState: function() {
+        return {navRequest: null}
+    },
+
     render: function () {
 
-        var launchActions = this.props.workbench.workbenchLaunchActions;
-        var launchComps = [];
-        for(let i=0; i < launchActions.length; i++) {
-            launchComps.push(
-                <CvLauncher catavolt={this.props.catavolt} launchAction={launchActions[i]} key={launchActions[i].actionId} onLaunch={this.actionLaunched}/>
+        if(this.state.navRequest) {
+
+            return <CvNavigation navRequest={this.state.navRequest}/>
+
+        } else {
+
+            var launchActions = this.props.workbench.workbenchLaunchActions;
+            var launchComps = [];
+            for(let i=0; i < launchActions.length; i++) {
+                launchComps.push(
+                    <CvLauncher catavolt={this.props.catavolt} launchAction={launchActions[i]} key={launchActions[i].actionId} onLaunch={this.actionLaunched}/>
+                );
+            }
+            return (
+                <div className="panel-body">{launchComps}</div>
             );
         }
-        return (
-            <div className="panel-body">{launchComps}</div>
-        );
     },
 
     actionLaunched: function(launchTry) {
@@ -294,6 +412,7 @@ var CvWorkbench = React.createClass({
             Log.error(launchTry.failure);
         } else {
             Log.info('Succeded with ' + launchTry.success);
+            this.setState({navRequest: launchTry.success});
         }
     }
 

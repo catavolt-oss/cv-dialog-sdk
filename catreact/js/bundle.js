@@ -134,8 +134,10 @@ var CvNavigation = React.createClass({
     displayName: 'CvNavigation',
 
     render: function render() {
-        if (this.props.navRequest instanceof FormContext) {} else {
-            Log.error('Unhandled type of NavRequest ' + this.props.navRequest);
+        if (this.props.navRequest instanceof FormContext) {
+            return React.createElement(CvFormContext, { catavolt: this.props.catavolt, formContext: this.props.navRequest });
+        } else {
+            return React.createElement(CvMessage, { message: 'Unsupported type of NavRequest ${this.props.navRequest}' });
         }
     }
 
@@ -144,7 +146,206 @@ var CvNavigation = React.createClass({
 var CvFormContext = React.createClass({
     displayName: 'CvFormContext',
 
-    render: function render() {}
+    render: function render() {
+
+        var formContext = this.props.formContext;
+
+        return React.createElement(
+            'span',
+            null,
+            formContext.childrenContexts.map(function (context) {
+                Log.info('');
+                Log.info('Got a ' + context.constructor['name'] + ' for display');
+                Log.info('');
+                if (context instanceof ListContext) {
+                    return React.createElement(CvListContext, { listContext: context, key: context.paneRef });
+                } else if (context instanceof DetailsContext) {
+                    return React.createElement(CvMessage, { message: 'Not yet rendering DetailsContext', key: context.paneRef });
+                } else {
+                    Log.info('');
+                    Log.info('Not yet handling display for ' + context.constructor['name']);
+                    Log.info('');
+                    return React.createElement(CvMessage, { message: "Not yet handling display for " + context.constructor['name'], key: context.paneRef });
+                }
+            })
+        );
+
+        return React.createElement(CvMessage, { message: 'Could not render any contexts!' });
+    }
+
+});
+
+var CvListContext = React.createClass({
+    displayName: 'CvListContext',
+
+    render: function render() {
+
+        var listContext = this.props.listContext;
+        //var listContext = new ListContext();
+        /*listContext.setScroller(10, null, [QueryMarkerOption.None]);
+        var listFuture = listContext.refresh().bind(entityRec=>{
+            Log.info('Finished refresh');
+            listContext.scroller.buffer.forEach(entityRec=>{
+                displayListItem(entityRec, listContext);
+            });
+        });
+         listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
+         */
+
+        return React.createElement(
+            'div',
+            { className: 'panel panel-primary' },
+            React.createElement(
+                'span',
+                null,
+                listContext.paneDef.title
+            ),
+            React.createElement(
+                'div',
+                { className: 'panel-heading' },
+                React.createElement(
+                    'div',
+                    { className: 'pull-right' },
+                    listContext.menuDefs.map(function (menuDef, index) {
+                        return React.createElement(CvMenu, { key: index, menuDef: menuDef });
+                    })
+                )
+            ),
+            React.createElement(
+                'div',
+                { style: { maxHeight: '350px', overflow: 'auto' } },
+                React.createElement(
+                    'table',
+                    { className: 'table table-striped' },
+                    React.createElement(
+                        'thead',
+                        null,
+                        React.createElement(
+                            'tr',
+                            null,
+                            React.createElement(
+                                'th',
+                                { key: 'nbsp' },
+                                ' '
+                            ),
+                            listContext.columnHeadings.map(function (heading, index) {
+                                return React.createElement(
+                                    'th',
+                                    { key: index },
+                                    heading
+                                );
+                            })
+                        )
+                    ),
+                    React.createElement(
+                        'tbody',
+                        null,
+                        React.createElement(
+                            'tr',
+                            null,
+                            React.createElement(
+                                'td',
+                                { className: 'text-center', key: 'checkbox' },
+                                React.createElement('input', { type: 'checkbox' }),
+                                ' '
+                            ),
+                            listContext.columnHeadings.map(function (heading, index) {
+                                return React.createElement(
+                                    'td',
+                                    { key: index },
+                                    heading + "_value"
+                                );
+                            })
+                        )
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'panel-footer' },
+                "temp status message"
+            )
+        );
+    }
+
+});
+
+var CvMenu = React.createClass({
+    displayName: 'CvMenu',
+
+    render: function render() {
+
+        var menuDef = this.props.menuDef;
+
+        return React.createElement(
+            'div',
+            { className: 'btn-group' },
+            React.createElement(
+                'button',
+                { type: 'button', className: 'btn btn-xs btn-primary dropdown-toggle', 'data-toggle': 'dropdown' },
+                React.createElement(
+                    'span',
+                    { className: 'caret' },
+                    ' '
+                )
+            ),
+            React.createElement(
+                'ul',
+                { className: 'dropdown-menu', role: 'menu' },
+                React.createElement(
+                    'li',
+                    null,
+                    React.createElement(
+                        'a',
+                        { onClick: this.performMenuAction(menuDef.actionId) },
+                        menuDef.label
+                    )
+                ),
+                React.createElement(
+                    'li',
+                    { className: 'divider' },
+                    ' '
+                ),
+                React.createElement(
+                    'li',
+                    null,
+                    React.createElement(
+                        'a',
+                        { onClick: this.selectAll() },
+                        'Select All'
+                    )
+                ),
+                React.createElement(
+                    'li',
+                    null,
+                    React.createElement(
+                        'a',
+                        { onClick: this.deselectAll() },
+                        'Deselect All'
+                    )
+                )
+            )
+        );
+    },
+
+    performMenuAction: function performMenuAction() {},
+
+    selectAll: function selectAll() {},
+
+    deselectAll: function deselectAll() {}
+
+});
+
+var CvMessage = React.createClass({
+    displayName: 'CvMessage',
+
+    render: function render() {
+        return React.createElement(
+            'span',
+            null,
+            this.props.message
+        );
+    }
 
 });
 
@@ -421,18 +622,28 @@ var CvToolbar = React.createClass({
 var CvWorkbench = React.createClass({
     displayName: 'CvWorkbench',
 
+    getInitialState: function getInitialState() {
+        return { navRequest: null };
+    },
+
     render: function render() {
 
-        var launchActions = this.props.workbench.workbenchLaunchActions;
-        var launchComps = [];
-        for (var i = 0; i < launchActions.length; i++) {
-            launchComps.push(React.createElement(CvLauncher, { catavolt: this.props.catavolt, launchAction: launchActions[i], key: launchActions[i].actionId, onLaunch: this.actionLaunched }));
+        if (this.state.navRequest) {
+
+            return React.createElement(CvNavigation, { navRequest: this.state.navRequest });
+        } else {
+
+            var launchActions = this.props.workbench.workbenchLaunchActions;
+            var launchComps = [];
+            for (var i = 0; i < launchActions.length; i++) {
+                launchComps.push(React.createElement(CvLauncher, { catavolt: this.props.catavolt, launchAction: launchActions[i], key: launchActions[i].actionId, onLaunch: this.actionLaunched }));
+            }
+            return React.createElement(
+                'div',
+                { className: 'panel-body' },
+                launchComps
+            );
         }
-        return React.createElement(
-            'div',
-            { className: 'panel-body' },
-            launchComps
-        );
     },
 
     actionLaunched: function actionLaunched(launchTry) {
@@ -441,6 +652,7 @@ var CvWorkbench = React.createClass({
             Log.error(launchTry.failure);
         } else {
             Log.info('Succeded with ' + launchTry.success);
+            this.setState({ navRequest: launchTry.success });
         }
     }
 
