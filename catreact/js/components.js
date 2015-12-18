@@ -176,7 +176,7 @@ var CvListContext = React.createClass({
     componentWillMount: function() {
 
         const listContext = this.props.listContext;
-        listContext.setScroller(10, null, [QueryMarkerOption.None]);
+        listContext.setScroller(50, null, [QueryMarkerOption.None]);
         listContext.scroller.refresh().onComplete(entityRecTry=>{
              Log.info('Finished refresh');
              if(entityRecTry.isFailure) {
@@ -232,15 +232,28 @@ var CvMenu = React.createClass({
 
         const menuDef = this.props.menuDef;
 
+        var findContextMenuDef = md => {
+            if(md.name === 'CONTEXT_MENU') return md;
+            if(md.menuDefs) {
+                for (let i = 0; i < md.menuDefs.length; i++) {
+                    let result = findContextMenuDef(md.menuDefs[i]);
+                    if (result) return result;
+                }
+            }
+            return null;
+        }
+
+        const ctxMenuDef = findContextMenuDef(menuDef);
+
         return (
             <div className="btn-group">
                 <button type="button" className="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">
                     <span className="caret"> </span>
                 </button>
                 <ul className="dropdown-menu" role="menu">
-                    <li>
-                        <a onClick={this.performMenuAction(menuDef.actionId)}>{menuDef.label}</a>
-                    </li>
+                    {ctxMenuDef.menuDefs.map(md=>{
+                        return <li><a onClick={this.performMenuAction(md.actionId)}>{md.label}</a></li>
+                    })}
                     <li className="divider"> </li>
                     <li><a onClick={this.selectAll()}>Select All</a></li>
                     <li><a onClick={this.deselectAll()}>Deselect All</a></li>

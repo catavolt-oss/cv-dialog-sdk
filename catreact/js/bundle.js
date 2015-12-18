@@ -209,7 +209,7 @@ var CvListContext = React.createClass({
         var _this3 = this;
 
         var listContext = this.props.listContext;
-        listContext.setScroller(10, null, [QueryMarkerOption.None]);
+        listContext.setScroller(50, null, [QueryMarkerOption.None]);
         listContext.scroller.refresh().onComplete(function (entityRecTry) {
             Log.info('Finished refresh');
             if (entityRecTry.isFailure) {
@@ -302,8 +302,22 @@ var CvMenu = React.createClass({
     displayName: 'CvMenu',
 
     render: function render() {
+        var _this4 = this;
 
         var menuDef = this.props.menuDef;
+
+        var findContextMenuDef = function findContextMenuDef(md) {
+            if (md.name === 'CONTEXT_MENU') return md;
+            if (md.menuDefs) {
+                for (var i = 0; i < md.menuDefs.length; i++) {
+                    var result = findContextMenuDef(md.menuDefs[i]);
+                    if (result) return result;
+                }
+            }
+            return null;
+        };
+
+        var ctxMenuDef = findContextMenuDef(menuDef);
 
         return React.createElement(
             'div',
@@ -320,15 +334,17 @@ var CvMenu = React.createClass({
             React.createElement(
                 'ul',
                 { className: 'dropdown-menu', role: 'menu' },
-                React.createElement(
-                    'li',
-                    null,
-                    React.createElement(
-                        'a',
-                        { onClick: this.performMenuAction(menuDef.actionId) },
-                        menuDef.label
-                    )
-                ),
+                ctxMenuDef.menuDefs.map(function (md) {
+                    return React.createElement(
+                        'li',
+                        null,
+                        React.createElement(
+                            'a',
+                            { onClick: _this4.performMenuAction(md.actionId) },
+                            md.label
+                        )
+                    );
+                }),
                 React.createElement(
                     'li',
                     { className: 'divider' },
