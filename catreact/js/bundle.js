@@ -9,6 +9,9 @@ var FormContext = catavolt.dialog.FormContext;
 var Log = catavolt.util.Log;
 var ObjUtil = catavolt.util.ObjUtil;
 var Try = catavolt.fp.Try;
+var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
+
+Log.logLevel(catavolt.util.LogLevel.DEBUG);
 
 var CatavoltPane = React.createClass({
     displayName: 'CatavoltPane',
@@ -56,43 +59,28 @@ var CvAppWindow = React.createClass({
             React.createElement(
                 'div',
                 { className: 'container' },
-                React.createElement(
-                    'div',
-                    { className: 'container-fluid' },
-                    React.createElement(
-                        'div',
-                        { className: 'center-block logo' },
-                        React.createElement('img', { className: 'img-responsive center-block', src: 'img/Catavolt-Logo-retina.png',
-                            style: { verticalAlign: 'middle' } })
-                    )
-                ),
-                React.createElement(
-                    'div',
-                    { className: 'panel panel-primary' },
-                    React.createElement(
-                        'div',
-                        { className: 'panel-heading' },
-                        React.createElement(
-                            'h3',
-                            { className: 'panel-title' },
-                            'Default Workbench'
-                        )
-                    ),
-                    React.createElement(CvWorkbench, { catavolt: this.props.catavolt, workbench: workbenches[0], onNavRequest: this.onNavRequest })
-                ),
                 (function () {
-                    if (_this.state.navRequestTry) {
+                    if (!_this.state.navRequestTry) {
+                        return React.createElement(
+                            'div',
+                            { className: 'panel panel-primary' },
+                            React.createElement(
+                                'div',
+                                { className: 'panel-heading' },
+                                React.createElement(
+                                    'h3',
+                                    { className: 'panel-title' },
+                                    'Default Workbench'
+                                )
+                            ),
+                            React.createElement(CvWorkbench, { catavolt: _this.props.catavolt, workbench: workbenches[0], onNavRequest: _this.onNavRequest })
+                        );
+                    } else {
                         if (_this.state.navRequestTry.isSuccess) {
                             return React.createElement(CvNavigation, { navRequest: _this.state.navRequestTry.success });
                         } else {
-                            return React.createElement(CvMessage, { message: 'Failed to Navigate: ' + navRequestTry.failure });
+                            return React.createElement(CvMessage, { message: 'Failed to Navigate: ' + _this.state.navRequestTry.failure });
                         }
-                    } else {
-                        return React.createElement(
-                            'span',
-                            null,
-                            ' '
-                        );
                     }
                 })()
             )
@@ -213,31 +201,40 @@ var CvFormContext = React.createClass({
 
 var CvListContext = React.createClass({
     displayName: 'CvListContext',
+    getInitialState: function getInitialState() {
+        return { entityRecs: [] };
+    },
+
+    componentWillMount: function componentWillMount() {
+        var _this3 = this;
+
+        var listContext = this.props.listContext;
+        listContext.setScroller(10, null, [QueryMarkerOption.None]);
+        listContext.scroller.refresh().onComplete(function (entityRecTry) {
+            Log.info('Finished refresh');
+            if (entityRecTry.isFailure) {
+                Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
+            } else {
+                Log.info(JSON.stringify(listContext.scroller.buffer));
+                _this3.setState({ entityRecs: ArrayUtil.copy(listContext.scroller.buffer) });
+            }
+        });
+    },
 
     render: function render() {
 
         var listContext = this.props.listContext;
-        //var listContext = new ListContext();
-        /*listContext.setScroller(10, null, [QueryMarkerOption.None]);
-        var listFuture = listContext.refresh().bind(entityRec=>{
-            Log.info('Finished refresh');
-            listContext.scroller.buffer.forEach(entityRec=>{
-                displayListItem(entityRec, listContext);
-            });
-        });
-         listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
-         */
         return React.createElement(
             'div',
             { className: 'panel panel-primary' },
             React.createElement(
-                'span',
-                null,
-                listContext.paneDef.title
-            ),
-            React.createElement(
                 'div',
                 { className: 'panel-heading' },
+                React.createElement(
+                    'span',
+                    null,
+                    listContext.paneTitle || '>'
+                ),
                 React.createElement(
                     'div',
                     { className: 'pull-right' },
@@ -275,29 +272,30 @@ var CvListContext = React.createClass({
                     React.createElement(
                         'tbody',
                         null,
-                        React.createElement(
-                            'tr',
-                            null,
-                            React.createElement(
-                                'td',
-                                { className: 'text-center', key: 'checkbox' },
-                                React.createElement('input', { type: 'checkbox' }),
-                                ' '
-                            ),
-                            listContext.columnHeadings.map(function (heading, index) {
-                                return React.createElement(
+                        this.state.entityRecs.map(function (entityRec, index) {
+                            return React.createElement(
+                                'tr',
+                                { key: index },
+                                React.createElement(
                                     'td',
-                                    { key: index },
-                                    heading + "_value"
-                                );
-                            })
-                        )
+                                    { className: 'text-center', key: 'checkbox' },
+                                    React.createElement('input', { type: 'checkbox' }),
+                                    ' '
+                                ),
+                                listContext.rowValues(entityRec).map(function (val, index) {
+                                    return React.createElement(
+                                        'td',
+                                        { key: index },
+                                        val ? val.toString() : ' '
+                                    );
+                                })
+                            );
+                        })
                     )
                 )
             )
         );
     }
-
 });
 
 var CvMenu = React.createClass({
@@ -370,11 +368,8 @@ var CvMessage = React.createClass({
     displayName: 'CvMessage',
 
     render: function render() {
-        return React.createElement(
-            'span',
-            null,
-            this.props.message
-        );
+        Log.info(this.props.message);
+        return React.createElement('span', null);
     }
 
 });

@@ -6,6 +6,9 @@ var FormContext = catavolt.dialog.FormContext;
 var Log = catavolt.util.Log;
 var ObjUtil = catavolt.util.ObjUtil;
 var Try = catavolt.fp.Try;
+var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
+
+Log.logLevel(catavolt.util.LogLevel.DEBUG);
 
 
 var CatavoltPane = React.createClass({
@@ -46,27 +49,22 @@ var CvAppWindow = React.createClass({
             <span>
                 <CvToolbar/>
             <div className="container">
-                <div className="container-fluid">
-                    <div className="center-block logo">
-                        <img className="img-responsive center-block" src="img/Catavolt-Logo-retina.png"
-                             style={{verticalAlign: 'middle'}}/>
-                    </div>
-                </div>
-                <div className="panel panel-primary">
-                    <div className="panel-heading">
-                        <h3 className="panel-title">Default Workbench</h3>
-                    </div>
-                    <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]} onNavRequest={this.onNavRequest}/>
-                </div>
                 {(() => {
-                    if(this.state.navRequestTry) {
+                        if(!this.state.navRequestTry) {
+                        return (
+                            <div className="panel panel-primary">
+                                <div className="panel-heading">
+                                    <h3 className="panel-title">Default Workbench</h3>
+                                </div>
+                            <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]} onNavRequest={this.onNavRequest}/>
+                            </div>
+                        );
+                    } else {
                         if(this.state.navRequestTry.isSuccess) {
                             return <CvNavigation navRequest={this.state.navRequestTry.success}/>
                         } else {
-                            return <CvMessage message={'Failed to Navigate: ' + navRequestTry.failure}/>
+                            return <CvMessage message={'Failed to Navigate: ' + this.state.navRequestTry.failure}/>
                         }
-                    } else {
-                        return <span> </span>
                     }
                 })()}
             </div>
@@ -171,49 +169,61 @@ var CvFormContext = React.createClass({
 
 var CvListContext = React.createClass({
 
+    getInitialState() {
+        return {entityRecs: []}
+    },
+
+    componentWillMount: function() {
+
+        const listContext = this.props.listContext;
+        listContext.setScroller(10, null, [QueryMarkerOption.None]);
+        listContext.scroller.refresh().onComplete(entityRecTry=>{
+             Log.info('Finished refresh');
+             if(entityRecTry.isFailure) {
+                 Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
+             } else {
+                 Log.info(JSON.stringify(listContext.scroller.buffer));
+                 this.setState({entityRecs: ArrayUtil.copy(listContext.scroller.buffer)});
+             }
+         });
+
+
+    },
 
     render: function(){
 
         const listContext = this.props.listContext;
-        //var listContext = new ListContext();
-        /*listContext.setScroller(10, null, [QueryMarkerOption.None]);
-        var listFuture = listContext.refresh().bind(entityRec=>{
-            Log.info('Finished refresh');
-            listContext.scroller.buffer.forEach(entityRec=>{
-                displayListItem(entityRec, listContext);
-            });
-        });
-
-        listFuture.onFailure((failure)=>{ Log.error("ListContext failed to render with " + failure)});
-
-        */
         return (
             <div className="panel panel-primary">
-            <span>{listContext.paneDef.title}</span>
-            <div className="panel-heading">
-                <div className="pull-right">
-                    {listContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index} menuDef={menuDef}/> })}
+                <div className="panel-heading">
+                    <span>{listContext.paneTitle || '>'}</span>
+                    <div className="pull-right">
+                        {listContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index} menuDef={menuDef}/> })}
+                    </div>
+                </div>
+                <div style={{maxHeight: '350px', overflow: 'auto'}}>
+                    <table className="table table-striped">
+                        <thead>
+                        <tr>
+                            <th key="nbsp">&nbsp;</th>
+                            {listContext.columnHeadings.map((heading, index) => { return <th key={index}>{heading}</th> })}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {this.state.entityRecs.map((entityRec, index) => {
+                            return (
+                                <tr key={index}>
+                                    <td className="text-center" key="checkbox"><input type="checkbox"/> </td>
+                                    {listContext.rowValues(entityRec).map((val,index)=>{ return <td key={index}>{val ? val.toString() : ' '}</td> })}
+                                </tr>
+                            )
+                        })}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div style={{maxHeight: '350px', overflow: 'auto'}}>
-                <table className="table table-striped">
-                    <thead>
-                    <tr>
-                        <th key="nbsp">&nbsp;</th>
-                        {listContext.columnHeadings.map((heading, index) => { return <th key={index}>{heading}</th> })}
-                    </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td className="text-center" key="checkbox"><input type="checkbox"/> </td>
-                            {listContext.columnHeadings.map((heading, index) => { return <td key={index}>{heading + "_value"}</td>})}
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>);
+        )
     }
-
 });
 
 var CvMenu = React.createClass({
@@ -253,7 +263,8 @@ var CvMenu = React.createClass({
 var CvMessage = React.createClass({
 
     render: function() {
-        return <span>{this.props.message}</span>
+        Log.info(this.props.message);
+        return <span></span>
     }
 
 });
