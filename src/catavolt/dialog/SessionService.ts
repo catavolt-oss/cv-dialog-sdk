@@ -31,6 +31,20 @@ module catavolt.dialog {
 
         }
 
+        static deleteSession(sessionContext:SessionContext):Future<VoidResult> {
+
+            var method = "deleteSession";
+            var params:StringDictionary = {
+                'sessionHandle':sessionContext.sessionHandle
+            };
+            var call = Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
+            return call.perform().bind(
+                (result:StringDictionary)=>{
+                    return Future.createSuccessfulFuture<VoidResult>("deleteSession/extractVoidResultFromResponse", result);
+                }
+            );
+        }
+
         static getSessionListProperty(propertyName:string, sessionContext:SessionContext): Future<XGetSessionListPropertyResult> {
 
             var method = "getSessionListProperty";

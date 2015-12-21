@@ -182,7 +182,7 @@ module catavolt.dialog {
         }
 
         static processSideEffects(dialogHandle:DialogHandle, sessionContext:SessionContext,
-                                  propertyName:string, propertyValue:any, pendingWrites:EntityRec) {
+                                  propertyName:string, propertyValue:any, pendingWrites:EntityRec):Future<XPropertyChangeResult> {
 
             var method = 'handlePropertyChange';
             var params:StringDictionary = {'dialogHandle':OType.serializeObject(dialogHandle, 'WSDialogHandle'),

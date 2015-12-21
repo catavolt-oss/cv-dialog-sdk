@@ -28,6 +28,121 @@ var catavolt;
     })(util = catavolt.util || (catavolt.util = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 4/4/15.
+ */
+///<reference path="../references.ts"/>
+/*
+    This implementation supports our ECMA 5.1 browser set, including IE9
+    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var Base64 = (function () {
+            function Base64() {
+            }
+            Base64.encode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = Base64._utf8_encode(input);
+                while (i < input.length) {
+                    chr1 = input.charCodeAt(i++);
+                    chr2 = input.charCodeAt(i++);
+                    chr3 = input.charCodeAt(i++);
+                    enc1 = chr1 >> 2;
+                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                    enc4 = chr3 & 63;
+                    if (isNaN(chr2)) {
+                        enc3 = enc4 = 64;
+                    }
+                    else if (isNaN(chr3)) {
+                        enc4 = 64;
+                    }
+                    output = output +
+                        Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
+                        Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
+                }
+                return output;
+            };
+            Base64.decode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3;
+                var enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+                while (i < input.length) {
+                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
+                    chr1 = (enc1 << 2) | (enc2 >> 4);
+                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+                    chr3 = ((enc3 & 3) << 6) | enc4;
+                    output = output + String.fromCharCode(chr1);
+                    if (enc3 != 64) {
+                        output = output + String.fromCharCode(chr2);
+                    }
+                    if (enc4 != 64) {
+                        output = output + String.fromCharCode(chr3);
+                    }
+                }
+                output = Base64._utf8_decode(output);
+                return output;
+            };
+            Base64._utf8_encode = function (s) {
+                s = s.replace(/\r\n/g, "\n");
+                var utftext = "";
+                for (var n = 0; n < s.length; n++) {
+                    var c = s.charCodeAt(n);
+                    if (c < 128) {
+                        utftext += String.fromCharCode(c);
+                    }
+                    else if ((c > 127) && (c < 2048)) {
+                        utftext += String.fromCharCode((c >> 6) | 192);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+                    else {
+                        utftext += String.fromCharCode((c >> 12) | 224);
+                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+                }
+                return utftext;
+            };
+            Base64._utf8_decode = function (utftext) {
+                var s = "";
+                var i = 0;
+                var c = 0, c1 = 0, c2 = 0, c3 = 0;
+                while (i < utftext.length) {
+                    c = utftext.charCodeAt(i);
+                    if (c < 128) {
+                        s += String.fromCharCode(c);
+                        i++;
+                    }
+                    else if ((c > 191) && (c < 224)) {
+                        c2 = utftext.charCodeAt(i + 1);
+                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                        i += 2;
+                    }
+                    else {
+                        c2 = utftext.charCodeAt(i + 1);
+                        c3 = utftext.charCodeAt(i + 2);
+                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                        i += 3;
+                    }
+                }
+                return s;
+            };
+            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            return Base64;
+        })();
+        util.Base64 = Base64;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/20/15.
  */
 var catavolt;
@@ -805,6 +920,17 @@ var catavolt;
  */
 var Call = catavolt.ws.Call;
 var Get = catavolt.ws.Get;
+/**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="util/references.ts"/>
+//fp
+///<reference path="fp/references.ts"/>
+//ws
+///<reference path="ws/references.ts"/>
+//dialog
+///<reference path="dialog/references.ts"/>
 /**
  * Created by rburson on 4/28/15.
  */
@@ -4741,178 +4867,6 @@ var catavolt;
  * Created by rburson on 3/12/15.
  */
 /**
- * Created by rburson on 3/13/15.
- */
-///<reference path="references.ts"/>
-///<reference path="../fp/references.ts"/>
-///<reference path="../util/references.ts"/>
-///<reference path="../ws/references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var dialog;
-    (function (dialog) {
-        var AppContextState;
-        (function (AppContextState) {
-            AppContextState[AppContextState["LOGGED_OUT"] = 0] = "LOGGED_OUT";
-            AppContextState[AppContextState["LOGGED_IN"] = 1] = "LOGGED_IN";
-        })(AppContextState || (AppContextState = {}));
-        var AppContextValues = (function () {
-            function AppContextValues(sessionContext, appWinDef, tenantSettings) {
-                this.sessionContext = sessionContext;
-                this.appWinDef = appWinDef;
-                this.tenantSettings = tenantSettings;
-            }
-            return AppContextValues;
-        })();
-        var AppContext = (function () {
-            function AppContext() {
-                if (AppContext._singleton) {
-                    throw new Error("Singleton instance already created");
-                }
-                this._deviceProps = [];
-                this.setAppContextStateToLoggedOut();
-                AppContext._singleton = this;
-            }
-            Object.defineProperty(AppContext, "defaultTTLInMillis", {
-                get: function () { return AppContext.ONE_DAY_IN_MILLIS; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext, "singleton", {
-                get: function () {
-                    if (!AppContext._singleton) {
-                        AppContext._singleton = new AppContext();
-                    }
-                    return AppContext._singleton;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "appWinDefTry", {
-                get: function () {
-                    return this._appWinDefTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "deviceProps", {
-                get: function () {
-                    return this._deviceProps;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "isLoggedIn", {
-                get: function () {
-                    return this._appContextState === AppContextState.LOGGED_IN;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
-                if (this._appContextState === AppContextState.LOGGED_OUT) {
-                    return Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
-                }
-                return dialog.WorkbenchService.getWorkbench(sessionContext, workbenchId);
-            };
-            AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
-                var _this = this;
-                if (this._appContextState === AppContextState.LOGGED_IN) {
-                    return Future.createFailedFuture("AppContext::login", "User is already logged in");
-                }
-                var answer;
-                var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
-                return appContextValuesFr.bind(function (appContextValues) {
-                    _this.setAppContextStateToLoggedIn(appContextValues);
-                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
-                });
-            };
-            AppContext.prototype.loginDirectly = function (url, tenantId, clientType, userId, password) {
-                var _this = this;
-                if (this._appContextState === AppContextState.LOGGED_IN) {
-                    return Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
-                }
-                return this.loginFromSystemContext(new dialog.SystemContextImpl(url), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
-                    _this.setAppContextStateToLoggedIn(appContextValues);
-                    return Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
-                });
-            };
-            AppContext.prototype.performLaunchAction = function (launchAction) {
-                if (this._appContextState === AppContextState.LOGGED_OUT) {
-                    return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
-                }
-                return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
-            };
-            Object.defineProperty(AppContext.prototype, "sessionContextTry", {
-                get: function () {
-                    return this._sessionContextTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(AppContext.prototype, "tenantSettingsTry", {
-                get: function () {
-                    return this._tenantSettingsTry;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            AppContext.prototype.finalizeContext = function (sessionContext, deviceProps) {
-                var devicePropName = "com.catavolt.session.property.DeviceProperties";
-                return dialog.SessionService.setSessionListProperty(devicePropName, deviceProps, sessionContext).bind(function (setPropertyListResult) {
-                    var listPropName = "com.catavolt.session.property.TenantProperties";
-                    return dialog.SessionService.getSessionListProperty(listPropName, sessionContext).bind(function (listPropertyResult) {
-                        return dialog.WorkbenchService.getAppWinDef(sessionContext).bind(function (appWinDef) {
-                            return Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
-                        });
-                    });
-                });
-            };
-            AppContext.prototype.loginOnline = function (gatewayHost, tenantId, clientType, userId, password, deviceProps) {
-                var _this = this;
-                var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
-                return systemContextFr.bind(function (sc) {
-                    return _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
-                });
-            };
-            AppContext.prototype.loginFromSystemContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
-                var _this = this;
-                var sessionContextFuture = dialog.SessionService.createSession(tenantId, userId, password, clientType, systemContext);
-                return sessionContextFuture.bind(function (sessionContext) {
-                    return _this.finalizeContext(sessionContext, deviceProps);
-                });
-            };
-            AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {
-                var serviceEndpoint = dialog.GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
-                return serviceEndpoint.map(function (serviceEndpoint) {
-                    return new dialog.SystemContextImpl(serviceEndpoint.serverAssignment);
-                });
-            };
-            AppContext.prototype.performLaunchActionOnline = function (launchAction, sessionContext) {
-                var redirFr = dialog.WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
-                return redirFr.bind(function (r) {
-                    return dialog.NavRequest.Util.fromRedirection(r, launchAction, sessionContext);
-                });
-            };
-            AppContext.prototype.setAppContextStateToLoggedIn = function (appContextValues) {
-                this._appWinDefTry = new Success(appContextValues.appWinDef);
-                this._tenantSettingsTry = new Success(appContextValues.tenantSettings);
-                this._sessionContextTry = new Success(appContextValues.sessionContext);
-                this._appContextState = AppContextState.LOGGED_IN;
-            };
-            AppContext.prototype.setAppContextStateToLoggedOut = function () {
-                this._appWinDefTry = new Failure("Not logged in");
-                this._tenantSettingsTry = new Failure('Not logged in"');
-                this._sessionContextTry = new Failure('Not loggged in');
-                this._appContextState = AppContextState.LOGGED_OUT;
-            };
-            AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
-            return AppContext;
-        })();
-        dialog.AppContext = AppContext;
-    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
-})(catavolt || (catavolt = {}));
-/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -5157,6 +5111,16 @@ var catavolt;
                 var call = Call.createCallWithoutSession(SessionService.SERVICE_PATH, method, params, systemContext);
                 return call.perform().bind(function (result) {
                     return Future.createCompletedFuture("createSession/extractSessionContextFromResponse", dialog.SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
+                });
+            };
+            SessionService.deleteSession = function (sessionContext) {
+                var method = "deleteSession";
+                var params = {
+                    'sessionHandle': sessionContext.sessionHandle
+                };
+                var call = Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
+                return call.perform().bind(function (result) {
+                    return Future.createSuccessfulFuture("deleteSession/extractVoidResultFromResponse", result);
                 });
             };
             SessionService.getSessionListProperty = function (propertyName, sessionContext) {
@@ -8024,128 +7988,196 @@ var Workbench = catavolt.dialog.Workbench;
 var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
 var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 /**
- * Created by rburson on 3/6/15.
+ * Created by rburson on 3/13/15.
  */
-//util
-///<reference path="util/references.ts"/>
-//fp
-///<reference path="fp/references.ts"/>
-//ws
-///<reference path="ws/references.ts"/>
-//dialog
-///<reference path="dialog/references.ts"/>
-/**
- * Created by rburson on 4/4/15.
- */
-///<reference path="../references.ts"/>
-/*
-    This implementation supports our ECMA 5.1 browser set, including IE9
-    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
- */
+///<reference path="references.ts"/>
+///<reference path="../fp/references.ts"/>
+///<reference path="../util/references.ts"/>
+///<reference path="../ws/references.ts"/>
 var catavolt;
 (function (catavolt) {
-    var util;
-    (function (util) {
-        var Base64 = (function () {
-            function Base64() {
+    var dialog;
+    (function (dialog) {
+        var AppContextState;
+        (function (AppContextState) {
+            AppContextState[AppContextState["LOGGED_OUT"] = 0] = "LOGGED_OUT";
+            AppContextState[AppContextState["LOGGED_IN"] = 1] = "LOGGED_IN";
+        })(AppContextState || (AppContextState = {}));
+        var AppContextValues = (function () {
+            function AppContextValues(sessionContext, appWinDef, tenantSettings) {
+                this.sessionContext = sessionContext;
+                this.appWinDef = appWinDef;
+                this.tenantSettings = tenantSettings;
             }
-            Base64.encode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = Base64._utf8_encode(input);
-                while (i < input.length) {
-                    chr1 = input.charCodeAt(i++);
-                    chr2 = input.charCodeAt(i++);
-                    chr3 = input.charCodeAt(i++);
-                    enc1 = chr1 >> 2;
-                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-                    enc4 = chr3 & 63;
-                    if (isNaN(chr2)) {
-                        enc3 = enc4 = 64;
-                    }
-                    else if (isNaN(chr3)) {
-                        enc4 = 64;
-                    }
-                    output = output +
-                        Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
-                        Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
-                }
-                return output;
-            };
-            Base64.decode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3;
-                var enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-                while (i < input.length) {
-                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
-                    chr1 = (enc1 << 2) | (enc2 >> 4);
-                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-                    chr3 = ((enc3 & 3) << 6) | enc4;
-                    output = output + String.fromCharCode(chr1);
-                    if (enc3 != 64) {
-                        output = output + String.fromCharCode(chr2);
-                    }
-                    if (enc4 != 64) {
-                        output = output + String.fromCharCode(chr3);
-                    }
-                }
-                output = Base64._utf8_decode(output);
-                return output;
-            };
-            Base64._utf8_encode = function (s) {
-                s = s.replace(/\r\n/g, "\n");
-                var utftext = "";
-                for (var n = 0; n < s.length; n++) {
-                    var c = s.charCodeAt(n);
-                    if (c < 128) {
-                        utftext += String.fromCharCode(c);
-                    }
-                    else if ((c > 127) && (c < 2048)) {
-                        utftext += String.fromCharCode((c >> 6) | 192);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                    else {
-                        utftext += String.fromCharCode((c >> 12) | 224);
-                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                }
-                return utftext;
-            };
-            Base64._utf8_decode = function (utftext) {
-                var s = "";
-                var i = 0;
-                var c = 0, c1 = 0, c2 = 0, c3 = 0;
-                while (i < utftext.length) {
-                    c = utftext.charCodeAt(i);
-                    if (c < 128) {
-                        s += String.fromCharCode(c);
-                        i++;
-                    }
-                    else if ((c > 191) && (c < 224)) {
-                        c2 = utftext.charCodeAt(i + 1);
-                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                        i += 2;
-                    }
-                    else {
-                        c2 = utftext.charCodeAt(i + 1);
-                        c3 = utftext.charCodeAt(i + 2);
-                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                        i += 3;
-                    }
-                }
-                return s;
-            };
-            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-            return Base64;
+            return AppContextValues;
         })();
-        util.Base64 = Base64;
-    })(util = catavolt.util || (catavolt.util = {}));
+        var AppContext = (function () {
+            function AppContext() {
+                if (AppContext._singleton) {
+                    throw new Error("Singleton instance already created");
+                }
+                this._deviceProps = [];
+                this.setAppContextStateToLoggedOut();
+                AppContext._singleton = this;
+            }
+            Object.defineProperty(AppContext, "defaultTTLInMillis", {
+                get: function () { return AppContext.ONE_DAY_IN_MILLIS; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext, "singleton", {
+                get: function () {
+                    if (!AppContext._singleton) {
+                        AppContext._singleton = new AppContext();
+                    }
+                    return AppContext._singleton;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "appWinDefTry", {
+                get: function () {
+                    return this._appWinDefTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "deviceProps", {
+                get: function () {
+                    return this._deviceProps;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "isLoggedIn", {
+                get: function () {
+                    return this._appContextState === AppContextState.LOGGED_IN;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
+                if (this._appContextState === AppContextState.LOGGED_OUT) {
+                    return Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
+                }
+                return dialog.WorkbenchService.getWorkbench(sessionContext, workbenchId);
+            };
+            AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
+                var _this = this;
+                if (this._appContextState === AppContextState.LOGGED_IN) {
+                    return Future.createFailedFuture("AppContext::login", "User is already logged in");
+                }
+                var answer;
+                var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
+                return appContextValuesFr.bind(function (appContextValues) {
+                    _this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+                });
+            };
+            AppContext.prototype.loginDirectly = function (url, tenantId, clientType, userId, password) {
+                var _this = this;
+                if (this._appContextState === AppContextState.LOGGED_IN) {
+                    return Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
+                }
+                return this.loginFromSystemContext(new dialog.SystemContextImpl(url), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
+                    _this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
+                });
+            };
+            AppContext.prototype.logout = function () {
+                if (this._appContextState === AppContextState.LOGGED_OUT) {
+                    return Future.createFailedFuture("AppContext::loginDirectly", "User is already logged out");
+                }
+                var result = dialog.SessionService.deleteSession(this.sessionContextTry.success);
+                result.onComplete(function (deleteSessionTry) {
+                    if (deleteSessionTry.isFailure) {
+                        Log.error('Error while logging out: ' + ObjUtil.formatRecAttr(deleteSessionTry.failure));
+                    }
+                });
+                this.setAppContextStateToLoggedOut();
+                return result;
+            };
+            AppContext.prototype.performLaunchAction = function (launchAction) {
+                if (this._appContextState === AppContextState.LOGGED_OUT) {
+                    return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
+                }
+                return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
+            };
+            AppContext.prototype.refreshContext = function (sessionContext, deviceProps) {
+                var _this = this;
+                if (deviceProps === void 0) { deviceProps = []; }
+                var appContextValuesFr = this.finalizeContext(sessionContext, deviceProps);
+                return appContextValuesFr.bind(function (appContextValues) {
+                    _this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+                });
+            };
+            Object.defineProperty(AppContext.prototype, "sessionContextTry", {
+                get: function () {
+                    return this._sessionContextTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AppContext.prototype, "tenantSettingsTry", {
+                get: function () {
+                    return this._tenantSettingsTry;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            AppContext.prototype.finalizeContext = function (sessionContext, deviceProps) {
+                var devicePropName = "com.catavolt.session.property.DeviceProperties";
+                return dialog.SessionService.setSessionListProperty(devicePropName, deviceProps, sessionContext).bind(function (setPropertyListResult) {
+                    var listPropName = "com.catavolt.session.property.TenantProperties";
+                    return dialog.SessionService.getSessionListProperty(listPropName, sessionContext).bind(function (listPropertyResult) {
+                        return dialog.WorkbenchService.getAppWinDef(sessionContext).bind(function (appWinDef) {
+                            return Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
+                        });
+                    });
+                });
+            };
+            AppContext.prototype.loginOnline = function (gatewayHost, tenantId, clientType, userId, password, deviceProps) {
+                var _this = this;
+                var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
+                return systemContextFr.bind(function (sc) {
+                    return _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
+                });
+            };
+            AppContext.prototype.loginFromSystemContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
+                var _this = this;
+                var sessionContextFuture = dialog.SessionService.createSession(tenantId, userId, password, clientType, systemContext);
+                return sessionContextFuture.bind(function (sessionContext) {
+                    return _this.finalizeContext(sessionContext, deviceProps);
+                });
+            };
+            AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {
+                var serviceEndpoint = dialog.GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
+                return serviceEndpoint.map(function (serviceEndpoint) {
+                    return new dialog.SystemContextImpl(serviceEndpoint.serverAssignment);
+                });
+            };
+            AppContext.prototype.performLaunchActionOnline = function (launchAction, sessionContext) {
+                var redirFr = dialog.WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, sessionContext);
+                return redirFr.bind(function (r) {
+                    return dialog.NavRequest.Util.fromRedirection(r, launchAction, sessionContext);
+                });
+            };
+            AppContext.prototype.setAppContextStateToLoggedIn = function (appContextValues) {
+                this._appWinDefTry = new Success(appContextValues.appWinDef);
+                this._tenantSettingsTry = new Success(appContextValues.tenantSettings);
+                this._sessionContextTry = new Success(appContextValues.sessionContext);
+                this._appContextState = AppContextState.LOGGED_IN;
+            };
+            AppContext.prototype.setAppContextStateToLoggedOut = function () {
+                this._appWinDefTry = new Failure("Not logged in");
+                this._tenantSettingsTry = new Failure('Not logged in"');
+                this._sessionContextTry = new Failure('Not loggged in');
+                this._appContextState = AppContextState.LOGGED_OUT;
+            };
+            AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
+            return AppContext;
+        })();
+        dialog.AppContext = AppContext;
+    })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));

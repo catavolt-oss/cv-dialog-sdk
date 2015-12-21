@@ -8,33 +8,82 @@ var ObjUtil = catavolt.util.ObjUtil;
 var Try = catavolt.fp.Try;
 var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
 
-Log.logLevel(catavolt.util.LogLevel.DEBUG);
+//Log.logLevel(catavolt.util.LogLevel.DEBUG);
 
-
+/*
+   ***************************************************
+   *  Top-level container for a Catavolt Application
+   ***************************************************
+ */
 var CatavoltPane = React.createClass({
+
+    checkSession: function() {
+        var sessionContext = this.getSession();
+        if(sessionContext){
+            this.props.catavolt.refreshContext(sessionContext).onComplete(appWinDefTry=>{
+                if(appWinDefTry.isFailure) {
+                    Log.error("Failed to refresh session: " + ObjUtil.formatRecAttr(appWinDefTry.failure));
+                } else {
+                    this.setState({loggedIn:true});
+                }
+            });
+        }
+    },
+
+    componentWillMount: function() {
+        /* @TODO - need to work on the AppContext to make the session restore possible */
+        //this.checkSession();
+    },
+
+    getDefaultProps: function() {
+       return {catavolt: catavolt.dialog.AppContext.singleton}
+    },
 
     getInitialState: function () {
         return {loggedIn: false}
     },
 
-    render: function () {
-        var Catavolt = catavolt.dialog.AppContext.singleton;
-        return this.state.loggedIn ?
-            (<CvAppWindow catavolt={Catavolt} onLogout={this.loggedOut}/>) :
-            (<span><CvHeroHeader/><CvLoginPane catavolt={Catavolt} onLogin={this.loggedIn}/></span>);
+    getSession: function() {
+        var session = sessionStorage.getItem('session');
+        return session ? JSON.parse(session) : null;
+
     },
 
-    loggedIn: function () {
+    render: function () {
+
+        return this.state.loggedIn ?
+            (<CvAppWindow catavolt={this.props.catavolt} onLogout={this.loggedOut}/>) :
+            (<span><CvHeroHeader/><CvLoginPane catavolt={this.props.catavolt} onLogin={this.loggedIn}/></span>);
+
+    },
+
+    loggedIn: function (sessionContext) {
         this.setState({loggedIn: true})
+        this.storeSession(this.props.catavolt.sessionContextTry.success);
     },
 
     loggedOut: function () {
+        this.removeSession();
         this.setState({loggedIn: false})
+    },
+
+    removeSession: function() {
+      sessionStorage.removeItem('session');
+      sessionStorage.removeItem('systemCtx');
+    },
+
+    storeSession: function(sessionContext) {
+        sessionStorage.setItem('session', JSON.stringify(sessionContext));
+        sessionStorage.setItem('systemCtx', JSON.stringify(sessionContext.systemContext));
     }
 
 });
 
-
+/*
+  ***************************************************
+  * A component analogous to Catavolt AppWinDef
+  ***************************************************
+ */
 var CvAppWindow = React.createClass({
 
     getInitialState: function () {
@@ -61,7 +110,7 @@ var CvAppWindow = React.createClass({
                         );
                     } else {
                         if(this.state.navRequestTry.isSuccess) {
-                            return <CvNavigation navRequest={this.state.navRequestTry.success}/>
+                            return <CvNavigation navRequest={this.state.navRequestTry.success} onNavRequest={this.onNavRequest}/>
                         } else {
                             return <CvMessage message={'Failed to Navigate: ' + this.state.navRequestTry.failure}/>
                         }
@@ -74,7 +123,7 @@ var CvAppWindow = React.createClass({
 
     onNavRequest: function(navRequestTry) {
         if(navRequestTry.isFailure) {
-            alert('Handle Launch Failure!');
+            alert('Handle Navigation Failure!');
             Log.error(navRequestTry.failure);
         } else {
             Log.info('Succeeded with ' + navRequestTry.success);
@@ -86,6 +135,11 @@ var CvAppWindow = React.createClass({
 });
 
 
+/*
+  ***************************************************
+  * When you need to look fancy
+  ***************************************************
+ */
 var CvHeroHeader = React.createClass({
 
     render: function() {
@@ -102,6 +156,193 @@ var CvHeroHeader = React.createClass({
 });
 
 
+/*
+  ***************************************************
+  * Render a DetailsContext
+  ***************************************************
+ */
+var CvDetails = React.createClass({
+
+    getInitialState() {
+        return {renderedDetailRows: []}
+    },
+
+    componentWillMount: function() {
+        this.layoutDetailsPane(this.props.detailsContext);
+    },
+
+    render: function () {
+        const detailsContext = this.props.detailsContext;
+        return (
+            <div className="panel panel-primary">
+                <div className="panel-heading">
+                    <span>{detailsContext.paneTitle || '>'}</span>
+                    <div className="pull-right">
+                        {detailsContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index} menuDef={menuDef}/> })}
+                    </div>
+                </div>
+                <div style={{maxHeight: '400px', overflow: 'auto'}}>
+                    <table className="table table-striped">
+                        <tbody>{this.state.renderedDetailRows}</tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    },
+
+    layoutDetailsPane: function (detailsContext) {
+
+        let allDefsComplete = Future.createSuccessfulFuture('layoutDetailsPaneStart', '');
+        const renderedDetailRows = [];
+        detailsContext.detailsDef.rows.forEach((cellDefRow)=> {
+            if (this.isValidDetailsDefRow(cellDefRow)) {
+                if (this.isSectionTitleDef(cellDefRow)) {
+                    allDefsComplete = allDefsComplete.map((lastRowResult)=> {
+                        var titleRow = this.createTitleRow(cellDefRow);
+                        renderedDetailRows.push(titleRow);
+                        return titleRow;
+                    });
+                } else {
+                    allDefsComplete = allDefsComplete.bind((lastRowResult)=> {
+                        return this.createEditorRow(cellDefRow, detailsContext).map((editorRow)=> {
+                            renderedDetailRows.push(editorRow);
+                            return editorRow;
+                        });
+                    });
+                }
+            } else {
+                Log.info('Detail row is invalid ' + ObjUtil.formatRecAttr(cellDefRow));
+            }
+        });
+
+        allDefsComplete.onComplete((lastRowResultTry)=> {
+            this.setState({renderedDetailRows: renderedDetailRows});
+        });
+    },
+
+    isValidDetailsDefRow: function (row) {
+        return row.length === 2 &&
+            row[0].values.length === 1 &&
+            row[1].values.length === 1 &&
+            (row[0].values[0] instanceof LabelCellValueDef ||
+            row[1].values[0] instanceof ForcedLineCellValueDef) &&
+            (row[1].values[0] instanceof AttributeCellValueDef ||
+            row[1].values[0] instanceof LabelCellValueDef ||
+            row[1].values[0] instanceof ForcedLineCellValueDef);
+    },
+
+    isSectionTitleDef: function (row) {
+        return row[0].values[0] instanceof LabelCellValueDef &&
+            row[1].values[0] instanceof LabelCellValueDef;
+    },
+
+    createTitleRow: function (row) {
+        return <tr><td><span>{row[0].values[0]}</span></td><td><span>{row[1].values[0]}</span></td></tr>;
+    },
+
+    /* Returns a Future */
+    createEditorRow: function (row, detailsContext) {
+        let labelDef = row[0].values[0];
+        let label;
+        if (labelDef instanceof LabelCellValueDef) {
+            label = <span>{labelDef.value}</span>
+        } else {
+            label = <span>N/A</span>
+        }
+
+        var valueDef = row[1].values[0];
+        if (valueDef instanceof AttributeCellValueDef && !detailsContext.isReadModeFor(valueDef.propertyName)) {
+            return this.createEditorControl(valueDef, detailsContext).map((editorCellString)=> {
+                return <tr>{[<td>{label}</td>, <td>{editorCellString}</td>]}</tr>
+            });
+        } else if (valueDef instanceof AttributeCellValueDef) {
+            let value = "";
+            var prop = detailsContext.buffer.propAtName(valueDef.propertyName);
+            if (prop && detailsContext.isBinary(valueDef)) {
+                value = <span></span>;
+            } else if (prop) {
+                value = <span>{detailsContext.formatForRead(prop.value, prop.name)}</span>
+            }
+            return Future.createSuccessfulFuture('createEditorRow', <tr>{[<td>{label}</td>, <td>{value}</td>]}</tr>);
+        } else if (valueDef instanceof LabelCellValueDef) {
+            const value = <span>{valueDef.value}</span>
+            return Future.createSuccessfulFuture('createEditorRow', <tr>{[<td>{label}</td>, <td>{value}</td>]}</tr>);
+        } else {
+            return Future.createSuccessfulFuture('createEditorRow', <tr>{[<td>{label}</td>, <td></td>]}</tr>);
+        }
+
+    },
+
+    /* Returns a Future */
+    createEditorControl: function (attributeCellValueDef, detailsContext) {
+        if (attributeDef.isComboBoxEntryMethod) {
+            return detailsContext.getAvailableValues(attributeDef.propertyName).map((values)=> {
+                return <span></span>
+                //return '<ComboBox>' + values.join(", ") + '</ComboBox>';
+            });
+        } else if (attributeDef.isDropDownEntryMethod) {
+            return detailsContext.getAvailableValues(attributeDef.propertyName).map((values)=> {
+                return <span></span>
+                //return '<DropDown>' + values.join(", ") + '</DropDown>';
+            });
+        } else {
+            var entityRec = detailsContext.buffer;
+            var prop = entityRec.propAtName(attributeDef.propertyName);
+            if (prop && detailsContext.isBinary(attributeDef)) {
+                return Future.createSuccessfulFuture('createEditorControl', <span></span>);
+                //return Future.createSuccessfulFuture('createEditorControl', "<Binary name='" + prop.name + "' mode='WRITE'/>");
+            } else {
+                var value = prop ? detailsContext.formatForWrite(prop.value, prop.name) : "";
+                return Future.createSuccessfulFuture('createEditorControl', <span>{value}</span>);
+            }
+        }
+    }
+});
+
+/*
+   ***************************************************
+   * Render a FormContext
+   ***************************************************
+ */
+var CvForm = React.createClass({
+
+    getInitialState: function(){
+        return {statusMessage: ''};
+    },
+
+    render: function() {
+
+        const formContext = this.props.formContext;
+
+        return <span>
+            {formContext.childrenContexts.map(context => {
+                Log.info('');
+                Log.info('Got a ' + context.constructor['name'] + ' for display');
+                Log.info('');
+                if (context instanceof ListContext) {
+                    return <CvList listContext={context} onNavRequest={this.props.onNavRequest} key={context.paneRef}/>
+                } else if (context instanceof DetailsContext) {
+                    return <CvDetails detailsContext={context} onNavRequest={this.props.onNavRequest} key={context.paneRef}/>
+                } else {
+                    Log.info('');
+                    Log.info('Not yet handling display for ' + context.constructor['name']);
+                    Log.info('');
+                    return <CvMessage message={"Not yet handling display for " + context.constructor['name']} key={context.paneRef}/>
+                }
+            })}
+            <div className="panel-footer">{this.state.statusMessage}</div>
+        </span>
+
+        return <CvMessage message="Could not render any contexts!"/>
+    }
+
+});
+
+/*
+  ***************************************************
+  * Render a 'Launcher'
+  ***************************************************
+ */
 var CvLauncher = React.createClass({
 
     render: function() {
@@ -121,53 +362,12 @@ var CvLauncher = React.createClass({
 
 });
 
-var CvNavigation = React.createClass({
-
-    render: function() {
-        if(this.props.navRequest instanceof FormContext) {
-            return <CvFormContext catavolt={this.props.catavolt} formContext={this.props.navRequest}/>
-        } else {
-            return <CvMessage message="Unsupported type of NavRequest ${this.props.navRequest}"/>
-        }
-    }
-
-});
-
-var CvFormContext = React.createClass({
-
-    getInitialState: function(){
-        return {statusMessage: ''};
-    },
-
-    render: function() {
-
-        const formContext = this.props.formContext;
-
-        return <span>
-            {formContext.childrenContexts.map(context => {
-                Log.info('');
-                Log.info('Got a ' + context.constructor['name'] + ' for display');
-                Log.info('');
-                if (context instanceof ListContext) {
-                    return <CvListContext listContext={context} key={context.paneRef}/>
-                } else if (context instanceof DetailsContext) {
-                    return <CvMessage message="Not yet rendering DetailsContext" key={context.paneRef}/>
-                } else {
-                    Log.info('');
-                    Log.info('Not yet handling display for ' + context.constructor['name']);
-                    Log.info('');
-                    return <CvMessage message={"Not yet handling display for " + context.constructor['name']} key={context.paneRef}/>
-                }
-            })}
-            <div className="panel-footer">{this.state.statusMessage}</div>
-        </span>
-
-        return <CvMessage message="Could not render any contexts!"/>
-    }
-
-});
-
-var CvListContext = React.createClass({
+/*
+  ***************************************************
+  * Render a ListContext
+  ***************************************************
+ */
+var CvList = React.createClass({
 
     getInitialState() {
         return {entityRecs: []}
@@ -190,6 +390,17 @@ var CvListContext = React.createClass({
 
     },
 
+    itemDoubleClicked: function(objectId) {
+        const listContext = this.props.listContext;
+        if(listContext.listDef.defaultActionId) {
+            var defaultActionMenuDef = new MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW',
+                listContext.listDef.defaultActionId, null, null, []);
+            listContext.performMenuAction(defaultActionMenuDef, [objectId]).onComplete(navRequestTry=>{
+                this.props.onNavRequest(navRequestTry);
+            });
+        }
+    },
+
     render: function(){
 
         const listContext = this.props.listContext;
@@ -201,7 +412,7 @@ var CvListContext = React.createClass({
                         {listContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index} menuDef={menuDef}/> })}
                     </div>
                 </div>
-                <div style={{maxHeight: '350px', overflow: 'auto'}}>
+                <div style={{maxHeight: '400px', overflow: 'auto'}}>
                     <table className="table table-striped">
                         <thead>
                         <tr>
@@ -212,7 +423,7 @@ var CvListContext = React.createClass({
                         <tbody>
                         {this.state.entityRecs.map((entityRec, index) => {
                             return (
-                                <tr key={index}>
+                                <tr key={index} onDoubleClick={this.itemDoubleClicked.bind(this, entityRec.objectId)}>
                                     <td className="text-center" key="checkbox"><input type="checkbox"/> </td>
                                     {listContext.rowValues(entityRec).map((val,index)=>{ return <td key={index}>{val ? val.toString() : ' '}</td> })}
                                 </tr>
@@ -226,63 +437,11 @@ var CvListContext = React.createClass({
     }
 });
 
-var CvMenu = React.createClass({
-
-    render: function() {
-
-        const menuDef = this.props.menuDef;
-
-        var findContextMenuDef = md => {
-            if(md.name === 'CONTEXT_MENU') return md;
-            if(md.menuDefs) {
-                for (let i = 0; i < md.menuDefs.length; i++) {
-                    let result = findContextMenuDef(md.menuDefs[i]);
-                    if (result) return result;
-                }
-            }
-            return null;
-        }
-
-        const ctxMenuDef = findContextMenuDef(menuDef);
-
-        return (
-            <div className="btn-group">
-                <button type="button" className="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">
-                    <span className="caret"> </span>
-                </button>
-                <ul className="dropdown-menu" role="menu">
-                    {ctxMenuDef.menuDefs.map(md=>{
-                        return <li><a onClick={this.performMenuAction(md.actionId)}>{md.label}</a></li>
-                    })}
-                    <li className="divider"> </li>
-                    <li><a onClick={this.selectAll()}>Select All</a></li>
-                    <li><a onClick={this.deselectAll()}>Deselect All</a></li>
-                </ul>
-            </div>
-        );
-    },
-
-    performMenuAction() {
-    },
-
-    selectAll: function() {
-    },
-
-    deselectAll: function() {
-    },
-
-});
-
-var CvMessage = React.createClass({
-
-    render: function() {
-        Log.info(this.props.message);
-        return <span></span>
-    }
-
-});
-
-
+/*
+  ***************************************************
+  * Render a LoginPane
+  ***************************************************
+ */
 var CvLoginPane = React.createClass({
 
     getInitialState: function () {
@@ -380,16 +539,102 @@ var CvLoginPane = React.createClass({
 
     handleSubmit: function (e) {
         e.preventDefault();
-        var comp = this;
         this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
             .onComplete(appWinDefTry => {
                 Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
-                comp.props.onLogin();
+                this.props.onLogin();
             });
     }
 });
 
+/*
+    ***************************************************
+    * Render a 'context menu' for a MenuDef
+    ***************************************************
+ */
+var CvMenu = React.createClass({
 
+    render: function() {
+
+        const menuDef = this.props.menuDef;
+
+        var findContextMenuDef = md => {
+            if(md.name === 'CONTEXT_MENU') return md;
+            if(md.menuDefs) {
+                for (let i = 0; i < md.menuDefs.length; i++) {
+                    let result = findContextMenuDef(md.menuDefs[i]);
+                    if (result) return result;
+                }
+            }
+            return null;
+        }
+
+        const ctxMenuDef = findContextMenuDef(menuDef);
+
+        return (
+            <div className="btn-group">
+                <button type="button" className="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">
+                    <span className="caret"> </span>
+                </button>
+                <ul className="dropdown-menu" role="menu">
+                    {ctxMenuDef.menuDefs.map((md, index)=>{
+                        return <li key={index}><a onClick={this.performMenuAction(md.actionId)}>{md.label}</a></li>
+                    })}
+                    <li className="divider" key="divider"> </li>
+                    <li key="select_all"><a onClick={this.selectAll()}>Select All</a></li>
+                    <li key="deselect_all"><a onClick={this.deselectAll()}>Deselect All</a></li>
+                </ul>
+            </div>
+        );
+    },
+
+    performMenuAction() {
+    },
+
+    selectAll: function() {
+    },
+
+    deselectAll: function() {
+    },
+
+});
+
+/*
+    ***************************************************
+    * Render a simple message
+    ***************************************************
+ */
+var CvMessage = React.createClass({
+
+    render: function() {
+        Log.info(this.props.message);
+        return <span></span>
+    }
+
+});
+
+/*
+    ***************************************************
+    * Render a NavRequest
+    ***************************************************
+ */
+var CvNavigation = React.createClass({
+
+    render: function() {
+        if(this.props.navRequest instanceof FormContext) {
+            return <CvForm catavolt={this.props.catavolt} formContext={this.props.navRequest} onNavRequest={this.props.onNavRequest}/>
+        } else {
+            return <CvMessage message="Unsupported type of NavRequest ${this.props.navRequest}"/>
+        }
+    }
+
+});
+
+/*
+    ***************************************************
+    * Render a top-level application toolbar
+    ***************************************************
+ */
 var CvToolbar = React.createClass({
     render: function () {
         return (
@@ -426,7 +671,11 @@ var CvToolbar = React.createClass({
     }
 });
 
-
+/*
+    ***************************************************
+    * Render a Workbench
+    ***************************************************
+ */
 var CvWorkbench = React.createClass({
 
 
@@ -450,7 +699,11 @@ var CvWorkbench = React.createClass({
 
 });
 
-
+/*
+    ***************************************************
+    * Add the top-level pane to the dom
+    ***************************************************
+ */
 ReactDOM.render(
     <CatavoltPane/>,
     document.getElementById('root')

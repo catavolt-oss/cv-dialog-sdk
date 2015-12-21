@@ -108,12 +108,36 @@ module catavolt.dialog {
             );
         }
 
+        logout():Future<VoidResult> {
+            if(this._appContextState === AppContextState.LOGGED_OUT) {
+                return Future.createFailedFuture<AppWinDef>("AppContext::loginDirectly", "User is already logged out");
+            }
+            var result:Future<VoidResult> = SessionService.deleteSession(this.sessionContextTry.success);
+            result.onComplete(deleteSessionTry => {
+                if(deleteSessionTry.isFailure) {
+                    Log.error('Error while logging out: ' + ObjUtil.formatRecAttr(deleteSessionTry.failure));
+                }
+            });
+            this.setAppContextStateToLoggedOut();
+            return result;
+        }
+
 
         performLaunchAction(launchAction:WorkbenchLaunchAction):Future<NavRequest> {
             if(this._appContextState === AppContextState.LOGGED_OUT) {
                 return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
             }
             return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
+        }
+
+        refreshContext(sessionContext:SessionContext, deviceProps:Array<string>=[]): Future<AppWinDef> {
+            var appContextValuesFr = this.finalizeContext(sessionContext, deviceProps);
+            return appContextValuesFr.bind(
+                (appContextValues:AppContextValues)=>{
+                    this.setAppContextStateToLoggedIn(appContextValues);
+                    return Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+                }
+            );
         }
 
         get sessionContextTry():Try<SessionContext> {
