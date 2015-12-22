@@ -8,7 +8,7 @@ var ObjUtil = catavolt.util.ObjUtil;
 var Try = catavolt.fp.Try;
 var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
 
-//Log.logLevel(catavolt.util.LogLevel.DEBUG);
+Log.logLevel(catavolt.util.LogLevel.INFO);
 
 /*
    ***************************************************
@@ -36,7 +36,10 @@ var CatavoltPane = React.createClass({
     },
 
     getDefaultProps: function() {
-       return {catavolt: catavolt.dialog.AppContext.singleton}
+       return {
+                catavolt: catavolt.dialog.AppContext.singleton,
+                persistentWorkbench: false
+              }
     },
 
     getInitialState: function () {
@@ -52,7 +55,7 @@ var CatavoltPane = React.createClass({
     render: function () {
 
         return this.state.loggedIn ?
-            (<CvAppWindow catavolt={this.props.catavolt} onLogout={this.loggedOut}/>) :
+            (<CvAppWindow catavolt={this.props.catavolt} onLogout={this.loggedOut} persistentWorkbench={this.props.persistentWorkbench}/>) :
             (<span><CvHeroHeader/><CvLoginPane catavolt={this.props.catavolt} onLogin={this.loggedIn}/></span>);
 
     },
@@ -69,12 +72,10 @@ var CatavoltPane = React.createClass({
 
     removeSession: function() {
       sessionStorage.removeItem('session');
-      sessionStorage.removeItem('systemCtx');
     },
 
     storeSession: function(sessionContext) {
         sessionStorage.setItem('session', JSON.stringify(sessionContext));
-        sessionStorage.setItem('systemCtx', JSON.stringify(sessionContext.systemContext));
     }
 
 });
@@ -88,37 +89,40 @@ var CvAppWindow = React.createClass({
 
     getInitialState: function () {
         return {workbenches: [],
-                navRequestTry: null}
+                navRequestTry: null
+        }
     },
 
     render: function () {
 
         var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
+
         return (
             <span>
                 <CvToolbar/>
             <div className="container">
-                {(() => {
-                        if(!this.state.navRequestTry) {
-                        return (
-                            <div className="panel panel-primary">
-                                <div className="panel-heading">
-                                    <h3 className="panel-title">Default Workbench</h3>
-                                </div>
-                            <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]} onNavRequest={this.onNavRequest}/>
+            {(() => {
+                if(this.showWorkbench()) {
+                    return (
+                        <div className="panel panel-primary">
+                            <div className="panel-heading">
+                                <h3 className="panel-title">Default Workbench</h3>
                             </div>
-                        );
-                    } else {
-                        if(this.state.navRequestTry.isSuccess) {
-                            return <CvNavigation navRequest={this.state.navRequestTry.success} onNavRequest={this.onNavRequest}/>
-                        } else {
-                            return <CvMessage message={'Failed to Navigate: ' + this.state.navRequestTry.failure}/>
-                        }
-                    }
-                })()}
+                            <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]}
+                                         onNavRequest={this.onNavRequest}/>
+                        </div>
+                    );
+                }
+            })()}
+            <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>
             </div>
             </span>
         );
+    },
+
+    showWorkbench: function() {
+        return this.props.persistentWorkbench ||
+            !this.state.navRequestTry;
     },
 
     onNavRequest: function(navRequestTry) {
@@ -126,7 +130,6 @@ var CvAppWindow = React.createClass({
             alert('Handle Navigation Failure!');
             Log.error(navRequestTry.failure);
         } else {
-            Log.info('Succeeded with ' + navRequestTry.success);
             this.setState({navRequestTry: navRequestTry});
         }
     }
@@ -168,7 +171,9 @@ var CvDetails = React.createClass({
     },
 
     componentWillMount: function() {
-        this.layoutDetailsPane(this.props.detailsContext);
+        this.props.detailsContext.read().onComplete((entityRecTry)=>{
+            this.layoutDetailsPane(this.props.detailsContext);
+        });
     },
 
     render: function () {
@@ -194,24 +199,24 @@ var CvDetails = React.createClass({
 
         let allDefsComplete = Future.createSuccessfulFuture('layoutDetailsPaneStart', '');
         const renderedDetailRows = [];
-        detailsContext.detailsDef.rows.forEach((cellDefRow)=> {
+        detailsContext.detailsDef.rows.forEach((cellDefRow, index)=> {
             if (this.isValidDetailsDefRow(cellDefRow)) {
                 if (this.isSectionTitleDef(cellDefRow)) {
                     allDefsComplete = allDefsComplete.map((lastRowResult)=> {
-                        var titleRow = this.createTitleRow(cellDefRow);
+                        var titleRow = this.createTitleRow(cellDefRow, index);
                         renderedDetailRows.push(titleRow);
                         return titleRow;
                     });
                 } else {
                     allDefsComplete = allDefsComplete.bind((lastRowResult)=> {
-                        return this.createEditorRow(cellDefRow, detailsContext).map((editorRow)=> {
+                        return this.createEditorRow(cellDefRow, detailsContext, index).map((editorRow)=> {
                             renderedDetailRows.push(editorRow);
                             return editorRow;
                         });
                     });
                 }
             } else {
-                Log.info('Detail row is invalid ' + ObjUtil.formatRecAttr(cellDefRow));
+                Log.error('Detail row is invalid ' + ObjUtil.formatRecAttr(cellDefRow));
             }
         });
 
@@ -236,12 +241,14 @@ var CvDetails = React.createClass({
             row[1].values[0] instanceof LabelCellValueDef;
     },
 
-    createTitleRow: function (row) {
-        return <tr><td><span>{row[0].values[0]}</span></td><td><span>{row[1].values[0]}</span></td></tr>;
+    createTitleRow: function (row, index) {
+        Log.info('row: '+ JSON.stringify(row));
+        return <tr key={index}><td><span><strong>{row[0].values[0].value}</strong></span></td><td><span><strong>{row[1].values[0].value}</strong></span></td></tr>;
     },
 
     /* Returns a Future */
-    createEditorRow: function (row, detailsContext) {
+    createEditorRow: function (row, detailsContext, index) {
+
         let labelDef = row[0].values[0];
         let label;
         if (labelDef instanceof LabelCellValueDef) {
@@ -253,7 +260,7 @@ var CvDetails = React.createClass({
         var valueDef = row[1].values[0];
         if (valueDef instanceof AttributeCellValueDef && !detailsContext.isReadModeFor(valueDef.propertyName)) {
             return this.createEditorControl(valueDef, detailsContext).map((editorCellString)=> {
-                return <tr>{[<td>{label}</td>, <td>{editorCellString}</td>]}</tr>
+                return <tr key={index}>{[<td>{label}</td>, <td>{editorCellString}</td>]}</tr>
             });
         } else if (valueDef instanceof AttributeCellValueDef) {
             let value = "";
@@ -263,12 +270,12 @@ var CvDetails = React.createClass({
             } else if (prop) {
                 value = <span>{detailsContext.formatForRead(prop.value, prop.name)}</span>
             }
-            return Future.createSuccessfulFuture('createEditorRow', <tr>{[<td>{label}</td>, <td>{value}</td>]}</tr>);
+            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>, <td>{value}</td>]}</tr>);
         } else if (valueDef instanceof LabelCellValueDef) {
             const value = <span>{valueDef.value}</span>
-            return Future.createSuccessfulFuture('createEditorRow', <tr>{[<td>{label}</td>, <td>{value}</td>]}</tr>);
+            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>, <td>{value}</td>]}</tr>);
         } else {
-            return Future.createSuccessfulFuture('createEditorRow', <tr>{[<td>{label}</td>, <td></td>]}</tr>);
+            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>, <td></td>]}</tr>);
         }
 
     },
@@ -378,7 +385,6 @@ var CvList = React.createClass({
         const listContext = this.props.listContext;
         listContext.setScroller(50, null, [QueryMarkerOption.None]);
         listContext.scroller.refresh().onComplete(entityRecTry=>{
-             Log.info('Finished refresh');
              if(entityRecTry.isFailure) {
                  Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
              } else {
@@ -621,10 +627,14 @@ var CvMessage = React.createClass({
 var CvNavigation = React.createClass({
 
     render: function() {
-        if(this.props.navRequest instanceof FormContext) {
-            return <CvForm catavolt={this.props.catavolt} formContext={this.props.navRequest} onNavRequest={this.props.onNavRequest}/>
+        if(this.props.navRequestTry && this.props.navRequestTry.isSuccess) {
+            if(this.props.navRequestTry.success instanceof FormContext) {
+                return <CvForm catavolt={this.props.catavolt} formContext={this.props.navRequestTry.success} onNavRequest={this.props.onNavRequest}/>
+            } else {
+                return <CvMessage message={"Unsupported type of NavRequest " + this.props.navRequestTry}/>
+            }
         } else {
-            return <CvMessage message="Unsupported type of NavRequest ${this.props.navRequest}"/>
+           return <span> </span>
         }
     }
 
@@ -700,11 +710,27 @@ var CvWorkbench = React.createClass({
 });
 
 /*
+  Non-component classes
+ */
+
+class RenderUtil {
+
+    static renderToNodeWithId(component, id) {
+        ReactDOM.render(component, document.getElementById(id));
+    }
+
+    static renderCatavoltPane() {
+        ReactDOM.render(
+            <CatavoltPane persistentWorkbench={false}/>,
+                document.getElementById('cvApp')
+        );
+    }
+}
+
+/*
     ***************************************************
     * Add the top-level pane to the dom
     ***************************************************
  */
-ReactDOM.render(
-    <CatavoltPane/>,
-    document.getElementById('root')
-);
+
+RenderUtil.renderCatavoltPane();

@@ -1,6 +1,10 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 var React = require('react');
 var ReactDOM = require('react-dom');
 
@@ -11,7 +15,7 @@ var ObjUtil = catavolt.util.ObjUtil;
 var Try = catavolt.fp.Try;
 var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
 
-//Log.logLevel(catavolt.util.LogLevel.DEBUG);
+Log.logLevel(catavolt.util.LogLevel.INFO);
 
 /*
    ***************************************************
@@ -42,7 +46,10 @@ var CatavoltPane = React.createClass({
     },
 
     getDefaultProps: function getDefaultProps() {
-        return { catavolt: catavolt.dialog.AppContext.singleton };
+        return {
+            catavolt: catavolt.dialog.AppContext.singleton,
+            persistentWorkbench: false
+        };
     },
 
     getInitialState: function getInitialState() {
@@ -56,7 +63,7 @@ var CatavoltPane = React.createClass({
 
     render: function render() {
 
-        return this.state.loggedIn ? React.createElement(CvAppWindow, { catavolt: this.props.catavolt, onLogout: this.loggedOut }) : React.createElement(
+        return this.state.loggedIn ? React.createElement(CvAppWindow, { catavolt: this.props.catavolt, onLogout: this.loggedOut, persistentWorkbench: this.props.persistentWorkbench }) : React.createElement(
             'span',
             null,
             React.createElement(CvHeroHeader, null),
@@ -76,12 +83,10 @@ var CatavoltPane = React.createClass({
 
     removeSession: function removeSession() {
         sessionStorage.removeItem('session');
-        sessionStorage.removeItem('systemCtx');
     },
 
     storeSession: function storeSession(sessionContext) {
         sessionStorage.setItem('session', JSON.stringify(sessionContext));
-        sessionStorage.setItem('systemCtx', JSON.stringify(sessionContext.systemContext));
     }
 
 });
@@ -96,13 +101,15 @@ var CvAppWindow = React.createClass({
 
     getInitialState: function getInitialState() {
         return { workbenches: [],
-            navRequestTry: null };
+            navRequestTry: null
+        };
     },
 
     render: function render() {
         var _this2 = this;
 
         var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
+
         return React.createElement(
             'span',
             null,
@@ -111,7 +118,7 @@ var CvAppWindow = React.createClass({
                 'div',
                 { className: 'container' },
                 (function () {
-                    if (!_this2.state.navRequestTry) {
+                    if (_this2.showWorkbench()) {
                         return React.createElement(
                             'div',
                             { className: 'panel panel-primary' },
@@ -124,18 +131,18 @@ var CvAppWindow = React.createClass({
                                     'Default Workbench'
                                 )
                             ),
-                            React.createElement(CvWorkbench, { catavolt: _this2.props.catavolt, workbench: workbenches[0], onNavRequest: _this2.onNavRequest })
+                            React.createElement(CvWorkbench, { catavolt: _this2.props.catavolt, workbench: workbenches[0],
+                                onNavRequest: _this2.onNavRequest })
                         );
-                    } else {
-                        if (_this2.state.navRequestTry.isSuccess) {
-                            return React.createElement(CvNavigation, { navRequest: _this2.state.navRequestTry.success, onNavRequest: _this2.onNavRequest });
-                        } else {
-                            return React.createElement(CvMessage, { message: 'Failed to Navigate: ' + _this2.state.navRequestTry.failure });
-                        }
                     }
-                })()
+                })(),
+                React.createElement(CvNavigation, { navRequestTry: this.state.navRequestTry, onNavRequest: this.onNavRequest })
             )
         );
+    },
+
+    showWorkbench: function showWorkbench() {
+        return this.props.persistentWorkbench || !this.state.navRequestTry;
     },
 
     onNavRequest: function onNavRequest(navRequestTry) {
@@ -143,7 +150,6 @@ var CvAppWindow = React.createClass({
             alert('Handle Navigation Failure!');
             Log.error(navRequestTry.failure);
         } else {
-            Log.info('Succeeded with ' + navRequestTry.success);
             this.setState({ navRequestTry: navRequestTry });
         }
     }
@@ -187,7 +193,11 @@ var CvDetails = React.createClass({
     },
 
     componentWillMount: function componentWillMount() {
-        this.layoutDetailsPane(this.props.detailsContext);
+        var _this3 = this;
+
+        this.props.detailsContext.read().onComplete(function (entityRecTry) {
+            _this3.layoutDetailsPane(_this3.props.detailsContext);
+        });
     },
 
     render: function render() {
@@ -228,33 +238,33 @@ var CvDetails = React.createClass({
     },
 
     layoutDetailsPane: function layoutDetailsPane(detailsContext) {
-        var _this3 = this;
+        var _this4 = this;
 
         var allDefsComplete = Future.createSuccessfulFuture('layoutDetailsPaneStart', '');
         var renderedDetailRows = [];
-        detailsContext.detailsDef.rows.forEach(function (cellDefRow) {
-            if (_this3.isValidDetailsDefRow(cellDefRow)) {
-                if (_this3.isSectionTitleDef(cellDefRow)) {
+        detailsContext.detailsDef.rows.forEach(function (cellDefRow, index) {
+            if (_this4.isValidDetailsDefRow(cellDefRow)) {
+                if (_this4.isSectionTitleDef(cellDefRow)) {
                     allDefsComplete = allDefsComplete.map(function (lastRowResult) {
-                        var titleRow = _this3.createTitleRow(cellDefRow);
+                        var titleRow = _this4.createTitleRow(cellDefRow, index);
                         renderedDetailRows.push(titleRow);
                         return titleRow;
                     });
                 } else {
                     allDefsComplete = allDefsComplete.bind(function (lastRowResult) {
-                        return _this3.createEditorRow(cellDefRow, detailsContext).map(function (editorRow) {
+                        return _this4.createEditorRow(cellDefRow, detailsContext, index).map(function (editorRow) {
                             renderedDetailRows.push(editorRow);
                             return editorRow;
                         });
                     });
                 }
             } else {
-                Log.info('Detail row is invalid ' + ObjUtil.formatRecAttr(cellDefRow));
+                Log.error('Detail row is invalid ' + ObjUtil.formatRecAttr(cellDefRow));
             }
         });
 
         allDefsComplete.onComplete(function (lastRowResultTry) {
-            _this3.setState({ renderedDetailRows: renderedDetailRows });
+            _this4.setState({ renderedDetailRows: renderedDetailRows });
         });
     },
 
@@ -266,17 +276,22 @@ var CvDetails = React.createClass({
         return row[0].values[0] instanceof LabelCellValueDef && row[1].values[0] instanceof LabelCellValueDef;
     },
 
-    createTitleRow: function createTitleRow(row) {
+    createTitleRow: function createTitleRow(row, index) {
+        Log.info('row: ' + JSON.stringify(row));
         return React.createElement(
             'tr',
-            null,
+            { key: index },
             React.createElement(
                 'td',
                 null,
                 React.createElement(
                     'span',
                     null,
-                    row[0].values[0]
+                    React.createElement(
+                        'strong',
+                        null,
+                        row[0].values[0].value
+                    )
                 )
             ),
             React.createElement(
@@ -285,14 +300,19 @@ var CvDetails = React.createClass({
                 React.createElement(
                     'span',
                     null,
-                    row[1].values[0]
+                    React.createElement(
+                        'strong',
+                        null,
+                        row[1].values[0].value
+                    )
                 )
             )
         );
     },
 
     /* Returns a Future */
-    createEditorRow: function createEditorRow(row, detailsContext) {
+    createEditorRow: function createEditorRow(row, detailsContext, index) {
+
         var labelDef = row[0].values[0];
         var label = undefined;
         if (labelDef instanceof LabelCellValueDef) {
@@ -314,7 +334,7 @@ var CvDetails = React.createClass({
             return this.createEditorControl(valueDef, detailsContext).map(function (editorCellString) {
                 return React.createElement(
                     'tr',
-                    null,
+                    { key: index },
                     [React.createElement(
                         'td',
                         null,
@@ -340,7 +360,7 @@ var CvDetails = React.createClass({
             }
             return Future.createSuccessfulFuture('createEditorRow', React.createElement(
                 'tr',
-                null,
+                { key: index },
                 [React.createElement(
                     'td',
                     null,
@@ -359,7 +379,7 @@ var CvDetails = React.createClass({
             );
             return Future.createSuccessfulFuture('createEditorRow', React.createElement(
                 'tr',
-                null,
+                { key: index },
                 [React.createElement(
                     'td',
                     null,
@@ -373,7 +393,7 @@ var CvDetails = React.createClass({
         } else {
             return Future.createSuccessfulFuture('createEditorRow', React.createElement(
                 'tr',
-                null,
+                { key: index },
                 [React.createElement(
                     'td',
                     null,
@@ -426,7 +446,7 @@ var CvForm = React.createClass({
     },
 
     render: function render() {
-        var _this4 = this;
+        var _this5 = this;
 
         var formContext = this.props.formContext;
 
@@ -438,9 +458,9 @@ var CvForm = React.createClass({
                 Log.info('Got a ' + context.constructor['name'] + ' for display');
                 Log.info('');
                 if (context instanceof ListContext) {
-                    return React.createElement(CvList, { listContext: context, onNavRequest: _this4.props.onNavRequest, key: context.paneRef });
+                    return React.createElement(CvList, { listContext: context, onNavRequest: _this5.props.onNavRequest, key: context.paneRef });
                 } else if (context instanceof DetailsContext) {
-                    return React.createElement(CvDetails, { detailsContext: context, onNavRequest: _this4.props.onNavRequest, key: context.paneRef });
+                    return React.createElement(CvDetails, { detailsContext: context, onNavRequest: _this5.props.onNavRequest, key: context.paneRef });
                 } else {
                     Log.info('');
                     Log.info('Not yet handling display for ' + context.constructor['name']);
@@ -482,10 +502,10 @@ var CvLauncher = React.createClass({
     },
 
     handleClick: function handleClick() {
-        var _this5 = this;
+        var _this6 = this;
 
         this.props.catavolt.performLaunchAction(this.props.launchAction).onComplete(function (launchTry) {
-            _this5.props.onLaunch(launchTry);
+            _this6.props.onLaunch(launchTry);
         });
     }
 
@@ -503,35 +523,34 @@ var CvList = React.createClass({
     },
 
     componentWillMount: function componentWillMount() {
-        var _this6 = this;
+        var _this7 = this;
 
         var listContext = this.props.listContext;
         listContext.setScroller(50, null, [QueryMarkerOption.None]);
         listContext.scroller.refresh().onComplete(function (entityRecTry) {
-            Log.info('Finished refresh');
             if (entityRecTry.isFailure) {
                 Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
             } else {
                 Log.info(JSON.stringify(listContext.scroller.buffer));
-                _this6.setState({ entityRecs: ArrayUtil.copy(listContext.scroller.buffer) });
+                _this7.setState({ entityRecs: ArrayUtil.copy(listContext.scroller.buffer) });
             }
         });
     },
 
     itemDoubleClicked: function itemDoubleClicked(objectId) {
-        var _this7 = this;
+        var _this8 = this;
 
         var listContext = this.props.listContext;
         if (listContext.listDef.defaultActionId) {
             var defaultActionMenuDef = new MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW', listContext.listDef.defaultActionId, null, null, []);
             listContext.performMenuAction(defaultActionMenuDef, [objectId]).onComplete(function (navRequestTry) {
-                _this7.props.onNavRequest(navRequestTry);
+                _this8.props.onNavRequest(navRequestTry);
             });
         }
     },
 
     render: function render() {
-        var _this8 = this;
+        var _this9 = this;
 
         var listContext = this.props.listContext;
         return React.createElement(
@@ -585,7 +604,7 @@ var CvList = React.createClass({
                         this.state.entityRecs.map(function (entityRec, index) {
                             return React.createElement(
                                 'tr',
-                                { key: index, onDoubleClick: _this8.itemDoubleClicked.bind(_this8, entityRec.objectId) },
+                                { key: index, onDoubleClick: _this9.itemDoubleClicked.bind(_this9, entityRec.objectId) },
                                 React.createElement(
                                     'td',
                                     { className: 'text-center', key: 'checkbox' },
@@ -775,12 +794,12 @@ var CvLoginPane = React.createClass({
     },
 
     handleSubmit: function handleSubmit(e) {
-        var _this9 = this;
+        var _this10 = this;
 
         e.preventDefault();
         this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password).onComplete(function (appWinDefTry) {
             Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
-            _this9.props.onLogin();
+            _this10.props.onLogin();
         });
     }
 });
@@ -794,7 +813,7 @@ var CvMenu = React.createClass({
     displayName: 'CvMenu',
 
     render: function render() {
-        var _this10 = this;
+        var _this11 = this;
 
         var menuDef = this.props.menuDef;
 
@@ -832,7 +851,7 @@ var CvMenu = React.createClass({
                         { key: index },
                         React.createElement(
                             'a',
-                            { onClick: _this10.performMenuAction(md.actionId) },
+                            { onClick: _this11.performMenuAction(md.actionId) },
                             md.label
                         )
                     );
@@ -896,10 +915,18 @@ var CvNavigation = React.createClass({
     displayName: 'CvNavigation',
 
     render: function render() {
-        if (this.props.navRequest instanceof FormContext) {
-            return React.createElement(CvForm, { catavolt: this.props.catavolt, formContext: this.props.navRequest, onNavRequest: this.props.onNavRequest });
+        if (this.props.navRequestTry && this.props.navRequestTry.isSuccess) {
+            if (this.props.navRequestTry.success instanceof FormContext) {
+                return React.createElement(CvForm, { catavolt: this.props.catavolt, formContext: this.props.navRequestTry.success, onNavRequest: this.props.onNavRequest });
+            } else {
+                return React.createElement(CvMessage, { message: "Unsupported type of NavRequest " + this.props.navRequestTry });
+            }
         } else {
-            return React.createElement(CvMessage, { message: 'Unsupported type of NavRequest ${this.props.navRequest}' });
+            return React.createElement(
+                'span',
+                null,
+                ' '
+            );
         }
     }
 
@@ -1038,11 +1065,36 @@ var CvWorkbench = React.createClass({
 });
 
 /*
+  Non-component classes
+ */
+
+var RenderUtil = (function () {
+    function RenderUtil() {
+        _classCallCheck(this, RenderUtil);
+    }
+
+    _createClass(RenderUtil, null, [{
+        key: 'renderToNodeWithId',
+        value: function renderToNodeWithId(component, id) {
+            ReactDOM.render(component, document.getElementById(id));
+        }
+    }, {
+        key: 'renderCatavoltPane',
+        value: function renderCatavoltPane() {
+            ReactDOM.render(React.createElement(CatavoltPane, { persistentWorkbench: false }), document.getElementById('cvApp'));
+        }
+    }]);
+
+    return RenderUtil;
+})();
+
+/*
     ***************************************************
     * Add the top-level pane to the dom
     ***************************************************
  */
-ReactDOM.render(React.createElement(CatavoltPane, null), document.getElementById('root'));
+
+RenderUtil.renderCatavoltPane();
 
 },{"react":158,"react-dom":2}],2:[function(require,module,exports){
 'use strict';
