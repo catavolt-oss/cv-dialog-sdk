@@ -2,13 +2,10 @@
  * Created by rburson on 4/1/15.
  */
 
-///<reference path="../references.ts"/>
+import {EntityRecDef} from "./EntityRecDef";
 
-module catavolt.dialog {
+export interface XOpenDialogModelResult {
 
-    export interface XOpenDialogModelResult {
+    entityRecDef:EntityRecDef;
 
-        entityRecDef:EntityRecDef;
-
-    }
 }

@@ -2,69 +2,69 @@
  * Created by rburson on 4/22/15.
  */
 
-///<reference path="../references.ts"/>
+import {PaneDef} from "./PaneDef";
+import {MenuDef} from "./MenuDef";
+import {EntityRecDef} from "./EntityRecDef";
+import {DialogRedirection} from "./DialogRedirection";
+import {StringDictionary} from "../util/Types";
 
-/* @TODO */
-module catavolt.dialog {
+export class CalendarDef extends PaneDef {
 
-    export class CalendarDef extends PaneDef {
+    constructor(paneId:string,
+                name:string,
+                label:string,
+                title:string,
+                menuDefs:Array<MenuDef>,
+                entityRecDef:EntityRecDef,
+                dialogRedirection:DialogRedirection,
+                settings:StringDictionary,
+                private _descriptionPropName:string,
+                private _initialStyle:string,
+                private _startDatePropName:string,
+                private _startTimePropName:string,
+                private _endDatePropName:string,
+                private _endTimePropName:string,
+                private _occurDatePropName:string,
+                private _occurTimePropName:string,
+                private _defaultActionId:string) {
 
-        constructor(paneId:string,
-                    name:string,
-                    label:string,
-                    title:string,
-                    menuDefs:Array<MenuDef>,
-                    entityRecDef:EntityRecDef,
-                    dialogRedirection:DialogRedirection,
-                    settings:StringDictionary,
-                    private _descriptionPropName:string,
-                    private _initialStyle:string,
-                    private _startDatePropName:string,
-                    private _startTimePropName:string,
-                    private _endDatePropName:string,
-                    private _endTimePropName:string,
-                    private _occurDatePropName:string,
-                    private _occurTimePropName:string,
-                    private _defaultActionId:string) {
+        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
 
-            super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    }
 
-        }
+    get descriptionPropName():string {
+        return this._descriptionPropName;
+    }
 
-        get descriptionPropName():string {
-          return this._descriptionPropName;
-        }
+    get initialStyle():string {
+        return this._initialStyle;
+    }
 
-        get initialStyle():string {
-           return this._initialStyle;
-        }
+    get startDatePropName():string {
+        return this._startDatePropName;
+    }
 
-        get startDatePropName():string {
-            return this._startDatePropName;
-        }
+    get startTimePropName():string {
+        return this._startTimePropName;
+    }
 
-        get startTimePropName():string {
-            return this._startTimePropName;
-        }
+    get endDatePropName():string {
+        return this._endDatePropName;
+    }
 
-        get endDatePropName():string {
-            return this._endDatePropName;
-        }
+    get endTimePropName():string {
+        return this._endTimePropName;
+    }
 
-        get endTimePropName():string {
-            return this._endTimePropName;
-        }
+    get occurDatePropName():string {
+        return this._occurDatePropName;
+    }
 
-        get occurDatePropName():string {
-            return this._occurDatePropName;
-        }
+    get occurTimePropName():string {
+        return this._occurTimePropName;
+    }
 
-        get occurTimePropName():string {
-            return this._occurTimePropName;
-        }
-
-        get defaultActionId():string {
-           return this._defaultActionId;
-        }
+    get defaultActionId():string {
+        return this._defaultActionId;
     }
 }

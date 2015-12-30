@@ -2,17 +2,14 @@
  * Created by rburson on 3/31/15.
  */
 
-///<reference path="../references.ts"/>
+import {DialogRedirection} from './DialogRedirection';
 
-module catavolt.dialog {
+export class XFormModelComp {
 
-    export class XFormModelComp {
-
-        constructor(public paneId:string,
-                    public redirection:DialogRedirection,
-                    public label:string,
-                    public title:string) {
-        }
-
+    constructor(public paneId:string,
+                public redirection:DialogRedirection,
+                public label:string,
+                public title:string) {
     }
+
 }

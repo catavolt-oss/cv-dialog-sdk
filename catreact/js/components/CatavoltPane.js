@@ -5,6 +5,9 @@ var React = require('react');
 var CvAppWindow = require('./CvAppWindow');
 var CvHeroHeader = require('./CvHeroHeader');
 var CvLoginPane = require('./CvLoginPane');
+
+var AppContext = require('../catavolt/dialog/AppContext').AppContext;
+
 /*
  ***************************************************
  *  Top-level container for a Catavolt Application
@@ -32,7 +35,7 @@ var CatavoltPane = React.createClass({
 
     getDefaultProps: function() {
         return {
-            catavolt: catavolt.dialog.AppContext.singleton,
+            catavolt: AppContext.singleton,
             persistentWorkbench: false
         }
     },

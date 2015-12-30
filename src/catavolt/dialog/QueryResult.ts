@@ -2,15 +2,11 @@
  * Created by rburson on 4/30/15.
  */
 
-///<reference path="../references.ts"/>
+import {EntityRec} from "./EntityRec";
 
-/* @TODO */
-module catavolt.dialog {
+export class QueryResult {
 
-    export class QueryResult {
-
-        constructor(public entityRecs:Array<EntityRec>, public hasMore:boolean) {
-        }
-
+    constructor(public entityRecs:Array<EntityRec>, public hasMore:boolean) {
     }
+
 }

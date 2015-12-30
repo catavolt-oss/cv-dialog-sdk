@@ -2,12 +2,10 @@
  * Created by rburson on 5/4/15.
  */
 
-///<reference path="../references.ts"/>
+import {EditorContext} from "./EditorContext";
+import {GeoLocationDef} from "./GeoLocationDef";
 
-/* @TODO */
-module catavolt.dialog {
-
-    export class GeoLocationContext extends EditorContext{
+export class GeoLocationContext extends EditorContext {
 
     constructor(paneRef:number) {
         super(paneRef);
@@ -17,5 +15,4 @@ module catavolt.dialog {
         return <GeoLocationDef>this.paneDef;
     }
 
-}
 }

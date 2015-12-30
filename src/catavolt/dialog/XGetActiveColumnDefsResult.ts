@@ -2,18 +2,15 @@
  * Created by rburson on 4/1/15.
  */
 
-///<reference path="../references.ts"/>
+import {ColumnDef} from "./ColumnDef";
 
-module catavolt.dialog {
+export class XGetActiveColumnDefsResult {
 
-    export class XGetActiveColumnDefsResult {
-
-        constructor(public columnsStyle:string, public columns:Array<ColumnDef>) {
-        }
-
-        get columnDefs():Array<ColumnDef> {
-            return this.columns;
-        }
-
+    constructor(public columnsStyle:string, public columns:Array<ColumnDef>) {
     }
+
+    get columnDefs():Array<ColumnDef> {
+        return this.columns;
+    }
+
 }

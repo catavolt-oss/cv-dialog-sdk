@@ -2,100 +2,99 @@
  * Created by rburson on 3/9/15.
  */
 
-///<reference path="../fp/references.ts"/>
-///<reference path="../ws/references.ts"/>
+import {SessionContext} from "../ws/SessionContext";
+import {SystemContext} from "../ws/SystemContext";
+import {Try} from "../fp/Try";
+import {DialogTriple} from "./DialogTriple";
+import {OType} from "./OType";
 
-module catavolt.dialog {
+export class SessionContextImpl implements SessionContext {
 
-    export class SessionContextImpl implements SessionContext{
+    private _clientType:string;
+    private _gatewayHost:string;
+    private _password:string;
+    private _remoteSession:boolean;
+    private _tenantId:string;
+    private _userId:string;
 
-        private _clientType: string;
-        private _gatewayHost: string;
-        private _password: string;
-        private _remoteSession: boolean;
-        private _tenantId: string;
-        private _userId: string;
+    currentDivision:string;
+    serverVersion:string;
+    sessionHandle:string;
+    systemContext:SystemContext;
+    userName:string;
 
-        currentDivision: string;
-        serverVersion: string;
-        sessionHandle: string;
-        systemContext: SystemContext;
-        userName: string;
+    static fromWSCreateSessionResult(jsonObject:{[id: string]: any},
+                                     systemContext:SystemContext):Try<SessionContext> {
 
-        static fromWSCreateSessionResult(jsonObject: {[id: string]: any},
-                                          systemContext: SystemContext): Try<SessionContext> {
-
-            var sessionContextTry:Try<SessionContext> = DialogTriple.fromWSDialogObject<SessionContext>(jsonObject,
-                'WSCreateSessionResult', OType.factoryFn);
-            return sessionContextTry.map((sessionContext:SessionContext)=>{
-                sessionContext.systemContext = systemContext;
-                return sessionContext;
-            });
-        }
-
-        static createSessionContext(gatewayHost:string,
-                                    tenantId:string,
-                                    clientType:string,
-                                    userId:string,
-                                    password:string):SessionContext {
-
-            var sessionContext = new SessionContextImpl(null, userId, "", null, null);
-            sessionContext._gatewayHost = gatewayHost;
-            sessionContext._tenantId = tenantId;
-            sessionContext._clientType = clientType;
-            sessionContext._userId = userId;
-            sessionContext._password = password;
-            sessionContext._remoteSession = false;
-
+        var sessionContextTry:Try<SessionContext> = DialogTriple.fromWSDialogObject<SessionContext>(jsonObject,
+            'WSCreateSessionResult', OType.factoryFn);
+        return sessionContextTry.map((sessionContext:SessionContext)=> {
+            sessionContext.systemContext = systemContext;
             return sessionContext;
-        }
+        });
+    }
 
-        constructor(sessionHandle:string,
-                    userName:string,
-                    currentDivision:string,
-                    serverVersion:string,
-                    systemContext:SystemContext) {
+    static createSessionContext(gatewayHost:string,
+                                tenantId:string,
+                                clientType:string,
+                                userId:string,
+                                password:string):SessionContext {
 
-            this.sessionHandle = sessionHandle;
-            this.userName = userName;
-            this.currentDivision = currentDivision;
-            this.serverVersion = serverVersion;
-            this.systemContext = systemContext;
-            this._remoteSession = true;
-        }
+        var sessionContext = new SessionContextImpl(null, userId, "", null, null);
+        sessionContext._gatewayHost = gatewayHost;
+        sessionContext._tenantId = tenantId;
+        sessionContext._clientType = clientType;
+        sessionContext._userId = userId;
+        sessionContext._password = password;
+        sessionContext._remoteSession = false;
 
-        get clientType() {
-            return this._clientType;
-        }
+        return sessionContext;
+    }
 
-        get gatewayHost() {
-            return this._gatewayHost;
-        }
+    constructor(sessionHandle:string,
+                userName:string,
+                currentDivision:string,
+                serverVersion:string,
+                systemContext:SystemContext) {
 
-        get isLocalSession() {
-            return !this._remoteSession;
-        }
+        this.sessionHandle = sessionHandle;
+        this.userName = userName;
+        this.currentDivision = currentDivision;
+        this.serverVersion = serverVersion;
+        this.systemContext = systemContext;
+        this._remoteSession = true;
+    }
 
-        get isRemoteSession() {
-            return this._remoteSession;
-        }
+    get clientType() {
+        return this._clientType;
+    }
 
-        get password() {
-            return this._password;
-        }
+    get gatewayHost() {
+        return this._gatewayHost;
+    }
 
-        get tenantId() {
-            return this._tenantId;
-        }
+    get isLocalSession() {
+        return !this._remoteSession;
+    }
 
-        get userId() {
-            return this._userId;
-        }
+    get isRemoteSession() {
+        return this._remoteSession;
+    }
 
-        set online(online: boolean) {
-            this._remoteSession = online;
-        }
+    get password() {
+        return this._password;
+    }
 
+    get tenantId() {
+        return this._tenantId;
+    }
+
+    get userId() {
+        return this._userId;
+    }
+
+    set online(online:boolean) {
+        this._remoteSession = online;
     }
 
 }

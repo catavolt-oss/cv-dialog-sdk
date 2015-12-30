@@ -2,12 +2,10 @@
  * Created by rburson on 5/4/15.
  */
 
-///<reference path="../references.ts"/>
+import {QueryContext} from "./QueryContext";
+import {CalendarDef} from "./CalendarDef";
 
-/* @TODO */
-module catavolt.dialog {
-
-    export class CalendarContext extends QueryContext{
+export class CalendarContext extends QueryContext{
 
         constructor(paneRef:number) {
             super(paneRef);
@@ -18,4 +16,3 @@ module catavolt.dialog {
         }
 
     }
-}

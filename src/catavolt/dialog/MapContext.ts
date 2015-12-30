@@ -2,20 +2,17 @@
  * Created by rburson on 5/4/15.
  */
 
-///<reference path="../references.ts"/>
+import {QueryContext} from "./QueryContext";
+import {MapDef} from "./MapDef";
 
-/* @TODO */
-module catavolt.dialog {
+export class MapContext extends QueryContext {
 
-    export class MapContext extends QueryContext{
-
-        constructor(paneRef:number) {
-            super(paneRef);
-        }
-
-        get mapDef():MapDef {
-           return <MapDef>this.paneDef;
-        }
-
+    constructor(paneRef:number) {
+        super(paneRef);
     }
+
+    get mapDef():MapDef {
+        return <MapDef>this.paneDef;
+    }
+
 }

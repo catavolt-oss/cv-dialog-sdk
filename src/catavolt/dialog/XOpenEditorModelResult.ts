@@ -2,26 +2,26 @@
  * Created by rburson on 4/1/15.
  */
 
-///<reference path="../references.ts"/>
+import {XOpenDialogModelResult} from "./XOpenDialogModelResult";
+import {EntityRecDef} from "./EntityRecDef";
+import {XFormModel} from "./XFormModel";
+import {DialogRedirection} from "./DialogRedirection";
 
-module catavolt.dialog {
+export class XOpenEditorModelResult implements XOpenDialogModelResult {
 
-    export class XOpenEditorModelResult implements XOpenDialogModelResult{
-
-        constructor(public editorRecordDef:EntityRecDef, public formModel:XFormModel) {
-        }
-
-        get entityRecDef():EntityRecDef {
-            return this.editorRecordDef;
-        }
-
-        get formPaneId():string {
-            return this.formModel.form.paneId;
-        }
-
-        get formRedirection():DialogRedirection {
-            return this.formModel.form.redirection;
-        }
-
+    constructor(public editorRecordDef:EntityRecDef, public formModel:XFormModel) {
     }
+
+    get entityRecDef():EntityRecDef {
+        return this.editorRecordDef;
+    }
+
+    get formPaneId():string {
+        return this.formModel.form.paneId;
+    }
+
+    get formRedirection():DialogRedirection {
+        return this.formModel.form.redirection;
+    }
+
 }

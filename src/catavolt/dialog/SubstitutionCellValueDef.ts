@@ -2,20 +2,16 @@
  * Created by rburson on 4/16/15.
  */
 
-///<reference path="../references.ts"/>
+import {CellValueDef} from "./CellValueDef";
 
-/* @TODO */
-module catavolt.dialog {
+export class SubstitutionCellValueDef extends CellValueDef {
 
-    export class SubstitutionCellValueDef extends CellValueDef{
-
-        constructor(private _value:string, style:string) {
-           super(style);
-        }
-
-        get value():string {
-            return this._value;
-        }
-
+    constructor(private _value:string, style:string) {
+        super(style);
     }
+
+    get value():string {
+        return this._value;
+    }
+
 }

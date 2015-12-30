@@ -2,9 +2,8 @@
  * Created by rburson on 3/17/15.
  */
 
-///<reference path="../references.ts"/>
-
-module catavolt.dialog {
+import {StringDictionary} from "../util/Types";
+import {StringUtil} from "../util/StringUtil";
 
     export class XGetSessionListPropertyResult {
 
@@ -29,4 +28,3 @@ module catavolt.dialog {
             return result;
         }
     }
-}

@@ -1,1 +1,0 @@
-/opt/catavolt/js-sdk/catangular/js/catavolt_sdk.js

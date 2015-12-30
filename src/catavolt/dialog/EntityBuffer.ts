@@ -2,15 +2,16 @@
  * Created by rburson on 4/27/15.
  */
 
-///<reference path="../references.ts"/>
-
-/* @TODO */
-module catavolt.dialog {
+import {EntityRec} from "./EntityRec";
+import {Prop} from "./Prop";
+import {DataAnno} from "./DataAnno";
+import {StringDictionary} from "../util/Types";
+import {EntityRecUtil} from "./EntityRec";
 
     export class EntityBuffer implements EntityRec {
 
         static createEntityBuffer(objectId:string, before:Array<Prop>, after:Array<Prop>):EntityBuffer {
-            return new EntityBuffer(EntityRec.Util.newEntityRec(objectId, before), EntityRec.Util.newEntityRec(objectId, after));
+            return new EntityBuffer(EntityRecUtil.newEntityRec(objectId, before), EntityRecUtil.newEntityRec(objectId, after));
         }
 
         constructor(private _before:EntityRec, private _after?:EntityRec) {
@@ -193,7 +194,7 @@ module catavolt.dialog {
         }
 
         toEntityRec():EntityRec {
-            return EntityRec.Util.newEntityRec(this.objectId, this.props);
+            return EntityRecUtil.newEntityRec(this.objectId, this.props);
         }
 
         toWSEditorRecord():StringDictionary {
@@ -209,4 +210,3 @@ module catavolt.dialog {
         }
 
     }
-}

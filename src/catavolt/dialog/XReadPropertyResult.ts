@@ -2,15 +2,9 @@
  * Created by rburson on 4/1/15.
  */
 
-///<reference path="../references.ts"/>
+export class XReadPropertyResult {
 
-/* @TODO */
-module catavolt.dialog {
-
-    export class XReadPropertyResult {
-
-        constructor() {
-        }
-
+    constructor() {
     }
+
 }

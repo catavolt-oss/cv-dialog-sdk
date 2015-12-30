@@ -2,16 +2,14 @@
  * Created by rburson on 3/30/15.
  */
 
-///<reference path="../references.ts"/>
+import {NavRequest} from "./NavRequest";
+import {StringDictionary} from "../util/Types";
 
-module catavolt.dialog {
+export class NullNavRequest implements NavRequest {
 
-    export class NullNavRequest implements NavRequest {
+    fromDialogProperties:StringDictionary;
 
-        fromDialogProperties:StringDictionary;
-
-        constructor(){
-            this.fromDialogProperties = {};
-        }
+    constructor() {
+        this.fromDialogProperties = {};
     }
 }

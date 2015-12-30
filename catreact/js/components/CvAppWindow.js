@@ -14,7 +14,8 @@ var CvToolbar = require('./CvToolbar');
 var CvAppWindow = React.createClass({
 
     getInitialState: function () {
-        return {workbenches: [],
+        return {
+            workbenches: [],
             navRequestTry: null
         }
     },
@@ -26,33 +27,32 @@ var CvAppWindow = React.createClass({
         return (
             <span>
                 <CvToolbar/>
-            <div className="container">
-                {(() => {
-                    if(this.showWorkbench()) {
-                        return (
-                            <div className="panel panel-primary">
-                                <div className="panel-heading">
-                                    <h3 className="panel-title">Default Workbench</h3>
+                <div className="container">
+                    {(() => {
+                        if (this.showWorkbench()) {
+                            return (
+                                <div className="panel panel-primary">
+                                    <div className="panel-heading">
+                                        <h3 className="panel-title">Default Workbench</h3>
+                                    </div>
+                                    <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]}
+                                                 onNavRequest={this.onNavRequest}/>
                                 </div>
-                                <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]}
-                                             onNavRequest={this.onNavRequest}/>
-                            </div>
-                        );
-                    }
-                })()}
-                <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>
-            </div>
+                            );
+                        }
+                    })()}
+                    <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>
+                </div>
             </span>
         );
     },
 
-    showWorkbench: function() {
-        return this.props.persistentWorkbench ||
-            !this.state.navRequestTry;
+    showWorkbench: function () {
+        return this.props.persistentWorkbench || !this.state.navRequestTry;
     },
 
-    onNavRequest: function(navRequestTry) {
-        if(navRequestTry.isFailure) {
+    onNavRequest: function (navRequestTry) {
+        if (navRequestTry.isFailure) {
             alert('Handle Navigation Failure!');
             Log.error(navRequestTry.failure);
         } else {

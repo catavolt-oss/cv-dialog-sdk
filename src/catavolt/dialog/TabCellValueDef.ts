@@ -2,16 +2,12 @@
  * Created by rburson on 4/16/15.
  */
 
-///<reference path="../references.ts"/>
+import {CellValueDef} from "./CellValueDef";
 
-/* @TODO */
-module catavolt.dialog {
+export class TabCellValueDef extends CellValueDef {
 
-    export class TabCellValueDef extends CellValueDef{
-
-        constructor() {
-            super(null);
-        }
-
+    constructor() {
+        super(null);
     }
+
 }

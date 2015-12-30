@@ -2,21 +2,19 @@
  * Created by rburson on 3/30/15.
  */
 
-///<reference path="../references.ts"/>
+import {XPaneDef} from "./XPaneDef";
+import {XPaneDefRef} from "./XPaneDefRef";
 
-module catavolt.dialog {
+export class XFormDef extends XPaneDef {
 
-    export class XFormDef extends XPaneDef{
-
-        constructor(public borderStyle:string,
-                    public formLayout:string,
-                    public formStyle:string,
-                    public name:string,
-                    public paneId:string,
-                    public title:string,
-                    public headerDefRef:XPaneDefRef,
-                    public paneDefRefs:Array<XPaneDefRef>) {
-            super();
-        }
+    constructor(public borderStyle:string,
+                public formLayout:string,
+                public formStyle:string,
+                public name:string,
+                public paneId:string,
+                public title:string,
+                public headerDefRef:XPaneDefRef,
+                public paneDefRefs:Array<XPaneDefRef>) {
+        super();
     }
 }

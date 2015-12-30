@@ -2,24 +2,20 @@
  * Created by rburson on 3/5/15.
  */
 
-///<reference path="../fp/references.ts"/>
+import {Try} from './Try'
 
-module catavolt.fp {
+export class Success<A> extends Try<A> {
 
-    export class Success<A> extends Try<A>{
+    constructor(private _value:A) {
+        super();
+    }
 
-        constructor(private _value : A) {
-            super();
-        }
+    get isSuccess():boolean {
+        return true;
+    }
 
-        get isSuccess() : boolean {
-            return true;
-        }
-
-        get success() : A {
-            return this._value;
-        }
-
+    get success():A {
+        return this._value;
     }
 
 }

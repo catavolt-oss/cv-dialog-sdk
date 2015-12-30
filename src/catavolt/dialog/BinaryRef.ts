@@ -2,10 +2,10 @@
  * Created by rburson on 4/4/15.
  */
 
-///<reference path="../references.ts"/>
-
-/* @TODO */
-module catavolt.dialog {
+import {StringDictionary} from "../util/Types";
+import {Try} from "../fp/Try";
+import {Base64} from "../util/Base64";
+import {Success} from "../fp/Success";
 
     export class BinaryRef {
 
@@ -47,4 +47,3 @@ module catavolt.dialog {
         }
 
     }
-}

@@ -2,18 +2,16 @@
  * Created by rburson on 3/27/15.
  */
 
-///<reference path="references.ts"/>
+import {ActionSource} from "./ActionSource";
 
-module catavolt.dialog {
+export class ContextAction implements ActionSource {
 
-    export class ContextAction implements ActionSource{
+    constructor(public actionId:string,
+                public objectId:string,
+                public fromActionSource:ActionSource) {
+    }
 
-        constructor(public actionId:string,
-                    public objectId:string,
-                    public fromActionSource:ActionSource){}
-
-        get virtualPathSuffix():Array<string> {
-            return [this.objectId, this.actionId];
-        }
+    get virtualPathSuffix():Array<string> {
+        return [this.objectId, this.actionId];
     }
 }

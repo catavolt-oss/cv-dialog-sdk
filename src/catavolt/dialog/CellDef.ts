@@ -2,24 +2,22 @@
  * Created by rburson on 3/31/15.
  */
 
-///<reference path="../references.ts"/>
-
 /*
-    @TODO
+ @TODO
 
-    Test all of the deserialization methods
-    They should all be handled, but the cover many of the edge cases (i.e. List<List<CellDef>>)
+ Test all of the deserialization methods
+ They should all be handled, but the cover many of the edge cases (i.e. List<List<CellDef>>)
  */
-module catavolt.dialog {
 
-    export class CellDef {
+import {CellValueDef} from "./CellValueDef";
 
-        constructor(private _values:Array<CellValueDef>) {
-        }
+export class CellDef {
 
-        get values():Array<CellValueDef> {
-            return this._values;
-        }
-
+    constructor(private _values:Array<CellValueDef>) {
     }
+
+    get values():Array<CellValueDef> {
+        return this._values;
+    }
+
 }

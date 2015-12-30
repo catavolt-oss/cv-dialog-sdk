@@ -2,18 +2,12 @@
  * Created by rburson on 4/1/15.
  */
 
-///<reference path="../references.ts"/>
+export class GraphDataPointDef {
 
-/* @TODO */
-module catavolt.dialog {
-
-    export class GraphDataPointDef {
-
-        constructor(private _name:string,
-                    private _type:string,
-                    private _plotType:string,
-                    private _legendkey:string) {
-        }
-
+    constructor(private _name:string,
+                private _type:string,
+                private _plotType:string,
+                private _legendkey:string) {
     }
+
 }

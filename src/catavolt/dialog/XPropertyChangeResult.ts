@@ -2,21 +2,19 @@
  * Created by rburson on 4/1/15.
  */
 
-///<reference path="../references.ts"/>
+import {XReadResult} from "./XReadResult";
+import {EntityRecDef} from "./EntityRecDef";
 
-module catavolt.dialog {
+export class XPropertyChangeResult {
 
-    export class XPropertyChangeResult {
-
-        constructor(public availableValueChanges:Array<string>,
-                    public propertyName:string,
-                    public sideEffects:XReadResult,
-                    public editorRecordDef:EntityRecDef) {
-        }
-
-        get sideEffectsDef():EntityRecDef {
-            return this.editorRecordDef;
-        }
-
+    constructor(public availableValueChanges:Array<string>,
+                public propertyName:string,
+                public sideEffects:XReadResult,
+                public editorRecordDef:EntityRecDef) {
     }
+
+    get sideEffectsDef():EntityRecDef {
+        return this.editorRecordDef;
+    }
+
 }

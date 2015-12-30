@@ -3,7 +3,7 @@
  */
 var React = require('react');
 var CvMenu = require('./CvMenu');
-var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
+var QueryMarkerOption = require('../catavolt/dialog/QueryScroller').QueryMarkerOption;
 /*
  ***************************************************
  * Render a ListContext

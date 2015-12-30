@@ -2,12 +2,12 @@
  * Created by rburson on 3/17/15.
  */
 
-///<reference path="../references.ts"/>
+import {Redirection} from "./Redirection";
+import {StringDictionary} from "../util/Types";
 
-module catavolt.dialog {
+export class NullRedirection extends Redirection {
 
-    export class NullRedirection extends Redirection {
-
-        constructor(public fromDialogProperties:StringDictionary){ super(); }
+    constructor(public fromDialogProperties:StringDictionary) {
+        super();
     }
 }
