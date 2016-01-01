@@ -6,7 +6,11 @@ var CvAppWindow = require('./CvAppWindow');
 var CvHeroHeader = require('./CvHeroHeader');
 var CvLoginPane = require('./CvLoginPane');
 
-var AppContext = require('../catavolt/dialog/AppContext').AppContext;
+var dialog = require('../catavolt/dialog');
+var util = require('../catavolt/util');
+
+var AppContext = dialog.AppContext;
+var Log = util.Log;
 
 /*
  ***************************************************

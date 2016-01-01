@@ -1,6 +1,10 @@
 /**
  * Created by rburson on 12/23/15.
  */
+
+var util = require('../catavolt/util');
+var Log = util.Log;
+
 /*
  ***************************************************
  * Render a 'context menu' for a MenuDef

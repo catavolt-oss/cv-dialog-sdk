@@ -6,6 +6,9 @@
 var React = require('react');
 var CvMessage = require('./CvMessage');
 
+var util = require('../catavolt/util');
+var Log = util.Log;
+
 /*
  ***************************************************
  * Render a 'Launcher'

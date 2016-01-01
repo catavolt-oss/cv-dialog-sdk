@@ -4,6 +4,9 @@
 
 var React = require('react');
 
+var util = require('../catavolt/util');
+var Log = util.Log;
+
 /*
  ***************************************************
  * When you need to look fancy

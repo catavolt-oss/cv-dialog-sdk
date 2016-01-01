@@ -4,6 +4,10 @@
 
 var React = require('react');
 
+var util = require('../catavolt/util');
+var Log = util.Log;
+var ObjUtil = util.ObjUtil;
+
 /*
  ***************************************************
  * Render a LoginPane
