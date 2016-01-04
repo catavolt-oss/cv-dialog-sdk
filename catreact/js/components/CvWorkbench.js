@@ -5,9 +5,6 @@
 var React = require('react');
 var CvLauncher = require('./CvLauncher');
 
-var util = require('../catavolt/util');
-var Log = util.Log;
-
 /*
  ***************************************************
  * Render a Workbench

@@ -10,7 +10,7 @@ var catavolt;
         xdescribe("Request::XMLHttpClient", function () {
             it("Should get endpoint successfully", function (done) {
                 var SERVICE_PATH = "https://www.catavolt.net/***REMOVED***/soi-json";
-                var client = new XMLHttpClient();
+                var client = new ws.XMLHttpClient();
                 var f = client.jsonGet(SERVICE_PATH, 30000);
                 f.onComplete(function (t) {
                     expect(t.isSuccess).toBe(true);

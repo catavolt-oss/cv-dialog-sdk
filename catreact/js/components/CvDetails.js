@@ -5,8 +5,6 @@
 var React = require('react');
 var CvMenu = require('./CvMenu');
 
-var util = require('../catavolt/util');
-var Log = util.Log;
 
 /*
  ***************************************************

@@ -8,9 +8,6 @@ var React = require('react');
 var CvForm = require('./CvForm');
 var CvMessage = require('./CvMessage');
 
-var util = require('../catavolt/util');
-var Log = util.Log;
-
 /*
  ***************************************************
  * Render a NavRequest

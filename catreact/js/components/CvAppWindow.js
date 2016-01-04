@@ -6,11 +6,6 @@ var CvWorkbench = require('./CvWorkbench');
 var CvNavigation = require('./CvNavigation');
 var CvToolbar = require('./CvToolbar');
 
-var dialog = require('../catavolt/dialog');
-var util = require('../catavolt/util');
-
-var Log = util.Log;
-
 /*
  ***************************************************
  * A component analogous to Catavolt AppWinDef

@@ -6,12 +6,6 @@ var CvAppWindow = require('./CvAppWindow');
 var CvHeroHeader = require('./CvHeroHeader');
 var CvLoginPane = require('./CvLoginPane');
 
-var dialog = require('../catavolt/dialog');
-var util = require('../catavolt/util');
-
-var AppContext = dialog.AppContext;
-var Log = util.Log;
-
 /*
  ***************************************************
  *  Top-level container for a Catavolt Application

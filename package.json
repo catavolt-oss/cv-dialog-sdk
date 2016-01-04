@@ -7,6 +7,8 @@
     "babelify": "^7.2.0",
     "react": "^0.14.3",
     "react-dom": "^0.14.3",
+    "systemjs": "^0.19.9",
+    "systemjs-builder": "^0.14.15",
     "watchify": "^3.6.1"
   },
   "devDependencies": {
@@ -19,6 +21,6 @@
     "phantomjs": "^1.9.19"
   },
   "scripts": {
-    "start": "watchify -v -t [ babelify --presets [ es2015 react ] ] -u catreact/js/bundle.js catreact/js/components/* -o catreact/js/bundle.js"
+ 	"start": "watchify -v -t [ babelify --presets [ es2015 react ] ] -u catreact/js/catavolt_sdk.js -u catreact/js/bundle.js catreact/js/**/* -o catreact/js/bundle.js"
   }
 }

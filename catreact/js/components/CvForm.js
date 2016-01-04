@@ -7,13 +7,6 @@ var CvList = require('./CvList');
 var CvDetails = require('./CvDetails');
 var CvMessage = require('./CvMessage');
 
-var util = require('../catavolt/util');
-var dialog = require('../catavolt/dialog');
-var Log = util.Log;
-var FormContext = dialog.FormContext;
-var ListContext = dialog.ListConext;
-var DetailsContext = dialog.DetailsContext;
-
 /*
  ***************************************************
  * Render a FormContext

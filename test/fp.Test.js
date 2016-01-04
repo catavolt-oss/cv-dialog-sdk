@@ -6,7 +6,7 @@ var catavolt;
     (function (fp) {
         xdescribe("Future", function () {
             it("should be created successfully with Try", function () {
-                var f = Future.createCompletedFuture("test", new Success("successfulValue"));
+                var f = fp.Future.createCompletedFuture("test", new fp.Success("successfulValue"));
             });
         });
     })(fp = catavolt.fp || (catavolt.fp = {}));
