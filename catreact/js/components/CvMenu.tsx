@@ -2,15 +2,24 @@
  * Created by rburson on 12/23/15.
  */
 
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
+
+interface CvMenuState extends CvState {
+}
+
+interface CvMenuProps extends CvProps {
+    menuDef:MenuDef;
+}
+
 /*
  ***************************************************
  * Render a 'context menu' for a MenuDef
  ***************************************************
  */
 
-var React = require('react');
-
-var CvMenu = React.createClass({
+var CvMenu = React.createClass<CvMenuProps, CvMenuState>({
 
     render: function() {
 
@@ -56,5 +65,3 @@ var CvMenu = React.createClass({
     },
 
 });
-
-module.exports = CvMenu;

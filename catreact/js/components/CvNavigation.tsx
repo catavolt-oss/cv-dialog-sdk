@@ -2,18 +2,25 @@
  * Created by rburson on 12/23/15.
  */
 
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
 
-var React = require('react');
+interface CvNavigationState extends CvState {
+}
 
-var CvForm = require('./CvForm');
-var CvMessage = require('./CvMessage');
+interface CvNavigationProps extends CvProps {
+    navRequestTry:Try<NavRequest>;
+    onNavRequest:(navRequestTry:Try<NavRequest>) => void;
+}
+
 
 /*
  ***************************************************
  * Render a NavRequest
  ***************************************************
  */
-var CvNavigation = React.createClass({
+var CvNavigation = React.createClass<CvNavigationProps, CvNavigationState>({
 
     render: function() {
         if(this.props.navRequestTry && this.props.navRequestTry.isSuccess) {
@@ -28,5 +35,3 @@ var CvNavigation = React.createClass({
     }
 
 });
-
-module.exports = CvNavigation;

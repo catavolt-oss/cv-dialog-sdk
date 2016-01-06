@@ -1,18 +1,25 @@
 /**
  * Created by rburson on 12/23/15.
  */
-var React = require('react');
 
-var CvList = require('./CvList');
-var CvDetails = require('./CvDetails');
-var CvMessage = require('./CvMessage');
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
+
+interface CvFormState extends CvState {
+}
+
+interface CvFormProps extends CvProps{
+    formContext:FormContext;
+    onNavRequest: (navRequestTry:Try<NavRequest>) => void;
+}
 
 /*
  ***************************************************
  * Render a FormContext
  ***************************************************
  */
-var CvForm = React.createClass({
+var CvForm = React.createClass<CvFormProps, CvFormState>({
 
     getInitialState: function(){
         return {statusMessage: ''};
@@ -45,5 +52,3 @@ var CvForm = React.createClass({
     }
 
 });
-
-module.exports = CvForm;

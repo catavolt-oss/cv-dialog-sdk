@@ -1,17 +1,24 @@
 /**
  * Created by rburson on 12/23/15.
  */
-
-
-var React = require('react');
-var CvMessage = require('./CvMessage');
-
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
 /*
  ***************************************************
  * Render a 'Launcher'
  ***************************************************
  */
-var CvLauncher = React.createClass({
+
+interface CvLauncherState extends CvState {
+}
+
+interface CvLauncherProps extends CvProps{
+    launchAction:WorkbenchLaunchAction;
+    onLaunch: (navRequestTry:Try<NavRequest>)=>void;
+}
+
+var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
 
     render: function() {
         return (
@@ -23,11 +30,9 @@ var CvLauncher = React.createClass({
     },
 
     handleClick: function() {
-        this.props.catavolt.performLaunchAction(this.props.launchAction).onComplete(launchTry => {
+        this.props.catavolt.performLaunchAction(this.props.launchAction).onComplete((launchTry:Try<NavRequest>) => {
             this.props.onLaunch(launchTry);
         });
     }
 
 });
-
-module.exports = CvLauncher;

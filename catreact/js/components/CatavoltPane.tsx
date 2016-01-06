@@ -1,17 +1,25 @@
 /**
  * Created by rburson on 12/23/15.
  */
-var React = require('react');
-var CvAppWindow = require('./CvAppWindow');
-var CvHeroHeader = require('./CvHeroHeader');
-var CvLoginPane = require('./CvLoginPane');
+
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
+
+interface CatavoltPaneState extends CvState {
+    loggedIn:boolean;
+}
+
+interface CatavoltPaneProps extends CvProps {
+    persistentWorkbench:boolean;
+}
 
 /*
  ***************************************************
  *  Top-level container for a Catavolt Application
  ***************************************************
  */
-var CatavoltPane = React.createClass({
+var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
 
     checkSession: function() {
         var sessionContext = this.getSession();
@@ -75,5 +83,3 @@ var CatavoltPane = React.createClass({
     }
 
 });
-
-module.exports = CatavoltPane;

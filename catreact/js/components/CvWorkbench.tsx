@@ -2,20 +2,29 @@
  * Created by rburson on 12/23/15.
  */
 
-var React = require('react');
-var CvLauncher = require('./CvLauncher');
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
+
+interface CvWorkbenchState extends CvState {
+}
+
+interface CvWorkbenchProps extends CvProps {
+    workbench:Workbench;
+    onNavRequest:(navRequestTry:Try<NavRequest>) => void;
+}
 
 /*
  ***************************************************
  * Render a Workbench
  ***************************************************
  */
-var CvWorkbench = React.createClass({
 
+var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
 
     render: function () {
 
-        var launchActions = this.props.workbench.workbenchLaunchActions;
+        var launchActions:Array<WorkbenchLaunchAction> = this.props.workbench.workbenchLaunchActions;
         var launchComps = [];
         for(let i=0; i < launchActions.length; i++) {
             launchComps.push(
@@ -27,10 +36,8 @@ var CvWorkbench = React.createClass({
         );
     },
 
-    actionLaunched: function(launchTry) {
+    actionLaunched: function(launchTry:Try<NavRequest>) {
         this.props.onNavRequest(launchTry);
     }
 
 });
-
-module.exports = CvWorkbench;

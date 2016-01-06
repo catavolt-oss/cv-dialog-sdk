@@ -2,14 +2,22 @@
  * Created by rburson on 12/23/15.
  */
 
-var React = require('react');
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
+
+interface CvToolbarState extends CvState {
+}
+
+interface CvToolbarProps extends CvProps {
+}
 
 /*
  ***************************************************
  * Render a top-level application toolbar
  ***************************************************
  */
-var CvToolbar = React.createClass({
+var CvToolbar = React.createClass<CvToolbarProps, CvToolbarState>({
     render: function () {
         return (
             <nav className="navbar navbar-default navbar-static-top component-chrome">
@@ -44,5 +52,3 @@ var CvToolbar = React.createClass({
         );
     }
 });
-
-module.exports = CvToolbar;

@@ -2,23 +2,32 @@
  * Created by rburson on 12/23/15.
  */
 
-var React = require('react');
-var CvMenu = require('./CvMenu');
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
 
+interface CvDetailsState extends CvState {
+   renderedDetailRows:Array<any>;
+}
+
+interface CvDetailsProps extends CvProps{
+    detailsContext:DetailsContext;
+    onNavRequest:(navRequestTry:Try<NavRequest>)=>void;
+}
 
 /*
  ***************************************************
  * Render a DetailsContext
  ***************************************************
  */
-var CvDetails = React.createClass({
+var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
 
     getInitialState() {
         return {renderedDetailRows: []}
     },
 
     componentWillMount: function() {
-        this.props.detailsContext.read().onComplete((entityRecTry)=>{
+        this.props.detailsContext.read().onComplete((entityRecTry:Try<EntityRec>)=>{
             this.layoutDetailsPane(this.props.detailsContext);
         });
     },
@@ -44,7 +53,7 @@ var CvDetails = React.createClass({
 
     layoutDetailsPane: function (detailsContext) {
 
-        let allDefsComplete = Future.createSuccessfulFuture('layoutDetailsPaneStart', '');
+        let allDefsComplete = Future.createSuccessfulFuture<VoidResult>('layoutDetailsPaneStart', {});
         const renderedDetailRows = [];
         detailsContext.detailsDef.rows.forEach((cellDefRow, index)=> {
             if (this.isValidDetailsDefRow(cellDefRow)) {
@@ -110,7 +119,7 @@ var CvDetails = React.createClass({
                 return <tr key={index}>{[<td>{label}</td>, <td>{editorCellString}</td>]}</tr>
             });
         } else if (valueDef instanceof AttributeCellValueDef) {
-            let value = "";
+            let value = <span></span>;
             var prop = detailsContext.buffer.propAtName(valueDef.propertyName);
             if (prop && detailsContext.isBinary(valueDef)) {
                 value = <span></span>;
@@ -128,7 +137,7 @@ var CvDetails = React.createClass({
     },
 
     /* Returns a Future */
-    createEditorControl: function (attributeCellValueDef, detailsContext) {
+    createEditorControl: function (attributeDef:AttributeCellValueDef, detailsContext:DetailsContext) {
         if (attributeDef.isComboBoxEntryMethod) {
             return detailsContext.getAvailableValues(attributeDef.propertyName).map((values)=> {
                 return <span></span>
@@ -152,5 +161,3 @@ var CvDetails = React.createClass({
         }
     }
 });
-
-module.exports = CvDetails;

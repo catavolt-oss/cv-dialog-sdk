@@ -1,17 +1,27 @@
 /**
  * Created by rburson on 12/23/15.
  */
-var React = require('react');
-var CvMenu = require('./CvMenu');
 
-var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
 
+interface CvListState extends CvState {
+    entityRecs:Array<EntityRec>;
+}
+
+interface CvListProps extends CvProps {
+    listContext:ListContext;
+    onNavRequest: (navRequestTry:Try<NavRequest>)=>void;
+}
 /*
  ***************************************************
  * Render a ListContext
  ***************************************************
  */
-var CvList = React.createClass({
+import QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
+
+var CvList = React.createClass<CvListProps, CvListState>({
 
     getInitialState() {
         return {entityRecs: []}
@@ -79,5 +89,3 @@ var CvList = React.createClass({
         )
     }
 });
-
-module.exports = CvList;

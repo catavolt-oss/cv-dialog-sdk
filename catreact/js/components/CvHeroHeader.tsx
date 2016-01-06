@@ -2,14 +2,22 @@
  * Created by rburson on 12/23/15.
  */
 
-var React = require('react');
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
+
+interface CvHeroHeaderState extends CvState {
+}
+
+interface CvHeroHeaderProps extends CvProps {
+}
 
 /*
  ***************************************************
  * When you need to look fancy
  ***************************************************
  */
-var CvHeroHeader = React.createClass({
+var CvHeroHeader = React.createClass<CvHeroHeaderProps, CvHeroHeaderState>({
 
     render: function() {
         return (
@@ -23,5 +31,3 @@ var CvHeroHeader = React.createClass({
         );
     }
 });
-
-module.exports = CvHeroHeader;

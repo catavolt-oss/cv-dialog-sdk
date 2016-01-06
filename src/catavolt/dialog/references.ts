@@ -171,6 +171,7 @@ import ServiceEndpoint = catavolt.dialog.ServiceEndpoint;
 import SortPropDef = catavolt.dialog.SortPropDef;
 import SubstitutionCellValueDef = catavolt.dialog.SubstitutionCellValueDef;
 import TabCellValueDef = catavolt.dialog.TabCellValueDef;
+import VoidResult = catavolt.dialog.VoidResult;
 import WebRedirection = catavolt.dialog.WebRedirection;
 import Workbench = catavolt.dialog.Workbench;
 import WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;

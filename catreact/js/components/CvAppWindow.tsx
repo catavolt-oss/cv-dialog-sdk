@@ -1,17 +1,25 @@
 /**
  * Created by rburson on 12/23/15.
  */
-var React = require('react');
-var CvWorkbench = require('./CvWorkbench');
-var CvNavigation = require('./CvNavigation');
-var CvToolbar = require('./CvToolbar');
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
+
+interface CvAppWindowState extends CvState {
+    navRequestTry:Try<NavRequest>;
+}
+
+interface CvAppWindowProps extends CvProps {
+    persistentWorkbench:boolean;
+    onLogout:()=>void;
+}
 
 /*
  ***************************************************
  * A component analogous to Catavolt AppWinDef
  ***************************************************
  */
-var CvAppWindow = React.createClass({
+var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
 
     getInitialState: function () {
         return {
@@ -62,5 +70,3 @@ var CvAppWindow = React.createClass({
 
 
 });
-
-module.exports = CvAppWindow;

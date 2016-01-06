@@ -2,14 +2,28 @@
  * Created by rburson on 12/23/15.
  */
 
-var React = require('react');
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../catavolt/references.ts"/>
+///<reference path="references.ts"/>
+
+interface CvLoginPaneState extends CvState {
+    tenantId: string;
+    gatewayUrl: string;
+    userId: string;
+    password: string;
+    clientType: string;
+}
+
+interface CvLoginPaneProps extends CvProps {
+    onLogin: ()=>void;
+}
 
 /*
  ***************************************************
  * Render a LoginPane
  ***************************************************
  */
-var CvLoginPane = React.createClass({
+var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
 
     getInitialState: function () {
         return {
@@ -39,7 +53,6 @@ var CvLoginPane = React.createClass({
                             <label htmlFor="gatewayUrl" className="col-sm-2 control-label">Gateway URL:</label>
                             <div className="col-sm-10">
                                 <div className="input-group">
-                                    <span className="input-group-addon" id="http-addon">http://</span>
                                     <input id="gatewayUrl" type="text" className="form-control"
                                            value={this.state.gatewayUrl}
                                            onChange={this.handleChange.bind(this, 'gatewayUrl')}
@@ -113,5 +126,3 @@ var CvLoginPane = React.createClass({
             });
     }
 });
-
-module.exports = CvLoginPane;
