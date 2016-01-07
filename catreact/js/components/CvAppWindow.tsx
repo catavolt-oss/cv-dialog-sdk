@@ -30,7 +30,7 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
 
     render: function () {
 
-        var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
+        var workbenches:Array<Workbench> = this.props.catavolt.appWinDefTry.success.workbenches;
 
         return (
             <span>
@@ -38,15 +38,9 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
                 <div className="container">
                     {(() => {
                         if (this.showWorkbench()) {
-                            return (
-                                <div className="panel panel-primary">
-                                    <div className="panel-heading">
-                                        <h3 className="panel-title">Default Workbench</h3>
-                                    </div>
-                                    <CvWorkbench catavolt={this.props.catavolt} workbench={workbenches[0]}
-                                                 onNavRequest={this.onNavRequest}/>
-                                </div>
-                            );
+                            return workbenches.map((workbench:Workbench, index:number)=>{
+                                    return <CvWorkbench catavolt={this.props.catavolt} workbench={workbench} onNavRequest={this.onNavRequest}/>
+                                })
                         }
                     })()}
                     <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>

@@ -32,7 +32,10 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
             );
         }
         return (
-            <div className="panel-body">{launchComps}</div>
+            <div className="panel panel-primary">
+                <div className="panel-heading"> <h3 className="panel-title">{this.props.workbench.name}</h3> </div>
+                <div className="panel-body">{launchComps}</div>
+            </div>
         );
     },
 

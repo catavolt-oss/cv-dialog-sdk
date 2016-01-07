@@ -27,11 +27,11 @@ var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
 
     getInitialState: function () {
         return {
-            tenantId: '***REMOVED***z',
+            tenantId: 'catavolt-dev',
             gatewayUrl: 'www.catavolt.net',
-            userId: 'sales',
-            password: '***REMOVED***',
-            clientType: 'LIMITED_ACCESS'
+            userId: 'rob',
+            password: 'rob123',
+            clientType: 'RICH_CLIENT'
         }
     },
 

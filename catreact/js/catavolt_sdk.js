@@ -8569,7 +8569,9 @@ var CvAppWindow = React.createClass({
         var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
         return (React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", {"className": "container"}, (function () {
             if (_this.showWorkbench()) {
-                return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h3", {"className": "panel-title"}, "Default Workbench")), React.createElement(CvWorkbench, {"catavolt": _this.props.catavolt, "workbench": workbenches[0], "onNavRequest": _this.onNavRequest})));
+                return workbenches.map(function (workbench, index) {
+                    return React.createElement(CvWorkbench, {"catavolt": _this.props.catavolt, "workbench": workbench, "onNavRequest": _this.onNavRequest});
+                });
             }
         })(), React.createElement(CvNavigation, {"navRequestTry": this.state.navRequestTry, "onNavRequest": this.onNavRequest}))));
     },
@@ -8604,7 +8606,7 @@ var CvWorkbench = React.createClass({
         for (var i = 0; i < launchActions.length; i++) {
             launchComps.push(React.createElement(CvLauncher, {"catavolt": this.props.catavolt, "launchAction": launchActions[i], "key": launchActions[i].actionId, "onLaunch": this.actionLaunched}));
         }
-        return (React.createElement("div", {"className": "panel-body"}, launchComps));
+        return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, " ", React.createElement("h3", {"className": "panel-title"}, this.props.workbench.name), " "), React.createElement("div", {"className": "panel-body"}, launchComps)));
     },
     actionLaunched: function (launchTry) {
         this.props.onNavRequest(launchTry);
@@ -8624,11 +8626,11 @@ var CvWorkbench = React.createClass({
 var CvLoginPane = React.createClass({
     getInitialState: function () {
         return {
-            tenantId: '***REMOVED***z',
+            tenantId: 'catavolt-dev',
             gatewayUrl: 'www.catavolt.net',
-            userId: 'sales',
-            password: '***REMOVED***',
-            clientType: 'LIMITED_ACCESS'
+            userId: 'rob',
+            password: 'rob123',
+            clientType: 'RICH_CLIENT'
         };
     },
     render: function () {
@@ -8738,4 +8740,5 @@ var CatavoltPane = React.createClass({
 ///<reference path="../../typings/react/react-global.d.ts"/>
 ///<reference path="../catavolt/references.ts"/>
 ///<reference path="references.ts"/>
+Log.logLevel(LogLevel.DEBUG);
 ReactDOM.render(React.createElement(CatavoltPane, {"persistentWorkbench": true}), document.getElementById('cvApp'));
