@@ -21,6 +21,6 @@
     "phantomjs": "^1.9.19"
   },
   "scripts": {
- 	"start": "watchify -v -t [ babelify --presets [ es2015 react ] ] -u catreact/js/bundle.js catreact/js/catavolt_sdk.js -o catreact/js/bundle.js"
+ 	"start": "watchify -v -t [ babelify --presets [ es2015 react ] ] -u catreact/js/bundle.js catreact/js/catreact.js -o catreact/js/bundle.js"
   }
 }

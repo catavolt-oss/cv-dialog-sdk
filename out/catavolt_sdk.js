@@ -1,322 +1,4 @@
 /**
- * Created by rburson on 3/6/15.
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var ArrayUtil = (function () {
-            function ArrayUtil() {
-            }
-            ArrayUtil.copy = function (source) {
-                return source.map(function (e) { return e; });
-            };
-            ArrayUtil.find = function (source, f) {
-                var value = null;
-                source.some(function (v) {
-                    if (f(v)) {
-                        value = v;
-                        return true;
-                    }
-                    return false;
-                });
-                return value;
-            };
-            return ArrayUtil;
-        })();
-        util.ArrayUtil = ArrayUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 4/4/15.
- */
-///<reference path="../references.ts"/>
-/*
-    This implementation supports our ECMA 5.1 browser set, including IE9
-    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var Base64 = (function () {
-            function Base64() {
-            }
-            Base64.encode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = Base64._utf8_encode(input);
-                while (i < input.length) {
-                    chr1 = input.charCodeAt(i++);
-                    chr2 = input.charCodeAt(i++);
-                    chr3 = input.charCodeAt(i++);
-                    enc1 = chr1 >> 2;
-                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-                    enc4 = chr3 & 63;
-                    if (isNaN(chr2)) {
-                        enc3 = enc4 = 64;
-                    }
-                    else if (isNaN(chr3)) {
-                        enc4 = 64;
-                    }
-                    output = output +
-                        Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
-                        Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
-                }
-                return output;
-            };
-            Base64.decode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3;
-                var enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-                while (i < input.length) {
-                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
-                    chr1 = (enc1 << 2) | (enc2 >> 4);
-                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-                    chr3 = ((enc3 & 3) << 6) | enc4;
-                    output = output + String.fromCharCode(chr1);
-                    if (enc3 != 64) {
-                        output = output + String.fromCharCode(chr2);
-                    }
-                    if (enc4 != 64) {
-                        output = output + String.fromCharCode(chr3);
-                    }
-                }
-                output = Base64._utf8_decode(output);
-                return output;
-            };
-            Base64._utf8_encode = function (s) {
-                s = s.replace(/\r\n/g, "\n");
-                var utftext = "";
-                for (var n = 0; n < s.length; n++) {
-                    var c = s.charCodeAt(n);
-                    if (c < 128) {
-                        utftext += String.fromCharCode(c);
-                    }
-                    else if ((c > 127) && (c < 2048)) {
-                        utftext += String.fromCharCode((c >> 6) | 192);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                    else {
-                        utftext += String.fromCharCode((c >> 12) | 224);
-                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                }
-                return utftext;
-            };
-            Base64._utf8_decode = function (utftext) {
-                var s = "";
-                var i = 0;
-                var c = 0, c1 = 0, c2 = 0, c3 = 0;
-                while (i < utftext.length) {
-                    c = utftext.charCodeAt(i);
-                    if (c < 128) {
-                        s += String.fromCharCode(c);
-                        i++;
-                    }
-                    else if ((c > 191) && (c < 224)) {
-                        c2 = utftext.charCodeAt(i + 1);
-                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                        i += 2;
-                    }
-                    else {
-                        c2 = utftext.charCodeAt(i + 1);
-                        c3 = utftext.charCodeAt(i + 2);
-                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                        i += 3;
-                    }
-                }
-                return s;
-            };
-            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-            return Base64;
-        })();
-        util.Base64 = Base64;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/20/15.
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var ObjUtil = (function () {
-            function ObjUtil() {
-            }
-            ObjUtil.addAllProps = function (sourceObj, targetObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return targetObj;
-                if (null == targetObj || "object" != typeof targetObj)
-                    return targetObj;
-                for (var attr in sourceObj) {
-                    targetObj[attr] = sourceObj[attr];
-                }
-                return targetObj;
-            };
-            ObjUtil.cloneOwnProps = function (sourceObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return sourceObj;
-                var copy = sourceObj.constructor();
-                for (var attr in sourceObj) {
-                    if (sourceObj.hasOwnProperty(attr)) {
-                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
-                    }
-                }
-                return copy;
-            };
-            ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
-                for (var prop in obj) {
-                    if (!filterFn || filterFn(prop)) {
-                        var type = typeof obj[prop];
-                        if (type !== 'function') {
-                            var val = obj[prop];
-                            if (val) {
-                                newObj[prop] = val;
-                            }
-                        }
-                    }
-                }
-                return newObj;
-            };
-            ObjUtil.formatRecAttr = function (o) {
-                //@TODO - add a filter here to build a cache and detect (and skip) circular references
-                return JSON.stringify(o);
-            };
-            ObjUtil.newInstance = function (type) {
-                return new type;
-            };
-            return ObjUtil;
-        })();
-        util.ObjUtil = ObjUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 4/3/15.
- */
-///<reference path="../references.ts"/>
-/* @TODO */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var StringUtil = (function () {
-            function StringUtil() {
-            }
-            StringUtil.splitSimpleKeyValuePair = function (pairString) {
-                var pair = pairString.split(':');
-                var code = pair[0];
-                var desc = pair.length > 1 ? pair[1] : '';
-                return [code, desc];
-            };
-            return StringUtil;
-        })();
-        util.StringUtil = StringUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/6/15.
- */
-///<reference path="references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        (function (LogLevel) {
-            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
-            LogLevel[LogLevel["WARN"] = 1] = "WARN";
-            LogLevel[LogLevel["INFO"] = 2] = "INFO";
-            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
-        })(util.LogLevel || (util.LogLevel = {}));
-        var LogLevel = util.LogLevel;
-        var Log = (function () {
-            function Log() {
-            }
-            Log.logLevel = function (level) {
-                if (level >= LogLevel.DEBUG) {
-                    Log.debug = function (message, method, clz) {
-                        Log.log(function (o) { console.info(o); }, 'DEBUG: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.debug = function (message, method, clz) { };
-                }
-                if (level >= LogLevel.INFO) {
-                    Log.info = function (message, method, clz) {
-                        Log.log(function (o) { console.info(o); }, 'INFO: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.info = function (message, method, clz) { };
-                }
-                if (level >= LogLevel.WARN) {
-                    Log.error = function (message, clz, method) {
-                        Log.log(function (o) { console.error(o); }, 'ERROR: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.error = function (message, clz, method) { };
-                }
-                if (level >= LogLevel.ERROR) {
-                    Log.warn = function (message, clz, method) {
-                        Log.log(function (o) { console.info(o); }, 'WARN: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.warn = function (message, clz, method) { };
-                }
-            };
-            Log.log = function (logger, message, method, clz) {
-                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
-                if (clz || method) {
-                    logger(clz + "::" + method + " : " + m);
-                }
-                else {
-                    logger(m);
-                }
-            };
-            Log.formatRecString = function (o) {
-                return util.ObjUtil.formatRecAttr(o);
-            };
-            //set default log level here
-            Log.init = Log.logLevel(LogLevel.INFO);
-            return Log;
-        })();
-        util.Log = Log;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/9/15.
- */
-/**
- * Created by rburson on 3/16/15.
- */
-/**
- * Created by rburson on 3/6/15.
- */
-//util
-///<reference path="ArrayUtil.ts"/>
-///<reference path="Base64.ts"/>
-///<reference path="ObjUtil.ts"/>
-///<reference path="StringUtil.ts"/>
-///<reference path="Log.ts"/>
-///<reference path="Types.ts"/>
-///<reference path="UserException.ts"/>
-var ArrayUtil = catavolt.util.ArrayUtil;
-var Base64 = catavolt.util.Base64;
-var Log = catavolt.util.Log;
-var LogLevel = catavolt.util.LogLevel;
-var ObjUtil = catavolt.util.ObjUtil;
-var StringUtil = catavolt.util.StringUtil;
-/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -441,297 +123,34 @@ var catavolt;
     })(fp = catavolt.fp || (catavolt.fp = {}));
 })(catavolt || (catavolt = {}));
 /**
- * Created by rburson on 3/5/15.
- */
-///<reference path="../util/references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var fp;
-    (function (fp) {
-        var Future = (function () {
-            /** --------------------- CONSTRUCTORS ------------------------------*/
-            function Future(_label) {
-                this._label = _label;
-                this._completionListeners = new Array();
-            }
-            /** --------------------- PUBLIC STATIC ------------------------------*/
-            Future.createCompletedFuture = function (label, result) {
-                var f = new Future(label);
-                return f.complete(result);
-            };
-            Future.createSuccessfulFuture = function (label, value) {
-                return Future.createCompletedFuture(label, new fp.Success(value));
-            };
-            Future.createFailedFuture = function (label, error) {
-                return Future.createCompletedFuture(label, new fp.Failure(error));
-            };
-            Future.createFuture = function (label) {
-                var f = new Future(label);
-                return f;
-            };
-            Future.sequence = function (seqOfFutures) {
-                var start = Future.createSuccessfulFuture('Future::sequence/start', []);
-                return seqOfFutures.reduce(function (seqFr, nextFr) {
-                    return seqFr.bind(function (seq) {
-                        var pr = new fp.Promise('Future::sequence/nextFr');
-                        nextFr.onComplete(function (t) {
-                            seq.push(t);
-                            pr.complete(new fp.Success(seq));
-                        });
-                        return pr.future;
-                    });
-                }, start);
-            };
-            /** --------------------- PUBLIC ------------------------------*/
-            Future.prototype.bind = function (f) {
-                var p = new fp.Promise('Future.bind:' + this._label);
-                this.onComplete(function (t1) {
-                    if (t1.isFailure) {
-                        p.failure(t1.failure);
-                    }
-                    else {
-                        var a = t1.success;
-                        try {
-                            var mb = f(a);
-                            mb.onComplete(function (t2) {
-                                p.complete(t2);
-                            });
-                        }
-                        catch (error) {
-                            p.complete(new fp.Failure(error));
-                        }
-                    }
-                });
-                return p.future;
-            };
-            Object.defineProperty(Future.prototype, "failure", {
-                get: function () { return this._result ? this._result.failure : null; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Future.prototype, "isComplete", {
-                get: function () { return !!this._result; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Future.prototype, "isCompleteWithFailure", {
-                get: function () { return !!this._result && this._result.isFailure; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Future.prototype, "isCompleteWithSuccess", {
-                get: function () { return !!this._result && this._result.isSuccess; },
-                enumerable: true,
-                configurable: true
-            });
-            Future.prototype.map = function (f) {
-                var p = new fp.Promise('Future.map:' + this._label);
-                this.onComplete(function (t1) {
-                    if (t1.isFailure) {
-                        p.failure(t1.failure);
-                    }
-                    else {
-                        var a = t1.success;
-                        try {
-                            var b = f(a);
-                            p.success(b);
-                        }
-                        catch (error) {
-                            p.complete(new fp.Failure(error));
-                        }
-                    }
-                });
-                return p.future;
-            };
-            Future.prototype.onComplete = function (listener) {
-                this._result ? listener(this._result) : this._completionListeners.push(listener);
-            };
-            Future.prototype.onFailure = function (listener) {
-                this.onComplete(function (t) {
-                    t.isFailure && listener(t.failure);
-                });
-            };
-            Future.prototype.onSuccess = function (listener) {
-                this.onComplete(function (t) {
-                    t.isSuccess && listener(t.success);
-                });
-            };
-            Object.defineProperty(Future.prototype, "result", {
-                get: function () { return this._result; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Future.prototype, "success", {
-                get: function () { return this._result ? this.result.success : null; },
-                enumerable: true,
-                configurable: true
-            });
-            /** --------------------- MODULE ------------------------------*/
-            //*** let's pretend this has module level visibility
-            Future.prototype.complete = function (t) {
-                var _this = this;
-                var notifyList = new Array();
-                //Log.debug("complete() called on Future " + this._label + ' there are ' + this._completionListeners.length + " listeners.");
-                if (t) {
-                    if (!this._result) {
-                        this._result = t;
-                        /* capture the listener set to prevent missing a notification */
-                        notifyList = ArrayUtil.copy(this._completionListeners);
-                    }
-                    else {
-                        Log.error("Future::complete() : Future " + this._label + " has already been completed");
-                    }
-                    notifyList.forEach(function (listener) {
-                        try {
-                            listener(_this._result);
-                        }
-                        catch (error) {
-                            Log.error("CompletionListener failed with " + error);
-                        }
-                    });
-                }
-                else {
-                    Log.error("Future::complete() : Can't complete Future with null result");
-                }
-                return this;
-            };
-            return Future;
-        })();
-        fp.Future = Future;
-    })(fp = catavolt.fp || (catavolt.fp = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/5/15.
- */
-///<reference path="../fp/references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var fp;
-    (function (fp) {
-        var Success = (function (_super) {
-            __extends(Success, _super);
-            function Success(_value) {
-                _super.call(this);
-                this._value = _value;
-            }
-            Object.defineProperty(Success.prototype, "isSuccess", {
-                get: function () {
-                    return true;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Success.prototype, "success", {
-                get: function () {
-                    return this._value;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return Success;
-        })(fp.Try);
-        fp.Success = Success;
-    })(fp = catavolt.fp || (catavolt.fp = {}));
-})(catavolt || (catavolt = {}));
-/**
  * Created by rburson on 3/6/15.
  */
-///<reference path="../fp/references.ts"/>
 var catavolt;
 (function (catavolt) {
-    var fp;
-    (function (fp) {
-        var Promise = (function () {
-            function Promise(label) {
-                this._future = fp.Future.createFuture(label);
+    var util;
+    (function (util) {
+        var ArrayUtil = (function () {
+            function ArrayUtil() {
             }
-            /** --------------------- PUBLIC ------------------------------*/
-            Promise.prototype.isComplete = function () { return this._future.isComplete; };
-            Promise.prototype.complete = function (t) {
-                //Log.debug('Promise calling complete on Future...');
-                this._future.complete(t);
-                return this;
+            ArrayUtil.copy = function (source) {
+                return source.map(function (e) { return e; });
             };
-            Promise.prototype.failure = function (error) {
-                this.complete(new fp.Failure(error));
+            ArrayUtil.find = function (source, f) {
+                var value = null;
+                source.some(function (v) {
+                    if (f(v)) {
+                        value = v;
+                        return true;
+                    }
+                    return false;
+                });
+                return value;
             };
-            Object.defineProperty(Promise.prototype, "future", {
-                get: function () {
-                    return this._future;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Promise.prototype.success = function (value) {
-                this.complete(new fp.Success(value));
-            };
-            return Promise;
+            return ArrayUtil;
         })();
-        fp.Promise = Promise;
-    })(fp = catavolt.fp || (catavolt.fp = {}));
+        util.ArrayUtil = ArrayUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
 })(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/16/15.
- */
-var catavolt;
-(function (catavolt) {
-    var fp;
-    (function (fp) {
-        var Either = (function () {
-            function Either() {
-            }
-            Either.left = function (left) {
-                var either = new Either();
-                either._left = left;
-                return either;
-            };
-            Either.right = function (right) {
-                var either = new Either();
-                either._right = right;
-                return either;
-            };
-            Object.defineProperty(Either.prototype, "isLeft", {
-                get: function () {
-                    return !!this._left;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Either.prototype, "isRight", {
-                get: function () {
-                    return !!this._right;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Either.prototype, "left", {
-                get: function () {
-                    return this._left;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Either.prototype, "right", {
-                get: function () {
-                    return this._right;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return Either;
-        })();
-        fp.Either = Either;
-    })(fp = catavolt.fp || (catavolt.fp = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/6/15.
- */
-var Either = catavolt.fp.Either;
-var Failure = catavolt.fp.Failure;
-var Future = catavolt.fp.Future;
-var Promise = catavolt.fp.Promise;
-var Success = catavolt.fp.Success;
-var Try = catavolt.fp.Try;
 /**
  * Created by rburson on 3/9/15.
  */
@@ -8183,562 +7602,583 @@ var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 //dialog
 ///<reference path="dialog/references.ts"/>
 /**
- * Created by rburson on 1/6/16.
+ * Created by rburson on 4/4/15.
  */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../references.ts"/>
 /*
- ***************************************************
- * Render a DetailsContext
- ***************************************************
+    This implementation supports our ECMA 5.1 browser set, including IE9
+    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
  */
-var CvDetails = React.createClass({
-    getInitialState: function () {
-        return { renderedDetailRows: [] };
-    },
-    componentWillMount: function () {
-        var _this = this;
-        this.props.detailsContext.read().onComplete(function (entityRecTry) {
-            _this.layoutDetailsPane(_this.props.detailsContext);
-        });
-    },
-    render: function () {
-        var detailsContext = this.props.detailsContext;
-        return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("span", null, detailsContext.paneTitle || '>'), React.createElement("div", {"className": "pull-right"}, detailsContext.menuDefs.map(function (menuDef, index) { return React.createElement(CvMenu, {"key": index, "menuDef": menuDef}); }))), React.createElement("div", {"style": { maxHeight: '400px', overflow: 'auto' }}, React.createElement("table", {"className": "table table-striped"}, React.createElement("tbody", null, this.state.renderedDetailRows)))));
-    },
-    layoutDetailsPane: function (detailsContext) {
-        var _this = this;
-        var allDefsComplete = Future.createSuccessfulFuture('layoutDetailsPaneStart', {});
-        var renderedDetailRows = [];
-        detailsContext.detailsDef.rows.forEach(function (cellDefRow, index) {
-            if (_this.isValidDetailsDefRow(cellDefRow)) {
-                if (_this.isSectionTitleDef(cellDefRow)) {
-                    allDefsComplete = allDefsComplete.map(function (lastRowResult) {
-                        var titleRow = _this.createTitleRow(cellDefRow, index);
-                        renderedDetailRows.push(titleRow);
-                        return titleRow;
-                    });
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var Base64 = (function () {
+            function Base64() {
+            }
+            Base64.encode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = Base64._utf8_encode(input);
+                while (i < input.length) {
+                    chr1 = input.charCodeAt(i++);
+                    chr2 = input.charCodeAt(i++);
+                    chr3 = input.charCodeAt(i++);
+                    enc1 = chr1 >> 2;
+                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                    enc4 = chr3 & 63;
+                    if (isNaN(chr2)) {
+                        enc3 = enc4 = 64;
+                    }
+                    else if (isNaN(chr3)) {
+                        enc4 = 64;
+                    }
+                    output = output +
+                        Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
+                        Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
                 }
-                else {
-                    allDefsComplete = allDefsComplete.bind(function (lastRowResult) {
-                        return _this.createEditorRow(cellDefRow, detailsContext, index).map(function (editorRow) {
-                            renderedDetailRows.push(editorRow);
-                            return editorRow;
-                        });
-                    });
+                return output;
+            };
+            Base64.decode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3;
+                var enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+                while (i < input.length) {
+                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
+                    chr1 = (enc1 << 2) | (enc2 >> 4);
+                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+                    chr3 = ((enc3 & 3) << 6) | enc4;
+                    output = output + String.fromCharCode(chr1);
+                    if (enc3 != 64) {
+                        output = output + String.fromCharCode(chr2);
+                    }
+                    if (enc4 != 64) {
+                        output = output + String.fromCharCode(chr3);
+                    }
                 }
-            }
-            else {
-                Log.error('Detail row is invalid ' + ObjUtil.formatRecAttr(cellDefRow));
-            }
-        });
-        allDefsComplete.onComplete(function (lastRowResultTry) {
-            _this.setState({ renderedDetailRows: renderedDetailRows });
-        });
-    },
-    isValidDetailsDefRow: function (row) {
-        return row.length === 2 &&
-            row[0].values.length === 1 &&
-            row[1].values.length === 1 &&
-            (row[0].values[0] instanceof LabelCellValueDef ||
-                row[1].values[0] instanceof ForcedLineCellValueDef) &&
-            (row[1].values[0] instanceof AttributeCellValueDef ||
-                row[1].values[0] instanceof LabelCellValueDef ||
-                row[1].values[0] instanceof ForcedLineCellValueDef);
-    },
-    isSectionTitleDef: function (row) {
-        return row[0].values[0] instanceof LabelCellValueDef &&
-            row[1].values[0] instanceof LabelCellValueDef;
-    },
-    createTitleRow: function (row, index) {
-        Log.info('row: ' + JSON.stringify(row));
-        return React.createElement("tr", {"key": index}, React.createElement("td", null, React.createElement("span", null, React.createElement("strong", null, row[0].values[0].value))), React.createElement("td", null, React.createElement("span", null, React.createElement("strong", null, row[1].values[0].value))));
-    },
-    /* Returns a Future */
-    createEditorRow: function (row, detailsContext, index) {
-        var labelDef = row[0].values[0];
-        var label;
-        if (labelDef instanceof LabelCellValueDef) {
-            label = React.createElement("span", null, labelDef.value);
-        }
-        else {
-            label = React.createElement("span", null, "N/A");
-        }
-        var valueDef = row[1].values[0];
-        if (valueDef instanceof AttributeCellValueDef && !detailsContext.isReadModeFor(valueDef.propertyName)) {
-            return this.createEditorControl(valueDef, detailsContext).map(function (editorCellString) {
-                return React.createElement("tr", {"key": index}, [React.createElement("td", null, label), React.createElement("td", null, editorCellString)]);
-            });
-        }
-        else if (valueDef instanceof AttributeCellValueDef) {
-            var value = React.createElement("span", null);
-            var prop = detailsContext.buffer.propAtName(valueDef.propertyName);
-            if (prop && detailsContext.isBinary(valueDef)) {
-                value = React.createElement("span", null);
-            }
-            else if (prop) {
-                value = React.createElement("span", null, detailsContext.formatForRead(prop.value, prop.name));
-            }
-            return Future.createSuccessfulFuture('createEditorRow', React.createElement("tr", {"key": index}, [React.createElement("td", null, label), React.createElement("td", null, value)]));
-        }
-        else if (valueDef instanceof LabelCellValueDef) {
-            var value = React.createElement("span", null, valueDef.value);
-            return Future.createSuccessfulFuture('createEditorRow', React.createElement("tr", {"key": index}, [React.createElement("td", null, label), React.createElement("td", null, value)]));
-        }
-        else {
-            return Future.createSuccessfulFuture('createEditorRow', React.createElement("tr", {"key": index}, [React.createElement("td", null, label), React.createElement("td", null)]));
-        }
-    },
-    /* Returns a Future */
-    createEditorControl: function (attributeDef, detailsContext) {
-        if (attributeDef.isComboBoxEntryMethod) {
-            return detailsContext.getAvailableValues(attributeDef.propertyName).map(function (values) {
-                return React.createElement("span", null);
-                //return '<ComboBox>' + values.join(", ") + '</ComboBox>';
-            });
-        }
-        else if (attributeDef.isDropDownEntryMethod) {
-            return detailsContext.getAvailableValues(attributeDef.propertyName).map(function (values) {
-                return React.createElement("span", null);
-                //return '<DropDown>' + values.join(", ") + '</DropDown>';
-            });
-        }
-        else {
-            var entityRec = detailsContext.buffer;
-            var prop = entityRec.propAtName(attributeDef.propertyName);
-            if (prop && detailsContext.isBinary(attributeDef)) {
-                return Future.createSuccessfulFuture('createEditorControl', React.createElement("span", null));
-            }
-            else {
-                var value = prop ? detailsContext.formatForWrite(prop.value, prop.name) : "";
-                return Future.createSuccessfulFuture('createEditorControl', React.createElement("span", null, value));
-            }
-        }
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a FormContext
- ***************************************************
- */
-var CvForm = React.createClass({
-    getInitialState: function () {
-        return { statusMessage: '' };
-    },
-    render: function () {
-        var _this = this;
-        var formContext = this.props.formContext;
-        return React.createElement("span", null, formContext.childrenContexts.map(function (context) {
-            Log.info('');
-            Log.info('Got a ' + context.constructor['name'] + ' for display');
-            Log.info('');
-            if (context instanceof ListContext) {
-                return React.createElement(CvList, {"listContext": context, "onNavRequest": _this.props.onNavRequest, "key": context.paneRef});
-            }
-            else if (context instanceof DetailsContext) {
-                return React.createElement(CvDetails, {"detailsContext": context, "onNavRequest": _this.props.onNavRequest, "key": context.paneRef});
-            }
-            else {
-                Log.info('');
-                Log.info('Not yet handling display for ' + context.constructor['name']);
-                Log.info('');
-                return React.createElement(CvMessage, {"message": "Not yet handling display for " + context.constructor['name'], "key": context.paneRef});
-            }
-        }), React.createElement("div", {"className": "panel-footer"}, this.state.statusMessage));
-        return React.createElement(CvMessage, {"message": "Could not render any contexts!"});
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * When you need to look fancy
- ***************************************************
- */
-var CvHeroHeader = React.createClass({
-    render: function () {
-        return (React.createElement("div", {"className": "jumbotron logintron"}, React.createElement("div", {"className": "container-fluid"}, React.createElement("div", {"className": "center-block"}, React.createElement("img", {"className": "img-responsive center-block", "src": "img/Catavolt-Logo-retina.png", "style": { verticalAlign: 'middle' }})))));
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a 'Launcher'
- ***************************************************
- */
-var CvLauncher = React.createClass({
-    render: function () {
-        return (React.createElement("div", {"className": "col-md-4 launch-div"}, React.createElement("img", {"className": "launch-icon img-responsive center-block", "src": this.props.launchAction.iconBase, "onClick": this.handleClick}), React.createElement("h5", {"className": "launch-text small text-center", "onClick": this.handleClick}, this.props.launchAction.name)));
-    },
-    handleClick: function () {
-        var _this = this;
-        this.props.catavolt.performLaunchAction(this.props.launchAction).onComplete(function (launchTry) {
-            _this.props.onLaunch(launchTry);
-        });
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a ListContext
- ***************************************************
- */
-var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
-var CvList = React.createClass({
-    getInitialState: function () {
-        return { entityRecs: [] };
-    },
-    componentWillMount: function () {
-        var _this = this;
-        var listContext = this.props.listContext;
-        listContext.setScroller(50, null, [QueryMarkerOption.None]);
-        listContext.scroller.refresh().onComplete(function (entityRecTry) {
-            if (entityRecTry.isFailure) {
-                Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
-            }
-            else {
-                Log.info(JSON.stringify(listContext.scroller.buffer));
-                _this.setState({ entityRecs: ArrayUtil.copy(listContext.scroller.buffer) });
-            }
-        });
-    },
-    itemDoubleClicked: function (objectId) {
-        var _this = this;
-        var listContext = this.props.listContext;
-        if (listContext.listDef.defaultActionId) {
-            var defaultActionMenuDef = new MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW', listContext.listDef.defaultActionId, null, null, []);
-            listContext.performMenuAction(defaultActionMenuDef, [objectId]).onComplete(function (navRequestTry) {
-                _this.props.onNavRequest(navRequestTry);
-            });
-        }
-    },
-    render: function () {
-        var _this = this;
-        var listContext = this.props.listContext;
-        return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("span", null, listContext.paneTitle || '>'), React.createElement("div", {"className": "pull-right"}, listContext.menuDefs.map(function (menuDef, index) { return React.createElement(CvMenu, {"key": index, "menuDef": menuDef}); }))), React.createElement("div", {"style": { maxHeight: '400px', overflow: 'auto' }}, React.createElement("table", {"className": "table table-striped"}, React.createElement("thead", null, React.createElement("tr", null, React.createElement("th", {"key": "nbsp"}, " "), listContext.columnHeadings.map(function (heading, index) { return React.createElement("th", {"key": index}, heading); }))), React.createElement("tbody", null, this.state.entityRecs.map(function (entityRec, index) {
-            return (React.createElement("tr", {"key": index, "onDoubleClick": _this.itemDoubleClicked.bind(_this, entityRec.objectId)}, React.createElement("td", {"className": "text-center", "key": "checkbox"}, React.createElement("input", {"type": "checkbox"}), " "), listContext.rowValues(entityRec).map(function (val, index) { return React.createElement("td", {"key": index}, val ? val.toString() : ' '); })));
-        }))))));
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a 'context menu' for a MenuDef
- ***************************************************
- */
-var CvMenu = React.createClass({
-    render: function () {
-        var _this = this;
-        var menuDef = this.props.menuDef;
-        var findContextMenuDef = function (md) {
-            if (md.name === 'CONTEXT_MENU')
-                return md;
-            if (md.menuDefs) {
-                for (var i = 0; i < md.menuDefs.length; i++) {
-                    var result = findContextMenuDef(md.menuDefs[i]);
-                    if (result)
-                        return result;
+                output = Base64._utf8_decode(output);
+                return output;
+            };
+            Base64._utf8_encode = function (s) {
+                s = s.replace(/\r\n/g, "\n");
+                var utftext = "";
+                for (var n = 0; n < s.length; n++) {
+                    var c = s.charCodeAt(n);
+                    if (c < 128) {
+                        utftext += String.fromCharCode(c);
+                    }
+                    else if ((c > 127) && (c < 2048)) {
+                        utftext += String.fromCharCode((c >> 6) | 192);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+                    else {
+                        utftext += String.fromCharCode((c >> 12) | 224);
+                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
                 }
-            }
-            return null;
-        };
-        var ctxMenuDef = findContextMenuDef(menuDef);
-        return (React.createElement("div", {"className": "btn-group"}, React.createElement("button", {"type": "button", "className": "btn btn-xs btn-primary dropdown-toggle", "data-toggle": "dropdown"}, React.createElement("span", {"className": "caret"}, " ")), React.createElement("ul", {"className": "dropdown-menu", "role": "menu"}, ctxMenuDef.menuDefs.map(function (md, index) {
-            return React.createElement("li", {"key": index}, React.createElement("a", {"onClick": _this.performMenuAction(md.actionId)}, md.label));
-        }), React.createElement("li", {"className": "divider", "key": "divider"}, " "), React.createElement("li", {"key": "select_all"}, React.createElement("a", {"onClick": this.selectAll()}, "Select All")), React.createElement("li", {"key": "deselect_all"}, React.createElement("a", {"onClick": this.deselectAll()}, "Deselect All")))));
-    },
-    performMenuAction: function () {
-    },
-    selectAll: function () {
-    },
-    deselectAll: function () {
-    },
-});
-/**
- * Created by rburson on 12/23/15.
- *
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a simple message
- ***************************************************
- */
-var CvMessage = React.createClass({
-    render: function () {
-        Log.info(this.props.message);
-        return React.createElement("span", null);
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a NavRequest
- ***************************************************
- */
-var CvNavigation = React.createClass({
-    render: function () {
-        if (this.props.navRequestTry && this.props.navRequestTry.isSuccess) {
-            if (this.props.navRequestTry.success instanceof FormContext) {
-                return React.createElement(CvForm, {"catavolt": this.props.catavolt, "formContext": this.props.navRequestTry.success, "onNavRequest": this.props.onNavRequest});
-            }
-            else {
-                return React.createElement(CvMessage, {"message": "Unsupported type of NavRequest " + this.props.navRequestTry});
-            }
-        }
-        else {
-            return React.createElement("span", null, " ");
-        }
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a top-level application toolbar
- ***************************************************
- */
-var CvToolbar = React.createClass({
-    render: function () {
-        return (React.createElement("nav", {"className": "navbar navbar-default navbar-static-top component-chrome"}, React.createElement("div", {"className": "container-fluid"}, React.createElement("div", {"className": "navbar-header"}, React.createElement("button", {"type": "button", "className": "navbar-toggle collapsed", "data-toggle": "collapse", "data-target": "#navbar", "aria-expanded": "false", "aria-controls": "navbar"}, React.createElement("span", {"className": "sr-only"}, "Toggle Navigation"), React.createElement("span", {"className": "icon-bar"}, " "), React.createElement("span", {"className": "icon-bar"}, " "), React.createElement("span", {"className": "icon-bar"}, " ")), React.createElement("a", {"className": "navbar-brand", "href": "#"}, "Catavolt")), React.createElement("div", {"id": "navbar", "className": "navbar-collapse collapse"}, React.createElement("ul", {"className": "nav navbar-nav navbar-right"}, React.createElement("li", {"className": "dropdown"}, React.createElement("a", {"href": "", "className": "dropdown-toggle", "data-toggle": "dropdown", "role": "button", "aria-expanded": "true"}, "Workbenches", React.createElement("span", {"className": "caret"}, " ")), React.createElement("ul", {"className": "dropdown-menu", "role": "menu"}, React.createElement("li", null, React.createElement("a", {"href": "#"}, "Default")))), React.createElement("li", null, React.createElement("a", {"href": "#"}, "Settings"))), React.createElement("form", {"className": "navbar-form navbar-right"}, React.createElement("input", {"type": "text", "className": "form-control", "placeholder": "Search For Help On..."}))))));
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * A component analogous to Catavolt AppWinDef
- ***************************************************
- */
-var CvAppWindow = React.createClass({
-    getInitialState: function () {
-        return {
-            workbenches: [],
-            navRequestTry: null
-        };
-    },
-    render: function () {
-        var _this = this;
-        var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
-        return (React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", {"className": "container"}, (function () {
-            if (_this.showWorkbench()) {
-                return workbenches.map(function (workbench, index) {
-                    return React.createElement(CvWorkbench, {"catavolt": _this.props.catavolt, "workbench": workbench, "onNavRequest": _this.onNavRequest});
-                });
-            }
-        })(), React.createElement(CvNavigation, {"navRequestTry": this.state.navRequestTry, "onNavRequest": this.onNavRequest}))));
-    },
-    showWorkbench: function () {
-        return this.props.persistentWorkbench || !this.state.navRequestTry;
-    },
-    onNavRequest: function (navRequestTry) {
-        if (navRequestTry.isFailure) {
-            alert('Handle Navigation Failure!');
-            Log.error(navRequestTry.failure);
-        }
-        else {
-            this.setState({ navRequestTry: navRequestTry });
-        }
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a Workbench
- ***************************************************
- */
-var CvWorkbench = React.createClass({
-    render: function () {
-        var launchActions = this.props.workbench.workbenchLaunchActions;
-        var launchComps = [];
-        for (var i = 0; i < launchActions.length; i++) {
-            launchComps.push(React.createElement(CvLauncher, {"catavolt": this.props.catavolt, "launchAction": launchActions[i], "key": launchActions[i].actionId, "onLaunch": this.actionLaunched}));
-        }
-        return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, " ", React.createElement("h3", {"className": "panel-title"}, this.props.workbench.name), " "), React.createElement("div", {"className": "panel-body"}, launchComps)));
-    },
-    actionLaunched: function (launchTry) {
-        this.props.onNavRequest(launchTry);
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a LoginPane
- ***************************************************
- */
-var CvLoginPane = React.createClass({
-    getInitialState: function () {
-        return {
-            tenantId: 'catavolt-dev',
-            gatewayUrl: 'www.catavolt.net',
-            userId: 'rob',
-            password: 'rob123',
-            clientType: 'RICH_CLIENT'
-        };
-    },
-    render: function () {
-        return (React.createElement("div", {"className": "container"}, React.createElement("div", {"className": "well"}, React.createElement("form", {"className": "form-horizontal login-form", "onSubmit": this.handleSubmit}, React.createElement("div", {"className": "form-group"}, React.createElement("label", {"htmlFor": "tenantId", "className": "col-sm-2 control-label"}, "Tenant Id:"), React.createElement("div", {"className": "col-sm-10"}, React.createElement("input", {"id": "tenantId", "type": "text", "className": "form-control", "value": this.state.tenantId, "onChange": this.handleChange.bind(this, 'tenantId'), "required": true}))), React.createElement("div", {"className": "form-group"}, React.createElement("label", {"htmlFor": "gatewayUrl", "className": "col-sm-2 control-label"}, "Gateway URL:"), React.createElement("div", {"className": "col-sm-10"}, React.createElement("div", {"className": "input-group"}, React.createElement("input", {"id": "gatewayUrl", "type": "text", "className": "form-control", "value": this.state.gatewayUrl, "onChange": this.handleChange.bind(this, 'gatewayUrl'), "aria-describedby": "http-addon", "required": true})))), React.createElement("div", {"className": "form-group"}, React.createElement("label", {"htmlFor": "userId", "className": "col-sm-2 control-label"}, "User Id:"), React.createElement("div", {"className": "col-sm-10"}, React.createElement("input", {"id": "userId", "type": "text", "className": "form-control", "value": this.state.userId, "onChange": this.handleChange.bind(this, 'userId'), "required": true}))), React.createElement("div", {"className": "form-group"}, React.createElement("label", {"htmlFor": "password", "className": "col-sm-2 control-label"}, " Password:"), React.createElement("div", {"className": "col-sm-10"}, React.createElement("input", {"id": "password", "type": "password", "className": "form-control", "value": this.state.password, "onChange": this.handleChange.bind(this, 'password'), "required": true}))), React.createElement("div", {"className": "form-group"}, React.createElement("label", {"htmlFor": "clientType", "className": "col-sm-2 control-label"}, "Client Type:"), React.createElement("div", {"className": "col-sm-10"}, React.createElement("label", {"className": "radio-inline"}, React.createElement("input", {"id": "clientType", "type": "radio", "onChange": this.handleRadioChange.bind(this, 'clientType', 'LIMITED_ACCESS'), "checked": this.state.clientType === 'LIMITED_ACCESS'}), "Limited"), React.createElement("label", {"className": "radio-inline"}, React.createElement("input", {"id": "clientType", "type": "radio", "onChange": this.handleRadioChange.bind(this, 'clientType', 'RICH_CLIENT'), "checked": this.state.clientType === 'RICH_CLIENT'}), "Rich"))), React.createElement("div", {"className": "form-group"}, React.createElement("div", {"className": "col-sm-10 col-sm-offset-2"}, React.createElement("button", {"type": "submit", "className": "btn btn-default btn-primary btn-block", "value": "Login"}, "Login ", React.createElement("span", {"className": "glyphicon glyphicon-log-in", "aria-hidden": "true"}))))))));
-    },
-    handleChange: function (field, e) {
-        var nextState = {};
-        nextState[field] = e.target.value;
-        this.setState(nextState);
-    },
-    handleRadioChange: function (field, value, e) {
-        var nextState = {};
-        nextState[field] = value;
-        this.setState(nextState);
-    },
-    handleSubmit: function (e) {
-        var _this = this;
-        e.preventDefault();
-        this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
-            .onComplete(function (appWinDefTry) {
-            Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
-            _this.props.onLogin();
-        });
-    }
-});
-/**
- * Created by rburson on 12/23/15.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- *  Top-level container for a Catavolt Application
- ***************************************************
- */
-var CatavoltPane = React.createClass({
-    checkSession: function () {
-        var _this = this;
-        var sessionContext = this.getSession();
-        if (sessionContext) {
-            this.props.catavolt.refreshContext(sessionContext).onComplete(function (appWinDefTry) {
-                if (appWinDefTry.isFailure) {
-                    Log.error("Failed to refresh session: " + ObjUtil.formatRecAttr(appWinDefTry.failure));
+                return utftext;
+            };
+            Base64._utf8_decode = function (utftext) {
+                var s = "";
+                var i = 0;
+                var c = 0, c1 = 0, c2 = 0, c3 = 0;
+                while (i < utftext.length) {
+                    c = utftext.charCodeAt(i);
+                    if (c < 128) {
+                        s += String.fromCharCode(c);
+                        i++;
+                    }
+                    else if ((c > 191) && (c < 224)) {
+                        c2 = utftext.charCodeAt(i + 1);
+                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                        i += 2;
+                    }
+                    else {
+                        c2 = utftext.charCodeAt(i + 1);
+                        c3 = utftext.charCodeAt(i + 2);
+                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                        i += 3;
+                    }
                 }
-                else {
-                    _this.setState({ loggedIn: true });
+                return s;
+            };
+            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            return Base64;
+        })();
+        util.Base64 = Base64;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/20/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var ObjUtil = (function () {
+            function ObjUtil() {
+            }
+            ObjUtil.addAllProps = function (sourceObj, targetObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return targetObj;
+                if (null == targetObj || "object" != typeof targetObj)
+                    return targetObj;
+                for (var attr in sourceObj) {
+                    targetObj[attr] = sourceObj[attr];
                 }
-            });
-        }
-    },
-    componentWillMount: function () {
-        /* @TODO - need to work on the AppContext to make the session restore possible */
-        //this.checkSession();
-    },
-    getDefaultProps: function () {
-        return {
-            catavolt: AppContext.singleton,
-            persistentWorkbench: false
-        };
-    },
-    getInitialState: function () {
-        return { loggedIn: false };
-    },
-    getSession: function () {
-        var session = sessionStorage.getItem('session');
-        return session ? JSON.parse(session) : null;
-    },
-    render: function () {
-        return this.state.loggedIn ?
-            (React.createElement(CvAppWindow, {"catavolt": this.props.catavolt, "onLogout": this.loggedOut, "persistentWorkbench": this.props.persistentWorkbench})) :
-            (React.createElement("span", null, React.createElement(CvHeroHeader, null), React.createElement(CvLoginPane, {"catavolt": this.props.catavolt, "onLogin": this.loggedIn})));
-    },
-    loggedIn: function (sessionContext) {
-        this.setState({ loggedIn: true });
-        this.storeSession(this.props.catavolt.sessionContextTry.success);
-    },
-    loggedOut: function () {
-        this.removeSession();
-        this.setState({ loggedIn: false });
-    },
-    removeSession: function () {
-        sessionStorage.removeItem('session');
-    },
-    storeSession: function (sessionContext) {
-        sessionStorage.setItem('session', JSON.stringify(sessionContext));
-    }
-});
+                return targetObj;
+            };
+            ObjUtil.cloneOwnProps = function (sourceObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return sourceObj;
+                var copy = sourceObj.constructor();
+                for (var attr in sourceObj) {
+                    if (sourceObj.hasOwnProperty(attr)) {
+                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
+                    }
+                }
+                return copy;
+            };
+            ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
+                for (var prop in obj) {
+                    if (!filterFn || filterFn(prop)) {
+                        var type = typeof obj[prop];
+                        if (type !== 'function') {
+                            var val = obj[prop];
+                            if (val) {
+                                newObj[prop] = val;
+                            }
+                        }
+                    }
+                }
+                return newObj;
+            };
+            ObjUtil.formatRecAttr = function (o) {
+                //@TODO - add a filter here to build a cache and detect (and skip) circular references
+                return JSON.stringify(o);
+            };
+            ObjUtil.newInstance = function (type) {
+                return new type;
+            };
+            return ObjUtil;
+        })();
+        util.ObjUtil = ObjUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/3/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var StringUtil = (function () {
+            function StringUtil() {
+            }
+            StringUtil.splitSimpleKeyValuePair = function (pairString) {
+                var pair = pairString.split(':');
+                var code = pair[0];
+                var desc = pair.length > 1 ? pair[1] : '';
+                return [code, desc];
+            };
+            return StringUtil;
+        })();
+        util.StringUtil = StringUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
 /**
  * Created by rburson on 3/6/15.
  */
-//components
-///<reference path="CvReact.tsx"/>
-///<reference path="CvDetails.tsx"/>
-///<reference path="CvForm.tsx"/>
-///<reference path="CvHeroHeader.tsx"/>
-///<reference path="CvLauncher.tsx"/>
-///<reference path="CvList.tsx"/>
-///<reference path="CvMenu.tsx"/>
-///<reference path="CvMessage.tsx"/>
-///<reference path="CvNavigation.tsx"/>
-///<reference path="CvToolbar.tsx"/>
-///<reference path="CvAppWindow.tsx"/>
-///<reference path="CvWorkbench.tsx"/>
-///<reference path="CvLoginPane.tsx"/>
-///<reference path="CatavoltPane.tsx"/>
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
 ///<reference path="references.ts"/>
-Log.logLevel(LogLevel.DEBUG);
-ReactDOM.render(React.createElement(CatavoltPane, {"persistentWorkbench": true}), document.getElementById('cvApp'));
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        (function (LogLevel) {
+            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
+            LogLevel[LogLevel["WARN"] = 1] = "WARN";
+            LogLevel[LogLevel["INFO"] = 2] = "INFO";
+            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
+        })(util.LogLevel || (util.LogLevel = {}));
+        var LogLevel = util.LogLevel;
+        var Log = (function () {
+            function Log() {
+            }
+            Log.logLevel = function (level) {
+                if (level >= LogLevel.DEBUG) {
+                    Log.debug = function (message, method, clz) {
+                        Log.log(function (o) { console.info(o); }, 'DEBUG: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.debug = function (message, method, clz) { };
+                }
+                if (level >= LogLevel.INFO) {
+                    Log.info = function (message, method, clz) {
+                        Log.log(function (o) { console.info(o); }, 'INFO: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.info = function (message, method, clz) { };
+                }
+                if (level >= LogLevel.WARN) {
+                    Log.error = function (message, clz, method) {
+                        Log.log(function (o) { console.error(o); }, 'ERROR: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.error = function (message, clz, method) { };
+                }
+                if (level >= LogLevel.ERROR) {
+                    Log.warn = function (message, clz, method) {
+                        Log.log(function (o) { console.info(o); }, 'WARN: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.warn = function (message, clz, method) { };
+                }
+            };
+            Log.log = function (logger, message, method, clz) {
+                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
+                if (clz || method) {
+                    logger(clz + "::" + method + " : " + m);
+                }
+                else {
+                    logger(m);
+                }
+            };
+            Log.formatRecString = function (o) {
+                return util.ObjUtil.formatRecAttr(o);
+            };
+            //set default log level here
+            Log.init = Log.logLevel(LogLevel.INFO);
+            return Log;
+        })();
+        util.Log = Log;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/9/15.
+ */
+/**
+ * Created by rburson on 3/16/15.
+ */
+/**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="ArrayUtil.ts"/>
+///<reference path="Base64.ts"/>
+///<reference path="ObjUtil.ts"/>
+///<reference path="StringUtil.ts"/>
+///<reference path="Log.ts"/>
+///<reference path="Types.ts"/>
+///<reference path="UserException.ts"/>
+var ArrayUtil = catavolt.util.ArrayUtil;
+var Base64 = catavolt.util.Base64;
+var Log = catavolt.util.Log;
+var LogLevel = catavolt.util.LogLevel;
+var ObjUtil = catavolt.util.ObjUtil;
+var StringUtil = catavolt.util.StringUtil;
+/**
+ * Created by rburson on 3/5/15.
+ */
+///<reference path="../util/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var fp;
+    (function (fp) {
+        var Future = (function () {
+            /** --------------------- CONSTRUCTORS ------------------------------*/
+            function Future(_label) {
+                this._label = _label;
+                this._completionListeners = new Array();
+            }
+            /** --------------------- PUBLIC STATIC ------------------------------*/
+            Future.createCompletedFuture = function (label, result) {
+                var f = new Future(label);
+                return f.complete(result);
+            };
+            Future.createSuccessfulFuture = function (label, value) {
+                return Future.createCompletedFuture(label, new fp.Success(value));
+            };
+            Future.createFailedFuture = function (label, error) {
+                return Future.createCompletedFuture(label, new fp.Failure(error));
+            };
+            Future.createFuture = function (label) {
+                var f = new Future(label);
+                return f;
+            };
+            Future.sequence = function (seqOfFutures) {
+                var start = Future.createSuccessfulFuture('Future::sequence/start', []);
+                return seqOfFutures.reduce(function (seqFr, nextFr) {
+                    return seqFr.bind(function (seq) {
+                        var pr = new fp.Promise('Future::sequence/nextFr');
+                        nextFr.onComplete(function (t) {
+                            seq.push(t);
+                            pr.complete(new fp.Success(seq));
+                        });
+                        return pr.future;
+                    });
+                }, start);
+            };
+            /** --------------------- PUBLIC ------------------------------*/
+            Future.prototype.bind = function (f) {
+                var p = new fp.Promise('Future.bind:' + this._label);
+                this.onComplete(function (t1) {
+                    if (t1.isFailure) {
+                        p.failure(t1.failure);
+                    }
+                    else {
+                        var a = t1.success;
+                        try {
+                            var mb = f(a);
+                            mb.onComplete(function (t2) {
+                                p.complete(t2);
+                            });
+                        }
+                        catch (error) {
+                            p.complete(new fp.Failure(error));
+                        }
+                    }
+                });
+                return p.future;
+            };
+            Object.defineProperty(Future.prototype, "failure", {
+                get: function () { return this._result ? this._result.failure : null; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isComplete", {
+                get: function () { return !!this._result; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isCompleteWithFailure", {
+                get: function () { return !!this._result && this._result.isFailure; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isCompleteWithSuccess", {
+                get: function () { return !!this._result && this._result.isSuccess; },
+                enumerable: true,
+                configurable: true
+            });
+            Future.prototype.map = function (f) {
+                var p = new fp.Promise('Future.map:' + this._label);
+                this.onComplete(function (t1) {
+                    if (t1.isFailure) {
+                        p.failure(t1.failure);
+                    }
+                    else {
+                        var a = t1.success;
+                        try {
+                            var b = f(a);
+                            p.success(b);
+                        }
+                        catch (error) {
+                            p.complete(new fp.Failure(error));
+                        }
+                    }
+                });
+                return p.future;
+            };
+            Future.prototype.onComplete = function (listener) {
+                this._result ? listener(this._result) : this._completionListeners.push(listener);
+            };
+            Future.prototype.onFailure = function (listener) {
+                this.onComplete(function (t) {
+                    t.isFailure && listener(t.failure);
+                });
+            };
+            Future.prototype.onSuccess = function (listener) {
+                this.onComplete(function (t) {
+                    t.isSuccess && listener(t.success);
+                });
+            };
+            Object.defineProperty(Future.prototype, "result", {
+                get: function () { return this._result; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "success", {
+                get: function () { return this._result ? this.result.success : null; },
+                enumerable: true,
+                configurable: true
+            });
+            /** --------------------- MODULE ------------------------------*/
+            //*** let's pretend this has module level visibility
+            Future.prototype.complete = function (t) {
+                var _this = this;
+                var notifyList = new Array();
+                //Log.debug("complete() called on Future " + this._label + ' there are ' + this._completionListeners.length + " listeners.");
+                if (t) {
+                    if (!this._result) {
+                        this._result = t;
+                        /* capture the listener set to prevent missing a notification */
+                        notifyList = ArrayUtil.copy(this._completionListeners);
+                    }
+                    else {
+                        Log.error("Future::complete() : Future " + this._label + " has already been completed");
+                    }
+                    notifyList.forEach(function (listener) {
+                        try {
+                            listener(_this._result);
+                        }
+                        catch (error) {
+                            Log.error("CompletionListener failed with " + error);
+                        }
+                    });
+                }
+                else {
+                    Log.error("Future::complete() : Can't complete Future with null result");
+                }
+                return this;
+            };
+            return Future;
+        })();
+        fp.Future = Future;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/5/15.
+ */
+///<reference path="../fp/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var fp;
+    (function (fp) {
+        var Success = (function (_super) {
+            __extends(Success, _super);
+            function Success(_value) {
+                _super.call(this);
+                this._value = _value;
+            }
+            Object.defineProperty(Success.prototype, "isSuccess", {
+                get: function () {
+                    return true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Success.prototype, "success", {
+                get: function () {
+                    return this._value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return Success;
+        })(fp.Try);
+        fp.Success = Success;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/16/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var fp;
+    (function (fp) {
+        var Either = (function () {
+            function Either() {
+            }
+            Either.left = function (left) {
+                var either = new Either();
+                either._left = left;
+                return either;
+            };
+            Either.right = function (right) {
+                var either = new Either();
+                either._right = right;
+                return either;
+            };
+            Object.defineProperty(Either.prototype, "isLeft", {
+                get: function () {
+                    return !!this._left;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "isRight", {
+                get: function () {
+                    return !!this._right;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "left", {
+                get: function () {
+                    return this._left;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "right", {
+                get: function () {
+                    return this._right;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return Either;
+        })();
+        fp.Either = Either;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+var Either = catavolt.fp.Either;
+var Failure = catavolt.fp.Failure;
+var Future = catavolt.fp.Future;
+var Promise = catavolt.fp.Promise;
+var Success = catavolt.fp.Success;
+var Try = catavolt.fp.Try;
+/**
+ * Created by rburson on 3/6/15.
+ */
+///<reference path="../fp/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var fp;
+    (function (fp) {
+        var Promise = (function () {
+            function Promise(label) {
+                this._future = fp.Future.createFuture(label);
+            }
+            /** --------------------- PUBLIC ------------------------------*/
+            Promise.prototype.isComplete = function () { return this._future.isComplete; };
+            Promise.prototype.complete = function (t) {
+                //Log.debug('Promise calling complete on Future...');
+                this._future.complete(t);
+                return this;
+            };
+            Promise.prototype.failure = function (error) {
+                this.complete(new fp.Failure(error));
+            };
+            Object.defineProperty(Promise.prototype, "future", {
+                get: function () {
+                    return this._future;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Promise.prototype.success = function (value) {
+                this.complete(new fp.Success(value));
+            };
+            return Promise;
+        })();
+        fp.Promise = Promise;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
+})(catavolt || (catavolt = {}));
