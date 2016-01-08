@@ -2,7 +2,7 @@
  * Created by rburson on 12/23/15.
  */
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 /*
  ***************************************************
@@ -20,6 +20,8 @@ interface CvLauncherProps extends CvProps{
 
 var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
 
+    mixins: [CvBaseMixin],
+
     render: function() {
         return (
             <div className="col-md-4 launch-div">
@@ -30,7 +32,7 @@ var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
     },
 
     handleClick: function() {
-        this.props.catavolt.performLaunchAction(this.props.launchAction).onComplete((launchTry:Try<NavRequest>) => {
+        this.context.catavolt.performLaunchAction(this.props.launchAction).onComplete((launchTry:Try<NavRequest>) => {
             this.props.onLaunch(launchTry);
         });
     }

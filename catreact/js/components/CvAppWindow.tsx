@@ -2,7 +2,7 @@
  * Created by rburson on 12/23/15.
  */
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 
 interface CvAppWindowState extends CvState {
@@ -10,8 +10,8 @@ interface CvAppWindowState extends CvState {
 }
 
 interface CvAppWindowProps extends CvProps {
-    persistentWorkbench:boolean;
-    onLogout:()=>void;
+    persistentWorkbench?:boolean;
+    onLogout?:()=>void;
 }
 
 /*
@@ -20,6 +20,8 @@ interface CvAppWindowProps extends CvProps {
  ***************************************************
  */
 var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
+
+    mixins: [CvBaseMixin],
 
     getInitialState: function () {
         return {
@@ -30,7 +32,7 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
 
     render: function () {
 
-        var workbenches:Array<Workbench> = this.props.catavolt.appWinDefTry.success.workbenches;
+        var workbenches:Array<Workbench> = this.context.catavolt.appWinDefTry.success.workbenches;
 
         return (
             <span>
@@ -39,7 +41,7 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
                     {(() => {
                         if (this.showWorkbench()) {
                             return workbenches.map((workbench:Workbench, index:number)=>{
-                                    return <CvWorkbench catavolt={this.props.catavolt} workbench={workbench} onNavRequest={this.onNavRequest}/>
+                                    return <CvWorkbench workbench={workbench} onNavRequest={this.onNavRequest}/>
                                 })
                         }
                     })()}

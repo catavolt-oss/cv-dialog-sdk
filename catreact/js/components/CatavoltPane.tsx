@@ -3,7 +3,8 @@
  */
 
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="CvReact.tsx"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
+///<reference path="references.ts"/>
 
 
 interface CatavoltPaneState extends CvState {
@@ -11,7 +12,8 @@ interface CatavoltPaneState extends CvState {
 }
 
 interface CatavoltPaneProps extends CvProps {
-    persistentWorkbench:boolean;
+    catavolt?:AppContext;
+    persistentWorkbench?:boolean;
 }
 
 /*
@@ -34,9 +36,17 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
         }
     },
 
+    childContextTypes: {
+        catavolt: React.PropTypes.object
+    },
+
     componentWillMount: function() {
         /* @TODO - need to work on the AppContext to make the session restore possible */
         //this.checkSession();
+    },
+
+    getChildContext: function() {
+        return {catavolt: this.props.catavolt};
     },
 
     getDefaultProps: function() {
@@ -59,13 +69,33 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
     render: function () {
 
         if(React.Children.count(this.props.children) > 0){
-           return <div></div>
+            console.log(this.findFirstDescendantOfType(React.Children.toArray(this.props.children), CvLoginPane));
+            if(React.Children.count(this.props.children) == 1) {
+                return this.props.children;
+            } else {
+                return <span>{this.props.children}</span>
+            }
         } else {
             return this.state.loggedIn ?
-                (<CvAppWindow catavolt={this.props.catavolt} onLogout={this.loggedOut} persistentWorkbench={this.props.persistentWorkbench}/>) :
-                (<span><CvHeroHeader/><CvLoginPane catavolt={this.props.catavolt} onLogin={this.loggedIn}/></span>);
+                (<CvAppWindow onLogout={this.loggedOut} persistentWorkbench={this.props.persistentWorkbench}/>) :
+                (<span><CvHeroHeader/><CvLoginPane onLogin={this.loggedIn}/></span>);
         }
 
+    },
+
+    findFirstDescendantOfType: function(comps:Array<any>, compType:any) {
+        var result = null;
+        for(let i = 0; i < comps.length; i++) {
+            const comp = comps[i];
+            console.log(comp);
+            if(comp.type == compType) {
+                return comp;
+            } else if (comp.props.children) {
+                result = this.findFirstDescendantOfType(React.Children.toArray(comp.props.children), compType);
+                if(result) return result;
+            }
+        }
+        return null;
     },
 
     loggedIn: function (sessionContext) {

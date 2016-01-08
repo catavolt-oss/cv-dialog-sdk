@@ -4,7 +4,7 @@
  */
 
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 
 interface CvMessageState extends CvState {
@@ -20,6 +20,8 @@ interface CvMessageProps extends CvProps {
  ***************************************************
  */
 var CvMessage = React.createClass<CvMessageProps, CvMessageState>({
+
+    mixins: [CvBaseMixin],
 
     render: function() {
         Log.info(this.props.message);

@@ -3,7 +3,7 @@
  */
 
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 
 interface CvMenuState extends CvState {
@@ -20,6 +20,8 @@ interface CvMenuProps extends CvProps {
  */
 
 var CvMenu = React.createClass<CvMenuProps, CvMenuState>({
+
+    mixins: [CvBaseMixin],
 
     render: function() {
 

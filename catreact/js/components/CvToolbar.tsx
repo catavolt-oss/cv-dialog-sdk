@@ -3,7 +3,7 @@
  */
 
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 
 interface CvToolbarState extends CvState {
@@ -18,6 +18,7 @@ interface CvToolbarProps extends CvProps {
  ***************************************************
  */
 var CvToolbar = React.createClass<CvToolbarProps, CvToolbarState>({
+    mixins: [CvBaseMixin],
     render: function () {
         return (
             <nav className="navbar navbar-default navbar-static-top component-chrome">

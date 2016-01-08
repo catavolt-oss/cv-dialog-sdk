@@ -3,7 +3,7 @@
  */
 
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 
 interface CvDetailsState extends CvState {
@@ -21,6 +21,8 @@ interface CvDetailsProps extends CvProps{
  ***************************************************
  */
 var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
+
+    mixins: [CvBaseMixin],
 
     getInitialState() {
         return {renderedDetailRows: []}

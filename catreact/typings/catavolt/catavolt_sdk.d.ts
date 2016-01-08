@@ -1,0 +1,1 @@
+/opt/catavolt/js-sdk/out/catavolt_sdk.d.ts

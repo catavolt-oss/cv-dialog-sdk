@@ -3,7 +3,7 @@
  */
 
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 
 interface CvHeroHeaderState extends CvState {
@@ -18,6 +18,8 @@ interface CvHeroHeaderProps extends CvProps {
  ***************************************************
  */
 var CvHeroHeader = React.createClass<CvHeroHeaderProps, CvHeroHeaderState>({
+
+    mixins: [CvBaseMixin],
 
     render: function() {
         return (

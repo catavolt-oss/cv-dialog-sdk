@@ -3,7 +3,7 @@
  */
 
  ///<reference path="../../typings/react/react-global.d.ts"/>
- ///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
  ///<reference path="references.ts"/>
 
 /*
@@ -11,9 +11,16 @@
  */
 
 interface CvProps {
-    catavolt?:AppContext;
     key?: string;
 }
 
 interface CvState {
+}
+
+var CvBaseMixin = {
+
+    contextTypes: {
+        catavolt: React.PropTypes.object
+    }
+
 }

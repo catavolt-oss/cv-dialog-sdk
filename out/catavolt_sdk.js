@@ -1,4 +1,322 @@
 /**
+ * Created by rburson on 3/6/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var ArrayUtil = (function () {
+            function ArrayUtil() {
+            }
+            ArrayUtil.copy = function (source) {
+                return source.map(function (e) { return e; });
+            };
+            ArrayUtil.find = function (source, f) {
+                var value = null;
+                source.some(function (v) {
+                    if (f(v)) {
+                        value = v;
+                        return true;
+                    }
+                    return false;
+                });
+                return value;
+            };
+            return ArrayUtil;
+        })();
+        util.ArrayUtil = ArrayUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/4/15.
+ */
+///<reference path="../references.ts"/>
+/*
+    This implementation supports our ECMA 5.1 browser set, including IE9
+    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var Base64 = (function () {
+            function Base64() {
+            }
+            Base64.encode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = Base64._utf8_encode(input);
+                while (i < input.length) {
+                    chr1 = input.charCodeAt(i++);
+                    chr2 = input.charCodeAt(i++);
+                    chr3 = input.charCodeAt(i++);
+                    enc1 = chr1 >> 2;
+                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                    enc4 = chr3 & 63;
+                    if (isNaN(chr2)) {
+                        enc3 = enc4 = 64;
+                    }
+                    else if (isNaN(chr3)) {
+                        enc4 = 64;
+                    }
+                    output = output +
+                        Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
+                        Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
+                }
+                return output;
+            };
+            Base64.decode = function (input) {
+                var output = "";
+                var chr1, chr2, chr3;
+                var enc1, enc2, enc3, enc4;
+                var i = 0;
+                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+                while (i < input.length) {
+                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
+                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
+                    chr1 = (enc1 << 2) | (enc2 >> 4);
+                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+                    chr3 = ((enc3 & 3) << 6) | enc4;
+                    output = output + String.fromCharCode(chr1);
+                    if (enc3 != 64) {
+                        output = output + String.fromCharCode(chr2);
+                    }
+                    if (enc4 != 64) {
+                        output = output + String.fromCharCode(chr3);
+                    }
+                }
+                output = Base64._utf8_decode(output);
+                return output;
+            };
+            Base64._utf8_encode = function (s) {
+                s = s.replace(/\r\n/g, "\n");
+                var utftext = "";
+                for (var n = 0; n < s.length; n++) {
+                    var c = s.charCodeAt(n);
+                    if (c < 128) {
+                        utftext += String.fromCharCode(c);
+                    }
+                    else if ((c > 127) && (c < 2048)) {
+                        utftext += String.fromCharCode((c >> 6) | 192);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+                    else {
+                        utftext += String.fromCharCode((c >> 12) | 224);
+                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+                }
+                return utftext;
+            };
+            Base64._utf8_decode = function (utftext) {
+                var s = "";
+                var i = 0;
+                var c = 0, c1 = 0, c2 = 0, c3 = 0;
+                while (i < utftext.length) {
+                    c = utftext.charCodeAt(i);
+                    if (c < 128) {
+                        s += String.fromCharCode(c);
+                        i++;
+                    }
+                    else if ((c > 191) && (c < 224)) {
+                        c2 = utftext.charCodeAt(i + 1);
+                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                        i += 2;
+                    }
+                    else {
+                        c2 = utftext.charCodeAt(i + 1);
+                        c3 = utftext.charCodeAt(i + 2);
+                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                        i += 3;
+                    }
+                }
+                return s;
+            };
+            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            return Base64;
+        })();
+        util.Base64 = Base64;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/20/15.
+ */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var ObjUtil = (function () {
+            function ObjUtil() {
+            }
+            ObjUtil.addAllProps = function (sourceObj, targetObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return targetObj;
+                if (null == targetObj || "object" != typeof targetObj)
+                    return targetObj;
+                for (var attr in sourceObj) {
+                    targetObj[attr] = sourceObj[attr];
+                }
+                return targetObj;
+            };
+            ObjUtil.cloneOwnProps = function (sourceObj) {
+                if (null == sourceObj || "object" != typeof sourceObj)
+                    return sourceObj;
+                var copy = sourceObj.constructor();
+                for (var attr in sourceObj) {
+                    if (sourceObj.hasOwnProperty(attr)) {
+                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
+                    }
+                }
+                return copy;
+            };
+            ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
+                for (var prop in obj) {
+                    if (!filterFn || filterFn(prop)) {
+                        var type = typeof obj[prop];
+                        if (type !== 'function') {
+                            var val = obj[prop];
+                            if (val) {
+                                newObj[prop] = val;
+                            }
+                        }
+                    }
+                }
+                return newObj;
+            };
+            ObjUtil.formatRecAttr = function (o) {
+                //@TODO - add a filter here to build a cache and detect (and skip) circular references
+                return JSON.stringify(o);
+            };
+            ObjUtil.newInstance = function (type) {
+                return new type;
+            };
+            return ObjUtil;
+        })();
+        util.ObjUtil = ObjUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 4/3/15.
+ */
+///<reference path="../references.ts"/>
+/* @TODO */
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        var StringUtil = (function () {
+            function StringUtil() {
+            }
+            StringUtil.splitSimpleKeyValuePair = function (pairString) {
+                var pair = pairString.split(':');
+                var code = pair[0];
+                var desc = pair.length > 1 ? pair[1] : '';
+                return [code, desc];
+            };
+            return StringUtil;
+        })();
+        util.StringUtil = StringUtil;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+///<reference path="references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var util;
+    (function (util) {
+        (function (LogLevel) {
+            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
+            LogLevel[LogLevel["WARN"] = 1] = "WARN";
+            LogLevel[LogLevel["INFO"] = 2] = "INFO";
+            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
+        })(util.LogLevel || (util.LogLevel = {}));
+        var LogLevel = util.LogLevel;
+        var Log = (function () {
+            function Log() {
+            }
+            Log.logLevel = function (level) {
+                if (level >= LogLevel.DEBUG) {
+                    Log.debug = function (message, method, clz) {
+                        Log.log(function (o) { console.info(o); }, 'DEBUG: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.debug = function (message, method, clz) { };
+                }
+                if (level >= LogLevel.INFO) {
+                    Log.info = function (message, method, clz) {
+                        Log.log(function (o) { console.info(o); }, 'INFO: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.info = function (message, method, clz) { };
+                }
+                if (level >= LogLevel.WARN) {
+                    Log.error = function (message, clz, method) {
+                        Log.log(function (o) { console.error(o); }, 'ERROR: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.error = function (message, clz, method) { };
+                }
+                if (level >= LogLevel.ERROR) {
+                    Log.warn = function (message, clz, method) {
+                        Log.log(function (o) { console.info(o); }, 'WARN: ' + message, method, clz);
+                    };
+                }
+                else {
+                    Log.warn = function (message, clz, method) { };
+                }
+            };
+            Log.log = function (logger, message, method, clz) {
+                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
+                if (clz || method) {
+                    logger(clz + "::" + method + " : " + m);
+                }
+                else {
+                    logger(m);
+                }
+            };
+            Log.formatRecString = function (o) {
+                return util.ObjUtil.formatRecAttr(o);
+            };
+            //set default log level here
+            Log.init = Log.logLevel(LogLevel.INFO);
+            return Log;
+        })();
+        util.Log = Log;
+    })(util = catavolt.util || (catavolt.util = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/9/15.
+ */
+/**
+ * Created by rburson on 3/16/15.
+ */
+/**
+ * Created by rburson on 3/6/15.
+ */
+//util
+///<reference path="ArrayUtil.ts"/>
+///<reference path="Base64.ts"/>
+///<reference path="ObjUtil.ts"/>
+///<reference path="StringUtil.ts"/>
+///<reference path="Log.ts"/>
+///<reference path="Types.ts"/>
+///<reference path="UserException.ts"/>
+var ArrayUtil = catavolt.util.ArrayUtil;
+var Base64 = catavolt.util.Base64;
+var Log = catavolt.util.Log;
+var LogLevel = catavolt.util.LogLevel;
+var ObjUtil = catavolt.util.ObjUtil;
+var StringUtil = catavolt.util.StringUtil;
+/**
  * Created by rburson on 3/9/15.
  */
 ///<reference path="../fp/references.ts"/>
@@ -123,34 +441,297 @@ var catavolt;
     })(fp = catavolt.fp || (catavolt.fp = {}));
 })(catavolt || (catavolt = {}));
 /**
+ * Created by rburson on 3/5/15.
+ */
+///<reference path="../util/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var fp;
+    (function (fp) {
+        var Future = (function () {
+            /** --------------------- CONSTRUCTORS ------------------------------*/
+            function Future(_label) {
+                this._label = _label;
+                this._completionListeners = new Array();
+            }
+            /** --------------------- PUBLIC STATIC ------------------------------*/
+            Future.createCompletedFuture = function (label, result) {
+                var f = new Future(label);
+                return f.complete(result);
+            };
+            Future.createSuccessfulFuture = function (label, value) {
+                return Future.createCompletedFuture(label, new fp.Success(value));
+            };
+            Future.createFailedFuture = function (label, error) {
+                return Future.createCompletedFuture(label, new fp.Failure(error));
+            };
+            Future.createFuture = function (label) {
+                var f = new Future(label);
+                return f;
+            };
+            Future.sequence = function (seqOfFutures) {
+                var start = Future.createSuccessfulFuture('Future::sequence/start', []);
+                return seqOfFutures.reduce(function (seqFr, nextFr) {
+                    return seqFr.bind(function (seq) {
+                        var pr = new fp.Promise('Future::sequence/nextFr');
+                        nextFr.onComplete(function (t) {
+                            seq.push(t);
+                            pr.complete(new fp.Success(seq));
+                        });
+                        return pr.future;
+                    });
+                }, start);
+            };
+            /** --------------------- PUBLIC ------------------------------*/
+            Future.prototype.bind = function (f) {
+                var p = new fp.Promise('Future.bind:' + this._label);
+                this.onComplete(function (t1) {
+                    if (t1.isFailure) {
+                        p.failure(t1.failure);
+                    }
+                    else {
+                        var a = t1.success;
+                        try {
+                            var mb = f(a);
+                            mb.onComplete(function (t2) {
+                                p.complete(t2);
+                            });
+                        }
+                        catch (error) {
+                            p.complete(new fp.Failure(error));
+                        }
+                    }
+                });
+                return p.future;
+            };
+            Object.defineProperty(Future.prototype, "failure", {
+                get: function () { return this._result ? this._result.failure : null; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isComplete", {
+                get: function () { return !!this._result; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isCompleteWithFailure", {
+                get: function () { return !!this._result && this._result.isFailure; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "isCompleteWithSuccess", {
+                get: function () { return !!this._result && this._result.isSuccess; },
+                enumerable: true,
+                configurable: true
+            });
+            Future.prototype.map = function (f) {
+                var p = new fp.Promise('Future.map:' + this._label);
+                this.onComplete(function (t1) {
+                    if (t1.isFailure) {
+                        p.failure(t1.failure);
+                    }
+                    else {
+                        var a = t1.success;
+                        try {
+                            var b = f(a);
+                            p.success(b);
+                        }
+                        catch (error) {
+                            p.complete(new fp.Failure(error));
+                        }
+                    }
+                });
+                return p.future;
+            };
+            Future.prototype.onComplete = function (listener) {
+                this._result ? listener(this._result) : this._completionListeners.push(listener);
+            };
+            Future.prototype.onFailure = function (listener) {
+                this.onComplete(function (t) {
+                    t.isFailure && listener(t.failure);
+                });
+            };
+            Future.prototype.onSuccess = function (listener) {
+                this.onComplete(function (t) {
+                    t.isSuccess && listener(t.success);
+                });
+            };
+            Object.defineProperty(Future.prototype, "result", {
+                get: function () { return this._result; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Future.prototype, "success", {
+                get: function () { return this._result ? this.result.success : null; },
+                enumerable: true,
+                configurable: true
+            });
+            /** --------------------- MODULE ------------------------------*/
+            //*** let's pretend this has module level visibility
+            Future.prototype.complete = function (t) {
+                var _this = this;
+                var notifyList = new Array();
+                //Log.debug("complete() called on Future " + this._label + ' there are ' + this._completionListeners.length + " listeners.");
+                if (t) {
+                    if (!this._result) {
+                        this._result = t;
+                        /* capture the listener set to prevent missing a notification */
+                        notifyList = ArrayUtil.copy(this._completionListeners);
+                    }
+                    else {
+                        Log.error("Future::complete() : Future " + this._label + " has already been completed");
+                    }
+                    notifyList.forEach(function (listener) {
+                        try {
+                            listener(_this._result);
+                        }
+                        catch (error) {
+                            Log.error("CompletionListener failed with " + error);
+                        }
+                    });
+                }
+                else {
+                    Log.error("Future::complete() : Can't complete Future with null result");
+                }
+                return this;
+            };
+            return Future;
+        })();
+        fp.Future = Future;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/5/15.
+ */
+///<reference path="../fp/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var fp;
+    (function (fp) {
+        var Success = (function (_super) {
+            __extends(Success, _super);
+            function Success(_value) {
+                _super.call(this);
+                this._value = _value;
+            }
+            Object.defineProperty(Success.prototype, "isSuccess", {
+                get: function () {
+                    return true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Success.prototype, "success", {
+                get: function () {
+                    return this._value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return Success;
+        })(fp.Try);
+        fp.Success = Success;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
+})(catavolt || (catavolt = {}));
+/**
  * Created by rburson on 3/6/15.
+ */
+///<reference path="../fp/references.ts"/>
+var catavolt;
+(function (catavolt) {
+    var fp;
+    (function (fp) {
+        var Promise = (function () {
+            function Promise(label) {
+                this._future = fp.Future.createFuture(label);
+            }
+            /** --------------------- PUBLIC ------------------------------*/
+            Promise.prototype.isComplete = function () { return this._future.isComplete; };
+            Promise.prototype.complete = function (t) {
+                //Log.debug('Promise calling complete on Future...');
+                this._future.complete(t);
+                return this;
+            };
+            Promise.prototype.failure = function (error) {
+                this.complete(new fp.Failure(error));
+            };
+            Object.defineProperty(Promise.prototype, "future", {
+                get: function () {
+                    return this._future;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Promise.prototype.success = function (value) {
+                this.complete(new fp.Success(value));
+            };
+            return Promise;
+        })();
+        fp.Promise = Promise;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
+})(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/16/15.
  */
 var catavolt;
 (function (catavolt) {
-    var util;
-    (function (util) {
-        var ArrayUtil = (function () {
-            function ArrayUtil() {
+    var fp;
+    (function (fp) {
+        var Either = (function () {
+            function Either() {
             }
-            ArrayUtil.copy = function (source) {
-                return source.map(function (e) { return e; });
+            Either.left = function (left) {
+                var either = new Either();
+                either._left = left;
+                return either;
             };
-            ArrayUtil.find = function (source, f) {
-                var value = null;
-                source.some(function (v) {
-                    if (f(v)) {
-                        value = v;
-                        return true;
-                    }
-                    return false;
-                });
-                return value;
+            Either.right = function (right) {
+                var either = new Either();
+                either._right = right;
+                return either;
             };
-            return ArrayUtil;
+            Object.defineProperty(Either.prototype, "isLeft", {
+                get: function () {
+                    return !!this._left;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "isRight", {
+                get: function () {
+                    return !!this._right;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "left", {
+                get: function () {
+                    return this._left;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Either.prototype, "right", {
+                get: function () {
+                    return this._right;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return Either;
         })();
-        util.ArrayUtil = ArrayUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
+        fp.Either = Either;
+    })(fp = catavolt.fp || (catavolt.fp = {}));
 })(catavolt || (catavolt = {}));
+/**
+ * Created by rburson on 3/6/15.
+ */
+var Either = catavolt.fp.Either;
+var Failure = catavolt.fp.Failure;
+var Future = catavolt.fp.Future;
+var Promise = catavolt.fp.Promise;
+var Success = catavolt.fp.Success;
+var Try = catavolt.fp.Try;
 /**
  * Created by rburson on 3/9/15.
  */
@@ -7601,584 +8182,4 @@ var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 ///<reference path="ws/references.ts"/>
 //dialog
 ///<reference path="dialog/references.ts"/>
-/**
- * Created by rburson on 4/4/15.
- */
-///<reference path="../references.ts"/>
-/*
-    This implementation supports our ECMA 5.1 browser set, including IE9
-    If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var Base64 = (function () {
-            function Base64() {
-            }
-            Base64.encode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = Base64._utf8_encode(input);
-                while (i < input.length) {
-                    chr1 = input.charCodeAt(i++);
-                    chr2 = input.charCodeAt(i++);
-                    chr3 = input.charCodeAt(i++);
-                    enc1 = chr1 >> 2;
-                    enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-                    enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-                    enc4 = chr3 & 63;
-                    if (isNaN(chr2)) {
-                        enc3 = enc4 = 64;
-                    }
-                    else if (isNaN(chr3)) {
-                        enc4 = 64;
-                    }
-                    output = output +
-                        Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
-                        Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
-                }
-                return output;
-            };
-            Base64.decode = function (input) {
-                var output = "";
-                var chr1, chr2, chr3;
-                var enc1, enc2, enc3, enc4;
-                var i = 0;
-                input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-                while (i < input.length) {
-                    enc1 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc2 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc3 = Base64._keyStr.indexOf(input.charAt(i++));
-                    enc4 = Base64._keyStr.indexOf(input.charAt(i++));
-                    chr1 = (enc1 << 2) | (enc2 >> 4);
-                    chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-                    chr3 = ((enc3 & 3) << 6) | enc4;
-                    output = output + String.fromCharCode(chr1);
-                    if (enc3 != 64) {
-                        output = output + String.fromCharCode(chr2);
-                    }
-                    if (enc4 != 64) {
-                        output = output + String.fromCharCode(chr3);
-                    }
-                }
-                output = Base64._utf8_decode(output);
-                return output;
-            };
-            Base64._utf8_encode = function (s) {
-                s = s.replace(/\r\n/g, "\n");
-                var utftext = "";
-                for (var n = 0; n < s.length; n++) {
-                    var c = s.charCodeAt(n);
-                    if (c < 128) {
-                        utftext += String.fromCharCode(c);
-                    }
-                    else if ((c > 127) && (c < 2048)) {
-                        utftext += String.fromCharCode((c >> 6) | 192);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                    else {
-                        utftext += String.fromCharCode((c >> 12) | 224);
-                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                        utftext += String.fromCharCode((c & 63) | 128);
-                    }
-                }
-                return utftext;
-            };
-            Base64._utf8_decode = function (utftext) {
-                var s = "";
-                var i = 0;
-                var c = 0, c1 = 0, c2 = 0, c3 = 0;
-                while (i < utftext.length) {
-                    c = utftext.charCodeAt(i);
-                    if (c < 128) {
-                        s += String.fromCharCode(c);
-                        i++;
-                    }
-                    else if ((c > 191) && (c < 224)) {
-                        c2 = utftext.charCodeAt(i + 1);
-                        s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                        i += 2;
-                    }
-                    else {
-                        c2 = utftext.charCodeAt(i + 1);
-                        c3 = utftext.charCodeAt(i + 2);
-                        s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                        i += 3;
-                    }
-                }
-                return s;
-            };
-            Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-            return Base64;
-        })();
-        util.Base64 = Base64;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/20/15.
- */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var ObjUtil = (function () {
-            function ObjUtil() {
-            }
-            ObjUtil.addAllProps = function (sourceObj, targetObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return targetObj;
-                if (null == targetObj || "object" != typeof targetObj)
-                    return targetObj;
-                for (var attr in sourceObj) {
-                    targetObj[attr] = sourceObj[attr];
-                }
-                return targetObj;
-            };
-            ObjUtil.cloneOwnProps = function (sourceObj) {
-                if (null == sourceObj || "object" != typeof sourceObj)
-                    return sourceObj;
-                var copy = sourceObj.constructor();
-                for (var attr in sourceObj) {
-                    if (sourceObj.hasOwnProperty(attr)) {
-                        copy[attr] = ObjUtil.cloneOwnProps(sourceObj[attr]);
-                    }
-                }
-                return copy;
-            };
-            ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
-                for (var prop in obj) {
-                    if (!filterFn || filterFn(prop)) {
-                        var type = typeof obj[prop];
-                        if (type !== 'function') {
-                            var val = obj[prop];
-                            if (val) {
-                                newObj[prop] = val;
-                            }
-                        }
-                    }
-                }
-                return newObj;
-            };
-            ObjUtil.formatRecAttr = function (o) {
-                //@TODO - add a filter here to build a cache and detect (and skip) circular references
-                return JSON.stringify(o);
-            };
-            ObjUtil.newInstance = function (type) {
-                return new type;
-            };
-            return ObjUtil;
-        })();
-        util.ObjUtil = ObjUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 4/3/15.
- */
-///<reference path="../references.ts"/>
-/* @TODO */
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        var StringUtil = (function () {
-            function StringUtil() {
-            }
-            StringUtil.splitSimpleKeyValuePair = function (pairString) {
-                var pair = pairString.split(':');
-                var code = pair[0];
-                var desc = pair.length > 1 ? pair[1] : '';
-                return [code, desc];
-            };
-            return StringUtil;
-        })();
-        util.StringUtil = StringUtil;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/6/15.
- */
-///<reference path="references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var util;
-    (function (util) {
-        (function (LogLevel) {
-            LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
-            LogLevel[LogLevel["WARN"] = 1] = "WARN";
-            LogLevel[LogLevel["INFO"] = 2] = "INFO";
-            LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
-        })(util.LogLevel || (util.LogLevel = {}));
-        var LogLevel = util.LogLevel;
-        var Log = (function () {
-            function Log() {
-            }
-            Log.logLevel = function (level) {
-                if (level >= LogLevel.DEBUG) {
-                    Log.debug = function (message, method, clz) {
-                        Log.log(function (o) { console.info(o); }, 'DEBUG: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.debug = function (message, method, clz) { };
-                }
-                if (level >= LogLevel.INFO) {
-                    Log.info = function (message, method, clz) {
-                        Log.log(function (o) { console.info(o); }, 'INFO: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.info = function (message, method, clz) { };
-                }
-                if (level >= LogLevel.WARN) {
-                    Log.error = function (message, clz, method) {
-                        Log.log(function (o) { console.error(o); }, 'ERROR: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.error = function (message, clz, method) { };
-                }
-                if (level >= LogLevel.ERROR) {
-                    Log.warn = function (message, clz, method) {
-                        Log.log(function (o) { console.info(o); }, 'WARN: ' + message, method, clz);
-                    };
-                }
-                else {
-                    Log.warn = function (message, clz, method) { };
-                }
-            };
-            Log.log = function (logger, message, method, clz) {
-                var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
-                if (clz || method) {
-                    logger(clz + "::" + method + " : " + m);
-                }
-                else {
-                    logger(m);
-                }
-            };
-            Log.formatRecString = function (o) {
-                return util.ObjUtil.formatRecAttr(o);
-            };
-            //set default log level here
-            Log.init = Log.logLevel(LogLevel.INFO);
-            return Log;
-        })();
-        util.Log = Log;
-    })(util = catavolt.util || (catavolt.util = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/9/15.
- */
-/**
- * Created by rburson on 3/16/15.
- */
-/**
- * Created by rburson on 3/6/15.
- */
-//util
-///<reference path="ArrayUtil.ts"/>
-///<reference path="Base64.ts"/>
-///<reference path="ObjUtil.ts"/>
-///<reference path="StringUtil.ts"/>
-///<reference path="Log.ts"/>
-///<reference path="Types.ts"/>
-///<reference path="UserException.ts"/>
-var ArrayUtil = catavolt.util.ArrayUtil;
-var Base64 = catavolt.util.Base64;
-var Log = catavolt.util.Log;
-var LogLevel = catavolt.util.LogLevel;
-var ObjUtil = catavolt.util.ObjUtil;
-var StringUtil = catavolt.util.StringUtil;
-/**
- * Created by rburson on 3/5/15.
- */
-///<reference path="../util/references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var fp;
-    (function (fp) {
-        var Future = (function () {
-            /** --------------------- CONSTRUCTORS ------------------------------*/
-            function Future(_label) {
-                this._label = _label;
-                this._completionListeners = new Array();
-            }
-            /** --------------------- PUBLIC STATIC ------------------------------*/
-            Future.createCompletedFuture = function (label, result) {
-                var f = new Future(label);
-                return f.complete(result);
-            };
-            Future.createSuccessfulFuture = function (label, value) {
-                return Future.createCompletedFuture(label, new fp.Success(value));
-            };
-            Future.createFailedFuture = function (label, error) {
-                return Future.createCompletedFuture(label, new fp.Failure(error));
-            };
-            Future.createFuture = function (label) {
-                var f = new Future(label);
-                return f;
-            };
-            Future.sequence = function (seqOfFutures) {
-                var start = Future.createSuccessfulFuture('Future::sequence/start', []);
-                return seqOfFutures.reduce(function (seqFr, nextFr) {
-                    return seqFr.bind(function (seq) {
-                        var pr = new fp.Promise('Future::sequence/nextFr');
-                        nextFr.onComplete(function (t) {
-                            seq.push(t);
-                            pr.complete(new fp.Success(seq));
-                        });
-                        return pr.future;
-                    });
-                }, start);
-            };
-            /** --------------------- PUBLIC ------------------------------*/
-            Future.prototype.bind = function (f) {
-                var p = new fp.Promise('Future.bind:' + this._label);
-                this.onComplete(function (t1) {
-                    if (t1.isFailure) {
-                        p.failure(t1.failure);
-                    }
-                    else {
-                        var a = t1.success;
-                        try {
-                            var mb = f(a);
-                            mb.onComplete(function (t2) {
-                                p.complete(t2);
-                            });
-                        }
-                        catch (error) {
-                            p.complete(new fp.Failure(error));
-                        }
-                    }
-                });
-                return p.future;
-            };
-            Object.defineProperty(Future.prototype, "failure", {
-                get: function () { return this._result ? this._result.failure : null; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Future.prototype, "isComplete", {
-                get: function () { return !!this._result; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Future.prototype, "isCompleteWithFailure", {
-                get: function () { return !!this._result && this._result.isFailure; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Future.prototype, "isCompleteWithSuccess", {
-                get: function () { return !!this._result && this._result.isSuccess; },
-                enumerable: true,
-                configurable: true
-            });
-            Future.prototype.map = function (f) {
-                var p = new fp.Promise('Future.map:' + this._label);
-                this.onComplete(function (t1) {
-                    if (t1.isFailure) {
-                        p.failure(t1.failure);
-                    }
-                    else {
-                        var a = t1.success;
-                        try {
-                            var b = f(a);
-                            p.success(b);
-                        }
-                        catch (error) {
-                            p.complete(new fp.Failure(error));
-                        }
-                    }
-                });
-                return p.future;
-            };
-            Future.prototype.onComplete = function (listener) {
-                this._result ? listener(this._result) : this._completionListeners.push(listener);
-            };
-            Future.prototype.onFailure = function (listener) {
-                this.onComplete(function (t) {
-                    t.isFailure && listener(t.failure);
-                });
-            };
-            Future.prototype.onSuccess = function (listener) {
-                this.onComplete(function (t) {
-                    t.isSuccess && listener(t.success);
-                });
-            };
-            Object.defineProperty(Future.prototype, "result", {
-                get: function () { return this._result; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Future.prototype, "success", {
-                get: function () { return this._result ? this.result.success : null; },
-                enumerable: true,
-                configurable: true
-            });
-            /** --------------------- MODULE ------------------------------*/
-            //*** let's pretend this has module level visibility
-            Future.prototype.complete = function (t) {
-                var _this = this;
-                var notifyList = new Array();
-                //Log.debug("complete() called on Future " + this._label + ' there are ' + this._completionListeners.length + " listeners.");
-                if (t) {
-                    if (!this._result) {
-                        this._result = t;
-                        /* capture the listener set to prevent missing a notification */
-                        notifyList = ArrayUtil.copy(this._completionListeners);
-                    }
-                    else {
-                        Log.error("Future::complete() : Future " + this._label + " has already been completed");
-                    }
-                    notifyList.forEach(function (listener) {
-                        try {
-                            listener(_this._result);
-                        }
-                        catch (error) {
-                            Log.error("CompletionListener failed with " + error);
-                        }
-                    });
-                }
-                else {
-                    Log.error("Future::complete() : Can't complete Future with null result");
-                }
-                return this;
-            };
-            return Future;
-        })();
-        fp.Future = Future;
-    })(fp = catavolt.fp || (catavolt.fp = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/5/15.
- */
-///<reference path="../fp/references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var fp;
-    (function (fp) {
-        var Success = (function (_super) {
-            __extends(Success, _super);
-            function Success(_value) {
-                _super.call(this);
-                this._value = _value;
-            }
-            Object.defineProperty(Success.prototype, "isSuccess", {
-                get: function () {
-                    return true;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Success.prototype, "success", {
-                get: function () {
-                    return this._value;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return Success;
-        })(fp.Try);
-        fp.Success = Success;
-    })(fp = catavolt.fp || (catavolt.fp = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/16/15.
- */
-var catavolt;
-(function (catavolt) {
-    var fp;
-    (function (fp) {
-        var Either = (function () {
-            function Either() {
-            }
-            Either.left = function (left) {
-                var either = new Either();
-                either._left = left;
-                return either;
-            };
-            Either.right = function (right) {
-                var either = new Either();
-                either._right = right;
-                return either;
-            };
-            Object.defineProperty(Either.prototype, "isLeft", {
-                get: function () {
-                    return !!this._left;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Either.prototype, "isRight", {
-                get: function () {
-                    return !!this._right;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Either.prototype, "left", {
-                get: function () {
-                    return this._left;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Either.prototype, "right", {
-                get: function () {
-                    return this._right;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return Either;
-        })();
-        fp.Either = Either;
-    })(fp = catavolt.fp || (catavolt.fp = {}));
-})(catavolt || (catavolt = {}));
-/**
- * Created by rburson on 3/6/15.
- */
-var Either = catavolt.fp.Either;
-var Failure = catavolt.fp.Failure;
-var Future = catavolt.fp.Future;
-var Promise = catavolt.fp.Promise;
-var Success = catavolt.fp.Success;
-var Try = catavolt.fp.Try;
-/**
- * Created by rburson on 3/6/15.
- */
-///<reference path="../fp/references.ts"/>
-var catavolt;
-(function (catavolt) {
-    var fp;
-    (function (fp) {
-        var Promise = (function () {
-            function Promise(label) {
-                this._future = fp.Future.createFuture(label);
-            }
-            /** --------------------- PUBLIC ------------------------------*/
-            Promise.prototype.isComplete = function () { return this._future.isComplete; };
-            Promise.prototype.complete = function (t) {
-                //Log.debug('Promise calling complete on Future...');
-                this._future.complete(t);
-                return this;
-            };
-            Promise.prototype.failure = function (error) {
-                this.complete(new fp.Failure(error));
-            };
-            Object.defineProperty(Promise.prototype, "future", {
-                get: function () {
-                    return this._future;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Promise.prototype.success = function (value) {
-                this.complete(new fp.Success(value));
-            };
-            return Promise;
-        })();
-        fp.Promise = Promise;
-    })(fp = catavolt.fp || (catavolt.fp = {}));
-})(catavolt || (catavolt = {}));
+//# sourceMappingURL=catavolt_sdk.js.map

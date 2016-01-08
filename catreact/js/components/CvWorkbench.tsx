@@ -3,7 +3,7 @@
  */
 
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 
 interface CvWorkbenchState extends CvState {
@@ -22,13 +22,15 @@ interface CvWorkbenchProps extends CvProps {
 
 var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
 
+    mixins: [CvBaseMixin],
+
     render: function () {
 
         var launchActions:Array<WorkbenchLaunchAction> = this.props.workbench.workbenchLaunchActions;
         var launchComps = [];
         for(let i=0; i < launchActions.length; i++) {
             launchComps.push(
-                <CvLauncher catavolt={this.props.catavolt} launchAction={launchActions[i]} key={launchActions[i].actionId} onLaunch={this.actionLaunched}/>
+                <CvLauncher launchAction={launchActions[i]} key={launchActions[i].actionId} onLaunch={this.actionLaunched}/>
             );
         }
         return (

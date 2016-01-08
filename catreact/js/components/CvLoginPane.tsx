@@ -3,7 +3,7 @@
  */
 
 ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 
 interface CvLoginPaneState extends CvState {
@@ -15,7 +15,7 @@ interface CvLoginPaneState extends CvState {
 }
 
 interface CvLoginPaneProps extends CvProps {
-    onLogin: ()=>void;
+    onLogin?: ()=>void;
 }
 
 /*
@@ -24,6 +24,8 @@ interface CvLoginPaneProps extends CvProps {
  ***************************************************
  */
 var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
+
+    mixins: [CvBaseMixin],
 
     getInitialState: function () {
         return {
@@ -119,7 +121,7 @@ var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
 
     handleSubmit: function (e) {
         e.preventDefault();
-        this.props.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
+        this.context.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
             .onComplete(appWinDefTry => {
                 Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
                 this.props.onLogin();
