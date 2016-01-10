@@ -23,6 +23,8 @@ interface CatavoltPaneProps extends CvProps {
  */
 var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
 
+    mixins: [CvBaseMixin],
+
     checkSession: function() {
         var sessionContext = this.getSession();
         if(sessionContext){
@@ -69,7 +71,7 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
     render: function () {
 
         if(React.Children.count(this.props.children) > 0){
-            console.log(this.findFirstDescendant(this, (comp)=>{return comp.type == CvLoginPane}));
+            console.log(this.findAllDescendants(this, (comp)=>{return comp.type == CvLoginPane}));
             if(React.Children.count(this.props.children) == 1) {
                 return this.props.children;
             } else {
@@ -81,31 +83,6 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
                 (<span><CvHeroHeader/><CvLoginPane onLogin={this.loggedIn}/></span>);
         }
 
-    },
-
-    findFirstDescendant: function(comp, filter:(o)=>boolean, mutate:(o)=>any) {
-        var result = null;
-        var comps:Array<any> = React.Children.toArray(comp.props.children);
-        for(let i = 0; i < comps.length; i++) {
-            const child = comps[i];
-            console.log(child);
-            if(filter(child)) {
-                if(mutate) {
-                    result = mutate(child);
-                    comps[i] = result;
-                } else {
-                    result = child;
-                }
-            } else if (child.props.children) {
-                result = this.findFirstDescendant(child, filter);
-            }
-        }
-        if(comps.length == 1) {
-           comp.props.children = comps[0];
-        } else {
-           comp.props.children = comps;
-        }
-        return result ? result : null;
     },
 
     loggedIn: function (sessionContext) {

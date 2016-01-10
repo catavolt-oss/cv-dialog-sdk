@@ -10,6 +10,41 @@
 var CvBaseMixin = {
     contextTypes: {
         catavolt: React.PropTypes.object
+    },
+    findFirstDescendant: function findFirstDescendant(comp, filter) {
+        var result = null;
+        if (comp.props && comp.props.children) {
+            var comps = React.Children.toArray(comp.props.children);
+            for (var i = 0; i < comps.length; i++) {
+                var child = comps[i];
+                console.log(child);
+                if (filter(child)) {
+                    result = child;
+                } else if (child.props.children) {
+                    result = this.findFirstDescendant(child, filter);
+                }
+            }
+        }
+        return result ? result : null;
+    },
+    findAllDescendants: function findAllDescendants(comp, filter, results) {
+        if (results === void 0) {
+            results = [];
+        }
+        if (comp.props && comp.props.children) {
+            var comps = React.Children.toArray(comp.props.children);
+            for (var i = 0; i < comps.length; i++) {
+                var child = comps[i];
+                console.log(child);
+                if (filter(child)) {
+                    results.push(child);
+                }
+                if (child.props && child.props.children) {
+                    this.findAllDescendants(child, filter, results);
+                }
+            }
+        }
+        return results;
     }
 };
 /**
@@ -495,24 +530,6 @@ var CvLoginPane = React.createClass({
     }
 });
 /**
- * Created by rburson on 3/6/15.
- */
-//components
-///<reference path="CvReact.tsx"/>
-///<reference path="CvDetails.tsx"/>
-///<reference path="CvForm.tsx"/>
-///<reference path="CvHeroHeader.tsx"/>
-///<reference path="CvLauncher.tsx"/>
-///<reference path="CvList.tsx"/>
-///<reference path="CvMenu.tsx"/>
-///<reference path="CvMessage.tsx"/>
-///<reference path="CvNavigation.tsx"/>
-///<reference path="CvToolbar.tsx"/>
-///<reference path="CvAppWindow.tsx"/>
-///<reference path="CvWorkbench.tsx"/>
-///<reference path="CvLoginPane.tsx"/>
-///<reference path="CatavoltPane.tsx"/>
-/**
  * Created by rburson on 12/23/15.
  */
 ///<reference path="../../typings/react/react-global.d.ts"/>
@@ -526,6 +543,7 @@ var CvLoginPane = React.createClass({
 var CatavoltPane = React.createClass({
     displayName: "CatavoltPane",
 
+    mixins: [CvBaseMixin],
     checkSession: function checkSession() {
         var _this = this;
         var sessionContext = this.getSession();
@@ -564,7 +582,7 @@ var CatavoltPane = React.createClass({
     },
     render: function render() {
         if (React.Children.count(this.props.children) > 0) {
-            console.log(this.findFirstDescendant(this, function (comp) {
+            console.log(this.findAllDescendants(this, function (comp) {
                 return comp.type == CvLoginPane;
             }));
             if (React.Children.count(this.props.children) == 1) {
@@ -575,30 +593,6 @@ var CatavoltPane = React.createClass({
         } else {
             return this.state.loggedIn ? React.createElement(CvAppWindow, { "onLogout": this.loggedOut, "persistentWorkbench": this.props.persistentWorkbench }) : React.createElement("span", null, React.createElement(CvHeroHeader, null), React.createElement(CvLoginPane, { "onLogin": this.loggedIn }));
         }
-    },
-    findFirstDescendant: function findFirstDescendant(comp, filter, mutate) {
-        var result = null;
-        var comps = React.Children.toArray(comp.props.children);
-        for (var i = 0; i < comps.length; i++) {
-            var child = comps[i];
-            console.log(child);
-            if (filter(child)) {
-                if (mutate) {
-                    result = mutate(child);
-                    comps[i] = result;
-                } else {
-                    result = child;
-                }
-            } else if (child.props.children) {
-                result = this.findFirstDescendant(child, filter);
-            }
-        }
-        if (comps.length == 1) {
-            comp.props.children = comps[0];
-        } else {
-            comp.props.children = comps;
-        }
-        return result ? result : null;
     },
     loggedIn: function loggedIn(sessionContext) {
         this.setState({ loggedIn: true });
@@ -615,6 +609,29 @@ var CatavoltPane = React.createClass({
         sessionStorage.setItem('session', JSON.stringify(sessionContext));
     }
 });
+/**
+ * Created by rburson on 3/6/15.
+ */
+//components
+///<reference path="CvReact.tsx"/>
+///<reference path="CvDetails.tsx"/>
+///<reference path="CvForm.tsx"/>
+///<reference path="CvHeroHeader.tsx"/>
+///<reference path="CvLauncher.tsx"/>
+///<reference path="CvList.tsx"/>
+///<reference path="CvMenu.tsx"/>
+///<reference path="CvMessage.tsx"/>
+///<reference path="CvNavigation.tsx"/>
+///<reference path="CvToolbar.tsx"/>
+///<reference path="CvAppWindow.tsx"/>
+///<reference path="CvWorkbench.tsx"/>
+///<reference path="CvLoginPane.tsx"/>
+///<reference path="CatavoltPane.tsx"/>
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
+///<reference path="references.ts"/>
+Log.logLevel(LogLevel.DEBUG);
+ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement(CvHeroHeader, null), React.createElement("div", null, React.createElement(CvLoginPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null))))), document.getElementById('cvApp'));
 
 
 },{}]},{},[1]);

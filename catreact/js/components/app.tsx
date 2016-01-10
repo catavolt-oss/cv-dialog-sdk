@@ -11,6 +11,9 @@ ReactDOM.render(
         <CvHeroHeader/>
         <div>
             <CvLoginPane>
+                <div>
+                    <CvLoginPane></CvLoginPane>
+                </div>
             </CvLoginPane>
         </div>
 
