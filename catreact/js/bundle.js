@@ -495,6 +495,24 @@ var CvLoginPane = React.createClass({
     }
 });
 /**
+ * Created by rburson on 3/6/15.
+ */
+//components
+///<reference path="CvReact.tsx"/>
+///<reference path="CvDetails.tsx"/>
+///<reference path="CvForm.tsx"/>
+///<reference path="CvHeroHeader.tsx"/>
+///<reference path="CvLauncher.tsx"/>
+///<reference path="CvList.tsx"/>
+///<reference path="CvMenu.tsx"/>
+///<reference path="CvMessage.tsx"/>
+///<reference path="CvNavigation.tsx"/>
+///<reference path="CvToolbar.tsx"/>
+///<reference path="CvAppWindow.tsx"/>
+///<reference path="CvWorkbench.tsx"/>
+///<reference path="CvLoginPane.tsx"/>
+///<reference path="CatavoltPane.tsx"/>
+/**
  * Created by rburson on 12/23/15.
  */
 ///<reference path="../../typings/react/react-global.d.ts"/>
@@ -546,7 +564,9 @@ var CatavoltPane = React.createClass({
     },
     render: function render() {
         if (React.Children.count(this.props.children) > 0) {
-            console.log(this.findFirstDescendantOfType(React.Children.toArray(this.props.children), CvLoginPane));
+            console.log(this.findFirstDescendant(this, function (comp) {
+                return comp.type == CvLoginPane;
+            }));
             if (React.Children.count(this.props.children) == 1) {
                 return this.props.children;
             } else {
@@ -556,19 +576,29 @@ var CatavoltPane = React.createClass({
             return this.state.loggedIn ? React.createElement(CvAppWindow, { "onLogout": this.loggedOut, "persistentWorkbench": this.props.persistentWorkbench }) : React.createElement("span", null, React.createElement(CvHeroHeader, null), React.createElement(CvLoginPane, { "onLogin": this.loggedIn }));
         }
     },
-    findFirstDescendantOfType: function findFirstDescendantOfType(comps, compType) {
+    findFirstDescendant: function findFirstDescendant(comp, filter, mutate) {
         var result = null;
+        var comps = React.Children.toArray(comp.props.children);
         for (var i = 0; i < comps.length; i++) {
-            var comp = comps[i];
-            console.log(comp);
-            if (comp.type == compType) {
-                return comp;
-            } else if (comp.props.children) {
-                result = this.findFirstDescendantOfType(React.Children.toArray(comp.props.children), compType);
-                if (result) return result;
+            var child = comps[i];
+            console.log(child);
+            if (filter(child)) {
+                if (mutate) {
+                    result = mutate(child);
+                    comps[i] = result;
+                } else {
+                    result = child;
+                }
+            } else if (child.props.children) {
+                result = this.findFirstDescendant(child, filter);
             }
         }
-        return null;
+        if (comps.length == 1) {
+            comp.props.children = comps[0];
+        } else {
+            comp.props.children = comps;
+        }
+        return result ? result : null;
     },
     loggedIn: function loggedIn(sessionContext) {
         this.setState({ loggedIn: true });
@@ -585,29 +615,6 @@ var CatavoltPane = React.createClass({
         sessionStorage.setItem('session', JSON.stringify(sessionContext));
     }
 });
-/**
- * Created by rburson on 3/6/15.
- */
-//components
-///<reference path="CvReact.tsx"/>
-///<reference path="CvDetails.tsx"/>
-///<reference path="CvForm.tsx"/>
-///<reference path="CvHeroHeader.tsx"/>
-///<reference path="CvLauncher.tsx"/>
-///<reference path="CvList.tsx"/>
-///<reference path="CvMenu.tsx"/>
-///<reference path="CvMessage.tsx"/>
-///<reference path="CvNavigation.tsx"/>
-///<reference path="CvToolbar.tsx"/>
-///<reference path="CvAppWindow.tsx"/>
-///<reference path="CvWorkbench.tsx"/>
-///<reference path="CvLoginPane.tsx"/>
-///<reference path="CatavoltPane.tsx"/>
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
-Log.logLevel(LogLevel.DEBUG);
-ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement(CvHeroHeader, null), React.createElement("div", null, React.createElement(CvLoginPane, null))), document.getElementById('cvApp'));
 
 
 },{}]},{},[1]);
