@@ -7,11 +7,12 @@
 ///<reference path="references.ts"/>
 
 interface CvWorkbenchState extends CvState {
+    workbench:Workbench;
 }
 
 interface CvWorkbenchProps extends CvProps {
-    workbench:Workbench;
-    onNavRequest:(navRequestTry:Try<NavRequest>) => void;
+    workbenchId:string;
+    onNavRequest?:(navRequestTry:Try<NavRequest>) => void;
 }
 
 /*
@@ -24,24 +25,54 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
 
     mixins: [CvBaseMixin],
 
-    render: function () {
+    componentWillMount: function () {
+        var targetWorkbench:Workbench = null;
+        this.context.catavolt.appWinDefTry.success.workbenches.some((workbench)=> {
+            if (workbench.workbenchId == this.props.workbenchId) {
+                targetWorkbench = workbench;
+                return true;
+            } else {
+                return false;
+            }
+        })
 
-        var launchActions:Array<WorkbenchLaunchAction> = this.props.workbench.workbenchLaunchActions;
-        var launchComps = [];
-        for(let i=0; i < launchActions.length; i++) {
-            launchComps.push(
-                <CvLauncher launchAction={launchActions[i]} key={launchActions[i].actionId} onLaunch={this.actionLaunched}/>
-            );
-        }
-        return (
-            <div className="panel panel-primary">
-                <div className="panel-heading"> <h3 className="panel-title">{this.props.workbench.name}</h3> </div>
-                <div className="panel-body">{launchComps}</div>
-            </div>
-        );
+        this.findAllDescendants(this, (comp)=>{ return comp.type == CvScope})
+        .forEach((comp)=>{comp.setScopeObj(targetWorkbench)});
+        this.setState({workbench: targetWorkbench})
     },
 
-    actionLaunched: function(launchTry:Try<NavRequest>) {
+    render: function () {
+
+        if (this.state.workbench) {
+
+            if(React.Children.count(this.props.children) > 0) {
+                return this.props.children
+            } else {
+
+            var launchActions:Array<WorkbenchLaunchAction> = this.state.workbench.workbenchLaunchActions;
+            var launchComps = [];
+            for (let i = 0; i < launchActions.length; i++) {
+                launchComps.push(
+                    <CvLauncher launchAction={launchActions[i]} key={launchActions[i].actionId}
+                                onLaunch={this.actionLaunched}/>
+                );
+            }
+            return (
+                <div className="panel panel-primary">
+                    <div className="panel-heading">
+                        <h3 className="panel-title">{this.state.workbench.name}</h3>
+                    </div>
+                    <div className="panel-body">{launchComps}</div>
+                </div>
+            );
+            }
+
+        } else {
+            return null;
+        }
+    },
+
+    actionLaunched: function (launchTry:Try<NavRequest>) {
         this.props.onNavRequest(launchTry);
     }
 

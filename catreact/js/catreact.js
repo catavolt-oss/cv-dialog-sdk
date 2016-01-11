@@ -89,6 +89,37 @@ var CvEventRegistry = (function () {
     return CvEventRegistry;
 })();
 /**
+ * Created by rburson on 1/11/16.
+ */
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
+///<reference path="references.ts"/>
+/*
+ ***************************************************
+ * Exposes the scope of the encosing tag via the handler function
+ ***************************************************
+ */
+var CvScope = React.createClass({
+    mixins: [CvBaseMixin],
+    getDefaultProps: function () {
+        return { handler: null };
+    },
+    getInitialState: function () {
+        return { scopeObj: null };
+    },
+    render: function () {
+        if (this.state.scopeObj) {
+            if (this.props.handler) {
+                return this.props.handler(this.state.scopeObj);
+            }
+        }
+        return null;
+    },
+    setScopeObj: function (obj) {
+        this.setState({ scopeObj: obj });
+    }
+});
+/**
  * Created by rburson on 12/23/15.
  */
 ///<reference path="../../typings/react/react-global.d.ts"/>
@@ -483,14 +514,19 @@ var CvAppWindow = React.createClass({
     render: function () {
         var _this = this;
         if (this.state.loggedIn) {
-            var workbenches = this.context.catavolt.appWinDefTry.success.workbenches;
-            return (React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", {"className": "container"}, (function () {
-                if (_this.showWorkbench()) {
-                    return workbenches.map(function (workbench, index) {
-                        return React.createElement(CvWorkbench, {"workbench": workbench, "onNavRequest": _this.onNavRequest, "key": index});
-                    });
-                }
-            })(), React.createElement(CvNavigation, {"navRequestTry": this.state.navRequestTry, "onNavRequest": this.onNavRequest}))));
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children;
+            }
+            else {
+                var workbenches = this.context.catavolt.appWinDefTry.success.workbenches;
+                return (React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", {"className": "container"}, (function () {
+                    if (_this.showWorkbench()) {
+                        return workbenches.map(function (workbench, index) {
+                            return React.createElement(CvWorkbench, {"workbenchId": workbench.workbenchId, "onNavRequest": _this.onNavRequest, "key": index});
+                        });
+                    }
+                })(), React.createElement(CvNavigation, {"navRequestTry": this.state.navRequestTry, "onNavRequest": this.onNavRequest}))));
+            }
         }
         else {
             return null;
@@ -522,13 +558,39 @@ var CvAppWindow = React.createClass({
  */
 var CvWorkbench = React.createClass({
     mixins: [CvBaseMixin],
+    componentWillMount: function () {
+        var _this = this;
+        var targetWorkbench = null;
+        this.context.catavolt.appWinDefTry.success.workbenches.some(function (workbench) {
+            if (workbench.workbenchId == _this.props.workbenchId) {
+                targetWorkbench = workbench;
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+        this.findAllDescendants(this, function (comp) { return comp.type == CvScope; })
+            .forEach(function (comp) { comp.setScopeObj(targetWorkbench); });
+        this.setState({ workbench: targetWorkbench });
+    },
     render: function () {
-        var launchActions = this.props.workbench.workbenchLaunchActions;
-        var launchComps = [];
-        for (var i = 0; i < launchActions.length; i++) {
-            launchComps.push(React.createElement(CvLauncher, {"launchAction": launchActions[i], "key": launchActions[i].actionId, "onLaunch": this.actionLaunched}));
+        if (this.state.workbench) {
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children;
+            }
+            else {
+                var launchActions = this.state.workbench.workbenchLaunchActions;
+                var launchComps = [];
+                for (var i = 0; i < launchActions.length; i++) {
+                    launchComps.push(React.createElement(CvLauncher, {"launchAction": launchActions[i], "key": launchActions[i].actionId, "onLaunch": this.actionLaunched}));
+                }
+                return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h3", {"className": "panel-title"}, this.state.workbench.name)), React.createElement("div", {"className": "panel-body"}, launchComps)));
+            }
         }
-        return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, " ", React.createElement("h3", {"className": "panel-title"}, this.props.workbench.name), " "), React.createElement("div", {"className": "panel-body"}, launchComps)));
+        else {
+            return null;
+        }
     },
     actionLaunched: function (launchTry) {
         this.props.onNavRequest(launchTry);
@@ -662,12 +724,7 @@ var CatavoltPane = React.createClass({
     },
     render: function () {
         if (React.Children.count(this.props.children) > 0) {
-            if (React.Children.count(this.props.children) == 1) {
-                return this.props.children;
-            }
-            else {
-                return React.createElement("span", null, this.props.children);
-            }
+            return this.props.children;
         }
         else {
             return React.createElement("span", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, {"persistentWorkbench": true}));
@@ -685,6 +742,7 @@ var CatavoltPane = React.createClass({
  */
 //components
 ///<reference path="CvReact.tsx"/>
+///<reference path="CvScope.tsx"/>
 ///<reference path="CvDetails.tsx"/>
 ///<reference path="CvForm.tsx"/>
 ///<reference path="CvHeroHeader.tsx"/>
@@ -702,5 +760,5 @@ var CatavoltPane = React.createClass({
 ///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 Log.logLevel(LogLevel.DEBUG);
-ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null)), React.createElement(CvAppWindow, {"persistentWorkbench": true})), document.getElementById('cvApp'));
+ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, {"persistentWorkbench": true}, React.createElement("div", {"className": "container"}, React.createElement(CvWorkbench, {"workbenchId": "AAABACffAAAABpZL"}, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h3", {"className": "panel-title"}, React.createElement(CvScope, {"handler": function (workbench) { return workbench.name; }}))), React.createElement("div", {"className": "panel-body"}, "launchComps"))))))), document.getElementById('cvApp'));
 //# sourceMappingURL=catreact.js.map

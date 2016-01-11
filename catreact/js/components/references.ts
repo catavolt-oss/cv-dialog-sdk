@@ -4,6 +4,7 @@
 
 //components
 ///<reference path="CvReact.tsx"/>
+///<reference path="CvScope.tsx"/>
 ///<reference path="CvDetails.tsx"/>
 ///<reference path="CvForm.tsx"/>
 ///<reference path="CvHeroHeader.tsx"/>

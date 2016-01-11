@@ -84,11 +84,7 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
     render: function () {
 
         if(React.Children.count(this.props.children) > 0){
-            if(React.Children.count(this.props.children) == 1) {
-                return this.props.children;
-            } else {
-                return <span>{this.props.children}</span>
-            }
+            return this.props.children
         } else {
             return <span>
                 <CvLoginPane/>

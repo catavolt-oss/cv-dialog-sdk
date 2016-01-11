@@ -24,8 +24,8 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
 
     mixins: [CvBaseMixin],
 
-    componentWillMount: function() {
-        this.context.eventRegistry.subscribe((loginEvent:CvEvent<VoidResult>)=>{
+    componentWillMount: function () {
+        this.context.eventRegistry.subscribe((loginEvent:CvEvent<VoidResult>)=> {
             this.setState({loggedIn: true})
         }, CvEventType.LOGIN);
     },
@@ -39,24 +39,29 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
 
     render: function () {
 
-        if(this.state.loggedIn) {
-            var workbenches:Array<Workbench> = this.context.catavolt.appWinDefTry.success.workbenches;
-            return (
-                <span>
-                    <CvToolbar/>
-                    <div className="container">
-                        {(() => {
-                            if (this.showWorkbench()) {
-                                return workbenches.map((workbench:Workbench, index)=>{
-                                    return <CvWorkbench workbench={workbench} onNavRequest={this.onNavRequest}
-                                                        key={index}/>
-                                    })
-                                }
-                            })()}
-                        <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>
-                    </div>
-                </span>
-            );
+        if (this.state.loggedIn) {
+
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children
+            } else {
+
+                var workbenches:Array<Workbench> = this.context.catavolt.appWinDefTry.success.workbenches;
+                return (
+                    <span>
+                        <CvToolbar/>
+                        <div className="container">
+                            {(() => {
+                                if (this.showWorkbench()) {
+                                    return workbenches.map((workbench:Workbench, index)=>{
+                                        return <CvWorkbench workbenchId={workbench.workbenchId} onNavRequest={this.onNavRequest} key={index}/>
+                                        })
+                                    }
+                                })()}
+                            <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>
+                        </div>
+                    </span>
+                );
+            }
         } else {
             return null;
         }
