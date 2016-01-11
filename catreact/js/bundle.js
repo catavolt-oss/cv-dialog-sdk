@@ -7,9 +7,13 @@
 ///<reference path="../../typings/react/react-global.d.ts"/>
 ///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
+/*
+    Base Mixin for all catavolt components
+ */
 var CvBaseMixin = {
     contextTypes: {
-        catavolt: React.PropTypes.object
+        catavolt: React.PropTypes.object,
+        eventRegistry: React.PropTypes.object
     },
     findFirstDescendant: function findFirstDescendant(comp, filter) {
         var result = null;
@@ -47,6 +51,47 @@ var CvBaseMixin = {
         return results;
     }
 };
+var CvEventType;
+(function (CvEventType) {
+    CvEventType[CvEventType["LOGIN"] = 0] = "LOGIN";
+    CvEventType[CvEventType["LOGOUT"] = 1] = "LOGOUT";
+})(CvEventType || (CvEventType = {}));
+var CvEventRegistry = (function () {
+    function CvEventRegistry() {
+        this._listenerMap = [];
+    }
+    CvEventRegistry.prototype.publish = function (event) {
+        var listenerArray = this._listenerMap[event.type];
+        if (listenerArray) {
+            listenerArray.forEach(function (listener) {
+                console.log('publishing ' + JSON.stringify(event) + ' to ' + JSON.stringify(listener));
+                listener(event);
+            });
+        }
+    };
+    CvEventRegistry.prototype.subscribe = function (listener, eventType) {
+        var listenerArray = this._listenerMap[eventType];
+        if (!listenerArray) {
+            listenerArray = [];
+            this._listenerMap[eventType] = listenerArray;
+        }
+        if (listenerArray.indexOf(listener) < 0) {
+            listenerArray.push(listener);
+        }
+    };
+    CvEventRegistry.prototype.unsubscribe = function (listener) {
+        for (var eventType in this._listenerMap) {
+            var listenerArray = this._listenerMap[eventType];
+            if (listenerArray) {
+                var index = listenerArray.indexOf(listener);
+                if (index > -1) {
+                    listenerArray.splice(index, 1);
+                }
+            }
+        }
+    };
+    return CvEventRegistry;
+})();
 /**
  * Created by rburson on 12/23/15.
  */
@@ -427,22 +472,32 @@ var CvAppWindow = React.createClass({
     displayName: "CvAppWindow",
 
     mixins: [CvBaseMixin],
+    componentWillMount: function componentWillMount() {
+        var _this = this;
+        this.context.eventRegistry.subscribe(function (loginEvent) {
+            _this.setState({ loggedIn: true });
+        }, CvEventType.LOGIN);
+    },
     getInitialState: function getInitialState() {
         return {
-            workbenches: [],
-            navRequestTry: null
+            navRequestTry: null,
+            loggedIn: false
         };
     },
     render: function render() {
         var _this = this;
-        var workbenches = this.context.catavolt.appWinDefTry.success.workbenches;
-        return React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", { "className": "container" }, (function () {
-            if (_this.showWorkbench()) {
-                return workbenches.map(function (workbench, index) {
-                    return React.createElement(CvWorkbench, { "workbench": workbench, "onNavRequest": _this.onNavRequest });
-                });
-            }
-        })(), React.createElement(CvNavigation, { "navRequestTry": this.state.navRequestTry, "onNavRequest": this.onNavRequest })));
+        if (this.state.loggedIn) {
+            var workbenches = this.context.catavolt.appWinDefTry.success.workbenches;
+            return React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", { "className": "container" }, (function () {
+                if (_this.showWorkbench()) {
+                    return workbenches.map(function (workbench, index) {
+                        return React.createElement(CvWorkbench, { "workbench": workbench, "onNavRequest": _this.onNavRequest, "key": index });
+                    });
+                }
+            })(), React.createElement(CvNavigation, { "navRequestTry": this.state.navRequestTry, "onNavRequest": this.onNavRequest })));
+        } else {
+            return null;
+        }
     },
     showWorkbench: function showWorkbench() {
         return this.props.persistentWorkbench || !this.state.navRequestTry;
@@ -498,17 +553,33 @@ var CvLoginPane = React.createClass({
     displayName: "CvLoginPane",
 
     mixins: [CvBaseMixin],
+    componentWillMount: function componentWillMount() {
+        var _this = this;
+        this.context.eventRegistry.subscribe(function (logoutEvent) {
+            _this.setState({ loggedIn: false });
+        }, CvEventType.LOGOUT);
+    },
+    getDefaultProps: function getDefaultProps() {
+        return {
+            loginListeners: []
+        };
+    },
     getInitialState: function getInitialState() {
         return {
             tenantId: 'catavolt-dev',
             gatewayUrl: 'www.catavolt.net',
             userId: 'rob',
             password: 'rob123',
-            clientType: 'RICH_CLIENT'
+            clientType: 'RICH_CLIENT',
+            loggedIn: false
         };
     },
     render: function render() {
-        return React.createElement("div", { "className": "container" }, React.createElement("div", { "className": "well" }, React.createElement("form", { "className": "form-horizontal login-form", "onSubmit": this.handleSubmit }, React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "tenantId", "className": "col-sm-2 control-label" }, "Tenant Id:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("input", { "id": "tenantId", "type": "text", "className": "form-control", "value": this.state.tenantId, "onChange": this.handleChange.bind(this, 'tenantId'), "required": true }))), React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "gatewayUrl", "className": "col-sm-2 control-label" }, "Gateway URL:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("div", { "className": "input-group" }, React.createElement("input", { "id": "gatewayUrl", "type": "text", "className": "form-control", "value": this.state.gatewayUrl, "onChange": this.handleChange.bind(this, 'gatewayUrl'), "aria-describedby": "http-addon", "required": true })))), React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "userId", "className": "col-sm-2 control-label" }, "User Id:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("input", { "id": "userId", "type": "text", "className": "form-control", "value": this.state.userId, "onChange": this.handleChange.bind(this, 'userId'), "required": true }))), React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "password", "className": "col-sm-2 control-label" }, " Password:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("input", { "id": "password", "type": "password", "className": "form-control", "value": this.state.password, "onChange": this.handleChange.bind(this, 'password'), "required": true }))), React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "clientType", "className": "col-sm-2 control-label" }, "Client Type:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("label", { "className": "radio-inline" }, React.createElement("input", { "id": "clientType", "type": "radio", "onChange": this.handleRadioChange.bind(this, 'clientType', 'LIMITED_ACCESS'), "checked": this.state.clientType === 'LIMITED_ACCESS' }), "Limited"), React.createElement("label", { "className": "radio-inline" }, React.createElement("input", { "id": "clientType", "type": "radio", "onChange": this.handleRadioChange.bind(this, 'clientType', 'RICH_CLIENT'), "checked": this.state.clientType === 'RICH_CLIENT' }), "Rich"))), React.createElement("div", { "className": "form-group" }, React.createElement("div", { "className": "col-sm-10 col-sm-offset-2" }, React.createElement("button", { "type": "submit", "className": "btn btn-default btn-primary btn-block", "value": "Login" }, "Login ", React.createElement("span", { "className": "glyphicon glyphicon-log-in", "aria-hidden": "true" })))))));
+        if (!this.state.loggedIn) {
+            return React.createElement("div", { "className": "container" }, React.createElement("div", { "className": "well" }, React.createElement("form", { "className": "form-horizontal login-form", "onSubmit": this.handleSubmit }, React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "tenantId", "className": "col-sm-2 control-label" }, "Tenant Id:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("input", { "id": "tenantId", "type": "text", "className": "form-control", "value": this.state.tenantId, "onChange": this.handleChange.bind(this, 'tenantId'), "required": true }))), React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "gatewayUrl", "className": "col-sm-2 control-label" }, "Gateway URL:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("div", { "className": "input-group" }, React.createElement("input", { "id": "gatewayUrl", "type": "text", "className": "form-control", "value": this.state.gatewayUrl, "onChange": this.handleChange.bind(this, 'gatewayUrl'), "aria-describedby": "http-addon", "required": true })))), React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "userId", "className": "col-sm-2 control-label" }, "User Id:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("input", { "id": "userId", "type": "text", "className": "form-control", "value": this.state.userId, "onChange": this.handleChange.bind(this, 'userId'), "required": true }))), React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "password", "className": "col-sm-2 control-label" }, "Password:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("input", { "id": "password", "type": "password", "className": "form-control", "value": this.state.password, "onChange": this.handleChange.bind(this, 'password'), "required": true }))), React.createElement("div", { "className": "form-group" }, React.createElement("label", { "htmlFor": "clientType", "className": "col-sm-2 control-label" }, "Client Type:"), React.createElement("div", { "className": "col-sm-10" }, React.createElement("label", { "className": "radio-inline" }, React.createElement("input", { "id": "clientType", "type": "radio", "onChange": this.handleRadioChange.bind(this, 'clientType', 'LIMITED_ACCESS'), "checked": this.state.clientType === 'LIMITED_ACCESS' }), "Limited"), React.createElement("label", { "className": "radio-inline" }, React.createElement("input", { "id": "clientType", "type": "radio", "onChange": this.handleRadioChange.bind(this, 'clientType', 'RICH_CLIENT'), "checked": this.state.clientType === 'RICH_CLIENT' }), "Rich"))), React.createElement("div", { "className": "form-group" }, React.createElement("div", { "className": "col-sm-10 col-sm-offset-2" }, React.createElement("button", { "type": "submit", "className": "btn btn-default btn-primary btn-block", "value": "Login" }, "Login", React.createElement("span", { "className": "glyphicon glyphicon-log-in", "aria-hidden": "true" })))))));
+        } else {
+            return null;
+        }
     },
     handleChange: function handleChange(field, e) {
         var nextState = {};
@@ -524,8 +595,11 @@ var CvLoginPane = React.createClass({
         var _this = this;
         e.preventDefault();
         this.context.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password).onComplete(function (appWinDefTry) {
-            Log.info(ObjUtil.formatRecAttr(appWinDefTry.success.workbenches[0]));
-            _this.props.onLogin();
+            _this.setState({ loggedIn: true });
+            _this.context.eventRegistry.publish({ type: CvEventType.LOGIN, eventObj: null });
+            _this.props.loginListeners.forEach(function (listener) {
+                listener();
+            });
         });
     }
 });
@@ -558,19 +632,30 @@ var CatavoltPane = React.createClass({
         }
     },
     childContextTypes: {
-        catavolt: React.PropTypes.object
+        catavolt: React.PropTypes.object,
+        eventRegistry: React.PropTypes.object
     },
     componentWillMount: function componentWillMount() {
+        var _this = this;
+        this.props.eventRegistry.subscribe(function (loginEvent) {
+            _this.setState({ loggedIn: true });
+        }, CvEventType.LOGIN);
+        this.props.eventRegistry.subscribe(function (logoutEvent) {
+            _this.setState({ loggedIn: false });
+        }, CvEventType.LOGOUT);
         /* @TODO - need to work on the AppContext to make the session restore possible */
         //this.checkSession();
     },
     getChildContext: function getChildContext() {
-        return { catavolt: this.props.catavolt };
+        return {
+            catavolt: this.props.catavolt,
+            eventRegistry: this.props.eventRegistry
+        };
     },
     getDefaultProps: function getDefaultProps() {
         return {
             catavolt: AppContext.singleton,
-            persistentWorkbench: false
+            eventRegistry: new CvEventRegistry()
         };
     },
     getInitialState: function getInitialState() {
@@ -582,25 +667,14 @@ var CatavoltPane = React.createClass({
     },
     render: function render() {
         if (React.Children.count(this.props.children) > 0) {
-            console.log(this.findAllDescendants(this, function (comp) {
-                return comp.type == CvLoginPane;
-            }));
             if (React.Children.count(this.props.children) == 1) {
                 return this.props.children;
             } else {
                 return React.createElement("span", null, this.props.children);
             }
         } else {
-            return this.state.loggedIn ? React.createElement(CvAppWindow, { "onLogout": this.loggedOut, "persistentWorkbench": this.props.persistentWorkbench }) : React.createElement("span", null, React.createElement(CvHeroHeader, null), React.createElement(CvLoginPane, { "onLogin": this.loggedIn }));
+            return React.createElement("span", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, { "persistentWorkbench": true }));
         }
-    },
-    loggedIn: function loggedIn(sessionContext) {
-        this.setState({ loggedIn: true });
-        this.storeSession(this.props.catavolt.sessionContextTry.success);
-    },
-    loggedOut: function loggedOut() {
-        this.removeSession();
-        this.setState({ loggedIn: false });
     },
     removeSession: function removeSession() {
         sessionStorage.removeItem('session');
@@ -631,7 +705,7 @@ var CatavoltPane = React.createClass({
 ///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 Log.logLevel(LogLevel.DEBUG);
-ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement(CvHeroHeader, null), React.createElement("div", null, React.createElement(CvLoginPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null))))), document.getElementById('cvApp'));
+ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null)), React.createElement(CvAppWindow, { "persistentWorkbench": true })), document.getElementById('cvApp'));
 
 
 },{}]},{},[1]);

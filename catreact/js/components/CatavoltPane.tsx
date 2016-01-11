@@ -13,7 +13,6 @@ interface CatavoltPaneState extends CvState {
 
 interface CatavoltPaneProps extends CvProps {
     catavolt?:AppContext;
-    persistentWorkbench?:boolean;
 }
 
 /*
@@ -39,22 +38,36 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
     },
 
     childContextTypes: {
-        catavolt: React.PropTypes.object
+        catavolt: React.PropTypes.object,
+        eventRegistry: React.PropTypes.object
     },
 
     componentWillMount: function() {
+
+        this.props.eventRegistry.subscribe((loginEvent:CvEvent<VoidResult>)=>{
+            this.setState({loggedIn: true})
+        }, CvEventType.LOGIN);
+
+        this.props.eventRegistry.subscribe((logoutEvent:CvEvent<VoidResult>)=>{
+            this.setState({loggedIn: false})
+        }, CvEventType.LOGOUT);
+
         /* @TODO - need to work on the AppContext to make the session restore possible */
         //this.checkSession();
+
     },
 
     getChildContext: function() {
-        return {catavolt: this.props.catavolt};
+        return {
+            catavolt: this.props.catavolt,
+            eventRegistry: this.props.eventRegistry
+        }
     },
 
     getDefaultProps: function() {
         return {
             catavolt: AppContext.singleton,
-            persistentWorkbench: false
+            eventRegistry: new CvEventRegistry(),
         }
     },
 
@@ -71,28 +84,18 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
     render: function () {
 
         if(React.Children.count(this.props.children) > 0){
-            console.log(this.findAllDescendants(this, (comp)=>{return comp.type == CvLoginPane}));
             if(React.Children.count(this.props.children) == 1) {
                 return this.props.children;
             } else {
                 return <span>{this.props.children}</span>
             }
         } else {
-            return this.state.loggedIn ?
-                (<CvAppWindow onLogout={this.loggedOut} persistentWorkbench={this.props.persistentWorkbench}/>) :
-                (<span><CvHeroHeader/><CvLoginPane onLogin={this.loggedIn}/></span>);
+            return <span>
+                <CvLoginPane/>
+                <CvAppWindow persistentWorkbench={true}/>
+            </span>
         }
 
-    },
-
-    loggedIn: function (sessionContext) {
-        this.setState({loggedIn: true})
-        this.storeSession(this.props.catavolt.sessionContextTry.success);
-    },
-
-    loggedOut: function () {
-        this.removeSession();
-        this.setState({loggedIn: false})
     },
 
     removeSession: function() {

@@ -9,18 +9,25 @@
 /*
     Base interface for catavolt component properties
  */
-
 interface CvProps {
     key?: string;
 }
 
+/*
+    Base interface for catavolt component state
+ */
 interface CvState {
 }
 
+
+/*
+    Base Mixin for all catavolt components
+ */
 var CvBaseMixin = {
 
     contextTypes: {
-        catavolt: React.PropTypes.object
+        catavolt: React.PropTypes.object,
+        eventRegistry: React.PropTypes.object
     },
 
     findFirstDescendant: function(comp, filter:(o)=>boolean) {
@@ -58,3 +65,67 @@ var CvBaseMixin = {
     }
 
 }
+
+/*
+ ******************************************************************
+    Component Event Registry
+    Framework for decoupled communication between our components
+ ******************************************************************
+ */
+interface CvListener<T> {
+    (event:CvEvent<T>):void;
+}
+
+interface CvEvent<T> {
+    type:CvEventType;
+    eventObj:T;
+}
+
+enum CvEventType {
+    LOGIN,
+    LOGOUT
+}
+
+class CvEventRegistry {
+
+    private _listenerMap:{[index:number]:Array<CvListener<any>>} = [];
+
+    constructor() {
+    }
+
+    publish<T>(event:CvEvent<T>):void {
+        const listenerArray:Array<CvListener<any>> = this._listenerMap[event.type];
+        if(listenerArray) {
+            listenerArray.forEach((listener:CvListener<any>)=>{
+                console.log('publishing ' + JSON.stringify(event) + ' to ' + JSON.stringify(listener));
+                listener(event);
+            });
+        }
+    }
+
+    subscribe<T>(listener:CvListener<T>, eventType:CvEventType):void {
+
+            let listenerArray:Array<CvListener<any>> = this._listenerMap[eventType];
+            if(!listenerArray){
+                listenerArray = [];
+                this._listenerMap[eventType] = listenerArray;
+            }
+            if(listenerArray.indexOf(listener) < 0) {
+                listenerArray.push(listener);
+            }
+    }
+
+    unsubscribe(listener:CvListener<any>):void {
+        for(const eventType in this._listenerMap) {
+            const listenerArray:Array<CvListener<any>> = this._listenerMap[eventType];
+            if(listenerArray) {
+                var index = listenerArray.indexOf(listener);
+                if(index > -1) {
+                    listenerArray.splice(index, 1);
+                }
+            }
+        }
+    }
+
+}
+

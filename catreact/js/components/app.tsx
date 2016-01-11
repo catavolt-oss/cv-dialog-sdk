@@ -8,14 +8,11 @@ ReactDOM.render(
 
     <CatavoltPane>
 
-        <CvHeroHeader/>
         <div>
-            <CvLoginPane>
-                <div>
-                    <CvLoginPane></CvLoginPane>
-                </div>
-            </CvLoginPane>
+            <CvLoginPane/>
         </div>
+
+        <CvAppWindow persistentWorkbench={true}/>
 
     </CatavoltPane>,
 

@@ -7,6 +7,7 @@
 
 interface CvAppWindowState extends CvState {
     navRequestTry:Try<NavRequest>;
+    loggedIn: boolean;
 }
 
 interface CvAppWindowProps extends CvProps {
@@ -23,32 +24,42 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
 
     mixins: [CvBaseMixin],
 
+    componentWillMount: function() {
+        this.context.eventRegistry.subscribe((loginEvent:CvEvent<VoidResult>)=>{
+            this.setState({loggedIn: true})
+        }, CvEventType.LOGIN);
+    },
+
     getInitialState: function () {
         return {
-            workbenches: [],
-            navRequestTry: null
+            navRequestTry: null,
+            loggedIn: false
         }
     },
 
     render: function () {
 
-        var workbenches:Array<Workbench> = this.context.catavolt.appWinDefTry.success.workbenches;
-
-        return (
-            <span>
-                <CvToolbar/>
-                <div className="container">
-                    {(() => {
-                        if (this.showWorkbench()) {
-                            return workbenches.map((workbench:Workbench, index:number)=>{
-                                    return <CvWorkbench workbench={workbench} onNavRequest={this.onNavRequest}/>
-                                })
-                        }
-                    })()}
-                    <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>
-                </div>
-            </span>
-        );
+        if(this.state.loggedIn) {
+            var workbenches:Array<Workbench> = this.context.catavolt.appWinDefTry.success.workbenches;
+            return (
+                <span>
+                    <CvToolbar/>
+                    <div className="container">
+                        {(() => {
+                            if (this.showWorkbench()) {
+                                return workbenches.map((workbench:Workbench, index)=>{
+                                    return <CvWorkbench workbench={workbench} onNavRequest={this.onNavRequest}
+                                                        key={index}/>
+                                    })
+                                }
+                            })()}
+                        <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>
+                    </div>
+                </span>
+            );
+        } else {
+            return null;
+        }
     },
 
     showWorkbench: function () {
