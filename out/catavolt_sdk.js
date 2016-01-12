@@ -587,6 +587,8 @@ var catavolt;
                         }
                         catch (error) {
                             Log.error("CompletionListener failed with " + error);
+                            if (error.stack)
+                                Log.error(error.stack);
                         }
                     });
                 }
@@ -8182,4 +8184,3 @@ var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 ///<reference path="ws/references.ts"/>
 //dialog
 ///<reference path="dialog/references.ts"/>
-//# sourceMappingURL=catavolt_sdk.js.map

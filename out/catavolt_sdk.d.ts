@@ -1,4 +1,101 @@
 /**
+ * Created by rburson on 3/6/15.
+ */
+declare module catavolt.util {
+    class ArrayUtil {
+        static copy<T>(source: Array<T>): Array<T>;
+        static find<T>(source: Array<T>, f: (T) => boolean): T;
+    }
+}
+/**
+ * Created by rburson on 4/4/15.
+ */
+declare module catavolt.util {
+    class Base64 {
+        private static _keyStr;
+        static encode(input: any): string;
+        static decode(input: any): string;
+        private static _utf8_encode(s);
+        static _utf8_decode(utftext: any): string;
+    }
+}
+/**
+ * Created by rburson on 3/20/15.
+ */
+declare module catavolt.util {
+    class ObjUtil {
+        static addAllProps(sourceObj: any, targetObj: any): any;
+        static cloneOwnProps(sourceObj: any): any;
+        static copyNonNullFieldsOnly(obj: any, newObj: any, filterFn?: (prop) => boolean): any;
+        static formatRecAttr(o: any): string;
+        static newInstance(type: any): any;
+    }
+}
+/**
+ * Created by rburson on 4/3/15.
+ */
+declare module catavolt.util {
+    class StringUtil {
+        static splitSimpleKeyValuePair(pairString: string): Array<string>;
+    }
+}
+/**
+ * Created by rburson on 3/6/15.
+ */
+declare module catavolt.util {
+    enum LogLevel {
+        ERROR = 0,
+        WARN = 1,
+        INFO = 2,
+        DEBUG = 3,
+    }
+    class Log {
+        static debug: (message, method?: string, clz?: string) => void;
+        static error: (message, method?: string, clz?: string) => void;
+        static info: (message, method?: string, clz?: string) => void;
+        static warn: (message, method?: string, clz?: string) => void;
+        static init: void;
+        static logLevel(level: LogLevel): void;
+        private static log(logger, message, method?, clz?);
+        static formatRecString(o: any): string;
+    }
+}
+/**
+ * Created by rburson on 3/9/15.
+ */
+declare module catavolt.util {
+    interface StringDictionary {
+        [index: string]: any;
+    }
+    interface Dictionary<T> {
+        [index: string]: T;
+    }
+}
+/**
+ * Created by rburson on 3/16/15.
+ */
+declare module catavolt.util {
+    interface UserException {
+        iconName: string;
+        message: string;
+        name: string;
+        stackTrace: string;
+        title: string;
+    }
+}
+/**
+ * Created by rburson on 3/6/15.
+ */
+import ArrayUtil = catavolt.util.ArrayUtil;
+import Base64 = catavolt.util.Base64;
+import Dictionary = catavolt.util.Dictionary;
+import Log = catavolt.util.Log;
+import LogLevel = catavolt.util.LogLevel;
+import ObjUtil = catavolt.util.ObjUtil;
+import StringDictionary = catavolt.util.StringDictionary;
+import StringUtil = catavolt.util.StringUtil;
+import UserException = catavolt.util.UserException;
+/**
  * Created by rburson on 3/9/15.
  */
 declare module catavolt.fp {
@@ -51,14 +148,94 @@ declare module catavolt.fp {
     }
 }
 /**
- * Created by rburson on 3/6/15.
+ * Created by rburson on 3/5/15.
  */
-declare module catavolt.util {
-    class ArrayUtil {
-        static copy<T>(source: Array<T>): Array<T>;
-        static find<T>(source: Array<T>, f: (T) => boolean): T;
+declare module catavolt.fp {
+    class Future<A> {
+        private _label;
+        /** --------------------- PUBLIC STATIC ------------------------------*/
+        static createCompletedFuture<A>(label: string, result: Try<A>): Future<A>;
+        static createSuccessfulFuture<A>(label: string, value: A): Future<A>;
+        static createFailedFuture<A>(label: string, error: any): Future<A>;
+        static createFuture<A>(label: string): Future<A>;
+        static sequence<A>(seqOfFutures: Array<Future<A>>): Future<Array<Try<A>>>;
+        private _completionListeners;
+        private _result;
+        /** --------------------- CONSTRUCTORS ------------------------------*/
+        constructor(_label: any);
+        /** --------------------- PUBLIC ------------------------------*/
+        bind<B>(f: FutureFn<A, B>): Future<B>;
+        failure: any;
+        isComplete: boolean;
+        isCompleteWithFailure: boolean;
+        isCompleteWithSuccess: boolean;
+        map<B>(f: MapFn<A, B>): Future<B>;
+        onComplete(listener: CompletionListener<A>): void;
+        onFailure(listener: FailureListener): void;
+        onSuccess(listener: SuccessListener<A>): void;
+        result: Try<A>;
+        success: A;
+        /** --------------------- MODULE ------------------------------*/
+        complete(t: Try<A>): Future<A>;
     }
 }
+/**
+ * Created by rburson on 3/5/15.
+ */
+declare module catavolt.fp {
+    class Success<A> extends Try<A> {
+        private _value;
+        constructor(_value: A);
+        isSuccess: boolean;
+        success: A;
+    }
+}
+/**
+ * Created by rburson on 3/6/15.
+ */
+declare module catavolt.fp {
+    class Promise<A> {
+        private _future;
+        constructor(label: string);
+        /** --------------------- PUBLIC ------------------------------*/
+        isComplete(): boolean;
+        complete(t: Try<A>): Promise<A>;
+        failure(error: any): void;
+        future: Future<A>;
+        success(value: A): void;
+    }
+}
+/**
+ * Created by rburson on 3/16/15.
+ */
+declare module catavolt.fp {
+    class Either<A, B> {
+        private _left;
+        private _right;
+        static left<A, B>(left: A): Either<A, B>;
+        static right<A, B>(right: B): Either<A, B>;
+        isLeft: boolean;
+        isRight: boolean;
+        left: A;
+        right: B;
+    }
+}
+/**
+ * Created by rburson on 3/6/15.
+ */
+import CompletionListener = catavolt.fp.CompletionListener;
+import Either = catavolt.fp.Either;
+import Failure = catavolt.fp.Failure;
+import FailureListener = catavolt.fp.FailureListener;
+import Future = catavolt.fp.Future;
+import FutureFn = catavolt.fp.FutureFn;
+import MapFn = catavolt.fp.MapFn;
+import Promise = catavolt.fp.Promise;
+import Success = catavolt.fp.Success;
+import SuccessListener = catavolt.fp.SuccessListener;
+import Try = catavolt.fp.Try;
+import TryClosure = catavolt.fp.TryClosure;
+import TryFn = catavolt.fp.TryFn;
 /**
  * Created by rburson on 3/9/15.
  */
@@ -2078,180 +2255,3 @@ import WebRedirection = catavolt.dialog.WebRedirection;
 import Workbench = catavolt.dialog.Workbench;
 import WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
 import WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
-/**
- * Created by rburson on 4/4/15.
- */
-declare module catavolt.util {
-    class Base64 {
-        private static _keyStr;
-        static encode(input: any): string;
-        static decode(input: any): string;
-        private static _utf8_encode(s);
-        static _utf8_decode(utftext: any): string;
-    }
-}
-/**
- * Created by rburson on 3/20/15.
- */
-declare module catavolt.util {
-    class ObjUtil {
-        static addAllProps(sourceObj: any, targetObj: any): any;
-        static cloneOwnProps(sourceObj: any): any;
-        static copyNonNullFieldsOnly(obj: any, newObj: any, filterFn?: (prop) => boolean): any;
-        static formatRecAttr(o: any): string;
-        static newInstance(type: any): any;
-    }
-}
-/**
- * Created by rburson on 4/3/15.
- */
-declare module catavolt.util {
-    class StringUtil {
-        static splitSimpleKeyValuePair(pairString: string): Array<string>;
-    }
-}
-/**
- * Created by rburson on 3/6/15.
- */
-declare module catavolt.util {
-    enum LogLevel {
-        ERROR = 0,
-        WARN = 1,
-        INFO = 2,
-        DEBUG = 3,
-    }
-    class Log {
-        static debug: (message, method?: string, clz?: string) => void;
-        static error: (message, method?: string, clz?: string) => void;
-        static info: (message, method?: string, clz?: string) => void;
-        static warn: (message, method?: string, clz?: string) => void;
-        static init: void;
-        static logLevel(level: LogLevel): void;
-        private static log(logger, message, method?, clz?);
-        static formatRecString(o: any): string;
-    }
-}
-/**
- * Created by rburson on 3/9/15.
- */
-declare module catavolt.util {
-    interface StringDictionary {
-        [index: string]: any;
-    }
-    interface Dictionary<T> {
-        [index: string]: T;
-    }
-}
-/**
- * Created by rburson on 3/16/15.
- */
-declare module catavolt.util {
-    interface UserException {
-        iconName: string;
-        message: string;
-        name: string;
-        stackTrace: string;
-        title: string;
-    }
-}
-/**
- * Created by rburson on 3/6/15.
- */
-import ArrayUtil = catavolt.util.ArrayUtil;
-import Base64 = catavolt.util.Base64;
-import Dictionary = catavolt.util.Dictionary;
-import Log = catavolt.util.Log;
-import LogLevel = catavolt.util.LogLevel;
-import ObjUtil = catavolt.util.ObjUtil;
-import StringDictionary = catavolt.util.StringDictionary;
-import StringUtil = catavolt.util.StringUtil;
-import UserException = catavolt.util.UserException;
-/**
- * Created by rburson on 3/5/15.
- */
-declare module catavolt.fp {
-    class Future<A> {
-        private _label;
-        /** --------------------- PUBLIC STATIC ------------------------------*/
-        static createCompletedFuture<A>(label: string, result: Try<A>): Future<A>;
-        static createSuccessfulFuture<A>(label: string, value: A): Future<A>;
-        static createFailedFuture<A>(label: string, error: any): Future<A>;
-        static createFuture<A>(label: string): Future<A>;
-        static sequence<A>(seqOfFutures: Array<Future<A>>): Future<Array<Try<A>>>;
-        private _completionListeners;
-        private _result;
-        /** --------------------- CONSTRUCTORS ------------------------------*/
-        constructor(_label: any);
-        /** --------------------- PUBLIC ------------------------------*/
-        bind<B>(f: FutureFn<A, B>): Future<B>;
-        failure: any;
-        isComplete: boolean;
-        isCompleteWithFailure: boolean;
-        isCompleteWithSuccess: boolean;
-        map<B>(f: MapFn<A, B>): Future<B>;
-        onComplete(listener: CompletionListener<A>): void;
-        onFailure(listener: FailureListener): void;
-        onSuccess(listener: SuccessListener<A>): void;
-        result: Try<A>;
-        success: A;
-        /** --------------------- MODULE ------------------------------*/
-        complete(t: Try<A>): Future<A>;
-    }
-}
-/**
- * Created by rburson on 3/5/15.
- */
-declare module catavolt.fp {
-    class Success<A> extends Try<A> {
-        private _value;
-        constructor(_value: A);
-        isSuccess: boolean;
-        success: A;
-    }
-}
-/**
- * Created by rburson on 3/16/15.
- */
-declare module catavolt.fp {
-    class Either<A, B> {
-        private _left;
-        private _right;
-        static left<A, B>(left: A): Either<A, B>;
-        static right<A, B>(right: B): Either<A, B>;
-        isLeft: boolean;
-        isRight: boolean;
-        left: A;
-        right: B;
-    }
-}
-/**
- * Created by rburson on 3/6/15.
- */
-import CompletionListener = catavolt.fp.CompletionListener;
-import Either = catavolt.fp.Either;
-import Failure = catavolt.fp.Failure;
-import FailureListener = catavolt.fp.FailureListener;
-import Future = catavolt.fp.Future;
-import FutureFn = catavolt.fp.FutureFn;
-import MapFn = catavolt.fp.MapFn;
-import Promise = catavolt.fp.Promise;
-import Success = catavolt.fp.Success;
-import SuccessListener = catavolt.fp.SuccessListener;
-import Try = catavolt.fp.Try;
-import TryClosure = catavolt.fp.TryClosure;
-import TryFn = catavolt.fp.TryFn;
-/**
- * Created by rburson on 3/6/15.
- */
-declare module catavolt.fp {
-    class Promise<A> {
-        private _future;
-        constructor(label: string);
-        /** --------------------- PUBLIC ------------------------------*/
-        isComplete(): boolean;
-        complete(t: Try<A>): Promise<A>;
-        failure(error: any): void;
-        future: Future<A>;
-        success(value: A): void;
-    }
-}

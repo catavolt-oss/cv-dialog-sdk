@@ -24,7 +24,7 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
 
     mixins: [CvBaseMixin],
 
-    componentWillMount: function () {
+    componentDidMount: function () {
         this.context.eventRegistry.subscribe((loginEvent:CvEvent<VoidResult>)=> {
             this.setState({loggedIn: true})
         }, CvEventType.LOGIN);

@@ -7,16 +7,15 @@
 ///<reference path="references.ts"/>
 
 interface CvScopeState extends CvState {
-    scopeObj:any;
 }
 
 interface CvScopeProps extends CvProps{
-    handler: (o:any) => {}
+    handler: (o:any) => {};
 }
 
 /*
  ***************************************************
- * Exposes the scope of the encosing tag via the handler function
+ * Exposes the scope of the enclosing tag via the handler function
  ***************************************************
  */
 var CvScope = React.createClass<CvScopeProps, CvScopeState>({
@@ -27,21 +26,13 @@ var CvScope = React.createClass<CvScopeProps, CvScopeState>({
         return { handler: null }
     },
 
-    getInitialState() {
-        return {scopeObj: null}
-    },
-
     render: function () {
-        if(this.state.scopeObj) {
+        if(this.context.scopeObj) {
             if(this.props.handler) {
-                return this.props.handler(this.state.scopeObj);
+                return <span>{this.props.handler(this.context.scopeObj)}</span>
             }
         }
         return null;
     },
-
-    setScopeObj: function(obj) {
-        this.setState({scopeObj:obj});
-    }
 
 });

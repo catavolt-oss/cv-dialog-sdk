@@ -25,7 +25,11 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
 
     mixins: [CvBaseMixin],
 
-    componentWillMount: function () {
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+
+    componentDidMount: function () {
         var targetWorkbench:Workbench = null;
         this.context.catavolt.appWinDefTry.success.workbenches.some((workbench)=> {
             if (workbench.workbenchId == this.props.workbenchId) {
@@ -36,9 +40,20 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
             }
         })
 
-        this.findAllDescendants(this, (comp)=>{ return comp.type == CvScope})
-        .forEach((comp)=>{comp.setScopeObj(targetWorkbench)});
+        //this.findAllDescendants(this, (elem)=>{ return elem.type == CvScope})
+         //   .forEach((elem, index)=>{});
+
         this.setState({workbench: targetWorkbench})
+    },
+
+    getChildContext: function() {
+        return {
+            scopeObj: this.state.workbench
+        }
+    },
+
+    getInitialState: function () {
+        return {workbench: null}
     },
 
     render: function () {

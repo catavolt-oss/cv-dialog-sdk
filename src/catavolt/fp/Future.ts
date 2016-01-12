@@ -139,6 +139,7 @@ module catavolt.fp {
                             listener(this._result);
                         } catch (error) {
                             Log.error("CompletionListener failed with " + error);
+                            if(error.stack) Log.error(error.stack);
                         }
                     }
                 );

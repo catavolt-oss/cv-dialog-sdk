@@ -10,14 +10,15 @@
 var CvBaseMixin = {
     contextTypes: {
         catavolt: React.PropTypes.object,
-        eventRegistry: React.PropTypes.object
+        eventRegistry: React.PropTypes.object,
+        scopeObj: React.PropTypes.object
     },
-    findFirstDescendant: function (comp, filter) {
+    findFirstDescendant: function (elem, filter) {
         var result = null;
-        if (comp.props && comp.props.children) {
-            var comps = React.Children.toArray(comp.props.children);
-            for (var i = 0; i < comps.length; i++) {
-                var child = comps[i];
+        if (elem.props && elem.props.children) {
+            var elems = React.Children.toArray(elem.props.children);
+            for (var i = 0; i < elems.length; i++) {
+                var child = elems[i];
                 console.log(child);
                 if (filter(child)) {
                     result = child;
@@ -29,12 +30,12 @@ var CvBaseMixin = {
         }
         return result ? result : null;
     },
-    findAllDescendants: function (comp, filter, results) {
+    findAllDescendants: function (elem, filter, results) {
         if (results === void 0) { results = []; }
-        if (comp.props && comp.props.children) {
-            var comps = React.Children.toArray(comp.props.children);
-            for (var i = 0; i < comps.length; i++) {
-                var child = comps[i];
+        if (elem.props && elem.props.children) {
+            var elems = React.Children.toArray(elem.props.children);
+            for (var i = 0; i < elems.length; i++) {
+                var child = elems[i];
                 console.log(child);
                 if (filter(child)) {
                     results.push(child);
@@ -96,7 +97,7 @@ var CvEventRegistry = (function () {
 ///<reference path="references.ts"/>
 /*
  ***************************************************
- * Exposes the scope of the encosing tag via the handler function
+ * Exposes the scope of the enclosing tag via the handler function
  ***************************************************
  */
 var CvScope = React.createClass({
@@ -104,20 +105,14 @@ var CvScope = React.createClass({
     getDefaultProps: function () {
         return { handler: null };
     },
-    getInitialState: function () {
-        return { scopeObj: null };
-    },
     render: function () {
-        if (this.state.scopeObj) {
+        if (this.context.scopeObj) {
             if (this.props.handler) {
-                return this.props.handler(this.state.scopeObj);
+                return React.createElement("span", null, this.props.handler(this.context.scopeObj));
             }
         }
         return null;
     },
-    setScopeObj: function (obj) {
-        this.setState({ scopeObj: obj });
-    }
 });
 /**
  * Created by rburson on 12/23/15.
@@ -499,7 +494,7 @@ var CvToolbar = React.createClass({
  */
 var CvAppWindow = React.createClass({
     mixins: [CvBaseMixin],
-    componentWillMount: function () {
+    componentDidMount: function () {
         var _this = this;
         this.context.eventRegistry.subscribe(function (loginEvent) {
             _this.setState({ loggedIn: true });
@@ -558,7 +553,10 @@ var CvAppWindow = React.createClass({
  */
 var CvWorkbench = React.createClass({
     mixins: [CvBaseMixin],
-    componentWillMount: function () {
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+    componentDidMount: function () {
         var _this = this;
         var targetWorkbench = null;
         this.context.catavolt.appWinDefTry.success.workbenches.some(function (workbench) {
@@ -570,9 +568,17 @@ var CvWorkbench = React.createClass({
                 return false;
             }
         });
-        this.findAllDescendants(this, function (comp) { return comp.type == CvScope; })
-            .forEach(function (comp) { comp.setScopeObj(targetWorkbench); });
+        //this.findAllDescendants(this, (elem)=>{ return elem.type == CvScope})
+        //   .forEach((elem, index)=>{});
         this.setState({ workbench: targetWorkbench });
+    },
+    getChildContext: function () {
+        return {
+            scopeObj: this.state.workbench
+        };
+    },
+    getInitialState: function () {
+        return { workbench: null };
     },
     render: function () {
         if (this.state.workbench) {
@@ -609,7 +615,7 @@ var CvWorkbench = React.createClass({
  */
 var CvLoginPane = React.createClass({
     mixins: [CvBaseMixin],
-    componentWillMount: function () {
+    componentDidMount: function () {
         var _this = this;
         this.context.eventRegistry.subscribe(function (logoutEvent) {
             _this.setState({ loggedIn: false });
@@ -692,8 +698,9 @@ var CatavoltPane = React.createClass({
         catavolt: React.PropTypes.object,
         eventRegistry: React.PropTypes.object
     },
-    componentWillMount: function () {
+    componentDidMount: function () {
         var _this = this;
+        alert('mounted');
         this.props.eventRegistry.subscribe(function (loginEvent) {
             _this.setState({ loggedIn: true });
         }, CvEventType.LOGIN);
@@ -761,4 +768,3 @@ var CatavoltPane = React.createClass({
 ///<reference path="references.ts"/>
 Log.logLevel(LogLevel.DEBUG);
 ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, {"persistentWorkbench": true}, React.createElement("div", {"className": "container"}, React.createElement(CvWorkbench, {"workbenchId": "AAABACffAAAABpZL"}, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h3", {"className": "panel-title"}, React.createElement(CvScope, {"handler": function (workbench) { return workbench.name; }}))), React.createElement("div", {"className": "panel-body"}, "launchComps"))))))), document.getElementById('cvApp'));
-//# sourceMappingURL=catreact.js.map

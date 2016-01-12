@@ -28,7 +28,7 @@ var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
 
     mixins: [CvBaseMixin],
 
-    componentWillMount: function() {
+    componentDidMount: function() {
 
         this.context.eventRegistry.subscribe((logoutEvent:CvEvent<VoidResult>)=>{
             this.setState({loggedIn: false})

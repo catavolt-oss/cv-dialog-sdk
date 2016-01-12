@@ -42,8 +42,9 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
         eventRegistry: React.PropTypes.object
     },
 
-    componentWillMount: function() {
+    componentDidMount: function() {
 
+        alert('mounted')
         this.props.eventRegistry.subscribe((loginEvent:CvEvent<VoidResult>)=>{
             this.setState({loggedIn: true})
         }, CvEventType.LOGIN);
