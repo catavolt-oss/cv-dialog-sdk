@@ -29,7 +29,7 @@ var CvScope = React.createClass<CvScopeProps, CvScopeState>({
     render: function () {
         if(this.context.scopeObj) {
             if(this.props.handler) {
-                return <span>{this.props.handler(this.context.scopeObj)}</span>
+                return this.props.handler(this.context.scopeObj)
             }
         }
         return null;

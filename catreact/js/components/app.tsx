@@ -9,24 +9,33 @@ ReactDOM.render(
     <CatavoltPane>
 
         <div>
-
             <CvLoginPane/>
-
             <CvAppWindow persistentWorkbench={true}>
-
-                <div className="container">
-                    <CvWorkbench workbenchId={"AAABACffAAAABpZL"}>
-                        <div className="panel panel-primary">
-                            <div className="panel-heading">
-                                <h3 className="panel-title"><CvScope handler={(workbench)=>{return workbench.name}}/></h3>
+                <span>
+                    <CvToolbar/>
+                    <div className="container">
+                        <CvWorkbench workbenchId={"AAABACffAAAABpZL"}>
+                            <div className="panel panel-primary">
+                                <div className="panel-heading">
+                                        <CvScope handler={(workbench)=>{
+                                            return <h3 className="panel-title">{workbench.name}</h3>
+                                         }}/>
+                                </div>
+                                <div className="panel-body">
+                                   <CvLauncher actionId={"AAABACfaAAAABpIk"}>
+                                       <CvScope handler={(launcher)=>{
+                                            return <div className="col-md-4 launch-div">
+                                              <img className="launch-icon img-responsive center-block" src={launcher.iconBase}/>
+                                              <h5 className="launch-text small text-center">{launcher.name}</h5>
+                                            </div>
+                                         }}/>
+                                   </CvLauncher>
+                                </div>
                             </div>
-                            <div className="panel-body">launchComps</div>
-                        </div>
-                    </CvWorkbench>
-                </div>
-
+                        </CvWorkbench>
+                    </div>
+                </span>
             </CvAppWindow>
-
         </div>
 
     </CatavoltPane>,

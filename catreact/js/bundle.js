@@ -114,7 +114,7 @@ var CvScope = React.createClass({
     render: function render() {
         if (this.context.scopeObj) {
             if (this.props.handler) {
-                return React.createElement("span", null, this.props.handler(this.context.scopeObj));
+                return this.props.handler(this.context.scopeObj);
             }
         }
         return null;
@@ -315,12 +315,43 @@ var CvLauncher = React.createClass({
     displayName: "CvLauncher",
 
     mixins: [CvBaseMixin],
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+    componentDidMount: function componentDidMount() {
+        var _this = this;
+        var workbench = this.context.scopeObj;
+        workbench.workbenchLaunchActions.some(function (launchAction) {
+            if (launchAction.actionId == _this.props.actionId) {
+                _this.setState({ launchAction: launchAction });
+                return true;
+            } else {
+                return false;
+            }
+        });
+    },
+    getChildContext: function getChildContext() {
+        return {
+            scopeObj: this.state.launchAction
+        };
+    },
+    getInitialState: function getInitialState() {
+        return { launchAction: null };
+    },
     render: function render() {
-        return React.createElement("div", { "className": "col-md-4 launch-div" }, React.createElement("img", { "className": "launch-icon img-responsive center-block", "src": this.props.launchAction.iconBase, "onClick": this.handleClick }), React.createElement("h5", { "className": "launch-text small text-center", "onClick": this.handleClick }, this.props.launchAction.name));
+        if (this.state.launchAction) {
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children;
+            } else {
+                return React.createElement("div", { "className": "col-md-4 launch-div" }, React.createElement("img", { "className": "launch-icon img-responsive center-block", "src": this.state.launchAction.iconBase, "onClick": this.handleClick }), React.createElement("h5", { "className": "launch-text small text-center", "onClick": this.handleClick }, this.state.launchAction.name));
+            }
+        } else {
+            return null;
+        }
     },
     handleClick: function handleClick() {
         var _this = this;
-        this.context.catavolt.performLaunchAction(this.props.launchAction).onComplete(function (launchTry) {
+        this.context.catavolt.performLaunchAction(this.state.launchAction).onComplete(function (launchTry) {
             _this.props.onLaunch(launchTry);
         });
     }
@@ -563,18 +594,14 @@ var CvWorkbench = React.createClass({
     },
     componentDidMount: function componentDidMount() {
         var _this = this;
-        var targetWorkbench = null;
         this.context.catavolt.appWinDefTry.success.workbenches.some(function (workbench) {
             if (workbench.workbenchId == _this.props.workbenchId) {
-                targetWorkbench = workbench;
+                _this.setState({ workbench: workbench });
                 return true;
             } else {
                 return false;
             }
         });
-        //this.findAllDescendants(this, (elem)=>{ return elem.type == CvScope})
-        //   .forEach((elem, index)=>{});
-        this.setState({ workbench: targetWorkbench });
     },
     getChildContext: function getChildContext() {
         return {
@@ -592,7 +619,7 @@ var CvWorkbench = React.createClass({
                 var launchActions = this.state.workbench.workbenchLaunchActions;
                 var launchComps = [];
                 for (var i = 0; i < launchActions.length; i++) {
-                    launchComps.push(React.createElement(CvLauncher, { "launchAction": launchActions[i], "key": launchActions[i].actionId, "onLaunch": this.actionLaunched }));
+                    launchComps.push(React.createElement(CvLauncher, { "actionId": launchActions[i].actionId, "key": launchActions[i].actionId, "onLaunch": this.actionLaunched }));
                 }
                 return React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement("h3", { "className": "panel-title" }, this.state.workbench.name)), React.createElement("div", { "className": "panel-body" }, launchComps));
             }
@@ -703,7 +730,6 @@ var CatavoltPane = React.createClass({
     },
     componentDidMount: function componentDidMount() {
         var _this = this;
-        alert('mounted');
         this.props.eventRegistry.subscribe(function (loginEvent) {
             _this.setState({ loggedIn: true });
         }, CvEventType.LOGIN);
@@ -769,8 +795,10 @@ var CatavoltPane = React.createClass({
 ///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
 Log.logLevel(LogLevel.DEBUG);
-ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, { "persistentWorkbench": true }, React.createElement("div", { "className": "container" }, React.createElement(CvWorkbench, { "workbenchId": "AAABACffAAAABpZL" }, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement("h3", { "className": "panel-title" }, React.createElement(CvScope, { "handler": function handler(workbench) {
-        return workbench.name;
-    } }))), React.createElement("div", { "className": "panel-body" }, "launchComps"))))))), document.getElementById('cvApp'));
+ReactDOM.render(React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, { "persistentWorkbench": true }, React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", { "className": "container" }, React.createElement(CvWorkbench, { "workbenchId": "AAABACffAAAABpZL" }, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement(CvScope, { "handler": function handler(workbench) {
+        return React.createElement("h3", { "className": "panel-title" }, workbench.name);
+    } })), React.createElement("div", { "className": "panel-body" }, React.createElement(CvLauncher, { "actionId": "AAABACfaAAAABpIk" }, React.createElement(CvScope, { "handler": function handler(launcher) {
+        return React.createElement("div", { "className": "col-md-4 launch-div" }, React.createElement("img", { "className": "launch-icon img-responsive center-block", "src": launcher.iconBase }), React.createElement("h5", { "className": "launch-text small text-center" }, launcher.name));
+    } })))))))))), document.getElementById('cvApp'));
 
 },{}]},{},[1]);

@@ -30,20 +30,15 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
     },
 
     componentDidMount: function () {
-        var targetWorkbench:Workbench = null;
         this.context.catavolt.appWinDefTry.success.workbenches.some((workbench)=> {
             if (workbench.workbenchId == this.props.workbenchId) {
-                targetWorkbench = workbench;
+                this.setState({workbench: workbench})
                 return true;
             } else {
                 return false;
             }
         })
 
-        //this.findAllDescendants(this, (elem)=>{ return elem.type == CvScope})
-         //   .forEach((elem, index)=>{});
-
-        this.setState({workbench: targetWorkbench})
     },
 
     getChildContext: function() {
@@ -68,7 +63,7 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
             var launchComps = [];
             for (let i = 0; i < launchActions.length; i++) {
                 launchComps.push(
-                    <CvLauncher launchAction={launchActions[i]} key={launchActions[i].actionId}
+                    <CvLauncher actionId={launchActions[i].actionId} key={launchActions[i].actionId}
                                 onLaunch={this.actionLaunched}/>
                 );
             }

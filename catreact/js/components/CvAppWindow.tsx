@@ -42,7 +42,9 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
         if (this.state.loggedIn) {
 
             if (React.Children.count(this.props.children) > 0) {
+
                 return this.props.children
+
             } else {
 
                 var workbenches:Array<Workbench> = this.context.catavolt.appWinDefTry.success.workbenches;
