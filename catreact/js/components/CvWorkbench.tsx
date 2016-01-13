@@ -8,11 +8,12 @@
 
 interface CvWorkbenchState extends CvState {
     workbench:Workbench;
+    visible:boolean;
 }
 
 interface CvWorkbenchProps extends CvProps {
+    persistent?: boolean;
     workbenchId:string;
-    onNavRequest?:(navRequestTry:Try<NavRequest>) => void;
 }
 
 /*
@@ -37,8 +38,19 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
             } else {
                 return false;
             }
-        })
+        });
+        (this.context.eventRegistry as CvEventRegistry).subscribe<CvNavigationResult>((navEvent:CvEvent<CvNavigationResult>)=>{
+            if(!this.props.persistent) {
+                if(navEvent.eventObj.workbenchId == this.props.workbenchId) {
+                    this.setState({visible: false});
+                }
+            }
+        }, CvEventType.NAVIGATION);
 
+    },
+
+    getDefaultProps: function() {
+        return {persistent: true, workbenchId:null}
     },
 
     getChildContext: function() {
@@ -48,12 +60,12 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
     },
 
     getInitialState: function () {
-        return {workbench: null}
+        return {workbench: null, visible: true}
     },
 
     render: function () {
 
-        if (this.state.workbench) {
+        if (this.state.workbench && this.state.visible) {
 
             if(React.Children.count(this.props.children) > 0) {
                 return this.props.children
@@ -63,8 +75,7 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
             var launchComps = [];
             for (let i = 0; i < launchActions.length; i++) {
                 launchComps.push(
-                    <CvLauncher actionId={launchActions[i].actionId} key={launchActions[i].actionId}
-                                onLaunch={this.actionLaunched}/>
+                    <CvLauncher actionId={launchActions[i].actionId} key={launchActions[i].actionId}/>
                 );
             }
             return (
@@ -81,9 +92,5 @@ var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
             return null;
         }
     },
-
-    actionLaunched: function (launchTry:Try<NavRequest>) {
-        this.props.onNavRequest(launchTry);
-    }
 
 });

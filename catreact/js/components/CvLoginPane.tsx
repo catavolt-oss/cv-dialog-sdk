@@ -30,7 +30,7 @@ var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
 
     componentDidMount: function() {
 
-        this.context.eventRegistry.subscribe((logoutEvent:CvEvent<VoidResult>)=>{
+        (this.context.eventRegistry as CvEventRegistry).subscribe<CvLogoutResult>((logoutEvent:CvEvent<CvLogoutResult>)=>{
             this.setState({loggedIn: false})
         }, CvEventType.LOGOUT);
 
@@ -148,10 +148,8 @@ var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
         this.context.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
             .onComplete(appWinDefTry => {
                 this.setState({loggedIn: true})
-                this.context.eventRegistry.publish({type:CvEventType.LOGIN, eventObj:null});
-                this.props.loginListeners.forEach((listener)=> {
-                    listener()
-                });
+                this.props.loginListeners.forEach((listener)=> { listener() });
+                (this.context.eventRegistry as CvEventRegistry).publish<CvLoginResult>({type:CvEventType.LOGIN, eventObj:{}});
             });
     }
 });

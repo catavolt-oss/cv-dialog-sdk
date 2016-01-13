@@ -44,11 +44,11 @@ var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
 
     componentDidMount: function() {
 
-        this.props.eventRegistry.subscribe((loginEvent:CvEvent<VoidResult>)=>{
+        (this.props.eventRegistry as CvEventRegistry).subscribe<CvLoginResult>((loginEvent:CvEvent<CvLoginResult>)=>{
             this.setState({loggedIn: true})
         }, CvEventType.LOGIN);
 
-        this.props.eventRegistry.subscribe((logoutEvent:CvEvent<VoidResult>)=>{
+        (this.props.eventRegistry as CvEventRegistry).subscribe<CvLogoutResult>((logoutEvent:CvEvent<CvLogoutResult>)=>{
             this.setState({loggedIn: false})
         }, CvEventType.LOGOUT);
 

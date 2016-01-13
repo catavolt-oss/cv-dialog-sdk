@@ -7,11 +7,11 @@
 ///<reference path="references.ts"/>
 
 interface CvNavigationState extends CvState {
+    navRequestTry:Try<NavRequest>;
 }
 
 interface CvNavigationProps extends CvProps {
-    navRequestTry:Try<NavRequest>;
-    onNavRequest:(navRequestTry:Try<NavRequest>) => void;
+    navigationListeners?: Array<(navRequestTry:Try<NavRequest>)=>void>
 }
 
 
@@ -24,15 +24,48 @@ var CvNavigation = React.createClass<CvNavigationProps, CvNavigationState>({
 
     mixins: [CvBaseMixin],
 
-    render: function() {
-        if(this.props.navRequestTry && this.props.navRequestTry.isSuccess) {
-            if(this.props.navRequestTry.success instanceof FormContext) {
-                return <CvForm formContext={this.props.navRequestTry.success} onNavRequest={this.props.onNavRequest}/>
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+
+    componentDidMount: function () {
+
+        (this.context.eventRegistry as CvEventRegistry).subscribe<CvNavigationResult>((navEvent:CvEvent<CvNavigationResult>)=> {
+            this.setState({navRequestTry: navEvent.eventObj.navRequestTry})
+        }, CvEventType.NAVIGATION);
+
+    },
+
+    getChildContext: function() {
+        let navRequest = null;
+        if(this.state.navRequestTry && !this.state.navRequestTry.isFailure) {
+           navRequest = this.state.navRequestTry.success;
+        }
+        return {
+            scopeObj: navRequest
+        }
+    },
+
+
+    getInitialState: function () {
+        return {navRequestTry: null}
+    },
+
+    render: function () {
+
+        if (this.state.navRequestTry && this.state.navRequestTry.isSuccess) {
+
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children
             } else {
-                return <CvMessage message={"Unsupported type of NavRequest " + this.props.navRequestTry}/>
+                if (this.state.navRequestTry.success instanceof FormContext) {
+                    return <CvForm/>
+                } else {
+                    return <CvMessage message={"Unsupported type of NavRequest " + this.state.navRequestTry}/>
+                }
             }
         } else {
-            return <span> </span>
+            return null;
         }
     }
 

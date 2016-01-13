@@ -81,10 +81,28 @@ interface CvEvent<T> {
     eventObj:T;
 }
 
+
+/* Event types */
+
 enum CvEventType {
     LOGIN,
-    LOGOUT
+    LOGOUT,
+    NAVIGATION
 }
+
+/* Event type payloads */
+
+interface CvLoginResult {}
+
+interface CvLogoutResult {}
+
+interface CvNavigationResult {
+    navRequestTry:Try<NavRequest>,
+    workbenchId?:string;
+    actionId?:string;
+}
+
+/* Event routing */
 
 class CvEventRegistry {
 
@@ -97,7 +115,7 @@ class CvEventRegistry {
         const listenerArray:Array<CvListener<any>> = this._listenerMap[event.type];
         if(listenerArray) {
             listenerArray.forEach((listener:CvListener<any>)=>{
-                console.log('publishing ' + JSON.stringify(event) + ' to ' + JSON.stringify(listener));
+                console.log('publishing ' + JSON.stringify(CvEventType[event.type]) + ' to ' + JSON.stringify(listener));
                 listener(event);
             });
         }

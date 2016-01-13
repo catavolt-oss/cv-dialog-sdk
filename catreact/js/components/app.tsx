@@ -6,40 +6,43 @@ Log.logLevel(LogLevel.DEBUG);
 
 ReactDOM.render(
 
-    <CatavoltPane>
-
-        <div>
-            <CvLoginPane/>
-            <CvAppWindow persistentWorkbench={true}>
-                <span>
-                    <CvToolbar/>
-                    <div className="container">
-                        <CvWorkbench workbenchId={"AAABACffAAAABpZL"}>
+    <div className="container">
+        <CatavoltPane>
+            <div>
+                <CvLoginPane/>
+                <CvAppWindow>
+                    <span>
+                        <CvToolbar/>
+                        <CvWorkbench workbenchId={"AAABACffAAAABpZL"} persistent={false}>
                             <div className="panel panel-primary">
                                 <div className="panel-heading">
-                                        <CvScope handler={(workbench)=>{
-                                            return <h3 className="panel-title">{workbench.name}</h3>
-                                         }}/>
+                                    <h3 className="panel-title">
+                                    <CvScope get={'name'}/>
+                                    </h3>
                                 </div>
                                 <div className="panel-body">
-                                   <CvLauncher actionId={"AAABACfaAAAABpIk"}>
-                                       <CvScope handler={(launcher)=>{
+                                    <CvLauncher actionId={"AAABACfaAAAABpIk"}>
+                                        <CvScope handler={(launcher)=>{
                                             return <div className="col-md-4 launch-div">
                                               <img className="launch-icon img-responsive center-block" src={launcher.iconBase}/>
                                               <h5 className="launch-text small text-center">{launcher.name}</h5>
                                             </div>
                                          }}/>
-                                   </CvLauncher>
+                                    </CvLauncher>
                                 </div>
                             </div>
                         </CvWorkbench>
-                    </div>
-                </span>
-            </CvAppWindow>
-        </div>
+                        <CvNavigation>
+                            <CvForm>
+                                <CvList paneId={"TABLE_DEF1452722542627"}/>
+                            </CvForm>
+                        </CvNavigation>
+                    </span>
+                </CvAppWindow>
+            </div>
+        </CatavoltPane>
+    </div>,
 
-    </CatavoltPane>,
-
-    document.getElementById('cvApp')
+document.getElementById('cvApp')
 
 )

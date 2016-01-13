@@ -6,7 +6,6 @@
 ///<reference path="references.ts"/>
 
 interface CvAppWindowState extends CvState {
-    navRequestTry:Try<NavRequest>;
     loggedIn: boolean;
 }
 
@@ -25,14 +24,13 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
     mixins: [CvBaseMixin],
 
     componentDidMount: function () {
-        this.context.eventRegistry.subscribe((loginEvent:CvEvent<VoidResult>)=> {
+        (this.context.eventRegistry as CvEventRegistry).subscribe<CvLoginResult>((loginEvent:CvEvent<CvLoginResult>)=> {
             this.setState({loggedIn: true})
         }, CvEventType.LOGIN);
     },
 
     getInitialState: function () {
         return {
-            navRequestTry: null,
             loggedIn: false
         }
     },
@@ -55,11 +53,11 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
                             {(() => {
                                 if (this.showWorkbench()) {
                                     return workbenches.map((workbench:Workbench, index)=>{
-                                        return <CvWorkbench workbenchId={workbench.workbenchId} onNavRequest={this.onNavRequest} key={index}/>
+                                        return <CvWorkbench workbenchId={workbench.workbenchId} key={index}/>
                                         })
                                     }
                                 })()}
-                            <CvNavigation navRequestTry={this.state.navRequestTry} onNavRequest={this.onNavRequest}/>
+                            <CvNavigation/>
                         </div>
                     </span>
                 );
@@ -72,15 +70,5 @@ var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
     showWorkbench: function () {
         return this.props.persistentWorkbench || !this.state.navRequestTry;
     },
-
-    onNavRequest: function (navRequestTry) {
-        if (navRequestTry.isFailure) {
-            alert('Handle Navigation Failure!');
-            Log.error(navRequestTry.failure);
-        } else {
-            this.setState({navRequestTry: navRequestTry});
-        }
-    }
-
 
 });

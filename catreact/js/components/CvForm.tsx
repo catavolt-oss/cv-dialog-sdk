@@ -7,11 +7,11 @@
 ///<reference path="references.ts"/>
 
 interface CvFormState extends CvState {
+    formContext:FormContext;
 }
 
-interface CvFormProps extends CvProps{
-    formContext:FormContext;
-    onNavRequest: (navRequestTry:Try<NavRequest>) => void;
+interface CvFormProps extends CvProps {
+    onNavRequest?: (navRequestTry:Try<NavRequest>) => void;
 }
 
 /*
@@ -23,34 +23,55 @@ var CvForm = React.createClass<CvFormProps, CvFormState>({
 
     mixins: [CvBaseMixin],
 
-    getInitialState: function(){
-        return {statusMessage: ''};
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
     },
 
-    render: function() {
+    componentDidMount: function () {
+        this.setState({formContext: this.context.scopeObj});
+    },
 
-        const formContext = this.props.formContext;
+    getChildContext: function () {
+        return {scopeObj: this.state.formContext}
+    },
 
-        return <span>
-            {formContext.childrenContexts.map(context => {
-                Log.info('');
-                Log.info('Got a ' + context.constructor['name'] + ' for display');
-                Log.info('');
-                if (context instanceof ListContext) {
-                    return <CvList listContext={context} onNavRequest={this.props.onNavRequest} key={context.paneRef}/>
-                } else if (context instanceof DetailsContext) {
-                    return <CvDetails detailsContext={context} onNavRequest={this.props.onNavRequest} key={context.paneRef}/>
-                } else {
-                    Log.info('');
-                    Log.info('Not yet handling display for ' + context.constructor['name']);
-                    Log.info('');
-                    return <CvMessage message={"Not yet handling display for " + context.constructor['name']} key={context.paneRef}/>
-                }
-            })}
-            <div className="panel-footer">{this.state.statusMessage}</div>
-        </span>
+    getInitialState: function () {
+        return {formContext: null}
+    },
 
-        return <CvMessage message="Could not render any contexts!"/>
+    render: function () {
+
+        const formContext = this.state.formContext;
+
+        if (formContext) {
+            if(React.Children.count(this.props.children) > 0) {
+                return this.props.children
+            } else {
+                return <span>
+                    {formContext.childrenContexts.map(context => {
+                        Log.info('');
+                        Log.info('Got a ' + context.constructor['name'] + ' for display');
+                        Log.info('');
+                        if (context instanceof ListContext) {
+                            return <CvList paneId={context.paneDef.paneId} key={context.paneRef}/>
+                            } else if (context instanceof DetailsContext) {
+                            return <CvDetails detailsContext={context} onNavRequest={this.props.onNavRequest}
+                                              key={context.paneRef}/>
+                            } else {
+                            Log.info('');
+                            Log.info('Not yet handling display for ' + context.constructor['name']);
+                            Log.info('');
+                            return <CvMessage message={"Not yet handling display for " + context.constructor['name']}
+                                              key={context.paneRef}/>
+                            }
+                        })}
+                    <div className="panel-footer"></div>
+                </span>
+            }
+        } else {
+            return null;
+        }
+
     }
 
 });

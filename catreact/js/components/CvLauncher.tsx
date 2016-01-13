@@ -16,7 +16,7 @@ interface CvLauncherState extends CvState {
 
 interface CvLauncherProps extends CvProps {
     actionId?: string;
-    onLaunch?: (navRequestTry:Try<NavRequest>)=>void;
+    launchListeners?: Array<(navRequestTry:Try<NavRequest>)=>void>
 }
 
 var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
@@ -45,6 +45,10 @@ var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
         }
     },
 
+    getDefaultProps: function() {
+        return {launchListeners:[]}
+    },
+
     getInitialState: function () {
         return {launchAction: null}
     },
@@ -53,7 +57,7 @@ var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
 
         if (this.state.launchAction) {
             if (React.Children.count(this.props.children) > 0) {
-                return this.props.children;
+                return <span onClick={this.handleClick}>{this.props.children}</span>;
             } else {
                 return (
                     <div className="col-md-4 launch-div">
@@ -71,7 +75,10 @@ var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
 
     handleClick: function () {
         this.context.catavolt.performLaunchAction(this.state.launchAction).onComplete((launchTry:Try<NavRequest>) => {
-            this.props.onLaunch(launchTry);
+            this.props.launchListeners.forEach((listener)=>{listener(launchTry)});
+            (this.context.eventRegistry as CvEventRegistry)
+                .publish<CvNavigationResult>({type:CvEventType.NAVIGATION, eventObj:{navRequestTry:launchTry,
+                    workbenchId:this.state.launchAction.workbenchId}});
         });
     }
 

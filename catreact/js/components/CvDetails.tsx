@@ -41,7 +41,7 @@ var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
                 <div className="panel-heading">
                     <span>{detailsContext.paneTitle || '>'}</span>
                     <div className="pull-right">
-                        {detailsContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index} menuDef={menuDef}/> })}
+                        {detailsContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index} actionId={menuDef.actionId}/> })}
                     </div>
                 </div>
                 <div style={{maxHeight: '400px', overflow: 'auto'}}>
