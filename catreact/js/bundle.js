@@ -126,6 +126,86 @@ var CvScope = React.createClass({
     }
 });
 /**
+ * Created by rburson on 1/14/16.
+ */
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
+///<reference path="references.ts"/>
+/*
+ ***************************************************
+ * Render a Property
+ ***************************************************
+ */
+var CvProp = React.createClass({
+    displayName: "CvProp",
+
+    mixins: [CvBaseMixin],
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+    componentDidMount: function componentDidMount() {
+        var entityRec = this.context.scopeObj;
+        var prop = entityRec.propAtName(this.props.propName);
+        this.setState({ prop: prop });
+    },
+    getChildContext: function getChildContext() {
+        return { scopeObj: this.state.prop };
+    },
+    getInitialState: function getInitialState() {
+        return { prop: null };
+    },
+    render: function render() {
+        var prop = this.state.prop;
+        if (prop) {
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children;
+            } else {
+                return React.createElement("span", null, '' + prop.value);
+            }
+        } else {
+            return null;
+        }
+    }
+});
+/**
+ * Created by rburson on 1/14/16.
+ */
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
+///<reference path="references.ts"/>
+/*
+ ***************************************************
+ * Render an EntityRec
+ ***************************************************
+ */
+var CvRecord = React.createClass({
+    displayName: "CvRecord",
+
+    mixins: [CvBaseMixin],
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+    componentDidMount: function componentDidMount() {},
+    getChildContext: function getChildContext() {
+        return { scopeObj: this.props.entityRec };
+    },
+    getInitialState: function getInitialState() {
+        return {};
+    },
+    render: function render() {
+        var entityRec = this.props.entityRec;
+        if (entityRec) {
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children;
+            } else {
+                return React.createElement("span", null, 'Default row goes here');
+            }
+        } else {
+            return null;
+        }
+    }
+});
+/**
  * Created by rburson on 12/23/15.
  */
 ///<reference path="../../typings/react/react-global.d.ts"/>
@@ -286,7 +366,7 @@ var CvForm = React.createClass({
                     Log.info('Got a ' + context.constructor['name'] + ' for display');
                     Log.info('');
                     if (context instanceof ListContext) {
-                        return React.createElement(CvList, { "paneId": context.paneDef.paneId, "key": context.paneRef });
+                        return React.createElement(CvList, { "paneRef": context.paneRef, "key": context.paneRef });
                     } else if (context instanceof DetailsContext) {
                         return React.createElement(CvDetails, { "detailsContext": context, "onNavRequest": _this.props.onNavRequest, "key": context.paneRef });
                     } else {
@@ -408,7 +488,7 @@ var CvList = React.createClass({
         var formContext = this.context.scopeObj;
         var listContext = null;
         formContext.childrenContexts.some(function (childContext) {
-            if (childContext instanceof ListContext && childContext.paneDef.paneId == _this.props.paneId) {
+            if (childContext instanceof ListContext && childContext.paneRef == _this.props.paneRef) {
                 listContext = childContext;
                 return true;
             } else {
@@ -422,7 +502,7 @@ var CvList = React.createClass({
                 Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
             } else {
                 Log.info(JSON.stringify(listContext.scroller.buffer));
-                _this.setState({ entityRecs: ArrayUtil.copy(listContext.scroller.buffer) });
+                _this.setState({ listContext: listContext });
             }
         });
     },
@@ -430,7 +510,7 @@ var CvList = React.createClass({
         return { scopeObj: this.state.listContext };
     },
     getInitialState: function getInitialState() {
-        return { listContext: null, entityRecs: [] };
+        return { listContext: null };
     },
     itemDoubleClicked: function itemDoubleClicked(objectId) {
         var listContext = this.state.listContext;
@@ -443,14 +523,25 @@ var CvList = React.createClass({
         var _this = this;
         var listContext = this.state.listContext;
         if (listContext) {
+            var entityRecs = ArrayUtil.copy(listContext.scroller.buffer);
             if (React.Children.count(this.props.children) > 0) {
-                return this.props.children;
+                var newChildren = [];
+                React.Children.toArray(this.props.children).forEach(function (childElem) {
+                    if (childElem.type == CvRecord) {
+                        entityRecs.map(function (entityRec, index) {
+                            newChildren.push(React.cloneElement(childElem, { entityRec: entityRec, key: index }));
+                        });
+                    } else {
+                        newChildren.push(childElem);
+                    }
+                });
+                return React.createElement("span", null, newChildren);
             } else {
                 return React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement("span", null, listContext.paneTitle || '>'), React.createElement("div", { "className": "pull-right" }, listContext.menuDefs.map(function (menuDef, index) {
                     return React.createElement(CvMenu, { "key": index, "actionId": menuDef.actionId });
                 }))), React.createElement("div", { "style": { maxHeight: '400px', overflow: 'auto' } }, React.createElement("table", { "className": "table table-striped" }, React.createElement("thead", null, React.createElement("tr", null, React.createElement("th", { "key": "nbsp" }, " "), listContext.columnHeadings.map(function (heading, index) {
                     return React.createElement("th", { "key": index }, heading);
-                }))), React.createElement("tbody", null, this.state.entityRecs.map(function (entityRec, index) {
+                }))), React.createElement("tbody", null, entityRecs.map(function (entityRec, index) {
                     return React.createElement("tr", { "key": index, "onDoubleClick": _this.itemDoubleClicked.bind(_this, entityRec.objectId) }, React.createElement("td", { "className": "text-center", "key": "checkbox" }, React.createElement("input", { "type": "checkbox" })), listContext.rowValues(entityRec).map(function (val, index) {
                         return React.createElement("td", { "key": index }, val ? val.toString() : ' ');
                     }));
@@ -879,6 +970,8 @@ var CatavoltPane = React.createClass({
 //components
 ///<reference path="CvReact.tsx"/>
 ///<reference path="CvScope.tsx"/>
+///<reference path="CvProp.tsx"/>
+///<reference path="CvRecord.tsx"/>
 ///<reference path="CvDetails.tsx"/>
 ///<reference path="CvForm.tsx"/>
 ///<reference path="CvHeroHeader.tsx"/>
@@ -898,6 +991,6 @@ var CatavoltPane = React.createClass({
 Log.logLevel(LogLevel.DEBUG);
 ReactDOM.render(React.createElement("div", { "className": "container" }, React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, null, React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement(CvWorkbench, { "workbenchId": "AAABACffAAAABpZL", "persistent": false }, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement("h3", { "className": "panel-title" }, React.createElement(CvScope, { "get": 'name' }))), React.createElement("div", { "className": "panel-body" }, React.createElement(CvLauncher, { "actionId": "AAABACfaAAAABpIk" }, React.createElement(CvScope, { "handler": function handler(launcher) {
         return React.createElement("div", { "className": "col-md-4 launch-div" }, React.createElement("img", { "className": "launch-icon img-responsive center-block", "src": launcher.iconBase }), React.createElement("h5", { "className": "launch-text small text-center" }, launcher.name));
-    } }))))), React.createElement(CvNavigation, null, React.createElement(CvForm, null, React.createElement(CvList, { "paneId": "TABLE_DEF1452722542627" })))))))), document.getElementById('cvApp'));
+    } }))))), React.createElement(CvNavigation, null, React.createElement(CvForm, null, React.createElement(CvList, { "paneRef": 0 }, React.createElement(CvRecord, null, React.createElement("div", null, React.createElement(CvProp, { "propName": 'name' }))))))))))), document.getElementById('cvApp'));
 
 },{}]},{},[1]);

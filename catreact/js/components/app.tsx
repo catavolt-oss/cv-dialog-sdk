@@ -34,7 +34,13 @@ ReactDOM.render(
                         </CvWorkbench>
                         <CvNavigation>
                             <CvForm>
-                                <CvList paneId={"TABLE_DEF1452722542627"}/>
+                                <CvList paneRef={0}>
+                                    <CvRecord>
+                                        <div>
+                                            <CvProp propName={'name'}/>
+                                        </div>
+                                    </CvRecord>
+                                </CvList>
                             </CvForm>
                         </CvNavigation>
                     </span>

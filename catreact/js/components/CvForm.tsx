@@ -53,7 +53,7 @@ var CvForm = React.createClass<CvFormProps, CvFormState>({
                         Log.info('Got a ' + context.constructor['name'] + ' for display');
                         Log.info('');
                         if (context instanceof ListContext) {
-                            return <CvList paneId={context.paneDef.paneId} key={context.paneRef}/>
+                            return <CvList paneRef={context.paneRef} key={context.paneRef}/>
                             } else if (context instanceof DetailsContext) {
                             return <CvDetails detailsContext={context} onNavRequest={this.props.onNavRequest}
                                               key={context.paneRef}/>

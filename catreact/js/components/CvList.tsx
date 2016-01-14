@@ -8,11 +8,10 @@
 
 interface CvListState extends CvState {
     listContext:ListContext;
-    entityRecs:Array<EntityRec>;
 }
 
 interface CvListProps extends CvProps {
-    paneId:string;
+    paneRef:number;
 }
 /*
  ***************************************************
@@ -35,7 +34,7 @@ var CvList = React.createClass<CvListProps, CvListState>({
         let listContext = null;
         formContext.childrenContexts.some((childContext)=> {
             if (childContext instanceof ListContext &&
-                childContext.paneDef.paneId == this.props.paneId) {
+                childContext.paneRef == this.props.paneRef) {
                 listContext = childContext;
                 return true;
             } else {
@@ -50,7 +49,7 @@ var CvList = React.createClass<CvListProps, CvListState>({
                 Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
             } else {
                 Log.info(JSON.stringify(listContext.scroller.buffer));
-                this.setState({entityRecs: ArrayUtil.copy(listContext.scroller.buffer)});
+                this.setState({listContext:listContext});
             }
         });
 
@@ -61,7 +60,7 @@ var CvList = React.createClass<CvListProps, CvListState>({
     },
 
     getInitialState() {
-        return {listContext: null, entityRecs: []}
+        return {listContext: null}
     },
 
     itemDoubleClicked: function (objectId) {
@@ -78,8 +77,19 @@ var CvList = React.createClass<CvListProps, CvListState>({
 
         const listContext = this.state.listContext;
         if (listContext) {
+            const entityRecs:Array<EntityRec> = ArrayUtil.copy<EntityRec>(listContext.scroller.buffer);
             if (React.Children.count(this.props.children) > 0) {
-                return this.props.children
+                let newChildren = [];
+                React.Children.toArray(this.props.children).forEach((childElem:any)=>{
+                    if(childElem.type == CvRecord) {
+                        entityRecs.map((entityRec:EntityRec, index) => {
+                            newChildren.push(React.cloneElement(childElem, {entityRec: entityRec, key: index}))
+                        })
+                    } else {
+                        newChildren.push(childElem);
+                    }
+                });
+                return <span>{newChildren}</span>
             } else {
                 return (
                     <div className="panel panel-primary">
@@ -100,7 +110,7 @@ var CvList = React.createClass<CvListProps, CvListState>({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {this.state.entityRecs.map((entityRec, index) => {
+                                    {entityRecs.map((entityRec, index) => {
                                         return (
                                         <tr key={index}
                                             onDoubleClick={this.itemDoubleClicked.bind(this, entityRec.objectId)}>
