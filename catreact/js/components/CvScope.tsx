@@ -30,7 +30,8 @@ var CvScope = React.createClass<CvScopeProps, CvScopeState>({
     render: function () {
         if(this.context.scopeObj) {
             if(this.props.get) {
-                return <span>{this.context.scopeObj[this.props.get]}</span>
+                const value = this.context.scopeObj[this.props.get];
+                return value ? <span>{value}</span> : null;
             }else if(this.props.handler) {
                 return this.props.handler(this.context.scopeObj)
             }

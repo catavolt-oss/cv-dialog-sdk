@@ -12,7 +12,6 @@ ReactDOM.render(
                 <CvLoginPane/>
                 <CvAppWindow>
                     <span>
-                        <CvToolbar/>
                         <CvWorkbench workbenchId={"AAABACffAAAABpZL"} persistent={false}>
                             <div className="panel panel-primary">
                                 <div className="panel-heading">
@@ -34,13 +33,18 @@ ReactDOM.render(
                         </CvWorkbench>
                         <CvNavigation>
                             <CvForm>
-                                <CvList paneRef={0}>
-                                    <CvRecord>
-                                        <div>
-                                            <CvProp propName={'name'}/>
-                                        </div>
-                                    </CvRecord>
-                                </CvList>
+                                <div className="panel panel-primary">
+                                    <div className="panel-heading">
+                                        <CvScope get={'paneTitle'}/>
+                                    </div>
+                                    <div style={{maxHeight: '400px', overflow: 'auto'}}>
+                                                <CvList paneRef={0} wrapperElem={"span"}>
+                                                    <CvRecord>
+                                                        <div><CvProp propName={'name'}/></div>
+                                                    </CvRecord>
+                                                </CvList>
+                                    </div>
+                                </div>
                             </CvForm>
                         </CvNavigation>
                     </span>

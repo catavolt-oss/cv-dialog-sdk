@@ -48,7 +48,7 @@ var CvProp = React.createClass<CvPropProps, CvPropState>({
             if(React.Children.count(this.props.children) > 0) {
                 return this.props.children
             } else {
-                return <span>{'' + prop.value}</span>
+                return <span>{['' + prop.value]}</span>
             }
         } else {
             return null;

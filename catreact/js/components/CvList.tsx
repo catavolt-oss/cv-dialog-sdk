@@ -12,7 +12,13 @@ interface CvListState extends CvState {
 
 interface CvListProps extends CvProps {
     paneRef:number;
+    wrapperElem?:string;
 }
+
+/**
+   @TODO This class needs to allow for CvRecord at any depth with children.  Also better handling of 'wrapper' requirement
+
+ */
 /*
  ***************************************************
  * Render a ListContext
@@ -89,7 +95,11 @@ var CvList = React.createClass<CvListProps, CvListState>({
                         newChildren.push(childElem);
                     }
                 });
-                return <span>{newChildren}</span>
+                if(this.props.wrapperElem) {
+                    return React.createElement(this.props.wrapperElem, {}, newChildren);
+                } else {
+                    return <span>{newChildren}</span>
+                }
             } else {
                 return (
                     <div className="panel panel-primary">
