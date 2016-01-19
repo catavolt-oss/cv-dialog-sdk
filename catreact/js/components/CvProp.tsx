@@ -51,7 +51,7 @@ var CvProp = React.createClass<CvPropProps, CvPropState>({
                 if(prop.value instanceof InlineBinaryRef) {
                     const binary:InlineBinaryRef = prop.value as InlineBinaryRef;
                     const mimeType:string = binary.settings['mime-type'] || 'image/jpg'
-                    return <img style={this.props.style} src={'data:' + mimeType + ';base64,' + binary.inlineData}/>
+                    return <img style={this.props.style} src={'data:' + mimeType + ';base64,' + binary.inlineData} className={this.props.className}/>
                 } else if(prop.value instanceof ObjectBinaryRef){
                     const binary:ObjectBinaryRef = prop.value as ObjectBinaryRef;
                     return <img style={this.props.style} src={binary.settings['webURL']}/>

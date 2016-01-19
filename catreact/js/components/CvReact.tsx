@@ -10,8 +10,11 @@
     Base interface for catavolt component properties
  */
 interface CvProps {
-    style?: string,
+    className?:string;
+    style?: any,
     key?: string;
+    clickAction?:string;
+    doubleClickAction?:string;
 }
 
 /*

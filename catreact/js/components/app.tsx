@@ -19,7 +19,7 @@ ReactDOM.render(
                                         <CvScope get={'name'}/>
                                     </h3>
                                 </div>
-                                <div className="panel-body">
+                                <div className="panel-body row">
                                     <CvLauncher actionId={"AAABACfaAAAABpIk"} navTarget={"1"}>
                                         <CvScope handler={(launcher)=>{
                                             return <div className="col-md-4 launch-div">
@@ -38,13 +38,15 @@ ReactDOM.render(
                                         <CvScope get={'paneTitle'}/>
                                     </div>
                                     <div style={{maxHeight: '800px', overflow: 'auto'}}>
-                                        <CvList paneRef={0} wrapperElem={"span"}>
-                                            <CvRecord navTarget={"2"}>
-                                                <div>
-                                                    <CvProp propName={'name'}/>
-                                                </div>
-                                            </CvRecord>
-                                        </CvList>
+                                        <ul className={'list-group'}>
+                                            <CvList paneRef={0} wrapperElem={"a"}>
+                                                <CvRecord navTarget={"2"}>
+                                                    <li className={'list-group-item'}>
+                                                        <CvProp propName={'name'}/>
+                                                    </li>
+                                                </CvRecord>
+                                            </CvList>
+                                        </ul>
                                     </div>
                                 </div>
                             </CvForm>
@@ -59,17 +61,39 @@ ReactDOM.render(
                                     <div style={{maxHeight: '800px', overflow: 'auto'}}>
                                         <CvList paneRef={0} wrapperElem={"span"}>
                                             <CvRecord>
-                                                <div><CvProp propName={'avatar_large'}/></div>
-                                                <div><CvProp propName={'created-by'}/></div>
-                                                <div><CvProp propName={'group_name'}/></div>
-                                                <div><CvProp propName={'created-at'}/></div>
-                                                <div><CvProp propName={'likes_count'}/></div>
-                                                <div><CvProp propName={'comments_count'}/></div>
-                                                <div><CvProp propName={'title'}/></div>
-                                                <div><CvProp propName={'body_preview'}/></div>
-                                                <div><CvProp propName={'attachment_preview_1'}/></div>
-                                                <div><CvProp propName={'attachment_preview_2'}/></div>
-                                                <div><CvProp propName={'attachment_preview_3'}/></div>
+                                                <div>
+                                                    <CvProp propName={'avatar_large'} className={'img-rounded'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'created-by'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'group_name'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'created-at'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'likes_count'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'comments_count'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'title'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'body_preview'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'attachment_preview_1'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'attachment_preview_2'}/>
+                                                </div>
+                                                <div>
+                                                    <CvProp propName={'attachment_preview_3'}/>
+                                                </div>
                                             </CvRecord>
                                         </CvList>
                                     </div>
