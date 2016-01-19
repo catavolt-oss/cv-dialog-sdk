@@ -15,6 +15,7 @@ interface CvLauncherState extends CvState {
 }
 
 interface CvLauncherProps extends CvProps {
+    navTarget?: string;
     actionId?: string;
     launchListeners?: Array<(navRequestTry:Try<NavRequest>)=>void>
 }
@@ -78,7 +79,7 @@ var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
             this.props.launchListeners.forEach((listener)=>{listener(launchTry)});
             (this.context.eventRegistry as CvEventRegistry)
                 .publish<CvNavigationResult>({type:CvEventType.NAVIGATION, eventObj:{navRequestTry:launchTry,
-                    workbenchId:this.state.launchAction.workbenchId}});
+                    workbenchId:this.state.launchAction.workbenchId, navTarget: this.props.navTarget}});
         });
     }
 

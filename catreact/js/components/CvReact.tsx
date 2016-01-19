@@ -100,6 +100,7 @@ interface CvNavigationResult {
     navRequestTry:Try<NavRequest>,
     workbenchId?:string;
     actionId?:string;
+    navTarget?:string;
 }
 
 /* Event routing */
@@ -115,7 +116,7 @@ class CvEventRegistry {
         const listenerArray:Array<CvListener<any>> = this._listenerMap[event.type];
         if(listenerArray) {
             listenerArray.forEach((listener:CvListener<any>)=>{
-                console.log('publishing ' + JSON.stringify(CvEventType[event.type]) + ' to ' + JSON.stringify(listener));
+                console.log('publishing ' + JSON.stringify(CvEventType[event.type]) + ' to ' + listener);
                 listener(event);
             });
         }

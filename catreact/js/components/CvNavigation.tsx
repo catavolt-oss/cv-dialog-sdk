@@ -7,10 +7,13 @@
 ///<reference path="references.ts"/>
 
 interface CvNavigationState extends CvState {
+    visible: boolean;
     navRequestTry:Try<NavRequest>;
 }
 
 interface CvNavigationProps extends CvProps {
+    persistent?: boolean,
+    targetId?: string,
     navigationListeners?: Array<(navRequestTry:Try<NavRequest>)=>void>
 }
 
@@ -31,7 +34,19 @@ var CvNavigation = React.createClass<CvNavigationProps, CvNavigationState>({
     componentDidMount: function () {
 
         (this.context.eventRegistry as CvEventRegistry).subscribe<CvNavigationResult>((navEvent:CvEvent<CvNavigationResult>)=> {
-            this.setState({navRequestTry: navEvent.eventObj.navRequestTry})
+            if(navEvent.eventObj.navTarget) {
+                if(this.props.targetId === navEvent.eventObj.navTarget) {
+                    this.setState({navRequestTry: navEvent.eventObj.navRequestTry, visible:true})
+                } else {
+                    if(!this.props.persistent) this.setState({visible: false});
+                }
+            } else {
+                if(!this.props.targetId) {
+                    this.setState({navRequestTry: navEvent.eventObj.navRequestTry, visible:true})
+                } else {
+                    if(!this.props.persistent) this.setState({visible: false});
+                }
+            }
         }, CvEventType.NAVIGATION);
 
     },
@@ -48,12 +63,12 @@ var CvNavigation = React.createClass<CvNavigationProps, CvNavigationState>({
 
 
     getInitialState: function () {
-        return {navRequestTry: null}
+        return {visible: false, navRequestTry: null}
     },
 
     render: function () {
 
-        if (this.state.navRequestTry && this.state.navRequestTry.isSuccess) {
+        if (this.state.visible && this.state.navRequestTry && this.state.navRequestTry.isSuccess) {
 
             if (React.Children.count(this.props.children) > 0) {
                 return this.props.children

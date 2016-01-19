@@ -16,11 +16,11 @@ ReactDOM.render(
                             <div className="panel panel-primary">
                                 <div className="panel-heading">
                                     <h3 className="panel-title">
-                                    <CvScope get={'name'}/>
+                                        <CvScope get={'name'}/>
                                     </h3>
                                 </div>
                                 <div className="panel-body">
-                                    <CvLauncher actionId={"AAABACfaAAAABpIk"}>
+                                    <CvLauncher actionId={"AAABACfaAAAABpIk"} navTarget={"1"}>
                                         <CvScope handler={(launcher)=>{
                                             return <div className="col-md-4 launch-div">
                                               <img className="launch-icon img-responsive center-block" src={launcher.iconBase}/>
@@ -31,18 +31,33 @@ ReactDOM.render(
                                 </div>
                             </div>
                         </CvWorkbench>
-                        <CvNavigation>
+                        <CvNavigation targetId={"1"} persistent={false}>
                             <CvForm>
                                 <div className="panel panel-primary">
                                     <div className="panel-heading">
                                         <CvScope get={'paneTitle'}/>
                                     </div>
                                     <div style={{maxHeight: '400px', overflow: 'auto'}}>
-                                                <CvList paneRef={0} wrapperElem={"span"}>
-                                                    <CvRecord>
-                                                        <div><CvProp propName={'name'}/></div>
-                                                    </CvRecord>
-                                                </CvList>
+                                        <CvList paneRef={0} wrapperElem={"span"}>
+                                            <CvRecord navTarget={"2"}>
+                                                <div>
+                                                    <CvProp propName={'name'}/>
+                                                </div>
+                                            </CvRecord>
+                                        </CvList>
+                                    </div>
+                                </div>
+                            </CvForm>
+                        </CvNavigation>
+                        <CvNavigation targetId={"2"}>
+                            <CvForm>
+                                <div className="panel panel-primary">
+                                    <div className="panel-heading">
+                                        <CvScope get={'paneTitle'}/>
+                                    </div>
+                                    <div style={{maxHeight: '400px', overflow: 'auto'}}>
+                                        <CvList paneRef={0} wrapperElem={"span"}>
+                                        </CvList>
                                     </div>
                                 </div>
                             </CvForm>
@@ -53,6 +68,5 @@ ReactDOM.render(
         </CatavoltPane>
     </div>,
 
-document.getElementById('cvApp')
-
+    document.getElementById('cvApp')
 )

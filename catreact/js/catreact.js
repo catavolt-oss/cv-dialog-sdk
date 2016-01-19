@@ -64,7 +64,7 @@ var CvEventRegistry = (function () {
         var listenerArray = this._listenerMap[event.type];
         if (listenerArray) {
             listenerArray.forEach(function (listener) {
-                console.log('publishing ' + JSON.stringify(CvEventType[event.type]) + ' to ' + JSON.stringify(listener));
+                console.log('publishing ' + JSON.stringify(CvEventType[event.type]) + ' to ' + listener);
                 listener(event);
             });
         }
@@ -213,7 +213,7 @@ var CvRecord = React.createClass({
         var entityRec = this.props.entityRec;
         if (entityRec) {
             if (React.Children.count(this.props.children) > 0) {
-                return this.props.children;
+                return React.createElement("span", {"onClick": this.itemClicked.bind(this, entityRec.objectId)}, this.props.children);
             }
             else {
                 return React.createElement("span", null, 'Default row goes here');
@@ -221,6 +221,26 @@ var CvRecord = React.createClass({
         }
         else {
             return null;
+        }
+    },
+    itemClicked: function (objectId) {
+        var _this = this;
+        var paneContext = this.context.scopeObj;
+        if (paneContext instanceof ListContext) {
+            var listContext = paneContext;
+            if (listContext.listDef.defaultActionId) {
+                var defaultActionMenuDef = new MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW', listContext.listDef.defaultActionId, null, null, []);
+                listContext.performMenuAction(defaultActionMenuDef, [objectId]).onComplete(function (navRequestTry) {
+                    _this.context.eventRegistry
+                        .publish({
+                        type: CvEventType.NAVIGATION, eventObj: {
+                            navRequestTry: navRequestTry,
+                            actionId: listContext.listDef.defaultActionId,
+                            navTarget: _this.props.navTarget
+                        }
+                    });
+                });
+            }
         }
     }
 });
@@ -493,8 +513,114 @@ var CvLauncher = React.createClass({
             _this.props.launchListeners.forEach(function (listener) { listener(launchTry); });
             _this.context.eventRegistry
                 .publish({ type: CvEventType.NAVIGATION, eventObj: { navRequestTry: launchTry,
-                    workbenchId: _this.state.launchAction.workbenchId } });
+                    workbenchId: _this.state.launchAction.workbenchId, navTarget: _this.props.navTarget } });
         });
+    }
+});
+/**
+ * Created by rburson on 12/23/15.
+ */
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
+///<reference path="references.ts"/>
+/**
+   @TODO This class needs to allow for CvRecord at any depth with children.  Also better handling of 'wrapper' requirement
+
+ */
+/*
+ ***************************************************
+ * Render a ListContext
+ ***************************************************
+ */
+var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
+var CvList = React.createClass({
+    mixins: [CvBaseMixin],
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+    componentDidMount: function () {
+        var _this = this;
+        var formContext = this.context.scopeObj;
+        var listContext = null;
+        formContext.childrenContexts.some(function (childContext) {
+            if (childContext instanceof ListContext &&
+                childContext.paneRef == _this.props.paneRef) {
+                listContext = childContext;
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+        this.setState({ listContext: listContext });
+        listContext.setScroller(50, null, [QueryMarkerOption.None]);
+        listContext.scroller.refresh().onComplete(function (entityRecTry) {
+            if (entityRecTry.isFailure) {
+                Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
+            }
+            else {
+                Log.info(JSON.stringify(listContext.scroller.buffer));
+                _this.setState({ listContext: listContext });
+            }
+        });
+    },
+    getChildContext: function () {
+        return { scopeObj: this.state.listContext };
+    },
+    getInitialState: function () {
+        return { listContext: null };
+    },
+    itemClicked: function (objectId) {
+        var _this = this;
+        var listContext = this.state.listContext;
+        if (listContext.listDef.defaultActionId) {
+            var defaultActionMenuDef = new MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW', listContext.listDef.defaultActionId, null, null, []);
+            listContext.performMenuAction(defaultActionMenuDef, [objectId]).onComplete(function (navRequestTry) {
+                _this.context.eventRegistry
+                    .publish({ type: CvEventType.NAVIGATION, eventObj: { navRequestTry: navRequestTry,
+                        actionId: listContext.listDef.defaultActionId } });
+            });
+        }
+    },
+    render: function () {
+        var _this = this;
+        var listContext = this.state.listContext;
+        if (listContext) {
+            var entityRecs = ArrayUtil.copy(listContext.scroller.buffer);
+            if (React.Children.count(this.props.children) > 0) {
+                var newChildren = [];
+                React.Children.toArray(this.props.children).forEach(function (childElem) {
+                    if (childElem.type == CvRecord) {
+                        entityRecs.map(function (entityRec, index) {
+                            newChildren.push(React.cloneElement(childElem, { entityRec: entityRec, key: index }));
+                        });
+                    }
+                    else {
+                        newChildren.push(childElem);
+                    }
+                });
+                if (this.props.wrapperElem) {
+                    return React.createElement(this.props.wrapperElem, {}, newChildren);
+                }
+                else {
+                    return React.createElement("span", null, newChildren);
+                }
+            }
+            else {
+                return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("span", null, listContext.paneTitle || '>'), React.createElement("div", {"className": "pull-right"}, listContext.menuDefs.map(function (menuDef, index) {
+                    return React.createElement(CvMenu, {"key": index, "actionId": menuDef.actionId});
+                }))), React.createElement("div", {"style": { maxHeight: '400px', overflow: 'auto' }}, React.createElement("table", {"className": "table table-striped"}, React.createElement("thead", null, React.createElement("tr", null, React.createElement("th", {"key": "nbsp"}, " "), listContext.columnHeadings.map(function (heading, index) {
+                    return React.createElement("th", {"key": index}, heading);
+                }))), React.createElement("tbody", null, entityRecs.map(function (entityRec, index) {
+                    return (React.createElement("tr", {"key": index, "onClick": _this.itemClicked.bind(_this, entityRec.objectId)}, React.createElement("td", {"className": "text-center", "key": "checkbox"}, React.createElement("input", {"type": "checkbox"})), listContext.rowValues(entityRec).map(function (val, index) {
+                        return React.createElement("td", {"key": index}, val ? val.toString() : ' ');
+                    })));
+                }))))));
+            }
+        }
+        else {
+            return null;
+        }
     }
 });
 /**
@@ -607,7 +733,24 @@ var CvNavigation = React.createClass({
     componentDidMount: function () {
         var _this = this;
         this.context.eventRegistry.subscribe(function (navEvent) {
-            _this.setState({ navRequestTry: navEvent.eventObj.navRequestTry });
+            if (navEvent.eventObj.navTarget) {
+                if (_this.props.targetId === navEvent.eventObj.navTarget) {
+                    _this.setState({ navRequestTry: navEvent.eventObj.navRequestTry, visible: true });
+                }
+                else {
+                    if (!_this.props.persistent)
+                        _this.setState({ visible: false });
+                }
+            }
+            else {
+                if (!_this.props.targetId) {
+                    _this.setState({ navRequestTry: navEvent.eventObj.navRequestTry, visible: true });
+                }
+                else {
+                    if (!_this.props.persistent)
+                        _this.setState({ visible: false });
+                }
+            }
         }, CvEventType.NAVIGATION);
     },
     getChildContext: function () {
@@ -620,10 +763,10 @@ var CvNavigation = React.createClass({
         };
     },
     getInitialState: function () {
-        return { navRequestTry: null };
+        return { visible: false, navRequestTry: null };
     },
     render: function () {
-        if (this.state.navRequestTry && this.state.navRequestTry.isSuccess) {
+        if (this.state.visible && this.state.navRequestTry && this.state.navRequestTry.isSuccess) {
             if (React.Children.count(this.props.children) > 0) {
                 return this.props.children;
             }
@@ -933,105 +1076,10 @@ var CatavoltPane = React.createClass({
 ///<reference path="CvWorkbench.tsx"/>
 ///<reference path="CvLoginPane.tsx"/>
 ///<reference path="CatavoltPane.tsx"/>
-/**
- * Created by rburson on 12/23/15.
- */
 ///<reference path="../../typings/react/react-global.d.ts"/>
 ///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
-/**
-   @TODO This class needs to allow for CvRecord at any depth with children.  Also better handling of 'wrapper' requirement
-
- */
-/*
- ***************************************************
- * Render a ListContext
- ***************************************************
- */
-var QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
-var CvList = React.createClass({
-    mixins: [CvBaseMixin],
-    childContextTypes: {
-        scopeObj: React.PropTypes.object
-    },
-    componentDidMount: function () {
-        var _this = this;
-        var formContext = this.context.scopeObj;
-        var listContext = null;
-        formContext.childrenContexts.some(function (childContext) {
-            if (childContext instanceof ListContext &&
-                childContext.paneRef == _this.props.paneRef) {
-                listContext = childContext;
-                return true;
-            }
-            else {
-                return false;
-            }
-        });
-        this.setState({ listContext: listContext });
-        listContext.setScroller(50, null, [QueryMarkerOption.None]);
-        listContext.scroller.refresh().onComplete(function (entityRecTry) {
-            if (entityRecTry.isFailure) {
-                Log.error("ListContext failed to render with " + ObjUtil.formatRecAttr(entityRecTry.failure));
-            }
-            else {
-                Log.info(JSON.stringify(listContext.scroller.buffer));
-                _this.setState({ listContext: listContext });
-            }
-        });
-    },
-    getChildContext: function () {
-        return { scopeObj: this.state.listContext };
-    },
-    getInitialState: function () {
-        return { listContext: null };
-    },
-    itemDoubleClicked: function (objectId) {
-        var listContext = this.state.listContext;
-        if (listContext.listDef.defaultActionId) {
-            var defaultActionMenuDef = new MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW', listContext.listDef.defaultActionId, null, null, []);
-            listContext.performMenuAction(defaultActionMenuDef, [objectId]).onComplete(function (navRequestTry) {
-            });
-        }
-    },
-    render: function () {
-        var _this = this;
-        var listContext = this.state.listContext;
-        if (listContext) {
-            var entityRecs = ArrayUtil.copy(listContext.scroller.buffer);
-            if (React.Children.count(this.props.children) > 0) {
-                var newChildren = [];
-                React.Children.toArray(this.props.children).forEach(function (childElem) {
-                    if (childElem.type == CvRecord) {
-                        entityRecs.map(function (entityRec, index) {
-                            newChildren.push(React.cloneElement(childElem, { entityRec: entityRec, key: index }));
-                        });
-                    }
-                    else {
-                        newChildren.push(childElem);
-                    }
-                });
-                if (this.props.wrapperElem) {
-                    return React.createElement(this.props.wrapperElem, {}, newChildren);
-                }
-                else {
-                    return React.createElement("span", null, newChildren);
-                }
-            }
-            else {
-                return (React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("span", null, listContext.paneTitle || '>'), React.createElement("div", {"className": "pull-right"}, listContext.menuDefs.map(function (menuDef, index) {
-                    return React.createElement(CvMenu, {"key": index, "actionId": menuDef.actionId});
-                }))), React.createElement("div", {"style": { maxHeight: '400px', overflow: 'auto' }}, React.createElement("table", {"className": "table table-striped"}, React.createElement("thead", null, React.createElement("tr", null, React.createElement("th", {"key": "nbsp"}, " "), listContext.columnHeadings.map(function (heading, index) {
-                    return React.createElement("th", {"key": index}, heading);
-                }))), React.createElement("tbody", null, entityRecs.map(function (entityRec, index) {
-                    return (React.createElement("tr", {"key": index, "onDoubleClick": _this.itemDoubleClicked.bind(_this, entityRec.objectId)}, React.createElement("td", {"className": "text-center", "key": "checkbox"}, React.createElement("input", {"type": "checkbox"})), listContext.rowValues(entityRec).map(function (val, index) {
-                        return React.createElement("td", {"key": index}, val ? val.toString() : ' ');
-                    })));
-                }))))));
-            }
-        }
-        else {
-            return null;
-        }
-    }
-});
+Log.logLevel(LogLevel.DEBUG);
+ReactDOM.render(React.createElement("div", {"className": "container"}, React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, null, React.createElement("span", null, React.createElement(CvWorkbench, {"workbenchId": "AAABACffAAAABpZL", "persistent": false}, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h3", {"className": "panel-title"}, React.createElement(CvScope, {"get": 'name'}))), React.createElement("div", {"className": "panel-body"}, React.createElement(CvLauncher, {"actionId": "AAABACfaAAAABpIk", "navTarget": "1"}, React.createElement(CvScope, {"handler": function (launcher) {
+    return React.createElement("div", {"className": "col-md-4 launch-div"}, React.createElement("img", {"className": "launch-icon img-responsive center-block", "src": launcher.iconBase}), React.createElement("h5", {"className": "launch-text small text-center"}, launcher.name));
+}}))))), React.createElement(CvNavigation, {"targetId": "1", "persistent": false}, React.createElement(CvForm, null, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement(CvScope, {"get": 'paneTitle'})), React.createElement("div", {"style": { maxHeight: '400px', overflow: 'auto' }}, React.createElement(CvList, {"paneRef": 0, "wrapperElem": "span"}, React.createElement(CvRecord, {"navTarget": "2"}, React.createElement("div", null, React.createElement(CvProp, {"propName": 'name'})))))))), React.createElement(CvNavigation, {"targetId": "2"}, React.createElement(CvForm, null, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement(CvScope, {"get": 'paneTitle'})), React.createElement("div", {"style": { maxHeight: '400px', overflow: 'auto' }}, React.createElement(CvList, {"paneRef": 0, "wrapperElem": "span"})))))))))), document.getElementById('cvApp'));

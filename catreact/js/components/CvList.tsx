@@ -69,12 +69,15 @@ var CvList = React.createClass<CvListProps, CvListState>({
         return {listContext: null}
     },
 
-    itemDoubleClicked: function (objectId) {
+    itemClicked: function (objectId) {
         const listContext = this.state.listContext;
         if (listContext.listDef.defaultActionId) {
             var defaultActionMenuDef = new MenuDef('DEFAULT_ACTION', null, listContext.listDef.defaultActionId, 'RW',
                 listContext.listDef.defaultActionId, null, null, []);
             listContext.performMenuAction(defaultActionMenuDef, [objectId]).onComplete(navRequestTry=> {
+                (this.context.eventRegistry as CvEventRegistry)
+                    .publish<CvNavigationResult>({type:CvEventType.NAVIGATION, eventObj:{navRequestTry:navRequestTry,
+                        actionId:listContext.listDef.defaultActionId}});
             });
         }
     },
@@ -123,7 +126,7 @@ var CvList = React.createClass<CvListProps, CvListState>({
                                     {entityRecs.map((entityRec, index) => {
                                         return (
                                         <tr key={index}
-                                            onDoubleClick={this.itemDoubleClicked.bind(this, entityRec.objectId)}>
+                                            onClick={this.itemClicked.bind(this, entityRec.objectId)}>
                                             <td className="text-center" key="checkbox">
                                                 <input type="checkbox"/>
                                             </td>
