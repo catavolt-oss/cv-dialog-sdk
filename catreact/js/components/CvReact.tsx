@@ -10,6 +10,7 @@
     Base interface for catavolt component properties
  */
 interface CvProps {
+    style?: string,
     key?: string;
 }
 

@@ -14,7 +14,7 @@ module catavolt.dialog {
         static fromWSValue(encodedValue:string, settings:StringDictionary):Try<BinaryRef> {
 
             if(encodedValue && encodedValue.length > 0) {
-                return new Success(new InlineBinaryRef(Base64.decode(encodedValue), settings));
+                return new Success(new InlineBinaryRef(encodedValue, settings));
             } else {
                 return new Success(new ObjectBinaryRef(settings));
             }
@@ -40,7 +40,7 @@ module catavolt.dialog {
 
     }
 
-    class ObjectBinaryRef extends BinaryRef {
+    export class ObjectBinaryRef extends BinaryRef {
 
         constructor(settings:StringDictionary) {
             super(settings);

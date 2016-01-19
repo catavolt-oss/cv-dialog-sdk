@@ -1479,7 +1479,7 @@ var catavolt;
             }
             BinaryRef.fromWSValue = function (encodedValue, settings) {
                 if (encodedValue && encodedValue.length > 0) {
-                    return new Success(new InlineBinaryRef(Base64.decode(encodedValue), settings));
+                    return new Success(new InlineBinaryRef(encodedValue, settings));
                 }
                 else {
                     return new Success(new ObjectBinaryRef(settings));
@@ -1519,6 +1519,7 @@ var catavolt;
             }
             return ObjectBinaryRef;
         })(BinaryRef);
+        dialog.ObjectBinaryRef = ObjectBinaryRef;
     })(dialog = catavolt.dialog || (catavolt.dialog = {}));
 })(catavolt || (catavolt = {}));
 /**
@@ -2015,13 +2016,16 @@ var catavolt;
                             propValue = Number(strVal);
                         }
                         else if (PType === 'Date') {
-                            propValue = new Date(strVal);
+                            //propValue = new Date(strVal);
+                            propValue = strVal;
                         }
                         else if (PType === 'DateTime') {
-                            propValue = new Date(strVal);
+                            //propValue = new Date(strVal);
+                            propValue = strVal;
                         }
                         else if (PType === 'Time') {
-                            propValue = new Date(strVal);
+                            //propValue = new Date(strVal);
+                            propValue = strVal;
                         }
                         else if (PType === 'BinaryRef') {
                             var binaryRefTry = dialog.BinaryRef.fromWSValue(strVal, value['properties']);
@@ -8145,6 +8149,7 @@ var GeoLocationDef = catavolt.dialog.GeoLocationDef;
 var GraphContext = catavolt.dialog.GraphContext;
 var GraphDataPointDef = catavolt.dialog.GraphDataPointDef;
 var GraphDef = catavolt.dialog.GraphDef;
+var InlineBinaryRef = catavolt.dialog.InlineBinaryRef;
 var ImagePickerContext = catavolt.dialog.ImagePickerContext;
 var ImagePickerDef = catavolt.dialog.ImagePickerDef;
 var LabelCellValueDef = catavolt.dialog.LabelCellValueDef;
@@ -8155,6 +8160,7 @@ var MapDef = catavolt.dialog.MapDef;
 var MenuDef = catavolt.dialog.MenuDef;
 var NavRequest = catavolt.dialog.NavRequest;
 var NullRedirection = catavolt.dialog.NullRedirection;
+var ObjectBinaryRef = catavolt.dialog.ObjectBinaryRef;
 var ObjectRef = catavolt.dialog.ObjectRef;
 var PaneContext = catavolt.dialog.PaneContext;
 var PaneDef = catavolt.dialog.PaneDef; ///<reference path="Redirection.ts"/>
@@ -8175,6 +8181,9 @@ var WorkbenchLaunchAction = catavolt.dialog.WorkbenchLaunchAction;
 var WorkbenchRedirection = catavolt.dialog.WorkbenchRedirection;
 /**
  * Created by rburson on 3/6/15.
+ */
+/*
+ tsc -t ES5 -d --outFile out/catavolt_sdk.js
  */
 //util
 ///<reference path="util/references.ts"/>

@@ -521,6 +521,9 @@ declare module catavolt.dialog {
         constructor(_inlineData: string, settings: StringDictionary);
         inlineData: string;
     }
+    class ObjectBinaryRef extends BinaryRef {
+        constructor(settings: StringDictionary);
+    }
 }
 /**
  * Created by rburson on 4/5/15.
@@ -2225,6 +2228,7 @@ import GeoLocationDef = catavolt.dialog.GeoLocationDef;
 import GraphContext = catavolt.dialog.GraphContext;
 import GraphDataPointDef = catavolt.dialog.GraphDataPointDef;
 import GraphDef = catavolt.dialog.GraphDef;
+import InlineBinaryRef = catavolt.dialog.InlineBinaryRef;
 import ImagePickerContext = catavolt.dialog.ImagePickerContext;
 import ImagePickerDef = catavolt.dialog.ImagePickerDef;
 import LabelCellValueDef = catavolt.dialog.LabelCellValueDef;
@@ -2235,6 +2239,7 @@ import MapDef = catavolt.dialog.MapDef;
 import MenuDef = catavolt.dialog.MenuDef;
 import NavRequest = catavolt.dialog.NavRequest;
 import NullRedirection = catavolt.dialog.NullRedirection;
+import ObjectBinaryRef = catavolt.dialog.ObjectBinaryRef;
 import ObjectRef = catavolt.dialog.ObjectRef;
 import PaneContext = catavolt.dialog.PaneContext;
 import PaneDef = catavolt.dialog.PaneDef;

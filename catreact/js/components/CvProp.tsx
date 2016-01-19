@@ -48,7 +48,16 @@ var CvProp = React.createClass<CvPropProps, CvPropState>({
             if(React.Children.count(this.props.children) > 0) {
                 return this.props.children
             } else {
-                return <span>{['' + prop.value]}</span>
+                if(prop.value instanceof InlineBinaryRef) {
+                    const binary:InlineBinaryRef = prop.value as InlineBinaryRef;
+                    const mimeType:string = binary.settings['mime-type'] || 'image/jpg'
+                    return <img style={this.props.style} src={'data:' + mimeType + ';base64,' + binary.inlineData}/>
+                } else if(prop.value instanceof ObjectBinaryRef){
+                    const binary:ObjectBinaryRef = prop.value as ObjectBinaryRef;
+                    return <img style={this.props.style} src={binary.settings['webURL']}/>
+                } else {
+                    return <span style={this.props.style}>{prop.value ? PropFormatter.formatForRead(prop.value, null): ''}</span>
+                }
             }
         } else {
             return null;
