@@ -203,7 +203,6 @@ var catavolt;
  * Created by rburson on 4/3/15.
  */
 ///<reference path="../references.ts"/>
-/* @TODO */
 var catavolt;
 (function (catavolt) {
     var util;
@@ -212,9 +211,13 @@ var catavolt;
             function StringUtil() {
             }
             StringUtil.splitSimpleKeyValuePair = function (pairString) {
-                var pair = pairString.split(':');
-                var code = pair[0];
-                var desc = pair.length > 1 ? pair[1] : '';
+                var index = pairString.indexOf(':');
+                var code = '';
+                var desc = '';
+                if (index > -1) {
+                    code = pairString.substr(0, index);
+                    desc = pairString.length > index ? pairString.substr(index + 1) : '';
+                }
                 return [code, desc];
             };
             return StringUtil;

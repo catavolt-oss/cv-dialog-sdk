@@ -4,15 +4,18 @@
 
 ///<reference path="../references.ts"/>
 
-/* @TODO */
 module catavolt.util {
 
     export class StringUtil {
 
         static splitSimpleKeyValuePair(pairString:string):Array<string> {
-            var pair:Array<string> = pairString.split(':');
-            var code = pair[0];
-            var desc = pair.length > 1 ? pair[1] : '';
+            var index = pairString.indexOf(':');
+            let code = ''
+            let desc = ''
+            if(index > -1) {
+                code = pairString.substr(0, index)
+                desc = pairString.length > index ? pairString.substr(index + 1) : ''
+            }
             return [code, desc];
         }
     }

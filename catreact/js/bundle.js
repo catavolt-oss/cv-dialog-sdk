@@ -107,13 +107,25 @@ var CvEventRegistry = (function () {
  * Render a simple message
  ***************************************************
  */
-var CvWrapper = React.createClass({
-    displayName: "CvWrapper",
+var CvResource = React.createClass({
+    displayName: "CvResource",
 
     mixins: [CvBaseMixin],
+    getDefaultProps: function getDefaultProps() {
+        return { type: 'image', resourceName: '' };
+    },
     render: function render() {
-        if (React.Children.count(this.props.children) > 0) {
-            return this.props.children;
+        if (this.props.resourceName) {
+            var baseUrl = null;
+            var tenantSettingsTry = this.context.catavolt.tenantSettingsTry;
+            if (tenantSettingsTry.isSuccess) {
+                baseUrl = tenantSettingsTry.success['GMLAssetsURL'];
+            }
+            if (this.props.type === 'image') {
+                return React.createElement("img", { "style": this.props.style, "src": baseUrl + this.props.resourceName });
+            } else {
+                return null;
+            }
         } else {
             return null;
         }
@@ -1045,7 +1057,7 @@ var CatavoltPane = React.createClass({
  */
 //components
 ///<reference path="CvReact.tsx"/>
-///<reference path="CvWrapper.tsx"/>
+///<reference path="CvResource.tsx"/>
 ///<reference path="CvScope.tsx"/>
 ///<reference path="CvProp.tsx"/>
 ///<reference path="CvRecord.tsx"/>
@@ -1068,6 +1080,6 @@ var CatavoltPane = React.createClass({
 Log.logLevel(LogLevel.DEBUG);
 ReactDOM.render(React.createElement("div", { "className": "container" }, React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, null, React.createElement("span", null, React.createElement(CvWorkbench, { "workbenchId": "AAABACffAAAABpZL", "persistent": false }, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement("h3", { "className": "panel-title" }, React.createElement(CvScope, { "get": 'name' }))), React.createElement("div", { "className": "panel-body" }, React.createElement(CvLauncher, { "actionId": "AAABACfaAAAABpIk", "navTarget": "1" }, React.createElement(CvScope, { "handler": function handler(launcher) {
         return React.createElement("div", { "className": "col-md-4 launch-div" }, React.createElement("img", { "className": "launch-icon img-responsive center-block", "src": launcher.iconBase }), React.createElement("h5", { "className": "launch-text small text-center" }, launcher.name));
-    } }))))), React.createElement(CvNavigation, { "targetId": "1", "persistent": false }, React.createElement(CvForm, null, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement(CvScope, { "get": 'paneTitle' })), React.createElement("div", { "style": { maxHeight: '400px', overflow: 'auto' } }, React.createElement(CvList, { "paneRef": 0, "wrapperElem": "span" }, React.createElement(CvRecord, { "navTarget": "2" }, React.createElement("div", null, React.createElement(CvProp, { "propName": 'name' })))))))), React.createElement(CvNavigation, { "targetId": "2" }, React.createElement(CvForm, null, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement(CvScope, { "get": 'paneTitle' })), React.createElement("div", { "style": { maxHeight: '400px', overflow: 'auto' } }, React.createElement(CvList, { "paneRef": 0, "wrapperElem": "span" }, React.createElement(CvRecord, null, React.createElement("div", null, React.createElement(CvProp, { "propName": 'avatar_large' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'created-by' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'group_name' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'created-at' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'likes_count' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'comments_count' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'title' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'body_preview' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_1' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_2' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_3' }))))))))))))), document.getElementById('cvApp'));
+    } }))))), React.createElement(CvNavigation, { "targetId": "1", "persistent": false }, React.createElement(CvForm, null, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement(CvScope, { "get": 'paneTitle' })), React.createElement("div", { "style": { maxHeight: '800px', overflow: 'auto' } }, React.createElement(CvList, { "paneRef": 0, "wrapperElem": "span" }, React.createElement(CvRecord, { "navTarget": "2" }, React.createElement("div", null, React.createElement(CvProp, { "propName": 'name' })))))))), React.createElement(CvNavigation, { "targetId": "2" }, React.createElement(CvForm, null, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement(CvScope, { "get": 'paneTitle' }), React.createElement(CvResource, { "resourceName": 'icon-action-join.png' })), React.createElement("div", { "style": { maxHeight: '800px', overflow: 'auto' } }, React.createElement(CvList, { "paneRef": 0, "wrapperElem": "span" }, React.createElement(CvRecord, null, React.createElement("div", null, React.createElement(CvProp, { "propName": 'avatar_large' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'created-by' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'group_name' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'created-at' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'likes_count' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'comments_count' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'title' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'body_preview' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_1' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_2' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_3' }))))))))))))), document.getElementById('cvApp'));
 
 },{}]},{},[1]);

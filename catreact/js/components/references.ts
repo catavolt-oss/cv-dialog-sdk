@@ -4,7 +4,7 @@
 
 //components
 ///<reference path="CvReact.tsx"/>
-///<reference path="CvWrapper.tsx"/>
+///<reference path="CvResource.tsx"/>
 ///<reference path="CvScope.tsx"/>
 ///<reference path="CvProp.tsx"/>
 ///<reference path="CvRecord.tsx"/>

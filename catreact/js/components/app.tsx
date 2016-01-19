@@ -37,7 +37,7 @@ ReactDOM.render(
                                     <div className="panel-heading">
                                         <CvScope get={'paneTitle'}/>
                                     </div>
-                                    <div style={{maxHeight: '400px', overflow: 'auto'}}>
+                                    <div style={{maxHeight: '800px', overflow: 'auto'}}>
                                         <CvList paneRef={0} wrapperElem={"span"}>
                                             <CvRecord navTarget={"2"}>
                                                 <div>
@@ -54,8 +54,9 @@ ReactDOM.render(
                                 <div className="panel panel-primary">
                                     <div className="panel-heading">
                                         <CvScope get={'paneTitle'}/>
+                                        <CvResource resourceName={'icon-action-join.png'}/>
                                     </div>
-                                    <div style={{maxHeight: '400px', overflow: 'auto'}}>
+                                    <div style={{maxHeight: '800px', overflow: 'auto'}}>
                                         <CvList paneRef={0} wrapperElem={"span"}>
                                             <CvRecord>
                                                 <div><CvProp propName={'avatar_large'}/></div>
