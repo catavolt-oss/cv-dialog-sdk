@@ -36,12 +36,12 @@ ReactDOM.render(
                             <CvForm>
                                 <div className="panel panel-primary">
                                     <div className="panel-heading">
-                                        <CvScope get={'paneTitle'}/>
+                                        <h4><CvScope get={'paneTitle'}/></h4>
                                     </div>
                                     <div style={{maxHeight: '800px', overflow: 'auto'}}>
                                         <ul className={'list-group'}>
                                             <CvList paneRef={0} wrapperElem={"h4"}>
-                                                <CvRecord navTarget={"2"}>
+                                                <CvRecord clickAction={'default'} navTarget={"2"}>
                                                     <li className={'list-group-item'}>
                                                         <CvProp propName={'name'}/>
                                                     </li>
@@ -55,17 +55,15 @@ ReactDOM.render(
                         <CvNavigation targetId={"2"}>
                             <CvForm>
                                 <div className="panel panel-primary">
-                                    <div className="panel-heading">Messages</div>
+                                    <div className="panel-heading">
+                                        <h4>Messages</h4>
+                                        <div className="messageToolbar text-right">
+                                            <CvResource resourceName={'icon-action-join.png'}/>
+                                            <a className="hlText">New Message</a>
+                                        </div>
+                                    </div>
                                     <div style={{maxHeight: '800px', overflow: 'auto'}}>
                                         <div className="messageCol">
-                                            <div className="row">
-                                                <div className="col-sm-12">
-                                                    <div className="pull-right">
-                                                        <CvResource resourceName={'icon-action-join.png'}/>
-                                                        <a className="hlText">New Message</a>
-                                                    </div>
-                                                </div>
-                                            </div>
                                             <CvList paneRef={0} wrapperElem={"span"}>
                                                 <CvRecord>
                                                     <div className="row"><div className="col-sm-12">
@@ -73,7 +71,7 @@ ReactDOM.render(
                                                             <div className="row">
                                                                 <div className="col-sm-6">
                                                                     <div className="row">
-                                                                        <div className="col-sm-2"><CvProp propName={'avatar_large'} className={'img-rounded'}/></div>
+                                                                        <div className="col-sm-2"><CvProp propName={'avatar_large'} className={'img-rounded avatar'}/></div>
                                                                         <div className="col-sm-4 text-center attrib-box">
                                                                             <h4><CvProp propName={'created-by'}/></h4>
                                                                             <small><CvProp propName={'group_name'}/></small>
@@ -82,21 +80,35 @@ ReactDOM.render(
                                                                     </div>
                                                                 </div>
                                                                 <div className="col-sm-6">
-                                                                    <div className="pull-right"><CvResource resourceName={'icon-bookmark-unchecked.png'} style={{width:24, height:38}}/></div>
+                                                                    <div className="pull-right">
+                                                                        <CvProp propName={'is_flagged'} handler={(prop)=>{
+                                                                            return prop.value ?
+                                                                                <CvResource resourceName={'icon-bookmark.png'} style={{width:24, height:38}}/> :
+                                                                                <CvResource resourceName={'icon-bookmark-unchecked.png'} style={{width:24, height:38}}/>
+                                                                        }}/>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div className="like-row">
                                                                  <span><CvProp propName={'likes_count'}/></span><span>liked</span>
+                                                                <span></span><span></span>
                                                                  <span><CvProp propName={'comments_count'}/></span><span>comments</span>
                                                             </div>
-                                                            <div className="row">
-                                                                <div className="col-sm-12">
-                                                                    <div> <CvProp propName={'title'}/> </div>
-                                                                    <blockquote><p><CvProp propName={'body_preview'}/></p></blockquote>
-                                                                    <div> <CvProp propName={'attachment_preview_1'}/> </div>
-                                                                    <div> <CvProp propName={'attachment_preview_2'}/> </div>
-                                                                    <div> <CvProp propName={'attachment_preview_3'}/> </div>
+                                                            <div>
+                                                                <div> <CvProp propName={'title'}/> </div>
+                                                                <blockquote><p><CvProp propName={'body_preview'}/></p></blockquote>
+                                                                <div className="text-center">{
+                                                                    function() {
+                                                                        const attachments = [];
+                                                                        for(let i = 1; i<=10; i++) {
+                                                                            attachments.push(<CvProp propName={'attachment_preview_' + i} key={'' + i}/>)
+                                                                        }
+                                                                        return attachments;
+                                                                    }()}
                                                                 </div>
+                                                            </div>
+                                                            <div className="badge-row">
+                                                                <div className="text-right"><CvResource resourceName={'icon-action-comment.png'} style={{width:24, height:24}}/></div>
                                                             </div>
                                                         </div>
                                                     </div></div>

@@ -164,6 +164,82 @@ var CvScope = React.createClass({
 ///<reference path="references.ts"/>
 /*
  ***************************************************
+ * Render a Property
+ ***************************************************
+ */
+var CvProp = React.createClass({
+    mixins: [CvBaseMixin],
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+    componentDidMount: function () {
+        var entityRec = this.context.scopeObj;
+        var prop = entityRec.propAtName(this.props.propName);
+        this.setState({ prop: prop });
+    },
+    getChildContext: function () {
+        return { scopeObj: this.state.prop };
+    },
+    getDefaultProps: function () {
+        return { propName: null, defaultValue: null, handler: null, isVisible: null };
+    },
+    getInitialState: function () {
+        return { prop: null };
+    },
+    render: function () {
+        var prop = this.state.prop;
+        if ((this.props.isVisible && this.props.isVisible(prop)) || !this.props.isVisible) {
+            if (prop) {
+                if (this.props.handler) {
+                    return this.props.handler(prop);
+                }
+                else {
+                    if (React.Children.count(this.props.children) > 0) {
+                        return this.props.children;
+                    }
+                    else {
+                        if (prop.value === null || prop.value === undefined) {
+                            if (this.props.defaultValue !== null) {
+                                return React.createElement("span", {"style": this.props.style, "className": this.props.className}, this.props.defaultValue);
+                            }
+                            else {
+                                return null;
+                            }
+                        }
+                        else {
+                            if (prop.value instanceof InlineBinaryRef) {
+                                var binary = prop.value;
+                                var mimeType = binary.settings['mime-type'] || 'image/jpg';
+                                return React.createElement("img", {"style": this.props.style, "src": 'data:' + mimeType + ';base64,' + binary.inlineData, "className": this.props.className});
+                            }
+                            else if (prop.value instanceof ObjectBinaryRef) {
+                                var binary = prop.value;
+                                return React.createElement("img", {"style": this.props.style, "className": this.props.className, "src": binary.settings['webURL']});
+                            }
+                            else {
+                                return React.createElement("span", {"style": this.props.style, "className": this.props.className}, PropFormatter.formatForRead(prop.value, null));
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
+    }
+});
+/**
+ * Created by rburson on 1/14/16.
+ */
+///<reference path="../../typings/react/react-global.d.ts"/>
+///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
+///<reference path="references.ts"/>
+/*
+ ***************************************************
  * Render an EntityRec
  ***************************************************
  */
@@ -184,7 +260,7 @@ var CvRecord = React.createClass({
         var entityRec = this.props.entityRec;
         if (entityRec) {
             if (React.Children.count(this.props.children) > 0) {
-                return React.createElement("span", {"onClick": this.itemClicked.bind(this, entityRec.objectId)}, this.props.children);
+                return this.props.clickAction ? React.createElement("span", {"onClick": this.itemClicked.bind(this, entityRec.objectId)}, this.props.children) : this.props.children;
             }
             else {
                 return React.createElement("span", null, 'Default row goes here');
@@ -194,8 +270,9 @@ var CvRecord = React.createClass({
             return null;
         }
     },
-    itemClicked: function (objectId) {
+    itemClicked: function (objectId, actionId) {
         var _this = this;
+        //@TODO - currently this is only the default action
         var paneContext = this.context.scopeObj;
         if (paneContext instanceof ListContext) {
             var listContext = paneContext;
@@ -1047,56 +1124,20 @@ var CatavoltPane = React.createClass({
 ///<reference path="CvWorkbench.tsx"/>
 ///<reference path="CvLoginPane.tsx"/>
 ///<reference path="CatavoltPane.tsx"/>
-/**
- * Created by rburson on 1/14/16.
- */
 ///<reference path="../../typings/react/react-global.d.ts"/>
 ///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a Property
- ***************************************************
- */
-var CvProp = React.createClass({
-    mixins: [CvBaseMixin],
-    childContextTypes: {
-        scopeObj: React.PropTypes.object
-    },
-    componentDidMount: function () {
-        var entityRec = this.context.scopeObj;
-        var prop = entityRec.propAtName(this.props.propName);
-        this.setState({ prop: prop });
-    },
-    getChildContext: function () {
-        return { scopeObj: this.state.prop };
-    },
-    getInitialState: function () {
-        return { prop: null };
-    },
-    render: function () {
-        var prop = this.state.prop;
-        if (prop) {
-            if (React.Children.count(this.props.children) > 0) {
-                return this.props.children;
-            }
-            else {
-                if (prop.value instanceof InlineBinaryRef) {
-                    var binary = prop.value;
-                    var mimeType = binary.settings['mime-type'] || 'image/jpg';
-                    return React.createElement("img", {"style": this.props.style, "src": 'data:' + mimeType + ';base64,' + binary.inlineData, "className": this.props.className});
-                }
-                else if (prop.value instanceof ObjectBinaryRef) {
-                    var binary = prop.value;
-                    return React.createElement("img", {"style": this.props.style, "src": binary.settings['webURL']});
-                }
-                else {
-                    return React.createElement("span", {"style": this.props.style}, prop.value ? PropFormatter.formatForRead(prop.value, null) : '');
-                }
-            }
-        }
-        else {
-            return null;
-        }
+Log.logLevel(LogLevel.DEBUG);
+ReactDOM.render(React.createElement("div", {"className": "container"}, React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement("div", {"className": "header"}), React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, null, React.createElement("span", null, React.createElement(CvWorkbench, {"workbenchId": "AAABACffAAAABpZL", "persistent": false}, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h3", {"className": "panel-title"}, React.createElement(CvScope, {"get": 'name'}))), React.createElement("div", {"className": "panel-body row"}, React.createElement(CvLauncher, {"actionId": "AAABACfaAAAABpIk", "navTarget": "1"}, React.createElement(CvScope, {"handler": function (launcher) {
+    return React.createElement("div", {"className": "col-sm-8 launch-div"}, React.createElement("img", {"className": "launch-icon img-responsive center-block", "src": launcher.iconBase}), React.createElement("h4", {"className": "launch-text small text-center"}, launcher.name));
+}}))))), React.createElement(CvNavigation, {"targetId": "1", "persistent": false}, React.createElement(CvForm, null, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h4", null, React.createElement(CvScope, {"get": 'paneTitle'}))), React.createElement("div", {"style": { maxHeight: '800px', overflow: 'auto' }}, React.createElement("ul", {"className": 'list-group'}, React.createElement(CvList, {"paneRef": 0, "wrapperElem": "h4"}, React.createElement(CvRecord, {"clickAction": 'default', "navTarget": "2"}, React.createElement("li", {"className": 'list-group-item'}, React.createElement(CvProp, {"propName": 'name'}))))))))), React.createElement(CvNavigation, {"targetId": "2"}, React.createElement(CvForm, null, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h4", null, "Messages"), React.createElement("div", {"className": "messageToolbar text-right"}, React.createElement(CvResource, {"resourceName": 'icon-action-join.png'}), React.createElement("a", {"className": "hlText"}, "New Message"))), React.createElement("div", {"style": { maxHeight: '800px', overflow: 'auto' }}, React.createElement("div", {"className": "messageCol"}, React.createElement(CvList, {"paneRef": 0, "wrapperElem": "span"}, React.createElement(CvRecord, null, React.createElement("div", {"className": "row"}, React.createElement("div", {"className": "col-sm-12"}, React.createElement("div", {"className": "messagePanel"}, React.createElement("div", {"className": "row"}, React.createElement("div", {"className": "col-sm-6"}, React.createElement("div", {"className": "row"}, React.createElement("div", {"className": "col-sm-2"}, React.createElement(CvProp, {"propName": 'avatar_large', "className": 'img-rounded avatar'})), React.createElement("div", {"className": "col-sm-4 text-center attrib-box"}, React.createElement("h4", null, React.createElement(CvProp, {"propName": 'created-by'})), React.createElement("small", null, React.createElement(CvProp, {"propName": 'group_name'})), React.createElement("small", {"className": "text-muted"}, React.createElement(CvProp, {"propName": 'created-at'}))))), React.createElement("div", {"className": "col-sm-6"}, React.createElement("div", {"className": "pull-right"}, React.createElement(CvProp, {"propName": 'is_flagged', "handler": function (prop) {
+    return prop.value ?
+        React.createElement(CvResource, {"resourceName": 'icon-bookmark.png', "style": { width: 24, height: 38 }}) :
+        React.createElement(CvResource, {"resourceName": 'icon-bookmark-unchecked.png', "style": { width: 24, height: 38 }});
+}})))), React.createElement("div", {"className": "like-row"}, React.createElement("span", null, React.createElement(CvProp, {"propName": 'likes_count'})), React.createElement("span", null, "liked"), React.createElement("span", null), React.createElement("span", null), React.createElement("span", null, React.createElement(CvProp, {"propName": 'comments_count'})), React.createElement("span", null, "comments")), React.createElement("div", null, React.createElement("div", null, " ", React.createElement(CvProp, {"propName": 'title'}), " "), React.createElement("blockquote", null, React.createElement("p", null, React.createElement(CvProp, {"propName": 'body_preview'}))), React.createElement("div", {"className": "text-center"}, function () {
+    var attachments = [];
+    for (var i = 1; i <= 10; i++) {
+        attachments.push(React.createElement(CvProp, {"propName": 'attachment_preview_' + i, "key": '' + i}));
     }
-});
+    return attachments;
+}())), React.createElement("div", {"className": "badge-row"}, React.createElement("div", {"className": "text-right"}, React.createElement(CvResource, {"resourceName": 'icon-action-comment.png', "style": { width: 24, height: 24 }})))))))))))))))))), document.getElementById('cvApp'));

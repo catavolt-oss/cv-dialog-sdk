@@ -43,7 +43,7 @@ var CvRecord = React.createClass<CvRecordProps, CvRecordState>({
 
         if (entityRec) {
             if (React.Children.count(this.props.children) > 0) {
-                return <span onClick={this.itemClicked.bind(this, entityRec.objectId)}>{this.props.children}</span>
+                return this.props.clickAction ? <span onClick={this.itemClicked.bind(this, entityRec.objectId)}>{this.props.children}</span> : this.props.children;
             } else {
                 return <span>{'Default row goes here'}</span>
             }
@@ -53,7 +53,8 @@ var CvRecord = React.createClass<CvRecordProps, CvRecordState>({
 
     },
 
-    itemClicked: function (objectId:string) {
+    itemClicked: function (objectId:string, actionId:string) {
+        //@TODO - currently this is only the default action
         const paneContext:PaneContext = this.context.scopeObj;
         if (paneContext instanceof ListContext) {
             const listContext:ListContext = paneContext;

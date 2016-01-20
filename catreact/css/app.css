@@ -46,6 +46,11 @@ body {
     background-color: #ffffff;
 }
 
+.messageToolbar {
+   background-color: #cccccc;
+   padding: 3px 10px;
+}
+
 .hlText {
     color: #b02067;
 }
@@ -69,8 +74,21 @@ body {
 }
 
 .like-row span{
-    margin: 3px;
+    margin: 2px;
     padding-bottom:10px;
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
+}
+
+.badge-row {
+    background-color: #cccccc;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 5px;
+    font-size: larger;
 }
 
 

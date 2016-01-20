@@ -10,7 +10,10 @@ interface CvPropState extends CvState {
 }
 
 interface CvPropProps extends CvProps {
+    handler?: (o:Prop) => {};
+    isVisible?: (o:Prop) => boolean;
     propName:string;
+    defaultValue?:string;
 }
 
 /*
@@ -36,6 +39,10 @@ var CvProp = React.createClass<CvPropProps, CvPropState>({
         return {scopeObj: this.state.prop}
     },
 
+    getDefaultProps: function () {
+        return {propName:null, defaultValue:null, handler:null, isVisible:null}
+    },
+
     getInitialState: function () {
         return {prop: null}
     },
@@ -44,22 +51,44 @@ var CvProp = React.createClass<CvPropProps, CvPropState>({
 
         const prop = this.state.prop;
 
-        if (prop) {
-            if(React.Children.count(this.props.children) > 0) {
-                return this.props.children
-            } else {
-                if(prop.value instanceof InlineBinaryRef) {
-                    const binary:InlineBinaryRef = prop.value as InlineBinaryRef;
-                    const mimeType:string = binary.settings['mime-type'] || 'image/jpg'
-                    return <img style={this.props.style} src={'data:' + mimeType + ';base64,' + binary.inlineData} className={this.props.className}/>
-                } else if(prop.value instanceof ObjectBinaryRef){
-                    const binary:ObjectBinaryRef = prop.value as ObjectBinaryRef;
-                    return <img style={this.props.style} src={binary.settings['webURL']}/>
+
+        if((this.props.isVisible && this.props.isVisible(prop)) || !this.props.isVisible) {
+            if (prop) {
+                if (this.props.handler) {
+                    return this.props.handler(prop);
                 } else {
-                    return <span style={this.props.style}>{prop.value ? PropFormatter.formatForRead(prop.value, null): ''}</span>
+                    if (React.Children.count(this.props.children) > 0) {
+                        return this.props.children
+                    } else {
+                        if (prop.value === null || prop.value === undefined) {
+                            if (this.props.defaultValue !== null) {
+                                return <span style={this.props.style}
+                                             className={this.props.className}>{this.props.defaultValue}</span>
+                            } else {
+                                return null;
+                            }
+                        } else {
+                            if (prop.value instanceof InlineBinaryRef) {
+                                const binary:InlineBinaryRef = prop.value as InlineBinaryRef;
+                                const mimeType:string = binary.settings['mime-type'] || 'image/jpg'
+                                return <img style={this.props.style}
+                                            src={'data:' + mimeType + ';base64,' + binary.inlineData}
+                                            className={this.props.className}/>
+                            } else if (prop.value instanceof ObjectBinaryRef) {
+                                const binary:ObjectBinaryRef = prop.value as ObjectBinaryRef;
+                                return <img style={this.props.style} className={this.props.className}
+                                            src={binary.settings['webURL']}/>
+                            } else {
+                                return <span style={this.props.style}
+                                             className={this.props.className}>{PropFormatter.formatForRead(prop.value, null)}</span>
+                            }
+                        }
+                    }
                 }
+            } else {
+                return null;
             }
-        } else {
+        }else{
             return null;
         }
 
