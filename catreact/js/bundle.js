@@ -122,7 +122,7 @@ var CvResource = React.createClass({
                 baseUrl = tenantSettingsTry.success['GMLAssetsURL'];
             }
             if (this.props.type === 'image') {
-                return React.createElement("img", { "style": this.props.style, "src": baseUrl + this.props.resourceName });
+                return React.createElement("img", { "style": this.props.style, "className": this.props.className, "src": baseUrl + this.props.resourceName });
             } else {
                 return null;
             }
@@ -159,57 +159,6 @@ var CvScope = React.createClass({
             }
         }
         return null;
-    }
-});
-/**
- * Created by rburson on 1/14/16.
- */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
-/*
- ***************************************************
- * Render a Property
- ***************************************************
- */
-var CvProp = React.createClass({
-    displayName: "CvProp",
-
-    mixins: [CvBaseMixin],
-    childContextTypes: {
-        scopeObj: React.PropTypes.object
-    },
-    componentDidMount: function componentDidMount() {
-        var entityRec = this.context.scopeObj;
-        var prop = entityRec.propAtName(this.props.propName);
-        this.setState({ prop: prop });
-    },
-    getChildContext: function getChildContext() {
-        return { scopeObj: this.state.prop };
-    },
-    getInitialState: function getInitialState() {
-        return { prop: null };
-    },
-    render: function render() {
-        var prop = this.state.prop;
-        if (prop) {
-            if (React.Children.count(this.props.children) > 0) {
-                return this.props.children;
-            } else {
-                if (prop.value instanceof InlineBinaryRef) {
-                    var binary = prop.value;
-                    var mimeType = binary.settings['mime-type'] || 'image/jpg';
-                    return React.createElement("img", { "style": this.props.style, "src": 'data:' + mimeType + ';base64,' + binary.inlineData, "className": this.props.className });
-                } else if (prop.value instanceof ObjectBinaryRef) {
-                    var binary = prop.value;
-                    return React.createElement("img", { "style": this.props.style, "src": binary.settings['webURL'] });
-                } else {
-                    return React.createElement("span", { "style": this.props.style }, prop.value ? PropFormatter.formatForRead(prop.value, null) : '');
-                }
-            }
-        } else {
-            return null;
-        }
     }
 });
 /**
@@ -1074,12 +1023,56 @@ var CatavoltPane = React.createClass({
 ///<reference path="CvWorkbench.tsx"/>
 ///<reference path="CvLoginPane.tsx"/>
 ///<reference path="CatavoltPane.tsx"/>
+/**
+ * Created by rburson on 1/14/16.
+ */
 ///<reference path="../../typings/react/react-global.d.ts"/>
 ///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
 ///<reference path="references.ts"/>
-Log.logLevel(LogLevel.DEBUG);
-ReactDOM.render(React.createElement("div", { "className": "container" }, React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, null, React.createElement("span", null, React.createElement(CvWorkbench, { "workbenchId": "AAABACffAAAABpZL", "persistent": false }, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement("h3", { "className": "panel-title" }, React.createElement(CvScope, { "get": 'name' }))), React.createElement("div", { "className": "panel-body row" }, React.createElement(CvLauncher, { "actionId": "AAABACfaAAAABpIk", "navTarget": "1" }, React.createElement(CvScope, { "handler": function handler(launcher) {
-        return React.createElement("div", { "className": "col-md-4 launch-div" }, React.createElement("img", { "className": "launch-icon img-responsive center-block", "src": launcher.iconBase }), React.createElement("h5", { "className": "launch-text small text-center" }, launcher.name));
-    } }))))), React.createElement(CvNavigation, { "targetId": "1", "persistent": false }, React.createElement(CvForm, null, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement(CvScope, { "get": 'paneTitle' })), React.createElement("div", { "style": { maxHeight: '800px', overflow: 'auto' } }, React.createElement("ul", { "className": 'list-group' }, React.createElement(CvList, { "paneRef": 0, "wrapperElem": "a" }, React.createElement(CvRecord, { "navTarget": "2" }, React.createElement("li", { "className": 'list-group-item' }, React.createElement(CvProp, { "propName": 'name' }))))))))), React.createElement(CvNavigation, { "targetId": "2" }, React.createElement(CvForm, null, React.createElement("div", { "className": "panel panel-primary" }, React.createElement("div", { "className": "panel-heading" }, React.createElement(CvScope, { "get": 'paneTitle' }), React.createElement(CvResource, { "resourceName": 'icon-action-join.png' })), React.createElement("div", { "style": { maxHeight: '800px', overflow: 'auto' } }, React.createElement(CvList, { "paneRef": 0, "wrapperElem": "span" }, React.createElement(CvRecord, null, React.createElement("div", null, React.createElement(CvProp, { "propName": 'avatar_large', "className": 'img-rounded' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'created-by' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'group_name' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'created-at' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'likes_count' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'comments_count' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'title' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'body_preview' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_1' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_2' })), React.createElement("div", null, React.createElement(CvProp, { "propName": 'attachment_preview_3' }))))))))))))), document.getElementById('cvApp'));
+/*
+ ***************************************************
+ * Render a Property
+ ***************************************************
+ */
+var CvProp = React.createClass({
+    displayName: "CvProp",
+
+    mixins: [CvBaseMixin],
+    childContextTypes: {
+        scopeObj: React.PropTypes.object
+    },
+    componentDidMount: function componentDidMount() {
+        var entityRec = this.context.scopeObj;
+        var prop = entityRec.propAtName(this.props.propName);
+        this.setState({ prop: prop });
+    },
+    getChildContext: function getChildContext() {
+        return { scopeObj: this.state.prop };
+    },
+    getInitialState: function getInitialState() {
+        return { prop: null };
+    },
+    render: function render() {
+        var prop = this.state.prop;
+        if (prop) {
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children;
+            } else {
+                if (prop.value instanceof InlineBinaryRef) {
+                    var binary = prop.value;
+                    var mimeType = binary.settings['mime-type'] || 'image/jpg';
+                    return React.createElement("img", { "style": this.props.style, "src": 'data:' + mimeType + ';base64,' + binary.inlineData, "className": this.props.className });
+                } else if (prop.value instanceof ObjectBinaryRef) {
+                    var binary = prop.value;
+                    return React.createElement("img", { "style": this.props.style, "src": binary.settings['webURL'] });
+                } else {
+                    return React.createElement("span", { "style": this.props.style }, prop.value ? PropFormatter.formatForRead(prop.value, null) : '');
+                }
+            }
+        } else {
+            return null;
+        }
+    }
+});
 
 },{}]},{},[1]);

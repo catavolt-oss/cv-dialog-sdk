@@ -34,7 +34,7 @@ var CvResource = React.createClass<CvResourceProps, CvResourceState>({
                baseUrl = tenantSettingsTry.success['GMLAssetsURL']
             }
             if(this.props.type === 'image') {
-                return <img style={this.props.style} src={baseUrl + this.props.resourceName}/>
+                return <img style={this.props.style} className={this.props.className} src={baseUrl + this.props.resourceName}/>
             } else {
                 return null;
             }

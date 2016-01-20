@@ -9,6 +9,7 @@ ReactDOM.render(
     <div className="container">
         <CatavoltPane>
             <div>
+                <div className="header"></div>
                 <CvLoginPane/>
                 <CvAppWindow>
                     <span>
@@ -22,9 +23,9 @@ ReactDOM.render(
                                 <div className="panel-body row">
                                     <CvLauncher actionId={"AAABACfaAAAABpIk"} navTarget={"1"}>
                                         <CvScope handler={(launcher)=>{
-                                            return <div className="col-md-4 launch-div">
+                                            return <div className="col-sm-8 launch-div">
                                               <img className="launch-icon img-responsive center-block" src={launcher.iconBase}/>
-                                              <h5 className="launch-text small text-center">{launcher.name}</h5>
+                                              <h4 className="launch-text small text-center">{launcher.name}</h4>
                                             </div>
                                          }}/>
                                     </CvLauncher>
@@ -39,7 +40,7 @@ ReactDOM.render(
                                     </div>
                                     <div style={{maxHeight: '800px', overflow: 'auto'}}>
                                         <ul className={'list-group'}>
-                                            <CvList paneRef={0} wrapperElem={"a"}>
+                                            <CvList paneRef={0} wrapperElem={"h4"}>
                                                 <CvRecord navTarget={"2"}>
                                                     <li className={'list-group-item'}>
                                                         <CvProp propName={'name'}/>
@@ -54,48 +55,54 @@ ReactDOM.render(
                         <CvNavigation targetId={"2"}>
                             <CvForm>
                                 <div className="panel panel-primary">
-                                    <div className="panel-heading">
-                                        <CvScope get={'paneTitle'}/>
-                                        <CvResource resourceName={'icon-action-join.png'}/>
-                                    </div>
+                                    <div className="panel-heading">Messages</div>
                                     <div style={{maxHeight: '800px', overflow: 'auto'}}>
-                                        <CvList paneRef={0} wrapperElem={"span"}>
-                                            <CvRecord>
-                                                <div>
-                                                    <CvProp propName={'avatar_large'} className={'img-rounded'}/>
+                                        <div className="messageCol">
+                                            <div className="row">
+                                                <div className="col-sm-12">
+                                                    <div className="pull-right">
+                                                        <CvResource resourceName={'icon-action-join.png'}/>
+                                                        <a className="hlText">New Message</a>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <CvProp propName={'created-by'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'group_name'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'created-at'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'likes_count'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'comments_count'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'title'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'body_preview'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'attachment_preview_1'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'attachment_preview_2'}/>
-                                                </div>
-                                                <div>
-                                                    <CvProp propName={'attachment_preview_3'}/>
-                                                </div>
-                                            </CvRecord>
-                                        </CvList>
+                                            </div>
+                                            <CvList paneRef={0} wrapperElem={"span"}>
+                                                <CvRecord>
+                                                    <div className="row"><div className="col-sm-12">
+                                                        <div className="messagePanel">
+                                                            <div className="row">
+                                                                <div className="col-sm-6">
+                                                                    <div className="row">
+                                                                        <div className="col-sm-2"><CvProp propName={'avatar_large'} className={'img-rounded'}/></div>
+                                                                        <div className="col-sm-4 text-center attrib-box">
+                                                                            <h4><CvProp propName={'created-by'}/></h4>
+                                                                            <small><CvProp propName={'group_name'}/></small>
+                                                                            <small className="text-muted"><CvProp propName={'created-at'}/></small>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="col-sm-6">
+                                                                    <div className="pull-right"><CvResource resourceName={'icon-bookmark-unchecked.png'} style={{width:24, height:38}}/></div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="like-row">
+                                                                 <span><CvProp propName={'likes_count'}/></span><span>liked</span>
+                                                                 <span><CvProp propName={'comments_count'}/></span><span>comments</span>
+                                                            </div>
+                                                            <div className="row">
+                                                                <div className="col-sm-12">
+                                                                    <div> <CvProp propName={'title'}/> </div>
+                                                                    <blockquote><p><CvProp propName={'body_preview'}/></p></blockquote>
+                                                                    <div> <CvProp propName={'attachment_preview_1'}/> </div>
+                                                                    <div> <CvProp propName={'attachment_preview_2'}/> </div>
+                                                                    <div> <CvProp propName={'attachment_preview_3'}/> </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div></div>
+                                                </CvRecord>
+                                            </CvList>
+                                        </div>
                                     </div>
                                 </div>
                             </CvForm>
