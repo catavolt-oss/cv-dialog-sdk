@@ -5,7 +5,6 @@
 Log.logLevel(LogLevel.DEBUG);
 
 ReactDOM.render(
-
     <div className="container">
         <CatavoltPane>
             <div>
@@ -32,6 +31,7 @@ ReactDOM.render(
                                 </div>
                             </div>
                         </CvWorkbench>
+
                         <CvNavigation targetId={"1"} persistent={false}>
                             <CvForm>
                                 <div className="panel panel-primary">
@@ -52,6 +52,7 @@ ReactDOM.render(
                                 </div>
                             </CvForm>
                         </CvNavigation>
+
                         <CvNavigation targetId={"2"}>
                             <CvForm>
                                 <div className="panel panel-primary">
