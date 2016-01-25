@@ -12,6 +12,8 @@ ReactDOM.render(
                 <CvLoginPane/>
                 <CvAppWindow>
                     <span>
+
+                        /* Workbench Targeting and Style */
                         <CvWorkbench workbenchId={"AAABACffAAAABpZL"} persistent={false}>
                             <div className="panel panel-primary">
                                 <div className="panel-heading">
@@ -32,6 +34,7 @@ ReactDOM.render(
                             </div>
                         </CvWorkbench>
 
+                        /* Navigation Target for the 'Stream' List */
                         <CvNavigation targetId={"1"} persistent={false}>
                             <CvForm>
                                 <div className="panel panel-primary">
@@ -53,6 +56,7 @@ ReactDOM.render(
                             </CvForm>
                         </CvNavigation>
 
+                        /* Navigation Target for the 'Message' List */
                         <CvNavigation targetId={"2"}>
                             <CvForm>
                                 <div className="panel panel-primary">

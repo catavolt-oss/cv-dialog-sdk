@@ -124,6 +124,7 @@ var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
                                 </div>
                             </form>
                         </div>
+                        <div className="text-center"><h3>You can see the markup for this app <a href="https://git.catavolt.com/javascript/sdk/blob/master/catreact/js/components/app.tsx">here</a></h3></div>
                     </div>
             );
         } else {
