@@ -2,14 +2,15 @@
  * Created by rburson on 1/11/16.
  */
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
-interface CvScopeState extends CvState {
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin} from './catreat'
+
+export interface CvScopeState extends CvState {
 }
 
-interface CvScopeProps extends CvProps{
+export interface CvScopeProps extends CvProps{
     handler?: (o:any) => {};
     get?: string;
 }
@@ -19,7 +20,7 @@ interface CvScopeProps extends CvProps{
  * Exposes the scope of the enclosing tag via the handler function
  ***************************************************
  */
-var CvScope = React.createClass<CvScopeProps, CvScopeState>({
+export var CvScope = React.createClass<CvScopeProps, CvScopeState>({
 
     mixins: [CvBaseMixin],
 

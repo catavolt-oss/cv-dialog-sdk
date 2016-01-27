@@ -2,16 +2,28 @@
  * Created by rburson on 12/23/15.
  */
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
+import * as React from 'react'
+import {
+    CvState,
+    CvProps,
+    CvBaseMixin,
+    CvEvent,
+    CvEventRegistry,
+    CvEventType,
+    CvLoginResult,
+    CvLogoutResult,
+    CvAppWindow,
+    CvLoginPane
+} from './catreat'
+import {AppContext, Log, ObjUtil} from './catavolt'
 
-interface CatavoltPaneState extends CvState {
+export interface CatavoltPaneState extends CvState {
     loggedIn:boolean;
 }
 
-interface CatavoltPaneProps extends CvProps {
+export interface CatavoltPaneProps extends CvProps {
     catavolt?:AppContext;
 }
 
@@ -20,7 +32,7 @@ interface CatavoltPaneProps extends CvProps {
  *  Top-level container for a Catavolt Application
  ***************************************************
  */
-var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
+export var CatavoltPane = React.createClass<CatavoltPaneProps, CatavoltPaneState>({
 
     mixins: [CvBaseMixin],
 

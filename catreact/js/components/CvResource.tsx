@@ -1,14 +1,17 @@
 /**
  * Created by rburson on 1/15/16.
  */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
 
-interface CvResourceState extends CvState {
+///<reference path="../../typings/react/react.d.ts"/>
+
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin} from './catreat'
+import {AppContext} from './catavolt'
+
+export interface CvResourceState extends CvState {
 }
 
-interface CvResourceProps extends CvProps {
+export interface CvResourceProps extends CvProps {
     type?: string;
     resourceName:string
 }
@@ -18,7 +21,7 @@ interface CvResourceProps extends CvProps {
  * Render a simple message
  ***************************************************
  */
-var CvResource = React.createClass<CvResourceProps, CvResourceState>({
+export var CvResource = React.createClass<CvResourceProps, CvResourceState>({
 
     mixins: [CvBaseMixin],
 

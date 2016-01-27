@@ -1,17 +1,28 @@
 /**
  * Created by rburson on 12/23/15.
  */
+///<reference path="../../typings/react/react.d.ts"/>
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+import * as React from 'react'
+import {
+    CvState,
+    CvProps,
+    CvBaseMixin,
+    CvEvent,
+    CvEventRegistry,
+    CvEventType,
+    CvNavigationResult,
+    CvForm,
+    CvMessage
+} from './catreat'
+import {Try, NavRequest, FormContext} from './catavolt'
 
-interface CvNavigationState extends CvState {
+export interface CvNavigationState extends CvState {
     visible: boolean;
     navRequestTry:Try<NavRequest>;
 }
 
-interface CvNavigationProps extends CvProps {
+export interface CvNavigationProps extends CvProps {
     persistent?: boolean,
     targetId?: string,
     navigationListeners?: Array<(navRequestTry:Try<NavRequest>)=>void>
@@ -23,7 +34,7 @@ interface CvNavigationProps extends CvProps {
  * Render a NavRequest
  ***************************************************
  */
-var CvNavigation = React.createClass<CvNavigationProps, CvNavigationState>({
+export var CvNavigation = React.createClass<CvNavigationProps, CvNavigationState>({
 
     mixins: [CvBaseMixin],
 
@@ -34,27 +45,27 @@ var CvNavigation = React.createClass<CvNavigationProps, CvNavigationState>({
     componentDidMount: function () {
 
         (this.context.eventRegistry as CvEventRegistry).subscribe<CvNavigationResult>((navEvent:CvEvent<CvNavigationResult>)=> {
-            if(navEvent.eventObj.navTarget) {
-                if(this.props.targetId === navEvent.eventObj.navTarget) {
-                    this.setState({navRequestTry: navEvent.eventObj.navRequestTry, visible:true})
+            if (navEvent.eventObj.navTarget) {
+                if (this.props.targetId === navEvent.eventObj.navTarget) {
+                    this.setState({navRequestTry: navEvent.eventObj.navRequestTry, visible: true})
                 } else {
-                    if(!this.props.persistent) this.setState({visible: false});
+                    if (!this.props.persistent) this.setState({visible: false});
                 }
             } else {
-                if(!this.props.targetId) {
-                    this.setState({navRequestTry: navEvent.eventObj.navRequestTry, visible:true})
+                if (!this.props.targetId) {
+                    this.setState({navRequestTry: navEvent.eventObj.navRequestTry, visible: true})
                 } else {
-                    if(!this.props.persistent) this.setState({visible: false});
+                    if (!this.props.persistent) this.setState({visible: false});
                 }
             }
         }, CvEventType.NAVIGATION);
 
     },
 
-    getChildContext: function() {
+    getChildContext: function () {
         let navRequest = null;
-        if(this.state.navRequestTry && !this.state.navRequestTry.isFailure) {
-           navRequest = this.state.navRequestTry.success;
+        if (this.state.navRequestTry && !this.state.navRequestTry.isFailure) {
+            navRequest = this.state.navRequestTry.success;
         }
         return {
             scopeObj: navRequest

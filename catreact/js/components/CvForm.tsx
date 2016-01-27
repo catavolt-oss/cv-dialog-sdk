@@ -1,16 +1,17 @@
 /**
  * Created by rburson on 12/23/15.
  */
+///<reference path="../../typings/react/react.d.ts"/>
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin, CvDetails, CvList, CvMessage} from './catreat'
+import {Try, ListContext, DetailsContext, FormContext, Log, NavRequest} from './catavolt'
 
-interface CvFormState extends CvState {
+export interface CvFormState extends CvState {
     formContext:FormContext;
 }
 
-interface CvFormProps extends CvProps {
+export interface CvFormProps extends CvProps {
     onNavRequest?: (navRequestTry:Try<NavRequest>) => void;
 }
 
@@ -19,7 +20,7 @@ interface CvFormProps extends CvProps {
  * Render a FormContext
  ***************************************************
  */
-var CvForm = React.createClass<CvFormProps, CvFormState>({
+export var CvForm = React.createClass<CvFormProps, CvFormState>({
 
     mixins: [CvBaseMixin],
 

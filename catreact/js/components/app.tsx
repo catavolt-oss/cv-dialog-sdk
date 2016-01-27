@@ -1,6 +1,23 @@
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
+///<reference path="../../typings/react/react-dom.d.ts"/>
+
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
+import {
+    CatavoltPane,
+    CvLoginPane,
+    CvAppWindow,
+    CvWorkbench,
+    CvScope,
+    CvLauncher,
+    CvNavigation,
+    CvForm,
+    CvList,
+    CvRecord,
+    CvProp,
+    CvResource
+} from './catreat'
+import {Log, LogLevel} from './catavolt'
 
 Log.logLevel(LogLevel.DEBUG);
 
@@ -13,7 +30,6 @@ ReactDOM.render(
                 <CvAppWindow>
                     <span>
 
-                        /* Workbench Targeting and Style */
                         <CvWorkbench workbenchId={"AAABACffAAAABpZL"} persistent={false}>
                             <div className="panel panel-primary">
                                 <div className="panel-heading">
@@ -34,12 +50,13 @@ ReactDOM.render(
                             </div>
                         </CvWorkbench>
 
-                        /* Navigation Target for the 'Stream' List */
                         <CvNavigation targetId={"1"} persistent={false}>
                             <CvForm>
                                 <div className="panel panel-primary">
                                     <div className="panel-heading">
-                                        <h4><CvScope get={'paneTitle'}/></h4>
+                                        <h4>
+                                            <CvScope get={'paneTitle'}/>
+                                        </h4>
                                     </div>
                                     <div style={{maxHeight: '800px', overflow: 'auto'}}>
                                         <ul className={'list-group'}>
@@ -56,7 +73,6 @@ ReactDOM.render(
                             </CvForm>
                         </CvNavigation>
 
-                        /* Navigation Target for the 'Message' List */
                         <CvNavigation targetId={"2"}>
                             <CvForm>
                                 <div className="panel panel-primary">
@@ -71,52 +87,83 @@ ReactDOM.render(
                                         <div className="messageCol">
                                             <CvList paneRef={0} wrapperElem={"span"}>
                                                 <CvRecord>
-                                                    <div className="row"><div className="col-sm-12">
-                                                        <div className="messagePanel">
-                                                            <div className="row">
-                                                                <div className="col-sm-6">
-                                                                    <div className="row">
-                                                                        <div className="col-sm-2"><CvProp propName={'avatar_large'} className={'img-rounded avatar'}/></div>
-                                                                        <div className="col-sm-4 text-center attrib-box">
-                                                                            <h4><CvProp propName={'created-by'}/></h4>
-                                                                            <small><CvProp propName={'group_name'}/></small>
-                                                                            <small className="text-muted"><CvProp propName={'created-at'}/></small>
+                                                    <div className="row">
+                                                        <div className="col-sm-12">
+                                                            <div className="messagePanel">
+                                                                <div className="row">
+                                                                    <div className="col-sm-6">
+                                                                        <div className="row">
+                                                                            <div className="col-sm-2">
+                                                                                <CvProp propName={'avatar_large'}
+                                                                                        className={'img-rounded avatar'}/>
+                                                                            </div>
+                                                                            <div
+                                                                                className="col-sm-4 text-center attrib-box">
+                                                                                <h4>
+                                                                                    <CvProp propName={'created-by'}/>
+                                                                                </h4>
+                                                                                <small>
+                                                                                    <CvProp propName={'group_name'}/>
+                                                                                </small>
+                                                                                <small className="text-muted">
+                                                                                    <CvProp propName={'created-at'}/>
+                                                                                </small>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                                <div className="col-sm-6">
-                                                                    <div className="pull-right">
-                                                                        <CvProp propName={'is_flagged'} handler={(prop)=>{
+                                                                    <div className="col-sm-6">
+                                                                        <div className="pull-right">
+                                                                            <CvProp propName={'is_flagged'} handler={(prop)=>{
                                                                             return prop.value ?
                                                                                 <CvResource resourceName={'icon-bookmark.png'} style={{width:24, height:38}}/> :
                                                                                 <CvResource resourceName={'icon-bookmark-unchecked.png'} style={{width:24, height:38}}/>
                                                                         }}/>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="like-row">
+                                                                    <span>
+                                                                        <CvProp propName={'likes_count'}/>
+                                                                    </span>
+                                                                    <span>liked</span>
+                                                                    <span></span>
+                                                                    <span></span>
+                                                                    <span>
+                                                                        <CvProp propName={'comments_count'}/>
+                                                                    </span>
+                                                                    <span>comments</span>
+                                                                </div>
+                                                                <div>
+                                                                    <div>
+                                                                        <CvProp propName={'title'}/>
+                                                                    </div>
+                                                                    <blockquote>
+                                                                        <p>
+                                                                            <CvProp propName={'body_preview'}/>
+                                                                        </p>
+                                                                    </blockquote>
+                                                                    <div className="text-center">{
+                                                                        function() {
+                                                                            const attachments = [];
+                                                                            for(let i = 1; i<=10; i++) {
+                                                                                attachments.push(<CvProp
+                                                                                    propName={'attachment_preview_' + i}
+                                                                                    key={'' + i}/>)
+                                                                                }
+                                                                            return attachments;
+                                                                            }()}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="badge-row">
+                                                                    <div className="text-right">
+                                                                        <CvResource
+                                                                            resourceName={'icon-action-comment.png'}
+                                                                            style={{width:24, height:24}}/>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="like-row">
-                                                                 <span><CvProp propName={'likes_count'}/></span><span>liked</span>
-                                                                <span></span><span></span>
-                                                                 <span><CvProp propName={'comments_count'}/></span><span>comments</span>
-                                                            </div>
-                                                            <div>
-                                                                <div> <CvProp propName={'title'}/> </div>
-                                                                <blockquote><p><CvProp propName={'body_preview'}/></p></blockquote>
-                                                                <div className="text-center">{
-                                                                    function() {
-                                                                        const attachments = [];
-                                                                        for(let i = 1; i<=10; i++) {
-                                                                            attachments.push(<CvProp propName={'attachment_preview_' + i} key={'' + i}/>)
-                                                                        }
-                                                                        return attachments;
-                                                                    }()}
-                                                                </div>
-                                                            </div>
-                                                            <div className="badge-row">
-                                                                <div className="text-right"><CvResource resourceName={'icon-action-comment.png'} style={{width:24, height:24}}/></div>
-                                                            </div>
                                                         </div>
-                                                    </div></div>
+                                                    </div>
                                                 </CvRecord>
                                             </CvList>
                                         </div>

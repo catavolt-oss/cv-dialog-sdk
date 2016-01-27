@@ -2,11 +2,13 @@
  * Created by rburson on 12/23/15.
  */
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
-interface CvLoginPaneState extends CvState {
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin, CvEvent, CvEventRegistry, CvEventType, CvLogoutResult, CvLoginResult} from './catreat'
+import {Try, AppWinDef} from './catavolt'
+
+export interface CvLoginPaneState extends CvState {
     tenantId: string;
     gatewayUrl: string;
     userId: string;
@@ -15,7 +17,7 @@ interface CvLoginPaneState extends CvState {
     loggedIn:boolean
 }
 
-interface CvLoginPaneProps extends CvProps {
+export interface CvLoginPaneProps extends CvProps {
     loginListeners?: Array<()=>void>
 }
 
@@ -24,7 +26,7 @@ interface CvLoginPaneProps extends CvProps {
  * Render a LoginPane
  ***************************************************
  */
-var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
+export var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
 
     mixins: [CvBaseMixin],
 
@@ -147,7 +149,7 @@ var CvLoginPane = React.createClass<CvLoginPaneProps, CvLoginPaneState>({
     handleSubmit: function (e) {
         e.preventDefault();
         this.context.catavolt.login(this.state.gatewayUrl, this.state.tenantId, this.state.clientType, this.state.userId, this.state.password)
-            .onComplete(appWinDefTry => {
+            .onComplete((appWinDefTry:Try<AppWinDef>) => {
                 this.setState({loggedIn: true})
                 this.props.loginListeners.forEach((listener)=> { listener() });
                 (this.context.eventRegistry as CvEventRegistry).publish<CvLoginResult>({type:CvEventType.LOGIN, eventObj:{}});

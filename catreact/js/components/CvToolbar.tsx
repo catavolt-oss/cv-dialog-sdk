@@ -2,14 +2,15 @@
  * Created by rburson on 12/23/15.
  */
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
-interface CvToolbarState extends CvState {
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin} from './catreat'
+
+export interface CvToolbarState extends CvState {
 }
 
-interface CvToolbarProps extends CvProps {
+export interface CvToolbarProps extends CvProps {
 }
 
 /*
@@ -17,7 +18,7 @@ interface CvToolbarProps extends CvProps {
  * Render a top-level application toolbar
  ***************************************************
  */
-var CvToolbar = React.createClass<CvToolbarProps, CvToolbarState>({
+export var CvToolbar = React.createClass<CvToolbarProps, CvToolbarState>({
     mixins: [CvBaseMixin],
     render: function () {
         return (

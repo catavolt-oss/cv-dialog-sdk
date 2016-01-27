@@ -3,14 +3,16 @@
  *
  */
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
-interface CvMessageState extends CvState {
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin} from './catreat'
+import {Log} from './catavolt'
+
+export interface CvMessageState extends CvState {
 }
 
-interface CvMessageProps extends CvProps {
+export interface CvMessageProps extends CvProps {
     message:string;
 }
 
@@ -19,7 +21,7 @@ interface CvMessageProps extends CvProps {
  * Render a simple message
  ***************************************************
  */
-var CvMessage = React.createClass<CvMessageProps, CvMessageState>({
+export var CvMessage = React.createClass<CvMessageProps, CvMessageState>({
 
     mixins: [CvBaseMixin],
 

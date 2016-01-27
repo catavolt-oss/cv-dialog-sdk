@@ -1,17 +1,19 @@
 /**
  * Created by rburson on 12/23/15.
  */
+///<reference path="../../typings/react/react.d.ts"/>
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin, CvEvent, CvEventRegistry, CvEventType, CvNavigationResult, CvLauncher} from './catreat'
+import {Workbench, WorkbenchLaunchAction} from './catavolt'
 
-interface CvWorkbenchState extends CvState {
+
+export interface CvWorkbenchState extends CvState {
     workbench:Workbench;
     visible:boolean;
 }
 
-interface CvWorkbenchProps extends CvProps {
+export interface CvWorkbenchProps extends CvProps {
     persistent?: boolean;
     workbenchId:string;
 }
@@ -22,7 +24,7 @@ interface CvWorkbenchProps extends CvProps {
  ***************************************************
  */
 
-var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
+export var CvWorkbench = React.createClass<CvWorkbenchProps, CvWorkbenchState>({
 
     mixins: [CvBaseMixin],
 

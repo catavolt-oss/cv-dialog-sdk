@@ -1,42 +1,46 @@
 /**
  * Created by rburson on 12/23/15.
  */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
+import * as React from 'react';
+import { CvBaseMixin, CvEventType, CvToolbar, CvWorkbench, CvNavigation } from './catreat';
 /*
  ***************************************************
  * A component analogous to Catavolt AppWinDef
  ***************************************************
  */
-var CvAppWindow = React.createClass({
+export var CvAppWindow = React.createClass({
+    mixins: [CvBaseMixin],
+    componentDidMount: function () {
+        this.context.eventRegistry.subscribe((loginEvent) => {
+            this.setState({ loggedIn: true });
+        }, CvEventType.LOGIN);
+    },
     getInitialState: function () {
         return {
-            workbenches: [],
-            navRequestTry: null
+            loggedIn: false
         };
     },
     render: function () {
-        var _this = this;
-        var workbenches = this.props.catavolt.appWinDefTry.success.workbenches;
-        return (React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", {"className": "container"}, (function () {
-            if (_this.showWorkbench()) {
-                return workbenches.map(function (workbench, index) {
-                    return React.createElement(CvWorkbench, {"catavolt": _this.props.catavolt, "workbench": workbench, "onNavRequest": _this.onNavRequest});
-                });
+        if (this.state.loggedIn) {
+            if (React.Children.count(this.props.children) > 0) {
+                return this.props.children;
             }
-        })(), React.createElement(CvNavigation, {"navRequestTry": this.state.navRequestTry, "onNavRequest": this.onNavRequest}))));
+            else {
+                var workbenches = this.context.catavolt.appWinDefTry.success.workbenches;
+                return (React.createElement("span", null, React.createElement(CvToolbar, null), React.createElement("div", {"className": "container"}, (() => {
+                    if (this.showWorkbench()) {
+                        return workbenches.map((workbench, index) => {
+                            return React.createElement(CvWorkbench, {"workbenchId": workbench.workbenchId, "key": index});
+                        });
+                    }
+                })(), React.createElement(CvNavigation, null))));
+            }
+        }
+        else {
+            return null;
+        }
     },
     showWorkbench: function () {
         return this.props.persistentWorkbench || !this.state.navRequestTry;
     },
-    onNavRequest: function (navRequestTry) {
-        if (navRequestTry.isFailure) {
-            alert('Handle Navigation Failure!');
-            Log.error(navRequestTry.failure);
-        }
-        else {
-            this.setState({ navRequestTry: navRequestTry });
-        }
-    }
 });

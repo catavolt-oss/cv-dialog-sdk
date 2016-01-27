@@ -1,15 +1,15 @@
 /**
  * Created by rburson on 1/6/16.
  */
+///<reference path="../../typings/react/react.d.ts"/>
 
- ///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
- ///<reference path="references.ts"/>
+import * as React from 'react'
+import {Try, NavRequest} from './catavolt'
 
 /*
     Base interface for catavolt component properties
  */
-interface CvProps {
+export interface CvProps {
     className?:string;
     style?: any,
     key?: string;
@@ -20,13 +20,13 @@ interface CvProps {
 /*
     Base interface for catavolt component state
  */
-interface CvState {
+export interface CvState {
 }
 
 /*
     Base Mixin for all catavolt components
  */
-var CvBaseMixin = {
+export var CvBaseMixin = {
 
     contextTypes: {
         catavolt: React.PropTypes.object,
@@ -76,11 +76,11 @@ var CvBaseMixin = {
     Framework for decoupled communication between our components
  ******************************************************************
  */
-interface CvListener<T> {
+export interface CvListener<T> {
     (event:CvEvent<T>):void;
 }
 
-interface CvEvent<T> {
+export interface CvEvent<T> {
     type:CvEventType;
     eventObj:T;
 }
@@ -88,7 +88,7 @@ interface CvEvent<T> {
 
 /* Event types */
 
-enum CvEventType {
+export enum CvEventType {
     LOGIN,
     LOGOUT,
     NAVIGATION
@@ -96,11 +96,11 @@ enum CvEventType {
 
 /* Event type payloads */
 
-interface CvLoginResult {}
+export interface CvLoginResult {}
 
-interface CvLogoutResult {}
+export interface CvLogoutResult {}
 
-interface CvNavigationResult {
+export interface CvNavigationResult {
     navRequestTry:Try<NavRequest>,
     workbenchId?:string;
     actionId?:string;
@@ -109,7 +109,7 @@ interface CvNavigationResult {
 
 /* Event routing */
 
-class CvEventRegistry {
+export class CvEventRegistry {
 
     private _listenerMap:{[index:number]:Array<CvListener<any>>} = [];
 

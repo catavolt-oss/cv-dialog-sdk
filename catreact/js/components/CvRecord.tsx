@@ -1,14 +1,16 @@
 /**
  * Created by rburson on 1/14/16.
  */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
-interface CvRecordState extends CvState {
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin, CvEventRegistry, CvEventType, CvNavigationResult} from './catreat'
+import {EntityRec, PaneContext, ListContext, MenuDef} from './catavolt'
+
+export interface CvRecordState extends CvState {
 }
 
-interface CvRecordProps extends CvProps {
+export interface CvRecordProps extends CvProps {
     navTarget?:string;
     entityRec?:EntityRec;
 }
@@ -18,7 +20,7 @@ interface CvRecordProps extends CvProps {
  * Render an EntityRec
  ***************************************************
  */
-var CvRecord = React.createClass<CvRecordProps, CvRecordState>({
+export var CvRecord = React.createClass<CvRecordProps, CvRecordState>({
 
     mixins: [CvBaseMixin],
 

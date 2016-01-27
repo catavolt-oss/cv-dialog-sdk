@@ -1,26 +1,30 @@
 /**
  * Created by rburson on 12/23/15.
  */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+
+///<reference path="../../typings/react/react.d.ts"/>
+
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin, CvEventRegistry, CvEventType, CvNavigationResult} from './catreat'
+import {Workbench, WorkbenchLaunchAction, Try, NavRequest} from './catavolt'
+
 /*
  ***************************************************
  * Render a 'Launcher'
  ***************************************************
  */
 
-interface CvLauncherState extends CvState {
+export interface CvLauncherState extends CvState {
     launchAction:WorkbenchLaunchAction;
 }
 
-interface CvLauncherProps extends CvProps {
+export interface CvLauncherProps extends CvProps {
     navTarget?: string;
     actionId?: string;
     launchListeners?: Array<(navRequestTry:Try<NavRequest>)=>void>
 }
 
-var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
+export var CvLauncher = React.createClass<CvLauncherProps, CvLauncherState>({
 
     mixins: [CvBaseMixin],
 

@@ -2,15 +2,16 @@
  * Created by rburson on 12/23/15.
  *
  */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../catavolt/references.ts"/>
-///<reference path="references.ts"/>
+import * as React from 'react';
+import { CvBaseMixin } from './catreat';
+import { Log } from './catavolt';
 /*
  ***************************************************
  * Render a simple message
  ***************************************************
  */
-var CvMessage = React.createClass({
+export var CvMessage = React.createClass({
+    mixins: [CvBaseMixin],
     render: function () {
         Log.info(this.props.message);
         return React.createElement("span", null);

@@ -1,15 +1,30 @@
 /**
  * Created by rburson on 12/23/15.
  */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
 
-interface CvAppWindowState extends CvState {
+///<reference path="../../typings/react/react.d.ts"/>
+
+import * as React from 'react'
+import {
+    CvState,
+    CvProps,
+    CvBaseMixin,
+    CvEvent,
+    CvEventRegistry,
+    CvEventType,
+    CvToolbar,
+    CvWorkbench,
+    CvNavigation,
+    CvLoginResult,
+    CvWorkbenchProps
+} from './catreat'
+import {Workbench} from './catavolt'
+
+export interface CvAppWindowState extends CvState {
     loggedIn: boolean;
 }
 
-interface CvAppWindowProps extends CvProps {
+export interface CvAppWindowProps extends CvProps {
     persistentWorkbench?:boolean;
     onLogout?:()=>void;
 }
@@ -19,7 +34,7 @@ interface CvAppWindowProps extends CvProps {
  * A component analogous to Catavolt AppWinDef
  ***************************************************
  */
-var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
+export var CvAppWindow = React.createClass<CvAppWindowProps, CvAppWindowState>({
 
     mixins: [CvBaseMixin],
 

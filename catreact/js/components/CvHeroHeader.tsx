@@ -1,15 +1,16 @@
 /**
  * Created by rburson on 12/23/15.
  */
+///<reference path="../../typings/react/react.d.ts"/>
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin} from './catreat'
+import {} from './catavolt'
 
-interface CvHeroHeaderState extends CvState {
+export interface CvHeroHeaderState extends CvState {
 }
 
-interface CvHeroHeaderProps extends CvProps {
+export interface CvHeroHeaderProps extends CvProps {
 }
 
 /*
@@ -17,7 +18,7 @@ interface CvHeroHeaderProps extends CvProps {
  * When you need to look fancy
  ***************************************************
  */
-var CvHeroHeader = React.createClass<CvHeroHeaderProps, CvHeroHeaderState>({
+export var CvHeroHeader = React.createClass<CvHeroHeaderProps, CvHeroHeaderState>({
 
     mixins: [CvBaseMixin],
 

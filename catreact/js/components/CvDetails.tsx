@@ -2,15 +2,29 @@
  * Created by rburson on 12/23/15.
  */
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
-interface CvDetailsState extends CvState {
-   renderedDetailRows:Array<any>;
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin, CvMenu} from './catreat'
+import {
+    EntityRec,
+    DetailsContext,
+    Try,
+    NavRequest,
+    Future,
+    Log,
+    ObjUtil,
+    LabelCellValueDef,
+    ForcedLineCellValueDef,
+    AttributeCellValueDef,
+    VoidResult
+} from './catavolt'
+
+export interface CvDetailsState extends CvState {
+    renderedDetailRows:Array<any>;
 }
 
-interface CvDetailsProps extends CvProps{
+export interface CvDetailsProps extends CvProps {
     detailsContext:DetailsContext;
     onNavRequest:(navRequestTry:Try<NavRequest>)=>void;
 }
@@ -20,7 +34,7 @@ interface CvDetailsProps extends CvProps{
  * Render a DetailsContext
  ***************************************************
  */
-var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
+export var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
 
     mixins: [CvBaseMixin],
 
@@ -28,8 +42,8 @@ var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
         return {renderedDetailRows: []}
     },
 
-    componentWillMount: function() {
-        this.props.detailsContext.read().onComplete((entityRecTry:Try<EntityRec>)=>{
+    componentWillMount: function () {
+        this.props.detailsContext.read().onComplete((entityRecTry:Try<EntityRec>)=> {
             this.layoutDetailsPane(this.props.detailsContext);
         });
     },
@@ -41,7 +55,8 @@ var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
                 <div className="panel-heading">
                     <span>{detailsContext.paneTitle || '>'}</span>
                     <div className="pull-right">
-                        {detailsContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index} actionId={menuDef.actionId}/> })}
+                        {detailsContext.menuDefs.map((menuDef, index) => { return <CvMenu key={index}
+                                                                                          actionId={menuDef.actionId}/> })}
                     </div>
                 </div>
                 <div style={{maxHeight: '400px', overflow: 'auto'}}>
@@ -100,8 +115,19 @@ var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
     },
 
     createTitleRow: function (row, index) {
-        Log.info('row: '+ JSON.stringify(row));
-        return <tr key={index}><td><span><strong>{row[0].values[0].value}</strong></span></td><td><span><strong>{row[1].values[0].value}</strong></span></td></tr>;
+        Log.info('row: ' + JSON.stringify(row));
+        return <tr key={index}>
+            <td>
+                <span>
+                    <strong>{row[0].values[0].value}</strong>
+                </span>
+            </td>
+            <td>
+                <span>
+                    <strong>{row[1].values[0].value}</strong>
+                </span>
+            </td>
+        </tr>;
     },
 
     /* Returns a Future */
@@ -128,12 +154,15 @@ var CvDetails = React.createClass<CvDetailsProps, CvDetailsState>({
             } else if (prop) {
                 value = <span>{detailsContext.formatForRead(prop.value, prop.name)}</span>
             }
-            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>, <td>{value}</td>]}</tr>);
+            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>,
+            <td>{value}</td>]}</tr>);
         } else if (valueDef instanceof LabelCellValueDef) {
             const value = <span>{valueDef.value}</span>
-            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>, <td>{value}</td>]}</tr>);
+            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>,
+            <td>{value}</td>]}</tr>);
         } else {
-            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>, <td></td>]}</tr>);
+            return Future.createSuccessfulFuture('createEditorRow', <tr key={index}>{[<td>{label}</td>,
+            <td></td>]}</tr>);
         }
 
     },

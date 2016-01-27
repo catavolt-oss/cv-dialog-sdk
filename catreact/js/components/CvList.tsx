@@ -1,16 +1,17 @@
 /**
  * Created by rburson on 12/23/15.
  */
+///<reference path="../../typings/react/react.d.ts"/>
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin, CvEventRegistry, CvEventType, CvNavigationResult, CvRecord, CvMenu} from './catreat'
+import {FormContext, ListContext, QueryMarkerOption, ObjUtil, Log, ArrayUtil, MenuDef, EntityRec} from './catavolt'
 
-interface CvListState extends CvState {
+export interface CvListState extends CvState {
     listContext:ListContext;
 }
 
-interface CvListProps extends CvProps {
+export interface CvListProps extends CvProps {
     paneRef:number;
     wrapperElem?:string;
 }
@@ -24,9 +25,7 @@ interface CvListProps extends CvProps {
  * Render a ListContext
  ***************************************************
  */
-import QueryMarkerOption = catavolt.dialog.QueryMarkerOption;
-
-var CvList = React.createClass<CvListProps, CvListState>({
+export var CvList = React.createClass<CvListProps, CvListState>({
 
     mixins: [CvBaseMixin],
 

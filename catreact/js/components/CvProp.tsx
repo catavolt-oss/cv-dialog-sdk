@@ -1,15 +1,17 @@
 /**
  * Created by rburson on 1/14/16.
  */
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
-interface CvPropState extends CvState {
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin} from './catreat'
+import {Prop, EntityRec, InlineBinaryRef, ObjectBinaryRef, PropFormatter} from './catavolt'
+
+export interface CvPropState extends CvState {
     prop:Prop
 }
 
-interface CvPropProps extends CvProps {
+export interface CvPropProps extends CvProps {
     handler?: (o:Prop) => {};
     isVisible?: (o:Prop) => boolean;
     propName:string;
@@ -21,7 +23,7 @@ interface CvPropProps extends CvProps {
  * Render a Property
  ***************************************************
  */
-var CvProp = React.createClass<CvPropProps, CvPropState>({
+export var CvProp = React.createClass<CvPropProps, CvPropState>({
 
     mixins: [CvBaseMixin],
 

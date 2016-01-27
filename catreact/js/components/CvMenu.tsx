@@ -2,15 +2,17 @@
  * Created by rburson on 12/23/15.
  */
 
-///<reference path="../../typings/react/react-global.d.ts"/>
-///<reference path="../../typings/catavolt/catavolt_sdk.d.ts"/>
-///<reference path="references.ts"/>
+///<reference path="../../typings/react/react.d.ts"/>
 
-interface CvMenuState extends CvState {
+import * as React from 'react'
+import {CvState, CvProps, CvBaseMixin} from './catreat'
+import {MenuDef, PaneContext} from './catavolt'
+
+export interface CvMenuState extends CvState {
     menuDef:MenuDef;
 }
 
-interface CvMenuProps extends CvProps {
+export interface CvMenuProps extends CvProps {
     actionId:string;
 }
 
@@ -20,7 +22,7 @@ interface CvMenuProps extends CvProps {
  ***************************************************
  */
 
-var CvMenu = React.createClass<CvMenuProps, CvMenuState>({
+export var CvMenu = React.createClass<CvMenuProps, CvMenuState>({
 
     mixins: [CvBaseMixin],
 
