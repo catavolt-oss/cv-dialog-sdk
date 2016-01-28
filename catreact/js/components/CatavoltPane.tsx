@@ -16,7 +16,7 @@ import {
     CvLogoutResult,
     CvAppWindow,
     CvLoginPane
-} from './catreat'
+} from './catreact'
 import {AppContext, Log, ObjUtil} from './catavolt'
 
 export interface CatavoltPaneState extends CvState {

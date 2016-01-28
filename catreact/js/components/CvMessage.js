@@ -3,7 +3,7 @@
  *
  */
 import * as React from 'react';
-import { CvBaseMixin } from './catreat';
+import { CvBaseMixin } from './catreact';
 import { Log } from './catavolt';
 /*
  ***************************************************

@@ -17,7 +17,7 @@ import {
     CvNavigation,
     CvLoginResult,
     CvWorkbenchProps
-} from './catreat'
+} from './catreact'
 import {Workbench} from './catavolt'
 
 export interface CvAppWindowState extends CvState {

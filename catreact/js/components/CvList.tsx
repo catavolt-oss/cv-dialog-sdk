@@ -4,7 +4,7 @@
 ///<reference path="../../typings/react/react.d.ts"/>
 
 import * as React from 'react'
-import {CvState, CvProps, CvBaseMixin, CvEventRegistry, CvEventType, CvNavigationResult, CvRecord, CvMenu} from './catreat'
+import {CvState, CvProps, CvBaseMixin, CvEventRegistry, CvEventType, CvNavigationResult, CvRecord, CvMenu} from './catreact'
 import {FormContext, ListContext, QueryMarkerOption, ObjUtil, Log, ArrayUtil, MenuDef, EntityRec} from './catavolt'
 
 export interface CvListState extends CvState {

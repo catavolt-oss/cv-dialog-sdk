@@ -5,7 +5,7 @@
 ///<reference path="../../typings/react/react.d.ts"/>
 
 import * as React from 'react'
-import {CvState, CvProps, CvBaseMixin, CvEventRegistry, CvEventType, CvNavigationResult} from './catreat'
+import {CvState, CvProps, CvBaseMixin, CvEventRegistry, CvEventType, CvNavigationResult} from './catreact'
 import {Workbench, WorkbenchLaunchAction, Try, NavRequest} from './catavolt'
 
 /*

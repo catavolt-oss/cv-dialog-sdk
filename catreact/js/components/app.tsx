@@ -16,7 +16,7 @@ import {
     CvRecord,
     CvProp,
     CvResource
-} from './catreat'
+} from './catreact'
 import {Log, LogLevel} from './catavolt'
 
 Log.logLevel(LogLevel.DEBUG);

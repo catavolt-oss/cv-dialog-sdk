@@ -14,7 +14,7 @@ import {
     CvNavigationResult,
     CvForm,
     CvMessage
-} from './catreat'
+} from './catreact'
 import {Try, NavRequest, FormContext} from './catavolt'
 
 export interface CvNavigationState extends CvState {

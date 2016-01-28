@@ -2,7 +2,7 @@
  * Created by rburson on 1/11/16.
  */
 import * as React from 'react';
-import { CvBaseMixin } from './catreat';
+import { CvBaseMixin } from './catreact';
 /*
  ***************************************************
  * Exposes the scope of the enclosing tag via the handler function

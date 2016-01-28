@@ -2,7 +2,7 @@
  * Created by rburson on 12/23/15.
  */
 import * as React from 'react';
-import { CvBaseMixin, CvEventType } from './catreat';
+import { CvBaseMixin, CvEventType } from './catreact';
 export var CvLauncher = React.createClass({
     mixins: [CvBaseMixin],
     childContextTypes: {

@@ -2,7 +2,7 @@
  * Created by rburson on 12/23/15.
  */
 import * as React from 'react';
-import { CvBaseMixin, CvEventRegistry, CvEventType, CvAppWindow, CvLoginPane } from './catreat';
+import { CvBaseMixin, CvEventRegistry, CvEventType, CvAppWindow, CvLoginPane } from './catreact';
 import { AppContext, Log, ObjUtil } from './catavolt';
 /*
  ***************************************************

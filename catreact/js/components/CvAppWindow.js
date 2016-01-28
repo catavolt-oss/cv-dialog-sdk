@@ -2,7 +2,7 @@
  * Created by rburson on 12/23/15.
  */
 import * as React from 'react';
-import { CvBaseMixin, CvEventType, CvToolbar, CvWorkbench, CvNavigation } from './catreat';
+import { CvBaseMixin, CvEventType, CvToolbar, CvWorkbench, CvNavigation } from './catreact';
 /*
  ***************************************************
  * A component analogous to Catavolt AppWinDef

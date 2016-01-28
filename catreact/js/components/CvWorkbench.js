@@ -3,7 +3,7 @@
  */
 ///<reference path="../../typings/react/react.d.ts"/>
 import * as React from 'react';
-import { CvBaseMixin, CvEventType, CvLauncher } from './catreat';
+import { CvBaseMixin, CvEventType, CvLauncher } from './catreact';
 /*
  ***************************************************
  * Render a Workbench

@@ -2,7 +2,7 @@
 ///<reference path="../../typings/react/react-dom.d.ts"/>
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { CatavoltPane, CvLoginPane, CvAppWindow, CvWorkbench, CvScope, CvLauncher, CvNavigation, CvForm, CvList, CvRecord, CvProp, CvResource } from './catreat';
+import { CatavoltPane, CvLoginPane, CvAppWindow, CvWorkbench, CvScope, CvLauncher, CvNavigation, CvForm, CvList, CvRecord, CvProp, CvResource } from './catreact';
 import { Log, LogLevel } from './catavolt';
 Log.logLevel(LogLevel.DEBUG);
 ReactDOM.render(React.createElement("div", {"className": "container"}, React.createElement(CatavoltPane, null, React.createElement("div", null, React.createElement("div", {"className": "header"}), React.createElement(CvLoginPane, null), React.createElement(CvAppWindow, null, React.createElement("span", null, React.createElement(CvWorkbench, {"workbenchId": "AAABACffAAAABpZL", "persistent": false}, React.createElement("div", {"className": "panel panel-primary"}, React.createElement("div", {"className": "panel-heading"}, React.createElement("h3", {"className": "panel-title"}, React.createElement(CvScope, {"get": 'name'}))), React.createElement("div", {"className": "panel-body row"}, React.createElement(CvLauncher, {"actionId": "AAABACfaAAAABpIk", "navTarget": "1"}, React.createElement(CvScope, {"handler": (launcher) => {

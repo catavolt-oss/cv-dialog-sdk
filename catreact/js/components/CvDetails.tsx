@@ -5,7 +5,7 @@
 ///<reference path="../../typings/react/react.d.ts"/>
 
 import * as React from 'react'
-import {CvState, CvProps, CvBaseMixin, CvMenu} from './catreat'
+import {CvState, CvProps, CvBaseMixin, CvMenu} from './catreact'
 import {
     EntityRec,
     DetailsContext,

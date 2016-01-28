@@ -6,7 +6,7 @@
 ///<reference path="../../typings/react/react.d.ts"/>
 
 import * as React from 'react'
-import {CvState, CvProps, CvBaseMixin} from './catreat'
+import {CvState, CvProps, CvBaseMixin} from './catreact'
 import {Log} from './catavolt'
 
 export interface CvMessageState extends CvState {

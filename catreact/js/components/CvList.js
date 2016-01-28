@@ -3,7 +3,7 @@
  */
 ///<reference path="../../typings/react/react.d.ts"/>
 import * as React from 'react';
-import { CvBaseMixin, CvEventType, CvRecord, CvMenu } from './catreat';
+import { CvBaseMixin, CvEventType, CvRecord, CvMenu } from './catreact';
 import { ListContext, QueryMarkerOption, ObjUtil, Log, ArrayUtil, MenuDef } from './catavolt';
 /**
    @TODO This class needs to allow for CvRecord at any depth with children.  Also better handling of 'wrapper' requirement

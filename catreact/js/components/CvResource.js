@@ -2,7 +2,7 @@
  * Created by rburson on 1/15/16.
  */
 import * as React from 'react';
-import { CvBaseMixin } from './catreat';
+import { CvBaseMixin } from './catreact';
 /*
  ***************************************************
  * Render a simple message

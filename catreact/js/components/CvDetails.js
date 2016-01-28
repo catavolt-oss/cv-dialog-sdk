@@ -2,7 +2,7 @@
  * Created by rburson on 12/23/15.
  */
 import * as React from 'react';
-import { CvBaseMixin, CvMenu } from './catreat';
+import { CvBaseMixin, CvMenu } from './catreact';
 import { Future, Log, ObjUtil, LabelCellValueDef, ForcedLineCellValueDef, AttributeCellValueDef } from './catavolt';
 /*
  ***************************************************

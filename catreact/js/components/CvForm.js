@@ -3,7 +3,7 @@
  */
 ///<reference path="../../typings/react/react.d.ts"/>
 import * as React from 'react';
-import { CvBaseMixin, CvDetails, CvList, CvMessage } from './catreat';
+import { CvBaseMixin, CvDetails, CvList, CvMessage } from './catreact';
 import { ListContext, DetailsContext, Log } from './catavolt';
 /*
  ***************************************************

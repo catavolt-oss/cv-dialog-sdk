@@ -2,7 +2,7 @@
  * Created by rburson on 12/23/15.
  */
 import * as React from 'react';
-import { CvBaseMixin } from './catreat';
+import { CvBaseMixin } from './catreact';
 /*
  ***************************************************
  * Render a 'context menu' for a MenuDef
