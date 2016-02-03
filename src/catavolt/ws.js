@@ -159,3 +159,4 @@ export class Get {
         return this._promise;
     }
 }
+//# sourceMappingURL=ws.js.map

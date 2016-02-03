@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "out": "out/catavolt_sdk.js",
+        "out": "../out/catavolt_sdk.js",
         "target": "es5",
         "sourceMap": true
     }

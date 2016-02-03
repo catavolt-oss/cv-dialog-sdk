@@ -276,3 +276,4 @@ export class Promise {
         this.complete(new Success(value));
     }
 }
+//# sourceMappingURL=fp.js.map
