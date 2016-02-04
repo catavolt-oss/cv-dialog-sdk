@@ -1,15 +1,17 @@
 /**
  * Created by rburson on 3/6/15.
  */
-export class ArrayUtil {
-    static copy(source) {
-        return source.map((e) => {
+var ArrayUtil = (function () {
+    function ArrayUtil() {
+    }
+    ArrayUtil.copy = function (source) {
+        return source.map(function (e) {
             return e;
         });
-    }
-    static find(source, f) {
+    };
+    ArrayUtil.find = function (source, f) {
         var value = null;
-        source.some((v) => {
+        source.some(function (v) {
             if (f(v)) {
                 value = v;
                 return true;
@@ -17,8 +19,10 @@ export class ArrayUtil {
             return false;
         });
         return value;
-    }
-}
+    };
+    return ArrayUtil;
+})();
+exports.ArrayUtil = ArrayUtil;
 /**
  * *****************************************************
  */
@@ -26,8 +30,10 @@ export class ArrayUtil {
  This implementation supports our ECMA 5.1 browser set, including IE9
  If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
  */
-export class Base64 {
-    static encode(input) {
+var Base64 = (function () {
+    function Base64() {
+    }
+    Base64.encode = function (input) {
         var output = "";
         var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
         var i = 0;
@@ -51,8 +57,8 @@ export class Base64 {
                 Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
         }
         return output;
-    }
-    static decode(input) {
+    };
+    Base64.decode = function (input) {
         var output = "";
         var chr1, chr2, chr3;
         var enc1, enc2, enc3, enc4;
@@ -76,8 +82,8 @@ export class Base64 {
         }
         output = Base64._utf8_decode(output);
         return output;
-    }
-    static _utf8_encode(s) {
+    };
+    Base64._utf8_encode = function (s) {
         s = s.replace(/\r\n/g, "\n");
         var utftext = "";
         for (var n = 0; n < s.length; n++) {
@@ -96,8 +102,8 @@ export class Base64 {
             }
         }
         return utftext;
-    }
-    static _utf8_decode(utftext) {
+    };
+    Base64._utf8_decode = function (utftext) {
         var s = "";
         var i = 0;
         var c = 0, c1 = 0, c2 = 0, c3 = 0;
@@ -120,67 +126,71 @@ export class Base64 {
             }
         }
         return s;
-    }
-}
-Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    };
+    Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    return Base64;
+})();
+exports.Base64 = Base64;
 /**
  * *****************************************************
  */
-export var LogLevel;
 (function (LogLevel) {
     LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
     LogLevel[LogLevel["WARN"] = 1] = "WARN";
     LogLevel[LogLevel["INFO"] = 2] = "INFO";
     LogLevel[LogLevel["DEBUG"] = 3] = "DEBUG";
-})(LogLevel || (LogLevel = {}));
-export class Log {
-    static logLevel(level) {
+})(exports.LogLevel || (exports.LogLevel = {}));
+var LogLevel = exports.LogLevel;
+var Log = (function () {
+    function Log() {
+    }
+    Log.logLevel = function (level) {
         if (level >= LogLevel.DEBUG) {
-            Log.debug = (message, method, clz) => {
-                Log.log((o) => {
+            Log.debug = function (message, method, clz) {
+                Log.log(function (o) {
                     console.info(o);
                 }, 'DEBUG: ' + message, method, clz);
             };
         }
         else {
-            Log.debug = (message, method, clz) => {
+            Log.debug = function (message, method, clz) {
             };
         }
         if (level >= LogLevel.INFO) {
-            Log.info = (message, method, clz) => {
-                Log.log((o) => {
+            Log.info = function (message, method, clz) {
+                Log.log(function (o) {
                     console.info(o);
                 }, 'INFO: ' + message, method, clz);
             };
         }
         else {
-            Log.info = (message, method, clz) => {
+            Log.info = function (message, method, clz) {
             };
         }
         if (level >= LogLevel.WARN) {
-            Log.error = (message, clz, method) => {
-                Log.log((o) => {
+            Log.error = function (message, clz, method) {
+                Log.log(function (o) {
                     console.error(o);
                 }, 'ERROR: ' + message, method, clz);
             };
         }
         else {
-            Log.error = (message, clz, method) => {
+            Log.error = function (message, clz, method) {
             };
         }
         if (level >= LogLevel.ERROR) {
-            Log.warn = (message, clz, method) => {
-                Log.log((o) => {
+            Log.warn = function (message, clz, method) {
+                Log.log(function (o) {
                     console.info(o);
                 }, 'WARN: ' + message, method, clz);
             };
         }
         else {
-            Log.warn = (message, clz, method) => {
+            Log.warn = function (message, clz, method) {
             };
         }
-    }
-    static log(logger, message, method, clz) {
+    };
+    Log.log = function (logger, message, method, clz) {
         var m = typeof message !== 'string' ? Log.formatRecString(message) : message;
         if (clz || method) {
             logger(clz + "::" + method + " : " + m);
@@ -188,18 +198,22 @@ export class Log {
         else {
             logger(m);
         }
-    }
-    static formatRecString(o) {
+    };
+    Log.formatRecString = function (o) {
         return ObjUtil.formatRecAttr(o);
-    }
-}
-//set default log level here
-Log.init = Log.logLevel(LogLevel.INFO);
+    };
+    //set default log level here
+    Log.init = Log.logLevel(LogLevel.INFO);
+    return Log;
+})();
+exports.Log = Log;
 /**
  * *****************************************************
  */
-export class ObjUtil {
-    static addAllProps(sourceObj, targetObj) {
+var ObjUtil = (function () {
+    function ObjUtil() {
+    }
+    ObjUtil.addAllProps = function (sourceObj, targetObj) {
         if (null == sourceObj || "object" != typeof sourceObj)
             return targetObj;
         if (null == targetObj || "object" != typeof targetObj)
@@ -208,8 +222,8 @@ export class ObjUtil {
             targetObj[attr] = sourceObj[attr];
         }
         return targetObj;
-    }
-    static cloneOwnProps(sourceObj) {
+    };
+    ObjUtil.cloneOwnProps = function (sourceObj) {
         if (null == sourceObj || "object" != typeof sourceObj)
             return sourceObj;
         var copy = sourceObj.constructor();
@@ -219,8 +233,8 @@ export class ObjUtil {
             }
         }
         return copy;
-    }
-    static copyNonNullFieldsOnly(obj, newObj, filterFn) {
+    };
+    ObjUtil.copyNonNullFieldsOnly = function (obj, newObj, filterFn) {
         for (var prop in obj) {
             if (!filterFn || filterFn(prop)) {
                 var type = typeof obj[prop];
@@ -233,28 +247,34 @@ export class ObjUtil {
             }
         }
         return newObj;
-    }
-    static formatRecAttr(o) {
+    };
+    ObjUtil.formatRecAttr = function (o) {
         //@TODO - add a filter here to build a cache and detect (and skip) circular references
         return JSON.stringify(o);
-    }
-    static newInstance(type) {
+    };
+    ObjUtil.newInstance = function (type) {
         return new type;
-    }
-}
+    };
+    return ObjUtil;
+})();
+exports.ObjUtil = ObjUtil;
 /**
  * *****************************************************
  */
-export class StringUtil {
-    static splitSimpleKeyValuePair(pairString) {
+var StringUtil = (function () {
+    function StringUtil() {
+    }
+    StringUtil.splitSimpleKeyValuePair = function (pairString) {
         var index = pairString.indexOf(':');
-        let code = '';
-        let desc = '';
+        var code = '';
+        var desc = '';
         if (index > -1) {
             code = pairString.substr(0, index);
             desc = pairString.length > index ? pairString.substr(index + 1) : '';
         }
         return [code, desc];
-    }
-}
+    };
+    return StringUtil;
+})();
+exports.StringUtil = StringUtil;
 //# sourceMappingURL=util.js.map

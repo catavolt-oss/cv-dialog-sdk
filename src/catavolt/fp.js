@@ -1,5 +1,10 @@
-import { ArrayUtil } from "./util";
-import { Log } from "./util";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var util_1 = require("./util");
+var util_2 = require("./util");
 /*
   IMPORTANT!
   Note #1: Dependency cycles - These classes must be in a single file (module) because of commonjs and circular dependency issues.
@@ -8,11 +13,13 @@ import { Log } from "./util";
 /**
  * Created by rburson on 3/16/15.
  */
-export class Try {
-    static flatten(tryList) {
+var Try = (function () {
+    function Try() {
+    }
+    Try.flatten = function (tryList) {
         var successes = [];
         var failures = [];
-        tryList.forEach((t) => {
+        tryList.forEach(function (t) {
             if (t.isFailure) {
                 failures.push(t.failure);
             }
@@ -37,120 +44,180 @@ export class Try {
         else {
             return new Success(successes);
         }
-    }
-    static isListOfTry(list) {
-        return list.every((value) => {
+    };
+    Try.isListOfTry = function (list) {
+        return list.every(function (value) {
             return (value instanceof Try);
         });
-    }
-    bind(f) {
+    };
+    Try.prototype.bind = function (f) {
         return this.isFailure ? new Failure(this.failure) : f(this.success);
-    }
-    get failure() {
-        return null;
-    }
-    get isFailure() {
-        return false;
-    }
-    get isSuccess() {
-        return false;
-    }
-    map(f) {
+    };
+    Object.defineProperty(Try.prototype, "failure", {
+        get: function () {
+            return null;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Try.prototype, "isFailure", {
+        get: function () {
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Try.prototype, "isSuccess", {
+        get: function () {
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Try.prototype.map = function (f) {
         return this.isFailure ? new Failure(this.failure) : new Success(f(this.success));
-    }
-    get success() {
-        return null;
-    }
-}
-export class Failure extends Try {
-    constructor(_error) {
-        super();
+    };
+    Object.defineProperty(Try.prototype, "success", {
+        get: function () {
+            return null;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Try;
+})();
+exports.Try = Try;
+var Failure = (function (_super) {
+    __extends(Failure, _super);
+    function Failure(_error) {
+        _super.call(this);
         this._error = _error;
     }
-    get failure() {
-        return this._error;
-    }
-    get isFailure() {
-        return true;
-    }
-}
-export class Success extends Try {
-    constructor(_value) {
-        super();
+    Object.defineProperty(Failure.prototype, "failure", {
+        get: function () {
+            return this._error;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Failure.prototype, "isFailure", {
+        get: function () {
+            return true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Failure;
+})(Try);
+exports.Failure = Failure;
+var Success = (function (_super) {
+    __extends(Success, _super);
+    function Success(_value) {
+        _super.call(this);
         this._value = _value;
     }
-    get isSuccess() {
-        return true;
-    }
-    get success() {
-        return this._value;
-    }
-}
+    Object.defineProperty(Success.prototype, "isSuccess", {
+        get: function () {
+            return true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Success.prototype, "success", {
+        get: function () {
+            return this._value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Success;
+})(Try);
+exports.Success = Success;
 /**
  * Created by rburson on 3/5/15.
  */
-export class Either {
-    static left(left) {
+var Either = (function () {
+    function Either() {
+    }
+    Either.left = function (left) {
         var either = new Either();
         either._left = left;
         return either;
-    }
-    static right(right) {
+    };
+    Either.right = function (right) {
         var either = new Either();
         either._right = right;
         return either;
-    }
-    get isLeft() {
-        return !!this._left;
-    }
-    get isRight() {
-        return !!this._right;
-    }
-    get left() {
-        return this._left;
-    }
-    get right() {
-        return this._right;
-    }
-}
-export class Future {
+    };
+    Object.defineProperty(Either.prototype, "isLeft", {
+        get: function () {
+            return !!this._left;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Either.prototype, "isRight", {
+        get: function () {
+            return !!this._right;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Either.prototype, "left", {
+        get: function () {
+            return this._left;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Either.prototype, "right", {
+        get: function () {
+            return this._right;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Either;
+})();
+exports.Either = Either;
+var Future = (function () {
     /** --------------------- CONSTRUCTORS ------------------------------*/
-    constructor(_label) {
+    function Future(_label) {
         this._label = _label;
         this._completionListeners = new Array();
     }
     /** --------------------- PUBLIC STATIC ------------------------------*/
-    static createCompletedFuture(label, result) {
+    Future.createCompletedFuture = function (label, result) {
         var f = new Future(label);
         return f.complete(result);
-    }
-    static createSuccessfulFuture(label, value) {
+    };
+    Future.createSuccessfulFuture = function (label, value) {
         return Future.createCompletedFuture(label, new Success(value));
-    }
-    static createFailedFuture(label, error) {
+    };
+    Future.createFailedFuture = function (label, error) {
         return Future.createCompletedFuture(label, new Failure(error));
-    }
-    static createFuture(label) {
+    };
+    Future.createFuture = function (label) {
         var f = new Future(label);
         return f;
-    }
-    static sequence(seqOfFutures) {
+    };
+    Future.sequence = function (seqOfFutures) {
         var start = Future.createSuccessfulFuture('Future::sequence/start', []);
-        return seqOfFutures.reduce((seqFr, nextFr) => {
-            return seqFr.bind((seq) => {
+        return seqOfFutures.reduce(function (seqFr, nextFr) {
+            return seqFr.bind(function (seq) {
                 var pr = new Promise('Future::sequence/nextFr');
-                nextFr.onComplete((t) => {
+                nextFr.onComplete(function (t) {
                     seq.push(t);
                     pr.complete(new Success(seq));
                 });
                 return pr.future;
             });
         }, start);
-    }
+    };
     /** --------------------- PUBLIC ------------------------------*/
-    bind(f) {
+    Future.prototype.bind = function (f) {
         var p = new Promise('Future.bind:' + this._label);
-        this.onComplete((t1) => {
+        this.onComplete(function (t1) {
             if (t1.isFailure) {
                 p.failure(t1.failure);
             }
@@ -158,7 +225,7 @@ export class Future {
                 var a = t1.success;
                 try {
                     var mb = f(a);
-                    mb.onComplete((t2) => {
+                    mb.onComplete(function (t2) {
                         p.complete(t2);
                     });
                 }
@@ -168,22 +235,38 @@ export class Future {
             }
         });
         return p.future;
-    }
-    get failure() {
-        return this._result ? this._result.failure : null;
-    }
-    get isComplete() {
-        return !!this._result;
-    }
-    get isCompleteWithFailure() {
-        return !!this._result && this._result.isFailure;
-    }
-    get isCompleteWithSuccess() {
-        return !!this._result && this._result.isSuccess;
-    }
-    map(f) {
+    };
+    Object.defineProperty(Future.prototype, "failure", {
+        get: function () {
+            return this._result ? this._result.failure : null;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Future.prototype, "isComplete", {
+        get: function () {
+            return !!this._result;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Future.prototype, "isCompleteWithFailure", {
+        get: function () {
+            return !!this._result && this._result.isFailure;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Future.prototype, "isCompleteWithSuccess", {
+        get: function () {
+            return !!this._result && this._result.isSuccess;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Future.prototype.map = function (f) {
         var p = new Promise('Future.map:' + this._label);
-        this.onComplete((t1) => {
+        this.onComplete(function (t1) {
             if (t1.isFailure) {
                 p.failure(t1.failure);
             }
@@ -199,81 +282,98 @@ export class Future {
             }
         });
         return p.future;
-    }
-    onComplete(listener) {
+    };
+    Future.prototype.onComplete = function (listener) {
         this._result ? listener(this._result) : this._completionListeners.push(listener);
-    }
-    onFailure(listener) {
-        this.onComplete((t) => {
+    };
+    Future.prototype.onFailure = function (listener) {
+        this.onComplete(function (t) {
             t.isFailure && listener(t.failure);
         });
-    }
-    onSuccess(listener) {
-        this.onComplete((t) => {
+    };
+    Future.prototype.onSuccess = function (listener) {
+        this.onComplete(function (t) {
             t.isSuccess && listener(t.success);
         });
-    }
-    get result() {
-        return this._result;
-    }
-    get success() {
-        return this._result ? this.result.success : null;
-    }
+    };
+    Object.defineProperty(Future.prototype, "result", {
+        get: function () {
+            return this._result;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Future.prototype, "success", {
+        get: function () {
+            return this._result ? this.result.success : null;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /** --------------------- MODULE ------------------------------*/
     //*** let's pretend this has module level visibility
-    complete(t) {
+    Future.prototype.complete = function (t) {
+        var _this = this;
         var notifyList = new Array();
         //Log.debug("complete() called on Future " + this._label + ' there are ' + this._completionListeners.length + " listeners.");
         if (t) {
             if (!this._result) {
                 this._result = t;
                 /* capture the listener set to prevent missing a notification */
-                notifyList = ArrayUtil.copy(this._completionListeners);
+                notifyList = util_1.ArrayUtil.copy(this._completionListeners);
             }
             else {
-                Log.error("Future::complete() : Future " + this._label + " has already been completed");
+                util_2.Log.error("Future::complete() : Future " + this._label + " has already been completed");
             }
-            notifyList.forEach((listener) => {
+            notifyList.forEach(function (listener) {
                 try {
-                    listener(this._result);
+                    listener(_this._result);
                 }
                 catch (error) {
-                    Log.error("CompletionListener failed with " + error);
+                    util_2.Log.error("CompletionListener failed with " + error);
                     if (error.stack)
-                        Log.error(error.stack);
+                        util_2.Log.error(error.stack);
                 }
             });
         }
         else {
-            Log.error("Future::complete() : Can't complete Future with null result");
+            util_2.Log.error("Future::complete() : Can't complete Future with null result");
         }
         return this;
-    }
-}
+    };
+    return Future;
+})();
+exports.Future = Future;
 /**
  * Created by rburson on 3/6/15.
  */
-export class Promise {
-    constructor(label) {
+var Promise = (function () {
+    function Promise(label) {
         this._future = Future.createFuture(label);
     }
     /** --------------------- PUBLIC ------------------------------*/
-    isComplete() {
+    Promise.prototype.isComplete = function () {
         return this._future.isComplete;
-    }
-    complete(t) {
+    };
+    Promise.prototype.complete = function (t) {
         //Log.debug('Promise calling complete on Future...');
         this._future.complete(t);
         return this;
-    }
-    failure(error) {
+    };
+    Promise.prototype.failure = function (error) {
         this.complete(new Failure(error));
-    }
-    get future() {
-        return this._future;
-    }
-    success(value) {
+    };
+    Object.defineProperty(Promise.prototype, "future", {
+        get: function () {
+            return this._future;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Promise.prototype.success = function (value) {
         this.complete(new Success(value));
-    }
-}
+    };
+    return Promise;
+})();
+exports.Promise = Promise;
 //# sourceMappingURL=fp.js.map
