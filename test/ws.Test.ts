@@ -3,9 +3,14 @@
  */
 
 ///<reference path="jasmine.d.ts"/>
-///<reference path="../src/catavolt/references.ts"/>
 
-module catavolt.ws {
+import {Client} from '../src/catavolt'
+import {XMLHttpClient} from '../src/catavolt'
+import {Future} from '../src/catavolt'
+import {Try} from '../src/catavolt'
+import {StringDictionary} from '../src/catavolt'
+import {ServiceEndpoint} from '../src/catavolt'
+
 
     xdescribe("Request::XMLHttpClient", function () {
 
@@ -68,4 +73,3 @@ module catavolt.ws {
         });
     });*/
 
-}

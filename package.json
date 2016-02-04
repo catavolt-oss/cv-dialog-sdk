@@ -1,15 +1,36 @@
 {
-  "name": "catavoltSdk",
-  "version": "0.0.1",
-  "dependencies": {
+  "name": "catavolt-sdk",
+  "version": "1.0.0",
+  "description": "Core Catavolt Javascript API",
+  "main": "./src/catavolt.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://git.catavolt.com/javascript/sdk.git"
+  },
+  "keywords": [
+    "catavolt",
+    "javascript"
+  ],
+  "author": "Rob Burson <rob.burson@catavolt.com>",
+  "license": "ISC",
+  "dependencies": {},
   "devDependencies": {
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-react": "^6.3.13",
+    "babelify": "^7.2.0",
     "jasmine": "^2.4.1",
     "jasmine-core": "^2.4.1",
     "karma": "^0.13.15",
     "karma-chrome-launcher": "^0.2.2",
     "karma-jasmine": "^0.3.6",
     "karma-phantomjs-launcher": "^0.2.1",
-    "phantomjs": "^1.9.19"
+    "phantomjs": "^1.9.19",
+    "webpack": "^1.12.13"
+  },
+  "scripts": {
+    "build-test": "watchify -v -t [ babelify --presets [ es2015 react ] ] test/*.Test.js -o test/bundle.js"
   }
 }

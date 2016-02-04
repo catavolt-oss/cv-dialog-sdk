@@ -1,13 +1,11 @@
-
 ///<reference path="jasmine.d.ts"/>
-///<reference path="../src/catavolt/references.ts"/>
 
-module catavolt.fp {
+import {Future} from '../src/catavolt'
+import {Success} from '../src/catavolt'
 
-    xdescribe("Future", function () {
-        it("should be created successfully with Try", function () {
-            var f:Future<string> = Future.createCompletedFuture("test", new Success<string>("successfulValue"));
-        });
+xdescribe("Future", function () {
+    it("should be created successfully with Try", function () {
+        var f:Future<string> = Future.createCompletedFuture("test", new Success<string>("successfulValue"));
     });
+});
 
-}
