@@ -227,10 +227,12 @@ export class PaneContext {
 
     findMenuDefAt(actionId:string) {
         var result:MenuDef = null;
-        this.menuDefs.some((md:MenuDef)=> {
-            result = md.findAtId(actionId);
-            return result != null;
-        });
+        if(this.menuDefs) {
+            this.menuDefs.some((md:MenuDef)=> {
+                result = md.findAtId(actionId);
+                return result != null;
+            });
+        }
         return result;
     }
 
@@ -4061,10 +4063,12 @@ export class MenuDef {
     findAtId(actionId:string):MenuDef {
         if (this.actionId === actionId) return this;
         var result = null;
-        this.menuDefs.some((md:MenuDef)=> {
-            result = md.findAtId(actionId);
-            return result != null;
-        });
+        if(this.menuDefs) {
+            this.menuDefs.some((md:MenuDef)=> {
+                result = md.findAtId(actionId);
+                return result != null;
+            });
+        }
         return result;
     }
 

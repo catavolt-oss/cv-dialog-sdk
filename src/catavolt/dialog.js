@@ -253,10 +253,12 @@ var PaneContext = (function () {
     });
     PaneContext.prototype.findMenuDefAt = function (actionId) {
         var result = null;
-        this.menuDefs.some(function (md) {
-            result = md.findAtId(actionId);
-            return result != null;
-        });
+        if (this.menuDefs) {
+            this.menuDefs.some(function (md) {
+                result = md.findAtId(actionId);
+                return result != null;
+            });
+        }
         return result;
     };
     PaneContext.prototype.formatForRead = function (propValue, propName) {
@@ -4294,10 +4296,12 @@ var MenuDef = (function () {
         if (this.actionId === actionId)
             return this;
         var result = null;
-        this.menuDefs.some(function (md) {
-            result = md.findAtId(actionId);
-            return result != null;
-        });
+        if (this.menuDefs) {
+            this.menuDefs.some(function (md) {
+                result = md.findAtId(actionId);
+                return result != null;
+            });
+        }
         return result;
     };
     Object.defineProperty(MenuDef.prototype, "iconName", {
