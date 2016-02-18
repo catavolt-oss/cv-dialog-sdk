@@ -337,6 +337,7 @@ var PaneContext = (function () {
         },
         set: function (parentContext) {
             this._parentContext = parentContext;
+            this.initialize();
         },
         enumerable: true,
         configurable: true
@@ -363,6 +364,7 @@ var PaneContext = (function () {
         enumerable: true,
         configurable: true
     });
+    PaneContext.prototype.initialize = function () { };
     PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
     PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
     return PaneContext;
@@ -1867,6 +1869,9 @@ var InlineBinaryRef = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    InlineBinaryRef.prototype.toString = function () {
+        return this._inlineData;
+    };
     return InlineBinaryRef;
 })(BinaryRef);
 exports.InlineBinaryRef = InlineBinaryRef;
@@ -2085,7 +2090,7 @@ var EntityRecUtil = (function () {
     function EntityRecUtil() {
     }
     EntityRecUtil.newEntityRec = function (objectId, props, annos) {
-        return annos ? new EntityRecImpl(objectId, props, annos) : new EntityRecImpl(objectId, props);
+        return annos ? new EntityRecImpl(objectId, util_4.ArrayUtil.copy(props), util_4.ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, util_4.ArrayUtil.copy(props));
     };
     EntityRecUtil.union = function (l1, l2) {
         var result = util_4.ArrayUtil.copy(l1);
@@ -2361,13 +2366,21 @@ var EntityBuffer = (function () {
         configurable: true
     });
     EntityBuffer.prototype.setValue = function (name, value) {
-        this.props.some(function (prop) {
+        var newProps = [];
+        var found = false;
+        this.props.forEach(function (prop) {
             if (prop.name === name) {
-                prop.value = value;
-                return true;
+                newProps.push(new Prop(name, value));
+                found = true;
             }
-            return false;
+            else {
+                newProps.push(prop);
+            }
         });
+        if (!found) {
+            newProps.push(new Prop(name, value));
+        }
+        this._after = EntityRecUtil.newEntityRec(this.objectId, newProps, this.annos);
     };
     Object.defineProperty(EntityBuffer.prototype, "tipText", {
         get: function () {
@@ -4976,6 +4989,9 @@ var Prop = (function () {
             }
             else if (o instanceof GeoLocation) {
                 return { 'WS_PTYPE': 'GeoLocation', 'value': o.toString() };
+            }
+            else if (o instanceof InlineBinaryRef) {
+                return { 'WS_PTYPE': 'BinaryRef', 'value': o.toString() };
             }
         }
         else {

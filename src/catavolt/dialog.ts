@@ -307,8 +307,11 @@ export class PaneContext {
         return this.paneDef.dialogRedirection;
     }
 
+    initialize() {}
+
     set parentContext(parentContext:FormContext) {
         this._parentContext = parentContext;
+        this.initialize();
     }
 
 
@@ -1601,6 +1604,10 @@ export class InlineBinaryRef extends BinaryRef {
         return this._inlineData;
     }
 
+    toString():string {
+        return this._inlineData;
+    }
+
 }
 
 export class ObjectBinaryRef extends BinaryRef {
@@ -1846,7 +1853,7 @@ export interface EntityRec {
 export class EntityRecUtil {
 
     static newEntityRec(objectId:string, props:Array<Prop>, annos?:Array<DataAnno>):EntityRec {
-        return annos ? new EntityRecImpl(objectId, props, annos) : new EntityRecImpl(objectId, props);
+        return annos ? new EntityRecImpl(objectId, ArrayUtil.copy(props), ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, ArrayUtil.copy(props));
     }
 
     static union(l1:Array<Prop>, l2:Array<Prop>):Array<Prop> {
@@ -2077,13 +2084,20 @@ export class EntityBuffer implements EntityRec {
     }
 
     setValue(name:string, value) {
-        this.props.some((prop:Prop)=> {
+        const newProps = [];
+        let found = false;
+        this.props.forEach((prop:Prop)=> {
             if (prop.name === name) {
-                prop.value = value;
-                return true;
+                newProps.push(new Prop(name, value));
+                found = true;
+            } else {
+                newProps.push(prop);
             }
-            return false;
         });
+        if(!found){
+           newProps.push(new Prop(name, value));
+        }
+        this._after = EntityRecUtil.newEntityRec(this.objectId, newProps, this.annos);
     }
 
     get tipText():string {
@@ -4586,6 +4600,8 @@ export class Prop {
                 return {'WS_PTYPE': 'GeoFix', 'value': o.toString()};
             } else if (o instanceof GeoLocation) {
                 return {'WS_PTYPE': 'GeoLocation', 'value': o.toString()};
+            } else if (o instanceof InlineBinaryRef) {
+                return {'WS_PTYPE': 'BinaryRef', 'value': o.toString()}
             }
         } else {
             return o;

@@ -146,5 +146,11 @@ export class PaneContext {
         this._parentContext = parentContext;
     }
 
+    initialize() {}
+
+    set parentContext(parentContext:FormContext) {
+        this._parentContext = parentContext;
+        this.initialize();
+    }
 
 }

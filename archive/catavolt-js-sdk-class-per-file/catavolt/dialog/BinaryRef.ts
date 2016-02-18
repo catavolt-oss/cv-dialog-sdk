@@ -38,6 +38,10 @@ import {Success} from "../fp/Success";
             return this._inlineData;
         }
 
+        toString():string {
+            return this._inlineData;
+        }
+
     }
 
     class ObjectBinaryRef extends BinaryRef {

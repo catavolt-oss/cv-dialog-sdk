@@ -86,7 +86,7 @@ export interface EntityRec {
 export class EntityRecUtil {
 
     static newEntityRec(objectId:string, props:Array<Prop>, annos?:Array<DataAnno>):EntityRec {
-        return annos ? new EntityRecImpl(objectId, props, annos) : new EntityRecImpl(objectId, props);
+        return annos ? new EntityRecImpl(objectId, ArrayUtil.copy(props), ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, ArrayUtil.copy(props));
     }
 
     static union(l1:Array<Prop>, l2:Array<Prop>):Array<Prop> {

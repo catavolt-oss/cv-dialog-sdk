@@ -176,13 +176,20 @@ import {EntityRecUtil} from "./EntityRec";
         }
 
         setValue(name:string, value) {
-            this.props.some((prop:Prop)=>{
-                if(prop.name === name) {
-                    prop.value = value;
-                    return true;
+            const newProps = [];
+            let found = false;
+            this.props.forEach((prop:Prop)=> {
+                if (prop.name === name) {
+                    newProps.push(new Prop(name, value));
+                    found = true;
+                } else {
+                    newProps.push(prop);
                 }
-                return false;
             });
+            if(!found){
+                newProps.push(new Prop(name, value));
+            }
+            this._after = EntityRecUtil.newEntityRec(this.objectId, newProps, this.annos);
         }
 
         get tipText():string {
