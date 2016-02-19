@@ -56,6 +56,7 @@ export * from './dialog/XQueryResult';
 export * from './dialog/XReadPropertyResult';
 export * from './dialog/XReadResult';
 export * from './dialog/XWriteResult';
+export * from './dialog/XWritePropertyResult';
 export * from './dialog/VoidResult';
 export * from './dialog/DialogException';
 export * from './dialog/Redirection';

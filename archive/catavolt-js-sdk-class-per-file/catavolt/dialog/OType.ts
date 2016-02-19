@@ -107,7 +107,8 @@ export class OType {
         'WSWorkbench': Workbench,
         'WSWorkbenchRedirection': WorkbenchRedirection,
         'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
-        'XWriteResult': XWriteResult
+        'XWriteResult': XWriteResult,
+        'WSWritePropertyResult': XWritePropertyResult
     };
 
     private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {

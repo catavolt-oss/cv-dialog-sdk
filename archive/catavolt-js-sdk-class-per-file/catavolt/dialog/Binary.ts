@@ -5,3 +5,16 @@
 export interface Binary {
 
 }
+
+
+
+export class EncodedBinary implements Binary {
+
+    constructor(private _data:string) {
+    }
+
+    get data():string {
+        return this._data;
+    }
+
+}

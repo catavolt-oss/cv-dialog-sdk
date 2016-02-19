@@ -30,6 +30,7 @@ import {Log} from "../util/Log";
 import {XReadResult} from "./XReadResult";
 import {Either} from "../fp/Either";
 import {XWriteResult} from "./XWriteResult";
+import {XWriteResult} from "./XWritePropertyResult";
 import {Try} from "../fp/Try";
 
 export class DialogService {
@@ -284,6 +285,23 @@ export class DialogService {
                 writeResultTry = new Success(Either.left<Redirection, XWriteResult>(redirection));
             }
             return Future.createCompletedFuture('writeEditorModel', writeResultTry);
+        });
+    }
+
+    static writeProperty(dialogHandle:DialogHandle, propertyName:string, data:string, append:boolean,
+                         sessionContext:SessionContext):Future<XWritePropertyResult> {
+        var method = 'writeProperty';
+        var params:StringDictionary = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName':propertyName,
+            'data':data,
+            'append':append
+        };
+
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('writeProperty',
+                DialogTriple.fromWSDialogObject<XWritePropertyResult>(result, 'WSWritePropertyResult', OType.factoryFn));
         });
     }
 

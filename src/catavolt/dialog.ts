@@ -182,8 +182,6 @@ export class TabCellValueDef extends CellValueDef {
  */
 
 
-
-
 export class PaneContext {
 
     private static ANNO_NAME_KEY = "com.catavolt.annoName";
@@ -227,7 +225,7 @@ export class PaneContext {
 
     findMenuDefAt(actionId:string) {
         var result:MenuDef = null;
-        if(this.menuDefs) {
+        if (this.menuDefs) {
             this.menuDefs.some((md:MenuDef)=> {
                 result = md.findAtId(actionId);
                 return result != null;
@@ -307,7 +305,8 @@ export class PaneContext {
         return this.paneDef.dialogRedirection;
     }
 
-    initialize() {}
+    initialize() {
+    }
 
     set parentContext(parentContext:FormContext) {
         this._parentContext = parentContext;
@@ -325,6 +324,7 @@ export class EditorContext extends PaneContext {
 
     private static GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
     private static GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
+    private static CHAR_CHUNK_SIZE = 256 * 1000;
 
     private _buffer:EntityBuffer;
     private _editorState:EditorState;
@@ -475,40 +475,43 @@ export class EditorContext extends PaneContext {
 
     write():Future<Either<NavRequest,EntityRec>> {
 
-        var result = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, this.buffer.afterEffects(),
-            this.sessionContext).bind((either:Either<Redirection,XWriteResult>)=> {
-            if (either.isLeft) {
-                var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
-                var navRequestFr:Future<NavRequest> =
-                    NavRequestUtil.fromRedirection(either.left, ca,
-                        this.sessionContext).map((navRequest:NavRequest)=> {
-                        return Either.left<NavRequest,EntityRec>(navRequest);
-                    });
-            } else {
-                var writeResult:XWriteResult = either.right;
-                this.putSettings(writeResult.dialogProps);
-                this.entityRecDef = writeResult.entityRecDef;
-                return Future.createSuccessfulFuture('EditorContext::write', Either.right(writeResult.entityRec));
-            }
-        });
-
-        return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
-            var now = new Date();
-            AppContext.singleton.lastMaintenanceTime = now;
-            this.lastRefreshTime = now;
-            if (successfulWrite.isLeft) {
-                this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
-            } else {
-                this.initBuffer(successfulWrite.right);
-            }
-            if (this.isDestroyedSetting) {
-                this._editorState = EditorState.DESTROYED;
-            } else {
-                if (this.isReadModeSetting) {
-                    this._editorState = EditorState.READ;
+        const deltaRec:EntityRec = this.buffer.afterEffects();
+        return this.writeBinaries(deltaRec).bind((binResult) => {
+            var result = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
+                this.sessionContext).bind((either:Either<Redirection,XWriteResult>)=> {
+                if (either.isLeft) {
+                    var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
+                    var navRequestFr:Future<NavRequest> =
+                        NavRequestUtil.fromRedirection(either.left, ca,
+                            this.sessionContext).map((navRequest:NavRequest)=> {
+                            return Either.left<NavRequest,EntityRec>(navRequest);
+                        });
+                } else {
+                    var writeResult:XWriteResult = either.right;
+                    this.putSettings(writeResult.dialogProps);
+                    this.entityRecDef = writeResult.entityRecDef;
+                    return Future.createSuccessfulFuture('EditorContext::write', Either.right(writeResult.entityRec));
                 }
-            }
-            return successfulWrite;
+            });
+
+            return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
+                var now = new Date();
+                AppContext.singleton.lastMaintenanceTime = now;
+                this.lastRefreshTime = now;
+                if (successfulWrite.isLeft) {
+                    this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
+                } else {
+                    this.initBuffer(successfulWrite.right);
+                }
+                if (this.isDestroyedSetting) {
+                    this._editorState = EditorState.DESTROYED;
+                } else {
+                    if (this.isReadModeSetting) {
+                        this._editorState = EditorState.READ;
+                    }
+                }
+                return successfulWrite;
+            });
         });
 
     }
@@ -567,8 +570,29 @@ export class EditorContext extends PaneContext {
     private putSettings(settings:StringDictionary) {
         ObjUtil.addAllProps(settings, this._settings);
     }
-}
 
+    private writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
+
+        const binariesWriteSeq:Array<Future<XWritePropertyResult>> = [];
+        entityRec.props.forEach((prop:Prop)=> {
+            if (prop.value instanceof EncodedBinary) {
+                let pntr:number = 0;
+                const encBin:EncodedBinary = prop.value as EncodedBinary;
+                const data = encBin.data;
+                let writeFuture:Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
+                while (pntr < data.length) {
+                    writeFuture = writeFuture.bind((prevResult)=> {
+                        const encSegment:string = (pntr + EditorContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, EditorContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
+                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, this.sessionContext);
+                    });
+                    pntr += EditorContext.CHAR_CHUNK_SIZE;
+                }
+                binariesWriteSeq.push(writeFuture);
+            }
+        });
+        return Future.sequence<XWritePropertyResult>(binariesWriteSeq);
+    }
+}
 
 
 /**
@@ -1622,11 +1646,27 @@ export class ObjectBinaryRef extends BinaryRef {
  */
 
 export interface Binary {
-
 }
 /**
  * *********************************
  */
+
+export class EncodedBinary implements Binary {
+
+    constructor(private _data:string) {
+    }
+
+    get data():string {
+        return this._data;
+    }
+
+}
+
+
+/**
+ * *********************************
+ */
+
 
 export class Redirection {
 
@@ -2094,8 +2134,8 @@ export class EntityBuffer implements EntityRec {
                 newProps.push(prop);
             }
         });
-        if(!found){
-           newProps.push(new Prop(name, value));
+        if (!found) {
+            newProps.push(new Prop(name, value));
         }
         this._after = EntityRecUtil.newEntityRec(this.objectId, newProps, this.annos);
     }
@@ -2348,7 +2388,6 @@ export class EntityRecImpl implements EntityRec {
 /**
  * *********************************
  */
-
 
 
 export class NullEntityRec implements EntityRec {
@@ -3447,6 +3486,22 @@ export class DialogService {
         });
     }
 
+    static writeProperty(dialogHandle:DialogHandle, propertyName:string, data:string, append:boolean,
+                         sessionContext:SessionContext):Future<XWritePropertyResult> {
+        var method = 'writeProperty';
+        var params:StringDictionary = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'data': data,
+            'append': append
+        };
+
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('writeProperty',
+                DialogTriple.fromWSDialogObject<XWritePropertyResult>(result, 'WSWritePropertyResult', OType.factoryFn));
+        });
+    }
 }
 /**
  * *********************************
@@ -3671,7 +3726,6 @@ enum EditorState{ READ, WRITE, DESTROYED }
  */
 
 
-
 export class EntityRecDef {
 
     constructor(private _propDefs:Array<PropDef>) {
@@ -3721,10 +3775,6 @@ export class EntityRecDef {
 /**
  * *********************************
  */
-
-
-
-
 
 
 export class FormContextBuilder {
@@ -3955,10 +4005,6 @@ export class GatewayService {
  */
 
 
-
-
-
-
 export class GeoFix {
 
     static fromFormattedValue(value:string):GeoFix {
@@ -3998,10 +4044,6 @@ export class GeoFix {
  */
 
 
-
-
-
-
 export class GeoLocation {
 
     static fromFormattedValue(value:string):GeoLocation {
@@ -4031,7 +4073,6 @@ export class GeoLocation {
  */
 
 
-
 export class GraphDataPointDef {
 
     constructor(private _name:string,
@@ -4044,14 +4085,6 @@ export class GraphDataPointDef {
 /**
  * *********************************
  */
-
-
-
-
-
-
-
-
 
 
 export class MenuDef {
@@ -4077,7 +4110,7 @@ export class MenuDef {
     findAtId(actionId:string):MenuDef {
         if (this.actionId === actionId) return this;
         var result = null;
-        if(this.menuDefs) {
+        if (this.menuDefs) {
             this.menuDefs.some((md:MenuDef)=> {
                 result = md.findAtId(actionId);
                 return result != null;
@@ -4172,7 +4205,6 @@ export class NavRequestUtil {
  */
 
 
-
 export class NullNavRequest implements NavRequest {
 
     fromDialogProperties:StringDictionary;
@@ -4184,8 +4216,6 @@ export class NullNavRequest implements NavRequest {
 /**
  * *********************************
  */
-
-
 
 
 export class ObjectRef {
@@ -4214,9 +4244,6 @@ export class ObjectRef {
 /**
  * *********************************
  */
-
-
-
 
 
 export enum PaneMode {
@@ -4601,7 +4628,7 @@ export class Prop {
             } else if (o instanceof GeoLocation) {
                 return {'WS_PTYPE': 'GeoLocation', 'value': o.toString()};
             } else if (o instanceof InlineBinaryRef) {
-                return {'WS_PTYPE': 'BinaryRef', 'value': o.toString()}
+                return {'WS_PTYPE': 'BinaryRef', 'value': o.toString(), properties: (o as BinaryRef).settings}
             }
         } else {
             return o;
@@ -4724,7 +4751,6 @@ export class Prop {
 /**
  * *********************************
  */
-
 
 
 export class QueryResult {
@@ -4936,7 +4962,6 @@ export class QueryScroller {
  */
 
 
-
 export interface ServiceEndpoint {
 
     serverAssignment:string;
@@ -5146,8 +5171,6 @@ export class SortPropDef {
  */
 
 
-
-
 export class SystemContextImpl implements SystemContext {
 
     constructor(private _urlString:string) {
@@ -5203,14 +5226,11 @@ export class SystemContextImpl implements SystemContext {
  */
 
 
-
 export interface VoidResult {
 }
 /**
  * *********************************
  */
-
-
 
 
 export class WorkbenchLaunchAction implements ActionSource {
@@ -5238,8 +5258,6 @@ export class WorkbenchLaunchAction implements ActionSource {
 /**
  * *********************************
  */
-
-
 
 
 export class WorkbenchService {
@@ -5791,8 +5809,6 @@ export class XPaneDefRef {
  */
 
 
-
-
 export class XPropertyChangeResult {
 
     constructor(public availableValueChanges:Array<string>,
@@ -5948,8 +5964,18 @@ export class XWriteResult {
     }
 }
 
+/**
+ * *********************************
+ */
+
+export class XWritePropertyResult {
+    constructor(public dialogProperties:StringDictionary) {
+    }
+}
+
+
 /*
-  OType must be last as it references almost all other classes in the module
+ OType must be last as it references almost all other classes in the module
  */
 export class OType {
 
@@ -5997,7 +6023,8 @@ export class OType {
         'WSWorkbench': Workbench,
         'WSWorkbenchRedirection': WorkbenchRedirection,
         'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
-        'XWriteResult': XWriteResult
+        'XWriteResult': XWriteResult,
+        'WSWritePropertyResult': XWritePropertyResult
     };
 
     private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {

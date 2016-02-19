@@ -114,7 +114,7 @@ export class Prop {
             } else if (o instanceof GeoLocation) {
                 return {'WS_PTYPE': 'GeoLocation', 'value': o.toString()};
             } else if (o instanceof InlineBinaryRef) {
-                return {'WS_PTYPE': 'BinaryRef', 'value': o.toString()}
+                return {'WS_PTYPE': 'BinaryRef', 'value': o.toString(), properties:(o as BinaryRef).settings}
             }
         } else {
             return o;

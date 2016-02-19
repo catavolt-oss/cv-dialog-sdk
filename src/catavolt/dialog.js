@@ -364,7 +364,8 @@ var PaneContext = (function () {
         enumerable: true,
         configurable: true
     });
-    PaneContext.prototype.initialize = function () { };
+    PaneContext.prototype.initialize = function () {
+    };
     PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
     PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
     return PaneContext;
@@ -521,39 +522,42 @@ var EditorContext = (function (_super) {
     };
     EditorContext.prototype.write = function () {
         var _this = this;
-        var result = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, this.buffer.afterEffects(), this.sessionContext).bind(function (either) {
-            if (either.isLeft) {
-                var ca = new ContextAction('#write', _this.parentContext.dialogRedirection.objectId, _this.actionSource);
-                var navRequestFr = NavRequestUtil.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
-                    return fp_2.Either.left(navRequest);
-                });
-            }
-            else {
-                var writeResult = either.right;
-                _this.putSettings(writeResult.dialogProps);
-                _this.entityRecDef = writeResult.entityRecDef;
-                return fp_3.Future.createSuccessfulFuture('EditorContext::write', fp_2.Either.right(writeResult.entityRec));
-            }
-        });
-        return result.map(function (successfulWrite) {
-            var now = new Date();
-            AppContext.singleton.lastMaintenanceTime = now;
-            _this.lastRefreshTime = now;
-            if (successfulWrite.isLeft) {
-                _this._settings = PaneContext.resolveSettingsFromNavRequest(_this._settings, successfulWrite.left);
-            }
-            else {
-                _this.initBuffer(successfulWrite.right);
-            }
-            if (_this.isDestroyedSetting) {
-                _this._editorState = EditorState.DESTROYED;
-            }
-            else {
-                if (_this.isReadModeSetting) {
-                    _this._editorState = EditorState.READ;
+        var deltaRec = this.buffer.afterEffects();
+        return this.writeBinaries(deltaRec).bind(function (binResult) {
+            var result = DialogService.writeEditorModel(_this.paneDef.dialogRedirection.dialogHandle, deltaRec, _this.sessionContext).bind(function (either) {
+                if (either.isLeft) {
+                    var ca = new ContextAction('#write', _this.parentContext.dialogRedirection.objectId, _this.actionSource);
+                    var navRequestFr = NavRequestUtil.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
+                        return fp_2.Either.left(navRequest);
+                    });
                 }
-            }
-            return successfulWrite;
+                else {
+                    var writeResult = either.right;
+                    _this.putSettings(writeResult.dialogProps);
+                    _this.entityRecDef = writeResult.entityRecDef;
+                    return fp_3.Future.createSuccessfulFuture('EditorContext::write', fp_2.Either.right(writeResult.entityRec));
+                }
+            });
+            return result.map(function (successfulWrite) {
+                var now = new Date();
+                AppContext.singleton.lastMaintenanceTime = now;
+                _this.lastRefreshTime = now;
+                if (successfulWrite.isLeft) {
+                    _this._settings = PaneContext.resolveSettingsFromNavRequest(_this._settings, successfulWrite.left);
+                }
+                else {
+                    _this.initBuffer(successfulWrite.right);
+                }
+                if (_this.isDestroyedSetting) {
+                    _this._editorState = EditorState.DESTROYED;
+                }
+                else {
+                    if (_this.isReadModeSetting) {
+                        _this._editorState = EditorState.READ;
+                    }
+                }
+                return successfulWrite;
+            });
         });
     };
     //Module level methods
@@ -625,8 +629,30 @@ var EditorContext = (function (_super) {
     EditorContext.prototype.putSettings = function (settings) {
         util_2.ObjUtil.addAllProps(settings, this._settings);
     };
+    EditorContext.prototype.writeBinaries = function (entityRec) {
+        var _this = this;
+        var binariesWriteSeq = [];
+        entityRec.props.forEach(function (prop) {
+            if (prop.value instanceof EncodedBinary) {
+                var pntr = 0;
+                var encBin = prop.value;
+                var data = encBin.data;
+                var writeFuture = fp_3.Future.createSuccessfulFuture('startSeq', {});
+                while (pntr < data.length) {
+                    writeFuture = writeFuture.bind(function (prevResult) {
+                        var encSegment = (pntr + EditorContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, EditorContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
+                        return DialogService.writeProperty(_this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, _this.sessionContext);
+                    });
+                    pntr += EditorContext.CHAR_CHUNK_SIZE;
+                }
+                binariesWriteSeq.push(writeFuture);
+            }
+        });
+        return fp_3.Future.sequence(binariesWriteSeq);
+    };
     EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
     EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
+    EditorContext.CHAR_CHUNK_SIZE = 256 * 1000;
     return EditorContext;
 })(PaneContext);
 exports.EditorContext = EditorContext;
@@ -1883,6 +1909,23 @@ var ObjectBinaryRef = (function (_super) {
     return ObjectBinaryRef;
 })(BinaryRef);
 exports.ObjectBinaryRef = ObjectBinaryRef;
+/**
+ * *********************************
+ */
+var EncodedBinary = (function () {
+    function EncodedBinary(_data) {
+        this._data = _data;
+    }
+    Object.defineProperty(EncodedBinary.prototype, "data", {
+        get: function () {
+            return this._data;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return EncodedBinary;
+})();
+exports.EncodedBinary = EncodedBinary;
 /**
  * *********************************
  */
@@ -3710,6 +3753,19 @@ var DialogService = (function () {
             return fp_3.Future.createCompletedFuture('writeEditorModel', writeResultTry);
         });
     };
+    DialogService.writeProperty = function (dialogHandle, propertyName, data, append, sessionContext) {
+        var method = 'writeProperty';
+        var params = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'data': data,
+            'append': append
+        };
+        var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            return fp_3.Future.createCompletedFuture('writeProperty', DialogTriple.fromWSDialogObject(result, 'WSWritePropertyResult', OType.factoryFn));
+        });
+    };
     DialogService.EDITOR_SERVICE_NAME = 'EditorService';
     DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
     DialogService.QUERY_SERVICE_NAME = 'QueryService';
@@ -4991,7 +5047,7 @@ var Prop = (function () {
                 return { 'WS_PTYPE': 'GeoLocation', 'value': o.toString() };
             }
             else if (o instanceof InlineBinaryRef) {
-                return { 'WS_PTYPE': 'BinaryRef', 'value': o.toString() };
+                return { 'WS_PTYPE': 'BinaryRef', 'value': o.toString(), properties: o.settings };
             }
         }
         else {
@@ -6341,8 +6397,18 @@ var XWriteResult = (function () {
     return XWriteResult;
 })();
 exports.XWriteResult = XWriteResult;
+/**
+ * *********************************
+ */
+var XWritePropertyResult = (function () {
+    function XWritePropertyResult(dialogProperties) {
+        this.dialogProperties = dialogProperties;
+    }
+    return XWritePropertyResult;
+})();
+exports.XWritePropertyResult = XWritePropertyResult;
 /*
-  OType must be last as it references almost all other classes in the module
+ OType must be last as it references almost all other classes in the module
  */
 var OType = (function () {
     function OType() {
@@ -6512,7 +6578,8 @@ var OType = (function () {
         'WSWorkbench': Workbench,
         'WSWorkbenchRedirection': WorkbenchRedirection,
         'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
-        'XWriteResult': XWriteResult
+        'XWriteResult': XWriteResult,
+        'WSWritePropertyResult': XWritePropertyResult
     };
     OType.typeFns = {
         'WSCellValueDef': CellValueDef.fromWS,

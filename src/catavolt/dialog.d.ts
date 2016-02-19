@@ -103,6 +103,7 @@ export declare class PaneContext {
     sessionContext: SessionContext;
     /** --------------------- MODULE ------------------------------*/
     dialogRedirection: DialogRedirection;
+    initialize(): void;
 }
 /**
  * *********************************
@@ -110,6 +111,7 @@ export declare class PaneContext {
 export declare class EditorContext extends PaneContext {
     private static GPS_ACCURACY;
     private static GPS_SECONDS;
+    private static CHAR_CHUNK_SIZE;
     private _buffer;
     private _editorState;
     private _entityRecDef;
@@ -143,6 +145,7 @@ export declare class EditorContext extends PaneContext {
     private paneModeSetting;
     private putSetting(key, value);
     private putSettings(settings);
+    private writeBinaries(entityRec);
 }
 /**
  * *********************************
@@ -468,6 +471,7 @@ export declare class InlineBinaryRef extends BinaryRef {
     private _inlineData;
     constructor(_inlineData: string, settings: StringDictionary);
     inlineData: string;
+    toString(): string;
 }
 export declare class ObjectBinaryRef extends BinaryRef {
     constructor(settings: StringDictionary);
@@ -476,6 +480,14 @@ export declare class ObjectBinaryRef extends BinaryRef {
  * *********************************
  */
 export interface Binary {
+}
+/**
+ * *********************************
+ */
+export declare class EncodedBinary implements Binary {
+    private _data;
+    constructor(_data: string);
+    data: string;
 }
 /**
  * *********************************
@@ -940,6 +952,7 @@ export declare class DialogService {
     static queryQueryModel(dialogHandle: DialogHandle, direction: QueryDirection, maxRows: number, fromObjectId: string, sessionContext: SessionContext): Future<XQueryResult>;
     static readEditorModel(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<XReadResult>;
     static writeEditorModel(dialogHandle: DialogHandle, entityRec: EntityRec, sessionContext: SessionContext): Future<Either<Redirection, XWriteResult>>;
+    static writeProperty(dialogHandle: DialogHandle, propertyName: string, data: string, append: boolean, sessionContext: SessionContext): Future<XWritePropertyResult>;
 }
 /**
  * *********************************
@@ -1649,6 +1662,13 @@ export declare class XWriteResult {
     entityRec: EntityRec;
     entityRecDef: EntityRecDef;
     isDestroyed: boolean;
+}
+/**
+ * *********************************
+ */
+export declare class XWritePropertyResult {
+    dialogProperties: StringDictionary;
+    constructor(dialogProperties: StringDictionary);
 }
 export declare class OType {
     private static types;
