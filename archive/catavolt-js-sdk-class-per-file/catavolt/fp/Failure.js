@@ -11,4 +11,3 @@ export class Failure extends Try {
         return true;
     }
 }
-//# sourceMappingURL=Failure.js.map

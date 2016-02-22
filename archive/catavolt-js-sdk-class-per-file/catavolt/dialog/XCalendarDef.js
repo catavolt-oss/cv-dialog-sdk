@@ -18,4 +18,3 @@ export class XCalendarDef extends XPaneDef {
         this.occurTimeProperty = occurTimeProperty;
     }
 }
-//# sourceMappingURL=XCalendarDef.js.map

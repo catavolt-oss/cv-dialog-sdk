@@ -8,4 +8,3 @@ export class NullRedirection extends Redirection {
         this.fromDialogProperties = fromDialogProperties;
     }
 }
-//# sourceMappingURL=NullRedirection.js.map

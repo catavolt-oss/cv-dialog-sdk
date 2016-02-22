@@ -22,10 +22,12 @@ export class MenuDef {
         if (this.actionId === actionId)
             return this;
         var result = null;
-        this.menuDefs.some((md) => {
-            result = md.findAtId(actionId);
-            return result != null;
-        });
+        if (this.menuDefs) {
+            this.menuDefs.some((md) => {
+                result = md.findAtId(actionId);
+                return result != null;
+            });
+        }
         return result;
     }
     get iconName() {
@@ -59,4 +61,3 @@ export class MenuDef {
         return this._type;
     }
 }
-//# sourceMappingURL=MenuDef.js.map

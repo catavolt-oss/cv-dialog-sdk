@@ -45,4 +45,3 @@ export class ObjUtil {
         return new type;
     }
 }
-//# sourceMappingURL=ObjUtil.js.map

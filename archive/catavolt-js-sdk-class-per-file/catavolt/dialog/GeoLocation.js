@@ -21,4 +21,3 @@ export class GeoLocation {
         return this.latitude + ":" + this.longitude;
     }
 }
-//# sourceMappingURL=GeoLocation.js.map

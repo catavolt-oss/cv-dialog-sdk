@@ -13,4 +13,3 @@ export class DetailsContext extends EditorContext {
         return this.paneDef.dialogRedirection.dialogProperties['formsURL'];
     }
 }
-//# sourceMappingURL=DetailsContext.js.map

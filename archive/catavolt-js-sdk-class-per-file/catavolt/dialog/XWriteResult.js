@@ -28,4 +28,3 @@ export class XWriteResult {
         return destoyedStr && destoyedStr.toLowerCase() === 'true';
     }
 }
-//# sourceMappingURL=XWriteResult.js.map

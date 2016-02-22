@@ -7,4 +7,3 @@ export class ForcedLineCellValueDef extends CellValueDef {
         super(null);
     }
 }
-//# sourceMappingURL=ForcedLineCellValueDef.js.map

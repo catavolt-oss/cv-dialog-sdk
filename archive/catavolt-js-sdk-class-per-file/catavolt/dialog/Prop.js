@@ -5,6 +5,7 @@ import { Failure } from "../fp/Failure";
 import { GeoLocation } from "./GeoLocation";
 import { DataAnno } from "./DataAnno";
 import { BinaryRef } from "./BinaryRef";
+import { InlineBinaryRef } from "./BinaryRef";
 import { ObjectRef } from "./ObjectRef";
 import { CodeRef } from "./CodeRef";
 import { GeoFix } from "./GeoFix";
@@ -122,6 +123,9 @@ export class Prop {
             else if (o instanceof GeoLocation) {
                 return { 'WS_PTYPE': 'GeoLocation', 'value': o.toString() };
             }
+            else if (o instanceof InlineBinaryRef) {
+                return { 'WS_PTYPE': 'BinaryRef', 'value': o.toString(), properties: o.settings };
+            }
         }
         else {
             return o;
@@ -213,4 +217,3 @@ export class Prop {
         return result;
     }
 }
-//# sourceMappingURL=Prop.js.map

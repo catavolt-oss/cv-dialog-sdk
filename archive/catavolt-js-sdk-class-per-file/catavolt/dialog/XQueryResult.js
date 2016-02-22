@@ -67,4 +67,3 @@ export class XQueryResult {
         });
     }
 }
-//# sourceMappingURL=XQueryResult.js.map

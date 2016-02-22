@@ -10,4 +10,3 @@ export class XGeoLocationDef extends XPaneDef {
         this.title = title;
     }
 }
-//# sourceMappingURL=XGeoLocationDef.js.map

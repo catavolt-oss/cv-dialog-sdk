@@ -157,4 +157,3 @@ export class AppContext {
     }
 }
 AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
-//# sourceMappingURL=AppContext.js.map

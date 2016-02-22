@@ -13,6 +13,7 @@ import {Future} from "../fp/Future";
 import {DialogService} from "./DialogService";
 import {XChangePaneModeResult} from "./XChangePaneModeResult";
 import {EntityRec} from "./EntityRec";
+import {EncodedBinary} from "./Binary";
 import {XGetAvailableValuesResult} from "./XGetAvailableValuesResult";
 import {AttributeCellValueDef} from "./AttributeCellValueDef";
 import {MenuDef} from "./MenuDef";
@@ -25,17 +26,19 @@ import {Prop} from "./Prop";
 import {XReadResult} from "./XReadResult";
 import {Either} from "../fp/Either";
 import {XWriteResult} from "./XWriteResult";
+import {XWritePropertyResult} from "./XWritePropertyResult";
 import {ObjUtil} from "../util/ObjUtil";
+import {Try} from "../fp/Try";
 import {NavRequestUtil} from "./NavRequest";
 import {EntityRecUtil} from "./EntityRec";
 
 enum EditorState{ READ, WRITE, DESTROYED }
-;
 
 export class EditorContext extends PaneContext {
 
     private static GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
     private static GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
+    private static CHAR_CHUNK_SIZE = 256 * 1000;
 
     private _buffer:EntityBuffer;
     private _editorState:EditorState;
@@ -186,40 +189,43 @@ export class EditorContext extends PaneContext {
 
     write():Future<Either<NavRequest,EntityRec>> {
 
-        var result = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, this.buffer.afterEffects(),
-            this.sessionContext).bind((either:Either<Redirection,XWriteResult>)=> {
-            if (either.isLeft) {
-                var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
-                var navRequestFr:Future<NavRequest> =
-                    NavRequestUtil.fromRedirection(either.left, ca,
-                        this.sessionContext).map((navRequest:NavRequest)=> {
-                        return Either.left<NavRequest,EntityRec>(navRequest);
-                    });
-            } else {
-                var writeResult:XWriteResult = either.right;
-                this.putSettings(writeResult.dialogProps);
-                this.entityRecDef = writeResult.entityRecDef;
-                return Future.createSuccessfulFuture('EditorContext::write', Either.right(writeResult.entityRec));
-            }
-        });
-
-        return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
-            var now = new Date();
-            AppContext.singleton.lastMaintenanceTime = now;
-            this.lastRefreshTime = now;
-            if (successfulWrite.isLeft) {
-                this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
-            } else {
-                this.initBuffer(successfulWrite.right);
-            }
-            if (this.isDestroyedSetting) {
-                this._editorState = EditorState.DESTROYED;
-            } else {
-                if (this.isReadModeSetting) {
-                    this._editorState = EditorState.READ;
+        const deltaRec:EntityRec = this.buffer.afterEffects();
+        return this.writeBinaries(deltaRec).bind((binResult) => {
+            var result = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
+                this.sessionContext).bind((either:Either<Redirection,XWriteResult>)=> {
+                if (either.isLeft) {
+                    var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
+                    var navRequestFr:Future<NavRequest> =
+                        NavRequestUtil.fromRedirection(either.left, ca,
+                            this.sessionContext).map((navRequest:NavRequest)=> {
+                            return Either.left<NavRequest,EntityRec>(navRequest);
+                        });
+                } else {
+                    var writeResult:XWriteResult = either.right;
+                    this.putSettings(writeResult.dialogProps);
+                    this.entityRecDef = writeResult.entityRecDef;
+                    return Future.createSuccessfulFuture('EditorContext::write', Either.right(writeResult.entityRec));
                 }
-            }
-            return successfulWrite;
+            });
+
+            return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
+                var now = new Date();
+                AppContext.singleton.lastMaintenanceTime = now;
+                this.lastRefreshTime = now;
+                if (successfulWrite.isLeft) {
+                    this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
+                } else {
+                    this.initBuffer(successfulWrite.right);
+                }
+                if (this.isDestroyedSetting) {
+                    this._editorState = EditorState.DESTROYED;
+                } else {
+                    if (this.isReadModeSetting) {
+                        this._editorState = EditorState.READ;
+                    }
+                }
+                return successfulWrite;
+            });
         });
 
     }
@@ -277,5 +283,27 @@ export class EditorContext extends PaneContext {
 
     private putSettings(settings:StringDictionary) {
         ObjUtil.addAllProps(settings, this._settings);
+    }
+
+    private writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
+
+        const binariesWriteSeq:Array<Future<XWritePropertyResult>> = [];
+        entityRec.props.forEach((prop:Prop)=> {
+            if (prop.value instanceof EncodedBinary) {
+                let pntr:number = 0;
+                const encBin:EncodedBinary = prop.value as EncodedBinary;
+                const data = encBin.data;
+                let writeFuture:Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
+                while (pntr < data.length) {
+                    writeFuture = writeFuture.bind((prevResult)=> {
+                        const encSegment:string = (pntr + EditorContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, EditorContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
+                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, this.sessionContext);
+                    });
+                    pntr += EditorContext.CHAR_CHUNK_SIZE;
+                }
+                binariesWriteSeq.push(writeFuture);
+            }
+        });
+        return Future.sequence<XWritePropertyResult>(binariesWriteSeq);
     }
 }

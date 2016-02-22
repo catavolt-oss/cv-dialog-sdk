@@ -19,4 +19,3 @@ export class WorkbenchLaunchAction {
         return [this.workbenchId, this.id];
     }
 }
-//# sourceMappingURL=WorkbenchLaunchAction.js.map

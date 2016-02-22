@@ -9,4 +9,3 @@ export class SystemContextImpl {
         return this._urlString;
     }
 }
-//# sourceMappingURL=SystemContextImpl.js.map

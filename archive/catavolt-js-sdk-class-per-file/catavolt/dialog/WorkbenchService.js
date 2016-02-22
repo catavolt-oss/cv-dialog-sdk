@@ -40,4 +40,3 @@ export class WorkbenchService {
 }
 WorkbenchService.SERVICE_NAME = "WorkbenchService";
 WorkbenchService.SERVICE_PATH = "soi-json-v02/" + WorkbenchService.SERVICE_NAME;
-//# sourceMappingURL=WorkbenchService.js.map

@@ -7,4 +7,3 @@ export class QueryResult {
         this.hasMore = hasMore;
     }
 }
-//# sourceMappingURL=QueryResult.js.map

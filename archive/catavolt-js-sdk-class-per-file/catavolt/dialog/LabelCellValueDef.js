@@ -11,4 +11,3 @@ export class LabelCellValueDef extends CellValueDef {
         return this._value;
     }
 }
-//# sourceMappingURL=LabelCellValueDef.js.map

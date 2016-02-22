@@ -10,4 +10,3 @@ export class XBarcodeScanDef extends XPaneDef {
         this.title = title;
     }
 }
-//# sourceMappingURL=XBarcodeScanDef.js.map

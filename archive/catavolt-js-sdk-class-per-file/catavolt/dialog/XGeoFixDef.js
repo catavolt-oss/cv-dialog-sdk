@@ -10,4 +10,3 @@ export class XGeoFixDef extends XPaneDef {
         this.title = title;
     }
 }
-//# sourceMappingURL=XGeoFixDef.js.map

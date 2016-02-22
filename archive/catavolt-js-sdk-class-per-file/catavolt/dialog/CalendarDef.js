@@ -43,4 +43,3 @@ export class CalendarDef extends PaneDef {
         return this._defaultActionId;
     }
 }
-//# sourceMappingURL=CalendarDef.js.map

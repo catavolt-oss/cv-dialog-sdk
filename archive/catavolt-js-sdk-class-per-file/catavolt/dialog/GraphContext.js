@@ -10,4 +10,3 @@ export class GraphContext extends QueryContext {
         return this.paneDef;
     }
 }
-//# sourceMappingURL=GraphContext.js.map

@@ -6,6 +6,9 @@ import { ObjUtil } from "../util/ObjUtil";
 import { NullNavRequest } from "./NullNavRequest";
 import { PropFormatter } from "./PropFormatter";
 import { AppContext } from "./AppContext";
+/**
+ * *********************************
+ */
 export class PaneContext {
     constructor(paneRef) {
         this._lastRefreshTime = new Date(0);
@@ -36,10 +39,12 @@ export class PaneContext {
     }
     findMenuDefAt(actionId) {
         var result = null;
-        this.menuDefs.some((md) => {
-            result = md.findAtId(actionId);
-            return result != null;
-        });
+        if (this.menuDefs) {
+            this.menuDefs.some((md) => {
+                result = md.findAtId(actionId);
+                return result != null;
+            });
+        }
         return result;
     }
     formatForRead(propValue, propName) {
@@ -97,10 +102,12 @@ export class PaneContext {
     get dialogRedirection() {
         return this.paneDef.dialogRedirection;
     }
+    initialize() {
+    }
     set parentContext(parentContext) {
         this._parentContext = parentContext;
+        this.initialize();
     }
 }
 PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
 PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
-//# sourceMappingURL=PaneContext.js.map

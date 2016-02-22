@@ -9,4 +9,3 @@ export class XPaneDefRef {
         this.type = type;
     }
 }
-//# sourceMappingURL=XPaneDefRef.js.map

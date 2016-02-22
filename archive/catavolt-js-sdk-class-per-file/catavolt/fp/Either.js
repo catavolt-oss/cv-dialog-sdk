@@ -25,4 +25,3 @@ export class Either {
         return this._right;
     }
 }
-//# sourceMappingURL=Either.js.map

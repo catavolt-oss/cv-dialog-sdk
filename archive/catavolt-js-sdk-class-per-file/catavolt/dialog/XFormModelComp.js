@@ -9,4 +9,3 @@ export class XFormModelComp {
         this.title = title;
     }
 }
-//# sourceMappingURL=XFormModelComp.js.map

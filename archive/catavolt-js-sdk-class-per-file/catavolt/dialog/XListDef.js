@@ -20,4 +20,3 @@ export class XListDef extends XPaneDef {
         this.overrideGML = graphicalMarkup;
     }
 }
-//# sourceMappingURL=XListDef.js.map

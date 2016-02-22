@@ -28,10 +28,12 @@ export class InlineBinaryRef extends BinaryRef {
     get inlineData() {
         return this._inlineData;
     }
+    toString() {
+        return this._inlineData;
+    }
 }
 class ObjectBinaryRef extends BinaryRef {
     constructor(settings) {
         super(settings);
     }
 }
-//# sourceMappingURL=BinaryRef.js.map

@@ -71,4 +71,3 @@ export class Log {
 }
 //set default log level here
 Log.init = Log.logLevel(LogLevel.INFO);
-//# sourceMappingURL=Log.js.map

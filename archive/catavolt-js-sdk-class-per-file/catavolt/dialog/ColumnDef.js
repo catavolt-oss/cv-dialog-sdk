@@ -20,4 +20,3 @@ export class ColumnDef {
         return this._propertyDef;
     }
 }
-//# sourceMappingURL=ColumnDef.js.map

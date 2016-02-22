@@ -14,4 +14,3 @@ export class Success extends Try {
         return this._value;
     }
 }
-//# sourceMappingURL=Success.js.map

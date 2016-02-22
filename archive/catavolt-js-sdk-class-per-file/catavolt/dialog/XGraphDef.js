@@ -16,4 +16,3 @@ export class XGraphDef extends XPaneDef {
         this.sampleModel = sampleModel;
     }
 }
-//# sourceMappingURL=XGraphDef.js.map

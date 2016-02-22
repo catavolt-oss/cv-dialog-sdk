@@ -21,4 +21,3 @@ export class ObjectRef {
         return this.objectId + ":" + this.description;
     }
 }
-//# sourceMappingURL=ObjectRef.js.map

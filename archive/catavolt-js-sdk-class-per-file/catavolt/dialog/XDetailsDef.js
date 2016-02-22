@@ -25,4 +25,3 @@ export class XDetailsDef extends XPaneDef {
         return this.overrideGML;
     }
 }
-//# sourceMappingURL=XDetailsDef.js.map

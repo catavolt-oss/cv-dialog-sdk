@@ -10,4 +10,3 @@ export class GeoFixContext extends EditorContext {
         return this.paneDef;
     }
 }
-//# sourceMappingURL=GeoFixContext.js.map

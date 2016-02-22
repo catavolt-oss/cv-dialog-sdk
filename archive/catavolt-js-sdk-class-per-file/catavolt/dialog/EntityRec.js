@@ -9,7 +9,7 @@ import { Success } from "../fp/Success";
 import { Failure } from "../fp/Failure";
 export class EntityRecUtil {
     static newEntityRec(objectId, props, annos) {
-        return annos ? new EntityRecImpl(objectId, props, annos) : new EntityRecImpl(objectId, props);
+        return annos ? new EntityRecImpl(objectId, ArrayUtil.copy(props), ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, ArrayUtil.copy(props));
     }
     static union(l1, l2) {
         var result = ArrayUtil.copy(l1);
@@ -59,4 +59,3 @@ export class EntityRecUtil {
         return new Success(new EntityRecImpl(objectId, props, recAnnos));
     }
 }
-//# sourceMappingURL=EntityRec.js.map

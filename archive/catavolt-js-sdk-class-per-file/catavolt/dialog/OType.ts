@@ -44,6 +44,7 @@ import {Workbench} from "./Workbench";
 import {WorkbenchRedirection} from "./WorkbenchRedirection";
 import {WorkbenchLaunchAction} from "./WorkbenchLaunchAction";
 import {XWriteResult} from "./XWriteResult";
+import {XWritePropertyResult} from "./XWritePropertyResult";
 import {Try} from "../fp/Try";
 import {CellValueDef} from "./CellValueDef";
 import {EntityRec} from "./EntityRec";

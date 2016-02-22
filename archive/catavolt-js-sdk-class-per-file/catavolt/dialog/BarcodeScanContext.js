@@ -10,4 +10,3 @@ export class BarcodeScanContext extends EditorContext {
         return this.paneDef;
     }
 }
-//# sourceMappingURL=BarcodeScanContext.js.map

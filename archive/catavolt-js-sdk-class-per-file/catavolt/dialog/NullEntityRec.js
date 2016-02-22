@@ -145,4 +145,3 @@ export class NullEntityRec {
     }
 }
 NullEntityRec.singleton = new NullEntityRec();
-//# sourceMappingURL=NullEntityRec.js.map

@@ -15,4 +15,3 @@ export class XGetAvailableValuesResult {
         });
     }
 }
-//# sourceMappingURL=XGetAvailableValuesResult.js.map

@@ -56,4 +56,3 @@ export class SessionService {
 }
 SessionService.SERVICE_NAME = "SessionService";
 SessionService.SERVICE_PATH = "soi-json-v02/" + SessionService.SERVICE_NAME;
-//# sourceMappingURL=SessionService.js.map

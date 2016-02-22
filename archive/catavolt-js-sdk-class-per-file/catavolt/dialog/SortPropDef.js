@@ -13,4 +13,3 @@ export class SortPropDef {
         return this._name;
     }
 }
-//# sourceMappingURL=SortPropDef.js.map

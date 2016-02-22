@@ -30,7 +30,7 @@ import {Log} from "../util/Log";
 import {XReadResult} from "./XReadResult";
 import {Either} from "../fp/Either";
 import {XWriteResult} from "./XWriteResult";
-import {XWriteResult} from "./XWritePropertyResult";
+import {XWritePropertyResult} from "./XWritePropertyResult";
 import {Try} from "../fp/Try";
 
 export class DialogService {

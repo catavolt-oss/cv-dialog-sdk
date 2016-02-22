@@ -43,4 +43,3 @@ export class ListDef extends PaneDef {
         return this._style;
     }
 }
-//# sourceMappingURL=ListDef.js.map

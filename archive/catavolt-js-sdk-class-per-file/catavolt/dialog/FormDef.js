@@ -88,4 +88,3 @@ export class FormDef extends PaneDef {
         return this.formLayout && this.formLayout === 'H(2,V)';
     }
 }
-//# sourceMappingURL=FormDef.js.map

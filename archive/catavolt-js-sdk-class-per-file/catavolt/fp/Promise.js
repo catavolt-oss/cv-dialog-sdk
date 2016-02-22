@@ -27,4 +27,3 @@ export class Promise {
         this.complete(new Success(value));
     }
 }
-//# sourceMappingURL=Promise.js.map

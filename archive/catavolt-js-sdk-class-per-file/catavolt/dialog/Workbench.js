@@ -32,4 +32,3 @@ export class Workbench {
         return ArrayUtil.copy(this._actions);
     }
 }
-//# sourceMappingURL=Workbench.js.map

@@ -141,4 +141,3 @@ export class Future {
         return this;
     }
 }
-//# sourceMappingURL=Future.js.map

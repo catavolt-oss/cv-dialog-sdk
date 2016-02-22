@@ -22,4 +22,3 @@ export class WorkbenchRedirection extends Redirection {
         this._fromDialogProperties = props;
     }
 }
-//# sourceMappingURL=WorkbenchRedirection.js.map

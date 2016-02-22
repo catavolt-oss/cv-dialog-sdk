@@ -12,4 +12,3 @@ export class XImagePickerDef extends XPaneDef {
         this.defaultActionId = defaultActionId;
     }
 }
-//# sourceMappingURL=XImagePickerDef.js.map

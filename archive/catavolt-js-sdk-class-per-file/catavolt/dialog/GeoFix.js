@@ -29,4 +29,3 @@ export class GeoFix {
         return this.latitude + ":" + this.longitude;
     }
 }
-//# sourceMappingURL=GeoFix.js.map

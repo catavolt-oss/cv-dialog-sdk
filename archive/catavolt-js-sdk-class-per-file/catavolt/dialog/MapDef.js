@@ -35,4 +35,3 @@ export class MapDef extends PaneDef {
         return this._streetPropName;
     }
 }
-//# sourceMappingURL=MapDef.js.map

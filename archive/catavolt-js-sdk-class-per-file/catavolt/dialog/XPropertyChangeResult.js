@@ -12,4 +12,3 @@ export class XPropertyChangeResult {
         return this.editorRecordDef;
     }
 }
-//# sourceMappingURL=XPropertyChangeResult.js.map

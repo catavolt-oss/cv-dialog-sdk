@@ -10,4 +10,3 @@ export class CalendarContext extends QueryContext {
         return this.paneDef;
     }
 }
-//# sourceMappingURL=CalendarContext.js.map

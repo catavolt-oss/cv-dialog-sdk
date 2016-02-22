@@ -16,4 +16,3 @@ export class XOpenEditorModelResult {
         return this.formModel.form.redirection;
     }
 }
-//# sourceMappingURL=XOpenEditorModelResult.js.map

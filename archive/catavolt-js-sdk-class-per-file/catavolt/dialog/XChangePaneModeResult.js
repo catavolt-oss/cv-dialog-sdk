@@ -13,4 +13,3 @@ export class XChangePaneModeResult {
         return this.dialogProperties;
     }
 }
-//# sourceMappingURL=XChangePaneModeResult.js.map

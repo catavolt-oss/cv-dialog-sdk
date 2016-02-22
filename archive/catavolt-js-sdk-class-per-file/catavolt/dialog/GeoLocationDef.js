@@ -7,4 +7,3 @@ export class GeoLocationDef extends PaneDef {
         super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
 }
-//# sourceMappingURL=GeoLocationDef.js.map

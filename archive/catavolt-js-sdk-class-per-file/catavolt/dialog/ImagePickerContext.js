@@ -10,4 +10,3 @@ export class ImagePickerContext extends QueryContext {
         return this.paneDef;
     }
 }
-//# sourceMappingURL=ImagePickerContext.js.map

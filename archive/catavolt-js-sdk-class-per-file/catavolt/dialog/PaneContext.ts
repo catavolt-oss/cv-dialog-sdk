@@ -4,6 +4,7 @@
 
 import {EntityRecDef} from "./EntityRecDef";
 import {Binary} from "./Binary";
+import {EncodedBinary} from "./Binary";
 import {FormContext} from "./FormContext";
 import {StringDictionary} from "../util/Types";
 import {NavRequest} from "./NavRequest";
@@ -18,6 +19,11 @@ import {DialogRedirection} from "./DialogRedirection";
 import {SessionContext} from "../ws/SessionContext";
 import {PropDef} from "./PropDef";
 import {PaneDef} from "./PaneDef";
+import {XWritePropertyResult} from "./XWritePropertyResult";
+
+/**
+ * *********************************
+ */
 
 export class PaneContext {
 
@@ -62,7 +68,7 @@ export class PaneContext {
 
     findMenuDefAt(actionId:string) {
         var result:MenuDef = null;
-        if(this.menuDefs) {
+        if (this.menuDefs) {
             this.menuDefs.some((md:MenuDef)=> {
                 result = md.findAtId(actionId);
                 return result != null;
@@ -142,15 +148,14 @@ export class PaneContext {
         return this.paneDef.dialogRedirection;
     }
 
-    set parentContext(parentContext:FormContext) {
-        this._parentContext = parentContext;
+    initialize() {
     }
-
-    initialize() {}
 
     set parentContext(parentContext:FormContext) {
         this._parentContext = parentContext;
         this.initialize();
     }
 
+
 }
+

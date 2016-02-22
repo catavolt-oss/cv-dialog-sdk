@@ -38,4 +38,3 @@ export class CellValueDef {
         return this._style;
     }
 }
-//# sourceMappingURL=CellValueDef.js.map

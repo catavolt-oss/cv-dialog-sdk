@@ -15,4 +15,3 @@ export class Redirection {
         }
     }
 }
-//# sourceMappingURL=Redirection.js.map

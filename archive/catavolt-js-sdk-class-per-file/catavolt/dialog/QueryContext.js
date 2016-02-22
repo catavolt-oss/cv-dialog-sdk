@@ -105,4 +105,3 @@ export class QueryContext extends PaneContext {
         return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
     }
 }
-//# sourceMappingURL=QueryContext.js.map

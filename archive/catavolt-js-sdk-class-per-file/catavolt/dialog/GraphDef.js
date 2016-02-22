@@ -28,4 +28,3 @@ export class GraphDef extends PaneDef {
         return this._sampleModel;
     }
 }
-//# sourceMappingURL=GraphDef.js.map

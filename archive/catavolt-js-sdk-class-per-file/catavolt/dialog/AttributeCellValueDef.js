@@ -44,4 +44,3 @@ export class AttributeCellValueDef extends CellValueDef {
         return this._toolTip;
     }
 }
-//# sourceMappingURL=AttributeCellValueDef.js.map

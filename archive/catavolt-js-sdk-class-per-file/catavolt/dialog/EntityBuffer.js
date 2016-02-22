@@ -1,6 +1,7 @@
 /**
  * Created by rburson on 4/27/15.
  */
+import { Prop } from "./Prop";
 import { EntityRecUtil } from "./EntityRec";
 export class EntityBuffer {
     constructor(_before, _after) {
@@ -133,13 +134,21 @@ export class EntityBuffer {
         return this._after.propValues;
     }
     setValue(name, value) {
-        this.props.some((prop) => {
+        const newProps = [];
+        let found = false;
+        this.props.forEach((prop) => {
             if (prop.name === name) {
-                prop.value = value;
-                return true;
+                newProps.push(new Prop(name, value));
+                found = true;
             }
-            return false;
+            else {
+                newProps.push(prop);
+            }
         });
+        if (!found) {
+            newProps.push(new Prop(name, value));
+        }
+        this._after = EntityRecUtil.newEntityRec(this.objectId, newProps, this.annos);
     }
     get tipText() {
         return this._after.tipText;
@@ -160,4 +169,3 @@ export class EntityBuffer {
         return this._after.valueAtName(propName);
     }
 }
-//# sourceMappingURL=EntityBuffer.js.map

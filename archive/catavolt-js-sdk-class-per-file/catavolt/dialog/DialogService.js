@@ -194,9 +194,21 @@ export class DialogService {
             return Future.createCompletedFuture('writeEditorModel', writeResultTry);
         });
     }
+    static writeProperty(dialogHandle, propertyName, data, append, sessionContext) {
+        var method = 'writeProperty';
+        var params = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'data': data,
+            'append': append
+        };
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result) => {
+            return Future.createCompletedFuture('writeProperty', DialogTriple.fromWSDialogObject(result, 'WSWritePropertyResult', OType.factoryFn));
+        });
+    }
 }
 DialogService.EDITOR_SERVICE_NAME = 'EditorService';
 DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
 DialogService.QUERY_SERVICE_NAME = 'QueryService';
 DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
-//# sourceMappingURL=DialogService.js.map

@@ -22,4 +22,3 @@ export class XOpenQueryModelResult {
         });
     }
 }
-//# sourceMappingURL=XOpenQueryModelResult.js.map

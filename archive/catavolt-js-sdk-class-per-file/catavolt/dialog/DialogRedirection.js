@@ -56,4 +56,3 @@ export class DialogRedirection extends Redirection {
         return this._paneMode;
     }
 }
-//# sourceMappingURL=DialogRedirection.js.map

@@ -158,4 +158,3 @@ export class PropDef {
 }
 PropDef.STYLE_INLINE_MEDIA = "inlineMedia";
 PropDef.STYLE_INLINE_MEDIA2 = "Image/Video";
-//# sourceMappingURL=PropDef.js.map

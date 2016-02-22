@@ -44,4 +44,3 @@ export class XPaneDef {
         }
     }
 }
-//# sourceMappingURL=XPaneDef.js.map

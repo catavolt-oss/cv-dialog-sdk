@@ -10,4 +10,3 @@ export class GeoLocationContext extends EditorContext {
         return this.paneDef;
     }
 }
-//# sourceMappingURL=GeoLocationContext.js.map

@@ -31,4 +31,3 @@ export class DetailsDef extends PaneDef {
         return this._rows;
     }
 }
-//# sourceMappingURL=DetailsDef.js.map

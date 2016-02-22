@@ -8,6 +8,7 @@ import {StringDictionary} from "../util/Types";
 import {GeoLocation} from "./GeoLocation";
 import {DataAnno} from "./DataAnno";
 import {BinaryRef} from "./BinaryRef";
+import {InlineBinaryRef} from "./BinaryRef";
 import {ObjectRef} from "./ObjectRef";
 import {CodeRef} from "./CodeRef";
 import {GeoFix} from "./GeoFix";

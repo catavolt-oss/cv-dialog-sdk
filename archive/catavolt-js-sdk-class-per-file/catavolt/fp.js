@@ -8,4 +8,3 @@ export * from './fp/Future';
 export * from './fp/Promise';
 export * from './fp/Either';
 export * from './fp/Types';
-//# sourceMappingURL=fp.js.map

@@ -17,4 +17,3 @@ export class XReadResult {
         return this._dialogProperties;
     }
 }
-//# sourceMappingURL=XReadResult.js.map

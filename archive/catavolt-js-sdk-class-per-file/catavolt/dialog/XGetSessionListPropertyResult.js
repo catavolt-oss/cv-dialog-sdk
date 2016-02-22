@@ -22,4 +22,3 @@ export class XGetSessionListPropertyResult {
         return result;
     }
 }
-//# sourceMappingURL=XGetSessionListPropertyResult.js.map

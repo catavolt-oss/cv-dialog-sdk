@@ -7,4 +7,3 @@ export class DialogHandle {
         this.sessionHandle = sessionHandle;
     }
 }
-//# sourceMappingURL=DialogHandle.js.map

@@ -6,4 +6,3 @@ export class NullNavRequest {
         this.fromDialogProperties = {};
     }
 }
-//# sourceMappingURL=NullNavRequest.js.map

@@ -5,4 +5,3 @@ export class XReadPropertyResult {
     constructor() {
     }
 }
-//# sourceMappingURL=XReadPropertyResult.js.map

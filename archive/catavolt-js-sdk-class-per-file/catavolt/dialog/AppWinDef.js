@@ -25,4 +25,3 @@ export class AppWinDef {
         return this._workbenches;
     }
 }
-//# sourceMappingURL=AppWinDef.js.map

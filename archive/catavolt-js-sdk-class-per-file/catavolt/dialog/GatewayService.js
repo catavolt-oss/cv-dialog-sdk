@@ -29,4 +29,3 @@ export class GatewayService {
         return endPointFuture;
     }
 }
-//# sourceMappingURL=GatewayService.js.map

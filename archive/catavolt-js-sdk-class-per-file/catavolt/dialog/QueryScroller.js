@@ -173,4 +173,3 @@ export class QueryScroller {
         this._buffer = [];
     }
 }
-//# sourceMappingURL=QueryScroller.js.map

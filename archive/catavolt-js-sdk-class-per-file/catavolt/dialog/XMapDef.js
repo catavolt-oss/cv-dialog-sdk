@@ -21,4 +21,3 @@ export class XMapDef extends XPaneDef {
         this.descriptionProperty = prop;
     }
 }
-//# sourceMappingURL=XMapDef.js.map

@@ -9,4 +9,3 @@ export class GraphDataPointDef {
         this._legendkey = _legendkey;
     }
 }
-//# sourceMappingURL=GraphDataPointDef.js.map

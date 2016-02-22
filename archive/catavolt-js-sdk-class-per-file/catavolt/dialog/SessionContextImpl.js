@@ -54,4 +54,3 @@ export class SessionContextImpl {
         this._remoteSession = online;
     }
 }
-//# sourceMappingURL=SessionContextImpl.js.map

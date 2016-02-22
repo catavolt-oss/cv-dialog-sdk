@@ -17,4 +17,3 @@ export class WebRedirection extends Redirection {
         this._fromDialogProperties = props;
     }
 }
-//# sourceMappingURL=WebRedirection.js.map

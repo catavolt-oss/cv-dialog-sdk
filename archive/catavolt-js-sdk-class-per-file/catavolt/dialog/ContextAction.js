@@ -11,4 +11,3 @@ export class ContextAction {
         return [this.objectId, this.actionId];
     }
 }
-//# sourceMappingURL=ContextAction.js.map

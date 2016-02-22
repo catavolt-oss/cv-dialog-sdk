@@ -124,4 +124,3 @@ export class PaneDef {
         return this._title;
     }
 }
-//# sourceMappingURL=PaneDef.js.map

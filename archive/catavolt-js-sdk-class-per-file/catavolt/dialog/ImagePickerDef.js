@@ -15,4 +15,3 @@ export class ImagePickerDef extends PaneDef {
         return this._URLPropName;
     }
 }
-//# sourceMappingURL=ImagePickerDef.js.map

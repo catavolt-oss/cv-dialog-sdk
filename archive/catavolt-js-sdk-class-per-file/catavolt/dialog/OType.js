@@ -43,6 +43,7 @@ import { Workbench } from "./Workbench";
 import { WorkbenchRedirection } from "./WorkbenchRedirection";
 import { WorkbenchLaunchAction } from "./WorkbenchLaunchAction";
 import { XWriteResult } from "./XWriteResult";
+import { XWritePropertyResult } from "./XWritePropertyResult";
 import { CellValueDef } from "./CellValueDef";
 import { XFormModel } from "./XFormModel";
 import { XGetAvailableValuesResult } from "./XGetAvailableValuesResult";
@@ -222,7 +223,8 @@ OType.types = {
     'WSWorkbench': Workbench,
     'WSWorkbenchRedirection': WorkbenchRedirection,
     'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
-    'XWriteResult': XWriteResult
+    'XWriteResult': XWriteResult,
+    'WSWritePropertyResult': XWritePropertyResult
 };
 OType.typeFns = {
     'WSCellValueDef': CellValueDef.fromWS,
@@ -237,4 +239,3 @@ OType.typeFns = {
     'WSRedirection': Redirection.fromWS,
     'WSWriteResult': XWriteResult.fromWS
 };
-//# sourceMappingURL=OType.js.map

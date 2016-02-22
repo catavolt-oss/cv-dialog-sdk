@@ -10,4 +10,3 @@ export class XGetActiveColumnDefsResult {
         return this.columns;
     }
 }
-//# sourceMappingURL=XGetActiveColumnDefsResult.js.map

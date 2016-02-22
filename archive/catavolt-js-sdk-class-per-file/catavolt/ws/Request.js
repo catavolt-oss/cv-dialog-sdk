@@ -162,4 +162,3 @@ export class Get {
         return this._promise;
     }
 }
-//# sourceMappingURL=Request.js.map

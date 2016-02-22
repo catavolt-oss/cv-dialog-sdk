@@ -7,4 +7,3 @@ export class GeoFixDef extends PaneDef {
         super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
 }
-//# sourceMappingURL=GeoFixDef.js.map

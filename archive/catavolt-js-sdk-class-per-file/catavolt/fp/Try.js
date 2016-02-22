@@ -57,4 +57,3 @@ export class Try {
         return null;
     }
 }
-//# sourceMappingURL=Try.js.map

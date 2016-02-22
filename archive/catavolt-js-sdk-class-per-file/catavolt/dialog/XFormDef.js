@@ -15,4 +15,3 @@ export class XFormDef extends XPaneDef {
         this.paneDefRefs = paneDefRefs;
     }
 }
-//# sourceMappingURL=XFormDef.js.map

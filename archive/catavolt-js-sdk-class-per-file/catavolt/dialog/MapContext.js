@@ -10,4 +10,3 @@ export class MapContext extends QueryContext {
         return this.paneDef;
     }
 }
-//# sourceMappingURL=MapContext.js.map

@@ -23,4 +23,3 @@ export class ListContext extends QueryContext {
         return this.listDef.style;
     }
 }
-//# sourceMappingURL=ListContext.js.map
