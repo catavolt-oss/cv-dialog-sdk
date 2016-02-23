@@ -134,6 +134,49 @@ exports.Base64 = Base64;
 /**
  * *****************************************************
  */
+var DataUrl = (function () {
+    function DataUrl(dataUrl) {
+        this._mimeType = DataUrl.getMimeType(dataUrl);
+        this._data = DataUrl.getEncodedData(dataUrl);
+    }
+    DataUrl.createDataUrl = function (mimeType, encodedData) {
+        return DataUrl.PROTO_TOKEN + mimeType + DataUrl.ENCODING_TOKEN + encodedData;
+    };
+    DataUrl.getMimeType = function (dataUrl) {
+        var startIndex = dataUrl.indexOf(':');
+        var endIndex = dataUrl.indexOf(';');
+        if (startIndex > -1 && endIndex > startIndex) {
+            return dataUrl.substring(startIndex + 1, endIndex);
+        }
+    };
+    DataUrl.getEncodedData = function (dataUrl) {
+        var startIndex = dataUrl.indexOf(',');
+        if (startIndex > -1) {
+            return dataUrl.substring(startIndex + 1);
+        }
+    };
+    Object.defineProperty(DataUrl.prototype, "mimeType", {
+        get: function () {
+            return this._mimeType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DataUrl.prototype, "data", {
+        get: function () {
+            return this._data;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DataUrl.PROTO_TOKEN = 'data:';
+    DataUrl.ENCODING_TOKEN = ';base64,';
+    return DataUrl;
+})();
+exports.DataUrl = DataUrl;
+/**
+ * *****************************************************
+ */
 (function (LogLevel) {
     LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
     LogLevel[LogLevel["WARN"] = 1] = "WARN";

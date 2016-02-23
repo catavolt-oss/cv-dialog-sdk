@@ -3,6 +3,7 @@
  */
 
 export * from './util/ArrayUtil';
+export * from './util/DataUrl';
 export * from './util/ObjUtil';
 export * from './util/StringUtil';
 export * from './util/Log';

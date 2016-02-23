@@ -18,6 +18,21 @@ export declare class Base64 {
 /**
  * *****************************************************
  */
+export declare class DataUrl {
+    private _mimeType;
+    private _data;
+    private static PROTO_TOKEN;
+    private static ENCODING_TOKEN;
+    static createDataUrl(mimeType: string, encodedData: string): string;
+    static getMimeType(dataUrl: string): string;
+    static getEncodedData(dataUrl: string): string;
+    constructor(dataUrl: string);
+    mimeType: string;
+    data: string;
+}
+/**
+ * *****************************************************
+ */
 export declare enum LogLevel {
     ERROR = 0,
     WARN = 1,
