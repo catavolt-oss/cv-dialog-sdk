@@ -1,1 +1,0 @@
-{"version":3,"file":"MapContext.js","sourceRoot":"","sources":["MapContext.ts"],"names":["MapContext","MapContext.constructor","MapContext.mapDef"],"mappings":"AAAA;;GAEG;OAEI,EAAC,YAAY,EAAC,MAAM,gBAAgB;AAG3C,gCAAgC,YAAY;IAExCA,YAAYA,OAAcA;QACtBC,MAAMA,OAAOA,CAACA,CAACA;IACnBA,CAACA;IAEDD,IAAIA,MAAMA;QACNE,MAAMA,CAASA,IAAIA,CAACA,OAAOA,CAACA;IAChCA,CAACA;AAELF,CAACA;AAAA"}
