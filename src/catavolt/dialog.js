@@ -366,8 +366,52 @@ var PaneContext = (function () {
     });
     PaneContext.prototype.initialize = function () {
     };
+    PaneContext.prototype.readBinaries = function (entityRec) {
+        var _this = this;
+        return fp_3.Future.sequence(this.entityRecDef.propDefs.filter(function (propDef) {
+            return propDef.isBinaryType;
+        }).map(function (propDef) {
+            return _this.readBinary(propDef.name);
+        }));
+    };
+    PaneContext.prototype.readBinary = function (propName) {
+        var _this = this;
+        var seq = 0;
+        var buffer = '';
+        var f = function (result) {
+            buffer += result.data;
+            if (result.hasMore) {
+                return DialogService.readProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
+            }
+            else {
+                return fp_3.Future.createSuccessfulFuture('readProperty', buffer);
+            }
+        };
+        return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+    };
+    PaneContext.prototype.writeBinaries = function (entityRec) {
+        var _this = this;
+        return fp_3.Future.sequence(entityRec.props.filter(function (prop) {
+            return prop.value instanceof EncodedBinary;
+        }).map(function (prop) {
+            var pntr = 0;
+            var encBin = prop.value;
+            var data = encBin.data;
+            var writeFuture = fp_3.Future.createSuccessfulFuture('startSeq', {});
+            while (pntr < data.length) {
+                writeFuture = writeFuture.bind(function (prevResult) {
+                    var encSegment = (pntr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
+                    return DialogService.writeProperty(_this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, _this.sessionContext);
+                });
+                pntr += PaneContext.CHAR_CHUNK_SIZE;
+            }
+            return writeFuture;
+        }));
+    };
     PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
     PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
+    PaneContext.CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
+    PaneContext.BINARY_CHUNK_SIZE = 250 * 1024; //size in  byes for 'read' operation
     return PaneContext;
 })();
 exports.PaneContext = PaneContext;
@@ -629,30 +673,8 @@ var EditorContext = (function (_super) {
     EditorContext.prototype.putSettings = function (settings) {
         util_2.ObjUtil.addAllProps(settings, this._settings);
     };
-    EditorContext.prototype.writeBinaries = function (entityRec) {
-        var _this = this;
-        var binariesWriteSeq = [];
-        entityRec.props.forEach(function (prop) {
-            if (prop.value instanceof EncodedBinary) {
-                var pntr = 0;
-                var encBin = prop.value;
-                var data = encBin.data;
-                var writeFuture = fp_3.Future.createSuccessfulFuture('startSeq', {});
-                while (pntr < data.length) {
-                    writeFuture = writeFuture.bind(function (prevResult) {
-                        var encSegment = (pntr + EditorContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, EditorContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
-                        return DialogService.writeProperty(_this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, _this.sessionContext);
-                    });
-                    pntr += EditorContext.CHAR_CHUNK_SIZE;
-                }
-                binariesWriteSeq.push(writeFuture);
-            }
-        });
-        return fp_3.Future.sequence(binariesWriteSeq);
-    };
     EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
     EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
-    EditorContext.CHAR_CHUNK_SIZE = 256 * 1000;
     return EditorContext;
 })(PaneContext);
 exports.EditorContext = EditorContext;
@@ -3736,6 +3758,19 @@ var DialogService = (function () {
             return fp_3.Future.createCompletedFuture('readEditorModel', DialogTriple.fromWSDialogObject(result, 'WSReadResult', OType.factoryFn));
         });
     };
+    DialogService.readProperty = function (dialogHandle, propertyName, readSeq, readLength, sessionContext) {
+        var method = 'readProperty';
+        var params = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'readSeq': readSeq,
+            'readLenth': readLength
+        };
+        var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            return fp_3.Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
+        });
+    };
     DialogService.writeEditorModel = function (dialogHandle, entityRec, sessionContext) {
         var method = 'write';
         var params = {
@@ -6312,15 +6347,6 @@ exports.XQueryResult = XQueryResult;
 /**
  * *********************************
  */
-var XReadPropertyResult = (function () {
-    function XReadPropertyResult() {
-    }
-    return XReadPropertyResult;
-})();
-exports.XReadPropertyResult = XReadPropertyResult;
-/**
- * *********************************
- */
 var XReadResult = (function () {
     function XReadResult(_editorRecord, _editorRecordDef, _dialogProperties) {
         this._editorRecord = _editorRecord;
@@ -6407,6 +6433,16 @@ var XWritePropertyResult = (function () {
     return XWritePropertyResult;
 })();
 exports.XWritePropertyResult = XWritePropertyResult;
+var XReadPropertyResult = (function () {
+    function XReadPropertyResult(dialogProperties, hasMore, data, dataLength) {
+        this.dialogProperties = dialogProperties;
+        this.hasMore = hasMore;
+        this.data = data;
+        this.dataLength = dataLength;
+    }
+    return XReadPropertyResult;
+})();
+exports.XReadPropertyResult = XReadPropertyResult;
 /*
  OType must be last as it references almost all other classes in the module
  */
@@ -6579,7 +6615,8 @@ var OType = (function () {
         'WSWorkbenchRedirection': WorkbenchRedirection,
         'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
         'XWriteResult': XWriteResult,
-        'WSWritePropertyResult': XWritePropertyResult
+        'WSWritePropertyResult': XWritePropertyResult,
+        'WSReadPropertyResult': XReadPropertyResult
     };
     OType.typeFns = {
         'WSCellValueDef': CellValueDef.fromWS,

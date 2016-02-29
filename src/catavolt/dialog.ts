@@ -186,6 +186,8 @@ export class PaneContext {
 
     private static ANNO_NAME_KEY = "com.catavolt.annoName";
     private static PROP_NAME_KEY = "com.catavolt.propName";
+    private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
+    private static BINARY_CHUNK_SIZE = 250 * 1024; //size in  byes for 'read' operation
 
     entityRecDef:EntityRecDef;
 
@@ -313,7 +315,53 @@ export class PaneContext {
         this.initialize();
     }
 
+    readBinaries(entityRec:EntityRec):Future<Array<Try<string>>> {
+        return Future.sequence<string>(
+            this.entityRecDef.propDefs.filter((propDef:PropDef)=>{
+                return propDef.isBinaryType
+            }).map((propDef:PropDef)=>{
+                return this.readBinary(propDef.name);
+            })
+        );
+    }
 
+    readBinary(propName:string):Future<string> {
+        let seq:number = 0;
+        let buffer:string = '';
+        let f:(XReadPropertyResult)=>Future<string> = (result:XReadPropertyResult) =>{
+            buffer += result.data;
+            if(result.hasMore) {
+                return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle,
+                    propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            } else {
+                return Future.createSuccessfulFuture<string>('readProperty', buffer);
+            }
+        }
+        return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle,
+            propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+    }
+
+
+    writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
+        return Future.sequence<XWritePropertyResult>(
+            entityRec.props.filter((prop:Prop)=> {
+                return prop.value instanceof EncodedBinary;
+            }).map((prop:Prop) =>{
+                let pntr:number = 0;
+                const encBin:EncodedBinary = prop.value as EncodedBinary;
+                const data = encBin.data;
+                let writeFuture:Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
+                while (pntr < data.length) {
+                    writeFuture = writeFuture.bind((prevResult)=> {
+                        const encSegment:string = (pntr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
+                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, this.sessionContext);
+                    });
+                    pntr += PaneContext.CHAR_CHUNK_SIZE;
+                }
+                return writeFuture;
+            })
+        );
+    }
 }
 
 /**
@@ -324,7 +372,6 @@ export class EditorContext extends PaneContext {
 
     private static GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
     private static GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
-    private static CHAR_CHUNK_SIZE = 256 * 1000;
 
     private _buffer:EntityBuffer;
     private _editorState:EditorState;
@@ -571,27 +618,6 @@ export class EditorContext extends PaneContext {
         ObjUtil.addAllProps(settings, this._settings);
     }
 
-    private writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
-
-        const binariesWriteSeq:Array<Future<XWritePropertyResult>> = [];
-        entityRec.props.forEach((prop:Prop)=> {
-            if (prop.value instanceof EncodedBinary) {
-                let pntr:number = 0;
-                const encBin:EncodedBinary = prop.value as EncodedBinary;
-                const data = encBin.data;
-                let writeFuture:Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
-                while (pntr < data.length) {
-                    writeFuture = writeFuture.bind((prevResult)=> {
-                        const encSegment:string = (pntr + EditorContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, EditorContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
-                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, this.sessionContext);
-                    });
-                    pntr += EditorContext.CHAR_CHUNK_SIZE;
-                }
-                binariesWriteSeq.push(writeFuture);
-            }
-        });
-        return Future.sequence<XWritePropertyResult>(binariesWriteSeq);
-    }
 }
 
 
@@ -3465,6 +3491,23 @@ export class DialogService {
         });
     }
 
+    static readProperty(dialogHandle:DialogHandle, propertyName:string, readSeq:number, readLength:number,
+                         sessionContext:SessionContext):Future<XReadPropertyResult> {
+        var method = 'readProperty';
+        var params:StringDictionary = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'readSeq': readSeq,
+            'readLenth': readLength
+        };
+
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('readProperty',
+                DialogTriple.fromWSDialogObject<XReadPropertyResult>(result, 'WSReadPropertyResult', OType.factoryFn));
+        });
+    }
+
     static writeEditorModel(dialogHandle:DialogHandle, entityRec:EntityRec,
                             sessionContext:SessionContext):Future<Either<Redirection,XWriteResult>> {
         var method = 'write';
@@ -5898,16 +5941,6 @@ export class XQueryResult {
  * *********************************
  */
 
-export class XReadPropertyResult {
-
-    constructor() {
-    }
-
-}
-/**
- * *********************************
- */
-
 
 export class XReadResult {
 
@@ -5973,6 +6006,14 @@ export class XWritePropertyResult {
     }
 }
 
+export class XReadPropertyResult {
+    constructor(public dialogProperties:StringDictionary,
+                public hasMore:boolean,
+                public data:string,
+                public dataLength:number) {
+    }
+}
+
 
 /*
  OType must be last as it references almost all other classes in the module
@@ -6024,7 +6065,8 @@ export class OType {
         'WSWorkbenchRedirection': WorkbenchRedirection,
         'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
         'XWriteResult': XWriteResult,
-        'WSWritePropertyResult': XWritePropertyResult
+        'WSWritePropertyResult': XWritePropertyResult,
+        'WSReadPropertyResult': XReadPropertyResult
     };
 
     private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {

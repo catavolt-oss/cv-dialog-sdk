@@ -11,15 +11,15 @@ declare module "catavolt-dialog" {
     /**
      * Created by rburson on 3/27/15.
      */
-    import { StringDictionary } from "catavolt-util";
-    import { Try } from "catavolt-fp";
-    import { Either } from "catavolt-fp";
-    import { SessionContext } from "catavolt-ws";
-    import { Future } from "catavolt-fp";
-    import { SystemContext } from "catavolt-ws";
-    import { UserException } from "catavolt-util";
-    import { TryClosure } from "catavolt-fp";
-    import { MapFn } from "catavolt-fp";
+    import { StringDictionary } from "./util";
+    import { Try } from "./fp";
+    import { Either } from "./fp";
+    import { SessionContext } from "./ws";
+    import { Future } from "./fp";
+    import { SystemContext } from "./ws";
+    import { UserException } from "./util";
+    import { TryClosure } from "./fp";
+    import { MapFn } from "./fp";
     /**
      * *********************************
      */
@@ -87,6 +87,8 @@ declare module "catavolt-dialog" {
     export class PaneContext {
         private static ANNO_NAME_KEY;
         private static PROP_NAME_KEY;
+        private static CHAR_CHUNK_SIZE;
+        private static BINARY_CHUNK_SIZE;
         entityRecDef: EntityRecDef;
         private _binaryCache;
         private _lastRefreshTime;
@@ -114,6 +116,9 @@ declare module "catavolt-dialog" {
         /** --------------------- MODULE ------------------------------*/
         dialogRedirection: DialogRedirection;
         initialize(): void;
+        readBinaries(entityRec: EntityRec): Future<Array<Try<string>>>;
+        readBinary(propName: string): Future<string>;
+        writeBinaries(entityRec: EntityRec): Future<Array<Try<XWritePropertyResult>>>;
     }
     /**
      * *********************************
@@ -121,7 +126,6 @@ declare module "catavolt-dialog" {
     export class EditorContext extends PaneContext {
         private static GPS_ACCURACY;
         private static GPS_SECONDS;
-        private static CHAR_CHUNK_SIZE;
         private _buffer;
         private _editorState;
         private _entityRecDef;
@@ -155,7 +159,6 @@ declare module "catavolt-dialog" {
         private paneModeSetting;
         private putSetting(key, value);
         private putSettings(settings);
-        private writeBinaries(entityRec);
     }
     /**
      * *********************************
@@ -961,6 +964,7 @@ declare module "catavolt-dialog" {
         static processSideEffects(dialogHandle: DialogHandle, sessionContext: SessionContext, propertyName: string, propertyValue: any, pendingWrites: EntityRec): Future<XPropertyChangeResult>;
         static queryQueryModel(dialogHandle: DialogHandle, direction: QueryDirection, maxRows: number, fromObjectId: string, sessionContext: SessionContext): Future<XQueryResult>;
         static readEditorModel(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<XReadResult>;
+        static readProperty(dialogHandle: DialogHandle, propertyName: string, readSeq: number, readLength: number, sessionContext: SessionContext): Future<XReadPropertyResult>;
         static writeEditorModel(dialogHandle: DialogHandle, entityRec: EntityRec, sessionContext: SessionContext): Future<Either<Redirection, XWriteResult>>;
         static writeProperty(dialogHandle: DialogHandle, propertyName: string, data: string, append: boolean, sessionContext: SessionContext): Future<XWritePropertyResult>;
     }
@@ -1644,12 +1648,6 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XReadPropertyResult {
-        constructor();
-    }
-    /**
-     * *********************************
-     */
     export class XReadResult {
         private _editorRecord;
         private _editorRecordDef;
@@ -1680,6 +1678,13 @@ declare module "catavolt-dialog" {
         dialogProperties: StringDictionary;
         constructor(dialogProperties: StringDictionary);
     }
+    export class XReadPropertyResult {
+        dialogProperties: StringDictionary;
+        hasMore: boolean;
+        data: string;
+        dataLength: number;
+        constructor(dialogProperties: StringDictionary, hasMore: boolean, data: string, dataLength: number);
+    }
     export class OType {
         private static types;
         private static typeFns;
@@ -1692,4 +1697,5 @@ declare module "catavolt-dialog" {
         private static extractLType(Otype);
         private static assignPropIfDefined(prop, value, target, otype?);
     }
+
 }
