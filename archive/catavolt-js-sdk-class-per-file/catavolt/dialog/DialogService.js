@@ -177,6 +177,19 @@ export class DialogService {
             return Future.createCompletedFuture('readEditorModel', DialogTriple.fromWSDialogObject(result, 'WSReadResult', OType.factoryFn));
         });
     }
+    static readProperty(dialogHandle, propertyName, readSeq, readLength, sessionContext) {
+        var method = 'readProperty';
+        var params = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'readSeq': readSeq,
+            'readLength': readLength
+        };
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result) => {
+            return Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
+        });
+    }
     static writeEditorModel(dialogHandle, entityRec, sessionContext) {
         var method = 'write';
         var params = {

@@ -14,6 +14,7 @@ var util_3 = require("./util");
 var util_4 = require("./util");
 var ws_1 = require("./ws");
 var ws_2 = require("./ws");
+var util_5 = require("./util");
 /*
  IMPORTANT!
  Note #1: Dependency cycles - These classes must be in a single file (module) because of commonjs and circular dependency issues.
@@ -244,6 +245,28 @@ var PaneContext = (function () {
         enumerable: true,
         configurable: true
     });
+    PaneContext.prototype.binaryAt = function (propName, entityRec) {
+        var prop = entityRec.propAtName(propName);
+        if (prop.value instanceof InlineBinaryRef) {
+            var binRef = prop.value;
+            return fp_3.Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+        }
+        else if (prop.value instanceof ObjectBinaryRef) {
+            var binRef = prop.value;
+            if (binRef.settings['webURL']) {
+                return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+            }
+            else {
+                return this.readBinary(propName);
+            }
+        }
+        else if (typeof prop.value === 'string') {
+            return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
+        }
+        else {
+            return fp_3.Future.createFailedFuture('binaryAt', 'No binary found at ' + propName);
+        }
+    };
     Object.defineProperty(PaneContext.prototype, "dialogAlias", {
         get: function () {
             return this.dialogRedirection.dialogProperties['dialogAlias'];
@@ -384,7 +407,7 @@ var PaneContext = (function () {
                 return DialogService.readProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
             }
             else {
-                return fp_3.Future.createSuccessfulFuture('readProperty', buffer);
+                return fp_3.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
             }
         };
         return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
@@ -394,16 +417,19 @@ var PaneContext = (function () {
         return fp_3.Future.sequence(entityRec.props.filter(function (prop) {
             return prop.value instanceof EncodedBinary;
         }).map(function (prop) {
-            var pntr = 0;
+            var ptr = 0;
             var encBin = prop.value;
             var data = encBin.data;
             var writeFuture = fp_3.Future.createSuccessfulFuture('startSeq', {});
-            while (pntr < data.length) {
-                writeFuture = writeFuture.bind(function (prevResult) {
-                    var encSegment = (pntr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
-                    return DialogService.writeProperty(_this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, _this.sessionContext);
-                });
-                pntr += PaneContext.CHAR_CHUNK_SIZE;
+            while (ptr < data.length) {
+                var boundPtr = function (ptr) {
+                    writeFuture = writeFuture.bind(function (prevResult) {
+                        var encSegment = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
+                        return DialogService.writeProperty(_this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, _this.sessionContext);
+                    });
+                };
+                boundPtr(ptr);
+                ptr += PaneContext.CHAR_CHUNK_SIZE;
             }
             return writeFuture;
         }));
@@ -411,7 +437,7 @@ var PaneContext = (function () {
     PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
     PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
     PaneContext.CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
-    PaneContext.BINARY_CHUNK_SIZE = 250 * 1024; //size in  byes for 'read' operation
+    PaneContext.BINARY_CHUNK_SIZE = 32 * 1024; //size in  byes for 'read' operation
     return PaneContext;
 })();
 exports.PaneContext = PaneContext;
@@ -1935,8 +1961,9 @@ exports.ObjectBinaryRef = ObjectBinaryRef;
  * *********************************
  */
 var EncodedBinary = (function () {
-    function EncodedBinary(_data) {
+    function EncodedBinary(_data, _mimeType) {
         this._data = _data;
+        this._mimeType = _mimeType;
     }
     Object.defineProperty(EncodedBinary.prototype, "data", {
         get: function () {
@@ -1945,9 +1972,36 @@ var EncodedBinary = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(EncodedBinary.prototype, "mimeType", {
+        get: function () {
+            return this._mimeType || 'application/octet-stream';
+        },
+        enumerable: true,
+        configurable: true
+    });
+    EncodedBinary.prototype.toUrl = function () {
+        return util_5.DataUrl.createDataUrl(this.mimeType, this.data);
+    };
     return EncodedBinary;
 })();
 exports.EncodedBinary = EncodedBinary;
+var UrlBinary = (function () {
+    function UrlBinary(_url) {
+        this._url = _url;
+    }
+    Object.defineProperty(UrlBinary.prototype, "url", {
+        get: function () {
+            return this._url;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    UrlBinary.prototype.toUrl = function () {
+        return this.url;
+    };
+    return UrlBinary;
+})();
+exports.UrlBinary = UrlBinary;
 /**
  * *********************************
  */
@@ -3764,7 +3818,7 @@ var DialogService = (function () {
             'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
             'propertyName': propertyName,
             'readSeq': readSeq,
-            'readLenth': readLength
+            'readLength': readLength
         };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {

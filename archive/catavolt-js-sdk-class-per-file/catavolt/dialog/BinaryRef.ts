@@ -44,7 +44,7 @@ import {Success} from "../fp/Success";
 
     }
 
-    class ObjectBinaryRef extends BinaryRef {
+    export class ObjectBinaryRef extends BinaryRef {
 
         constructor(settings:StringDictionary) {
             super(settings);

@@ -45,6 +45,7 @@ import {WorkbenchRedirection} from "./WorkbenchRedirection";
 import {WorkbenchLaunchAction} from "./WorkbenchLaunchAction";
 import {XWriteResult} from "./XWriteResult";
 import {XWritePropertyResult} from "./XWritePropertyResult";
+import {XReadPropertyResult} from "./XReadPropertyResult";
 import {Try} from "../fp/Try";
 import {CellValueDef} from "./CellValueDef";
 import {EntityRec} from "./EntityRec";
@@ -109,7 +110,8 @@ export class OType {
         'WSWorkbenchRedirection': WorkbenchRedirection,
         'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
         'XWriteResult': XWriteResult,
-        'WSWritePropertyResult': XWritePropertyResult
+        'WSWritePropertyResult': XWritePropertyResult,
+        'WSReadPropertyResult': XReadPropertyResult
     };
 
     private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {

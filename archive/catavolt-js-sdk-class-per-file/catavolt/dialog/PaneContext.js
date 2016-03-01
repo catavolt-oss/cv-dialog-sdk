@@ -1,11 +1,17 @@
 /**
  * Created by rburson on 3/30/15.
  */
+import { EncodedBinary } from "./Binary";
+import { UrlBinary } from "./Binary";
+import { InlineBinaryRef } from "./BinaryRef";
+import { ObjectBinaryRef } from "./BinaryRef";
 import { FormContext } from "./FormContext";
 import { ObjUtil } from "../util/ObjUtil";
 import { NullNavRequest } from "./NullNavRequest";
 import { PropFormatter } from "./PropFormatter";
 import { AppContext } from "./AppContext";
+import { Future } from "../fp/Future";
+import { DialogService } from "./DialogService";
 /**
  * *********************************
  */
@@ -33,6 +39,28 @@ export class PaneContext {
     }
     get actionSource() {
         return this.parentContext ? this.parentContext.actionSource : null;
+    }
+    binaryAt(propName, entityRec) {
+        const prop = entityRec.propAtName(propName);
+        if (prop.value instanceof InlineBinaryRef) {
+            const binRef = prop.value;
+            return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+        }
+        else if (prop.value instanceof ObjectBinaryRef) {
+            const binRef = prop.value;
+            if (binRef.settings['webURL']) {
+                return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+            }
+            else {
+                return this.readBinary(propName);
+            }
+        }
+        else if (typeof prop.value === 'string') {
+            return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
+        }
+        else {
+            return Future.createFailedFuture('binaryAt', 'No binary found at ' + propName);
+        }
     }
     get dialogAlias() {
         return this.dialogRedirection.dialogProperties['dialogAlias'];
@@ -108,6 +136,50 @@ export class PaneContext {
         this._parentContext = parentContext;
         this.initialize();
     }
+    readBinaries(entityRec) {
+        return Future.sequence(this.entityRecDef.propDefs.filter((propDef) => {
+            return propDef.isBinaryType;
+        }).map((propDef) => {
+            return this.readBinary(propDef.name);
+        }));
+    }
+    readBinary(propName) {
+        let seq = 0;
+        let buffer = '';
+        let f = (result) => {
+            buffer += result.data;
+            if (result.hasMore) {
+                return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle, propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            }
+            else {
+                return Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
+            }
+        };
+        return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+    }
+    writeBinaries(entityRec) {
+        return Future.sequence(entityRec.props.filter((prop) => {
+            return prop.value instanceof EncodedBinary;
+        }).map((prop) => {
+            let ptr = 0;
+            const encBin = prop.value;
+            const data = encBin.data;
+            let writeFuture = Future.createSuccessfulFuture('startSeq', {});
+            while (ptr < data.length) {
+                const boundPtr = (ptr) => {
+                    writeFuture = writeFuture.bind((prevResult) => {
+                        const encSegment = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
+                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.sessionContext);
+                    });
+                };
+                boundPtr(ptr);
+                ptr += PaneContext.CHAR_CHUNK_SIZE;
+            }
+            return writeFuture;
+        }));
+    }
 }
 PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
 PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
+PaneContext.CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
+PaneContext.BINARY_CHUNK_SIZE = 32 * 1024; //size in  byes for 'read' operation

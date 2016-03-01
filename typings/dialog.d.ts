@@ -11,15 +11,15 @@ declare module "catavolt-dialog" {
     /**
      * Created by rburson on 3/27/15.
      */
-    import { StringDictionary } from "./util";
-    import { Try } from "./fp";
-    import { Either } from "./fp";
-    import { SessionContext } from "./ws";
-    import { Future } from "./fp";
-    import { SystemContext } from "./ws";
-    import { UserException } from "./util";
-    import { TryClosure } from "./fp";
-    import { MapFn } from "./fp";
+    import { StringDictionary } from "catavolt-util";
+    import { Try } from "catavolt-fp";
+    import { Either } from "catavolt-fp";
+    import { SessionContext } from "catavolt-ws";
+    import { Future } from "catavolt-fp";
+    import { SystemContext } from "catavolt-ws";
+    import { UserException } from "catavolt-util";
+    import { TryClosure } from "catavolt-fp";
+    import { MapFn } from "catavolt-fp";
     /**
      * *********************************
      */
@@ -97,6 +97,7 @@ declare module "catavolt-dialog" {
         static resolveSettingsFromNavRequest(initialSettings: StringDictionary, navRequest: NavRequest): StringDictionary;
         constructor(paneRef: number);
         actionSource: ActionSource;
+        binaryAt(propName: string, entityRec: EntityRec): Future<Binary>;
         dialogAlias: string;
         findMenuDefAt(actionId: string): MenuDef;
         formatForRead(propValue: any, propName: string): string;
@@ -116,8 +117,8 @@ declare module "catavolt-dialog" {
         /** --------------------- MODULE ------------------------------*/
         dialogRedirection: DialogRedirection;
         initialize(): void;
-        readBinaries(entityRec: EntityRec): Future<Array<Try<string>>>;
-        readBinary(propName: string): Future<string>;
+        readBinaries(entityRec: EntityRec): Future<Array<Try<Binary>>>;
+        readBinary(propName: string): Future<Binary>;
         writeBinaries(entityRec: EntityRec): Future<Array<Try<XWritePropertyResult>>>;
     }
     /**
@@ -493,14 +494,24 @@ declare module "catavolt-dialog" {
      * *********************************
      */
     export interface Binary {
+        toUrl(): string;
     }
     /**
      * *********************************
      */
     export class EncodedBinary implements Binary {
         private _data;
-        constructor(_data: string);
+        private _mimeType;
+        constructor(_data: string, _mimeType?: string);
         data: string;
+        mimeType: string;
+        toUrl(): string;
+    }
+    export class UrlBinary implements Binary {
+        private _url;
+        constructor(_url: string);
+        url: string;
+        toUrl(): string;
     }
     /**
      * *********************************

@@ -6,7 +6,6 @@ import { EntityBuffer } from "./EntityBuffer";
 import { NullEntityRec } from "./NullEntityRec";
 import { Future } from "../fp/Future";
 import { DialogService } from "./DialogService";
-import { EncodedBinary } from "./Binary";
 import { ContextAction } from "./ContextAction";
 import { AppContext } from "./AppContext";
 import { Either } from "../fp/Either";
@@ -212,27 +211,6 @@ export class EditorContext extends PaneContext {
     putSettings(settings) {
         ObjUtil.addAllProps(settings, this._settings);
     }
-    writeBinaries(entityRec) {
-        const binariesWriteSeq = [];
-        entityRec.props.forEach((prop) => {
-            if (prop.value instanceof EncodedBinary) {
-                let pntr = 0;
-                const encBin = prop.value;
-                const data = encBin.data;
-                let writeFuture = Future.createSuccessfulFuture('startSeq', {});
-                while (pntr < data.length) {
-                    writeFuture = writeFuture.bind((prevResult) => {
-                        const encSegment = (pntr + EditorContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, EditorContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
-                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, this.sessionContext);
-                    });
-                    pntr += EditorContext.CHAR_CHUNK_SIZE;
-                }
-                binariesWriteSeq.push(writeFuture);
-            }
-        });
-        return Future.sequence(binariesWriteSeq);
-    }
 }
 EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
 EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
-EditorContext.CHAR_CHUNK_SIZE = 256 * 1000;

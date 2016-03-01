@@ -31,6 +31,7 @@ import {XReadResult} from "./XReadResult";
 import {Either} from "../fp/Either";
 import {XWriteResult} from "./XWriteResult";
 import {XWritePropertyResult} from "./XWritePropertyResult";
+import {XReadPropertyResult} from "./XReadPropertyResult";
 import {Try} from "../fp/Try";
 
 export class DialogService {
@@ -267,6 +268,23 @@ export class DialogService {
         });
     }
 
+    static readProperty(dialogHandle:DialogHandle, propertyName:string, readSeq:number, readLength:number,
+                        sessionContext:SessionContext):Future<XReadPropertyResult> {
+        var method = 'readProperty';
+        var params:StringDictionary = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'readSeq': readSeq,
+            'readLength': readLength
+        };
+
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('readProperty',
+                DialogTriple.fromWSDialogObject<XReadPropertyResult>(result, 'WSReadPropertyResult', OType.factoryFn));
+        });
+    }
+
     static writeEditorModel(dialogHandle:DialogHandle, entityRec:EntityRec,
                             sessionContext:SessionContext):Future<Either<Redirection,XWriteResult>> {
         var method = 'write';
@@ -293,9 +311,9 @@ export class DialogService {
         var method = 'writeProperty';
         var params:StringDictionary = {
             'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
-            'propertyName':propertyName,
-            'data':data,
-            'append':append
+            'propertyName': propertyName,
+            'data': data,
+            'append': append
         };
 
         var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
@@ -304,5 +322,4 @@ export class DialogService {
                 DialogTriple.fromWSDialogObject<XWritePropertyResult>(result, 'WSWritePropertyResult', OType.factoryFn));
         });
     }
-
 }

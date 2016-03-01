@@ -19,6 +19,7 @@ import {Call} from "./ws";
 import {TryClosure} from "./fp";
 import {MapFn} from "./fp";
 import {Get} from "./ws";
+import {DataUrl} from "./util"
 
 
 /*
@@ -187,7 +188,7 @@ export class PaneContext {
     private static ANNO_NAME_KEY = "com.catavolt.annoName";
     private static PROP_NAME_KEY = "com.catavolt.propName";
     private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
-    private static BINARY_CHUNK_SIZE = 250 * 1024; //size in  byes for 'read' operation
+    private static BINARY_CHUNK_SIZE = 32 * 1024; //size in  byes for 'read' operation
 
     entityRecDef:EntityRecDef;
 
@@ -219,6 +220,25 @@ export class PaneContext {
 
     get actionSource():ActionSource {
         return this.parentContext ? this.parentContext.actionSource : null;
+    }
+
+    binaryAt(propName:string, entityRec:EntityRec):Future<Binary> {
+        const prop:Prop = entityRec.propAtName(propName)
+        if(prop.value instanceof InlineBinaryRef) {
+            const binRef = prop.value as InlineBinaryRef;
+            return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+        } else if(prop.value instanceof ObjectBinaryRef) {
+            const binRef = prop.value as ObjectBinaryRef;
+            if(binRef.settings['webURL']) {
+                return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+            } else {
+                return this.readBinary(propName);
+            }
+        } else if(typeof prop.value === 'string') {
+            return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
+        } else {
+            return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
+        }
     }
 
     get dialogAlias():string {
@@ -315,8 +335,8 @@ export class PaneContext {
         this.initialize();
     }
 
-    readBinaries(entityRec:EntityRec):Future<Array<Try<string>>> {
-        return Future.sequence<string>(
+    readBinaries(entityRec:EntityRec):Future<Array<Try<Binary>>> {
+        return Future.sequence<Binary>(
             this.entityRecDef.propDefs.filter((propDef:PropDef)=>{
                 return propDef.isBinaryType
             }).map((propDef:PropDef)=>{
@@ -325,38 +345,40 @@ export class PaneContext {
         );
     }
 
-    readBinary(propName:string):Future<string> {
+    readBinary(propName:string):Future<Binary> {
         let seq:number = 0;
         let buffer:string = '';
-        let f:(XReadPropertyResult)=>Future<string> = (result:XReadPropertyResult) =>{
+        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) =>{
             buffer += result.data;
             if(result.hasMore) {
                 return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle,
                     propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
             } else {
-                return Future.createSuccessfulFuture<string>('readProperty', buffer);
+                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(buffer));
             }
         }
         return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle,
             propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
     }
 
-
     writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
         return Future.sequence<XWritePropertyResult>(
             entityRec.props.filter((prop:Prop)=> {
                 return prop.value instanceof EncodedBinary;
             }).map((prop:Prop) =>{
-                let pntr:number = 0;
+                let ptr:number = 0;
                 const encBin:EncodedBinary = prop.value as EncodedBinary;
                 const data = encBin.data;
                 let writeFuture:Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
-                while (pntr < data.length) {
-                    writeFuture = writeFuture.bind((prevResult)=> {
-                        const encSegment:string = (pntr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(pntr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(pntr);
-                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, pntr != 0, this.sessionContext);
-                    });
-                    pntr += PaneContext.CHAR_CHUNK_SIZE;
+                while (ptr < data.length) {
+                    const boundPtr = (ptr:number) => {
+                        writeFuture = writeFuture.bind((prevResult)=> {
+                            const encSegment:string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
+                            return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.sessionContext);
+                        });
+                    }
+                    boundPtr(ptr);
+                    ptr += PaneContext.CHAR_CHUNK_SIZE;
                 }
                 return writeFuture;
             })
@@ -1672,6 +1694,7 @@ export class ObjectBinaryRef extends BinaryRef {
  */
 
 export interface Binary {
+    toUrl():string;
 }
 /**
  * *********************************
@@ -1679,13 +1702,34 @@ export interface Binary {
 
 export class EncodedBinary implements Binary {
 
-    constructor(private _data:string) {
+    constructor(private _data:string, private _mimeType?:string) {
     }
 
     get data():string {
         return this._data;
     }
 
+    get mimeType():string {
+       return this._mimeType || 'application/octet-stream';
+    }
+
+    toUrl():string {
+        return DataUrl.createDataUrl(this.mimeType, this.data);
+    }
+}
+
+export class UrlBinary implements Binary {
+
+    constructor(private _url:string) {
+    }
+
+    get url():string {
+        return this._url;
+    }
+
+    toUrl():string {
+        return this.url;
+    }
 }
 
 
@@ -3498,7 +3542,7 @@ export class DialogService {
             'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
             'propertyName': propertyName,
             'readSeq': readSeq,
-            'readLenth': readLength
+            'readLength': readLength
         };
 
         var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);

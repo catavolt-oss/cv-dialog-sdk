@@ -32,7 +32,7 @@ export class InlineBinaryRef extends BinaryRef {
         return this._inlineData;
     }
 }
-class ObjectBinaryRef extends BinaryRef {
+export class ObjectBinaryRef extends BinaryRef {
     constructor(settings) {
         super(settings);
     }
