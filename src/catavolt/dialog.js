@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -63,7 +64,7 @@ var CellValueDef = (function () {
         configurable: true
     });
     return CellValueDef;
-})();
+}());
 exports.CellValueDef = CellValueDef;
 /**
  * *********************************
@@ -151,7 +152,7 @@ var AttributeCellValueDef = (function (_super) {
         configurable: true
     });
     return AttributeCellValueDef;
-})(CellValueDef);
+}(CellValueDef));
 exports.AttributeCellValueDef = AttributeCellValueDef;
 /**
  * *********************************
@@ -162,7 +163,7 @@ var ForcedLineCellValueDef = (function (_super) {
         _super.call(this, null);
     }
     return ForcedLineCellValueDef;
-})(CellValueDef);
+}(CellValueDef));
 exports.ForcedLineCellValueDef = ForcedLineCellValueDef;
 /**
  * *********************************
@@ -181,7 +182,7 @@ var LabelCellValueDef = (function (_super) {
         configurable: true
     });
     return LabelCellValueDef;
-})(CellValueDef);
+}(CellValueDef));
 exports.LabelCellValueDef = LabelCellValueDef;
 /**
  * *********************************
@@ -200,7 +201,7 @@ var SubstitutionCellValueDef = (function (_super) {
         configurable: true
     });
     return SubstitutionCellValueDef;
-})(CellValueDef);
+}(CellValueDef));
 exports.SubstitutionCellValueDef = SubstitutionCellValueDef;
 /**
  * *********************************
@@ -211,7 +212,7 @@ var TabCellValueDef = (function (_super) {
         _super.call(this, null);
     }
     return TabCellValueDef;
-})(CellValueDef);
+}(CellValueDef));
 exports.TabCellValueDef = TabCellValueDef;
 /**
  * *********************************
@@ -439,7 +440,7 @@ var PaneContext = (function () {
     PaneContext.CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
     PaneContext.BINARY_CHUNK_SIZE = 32 * 1024; //size in  byes for 'read' operation
     return PaneContext;
-})();
+}());
 exports.PaneContext = PaneContext;
 /**
  * *********************************
@@ -702,7 +703,7 @@ var EditorContext = (function (_super) {
     EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
     EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
     return EditorContext;
-})(PaneContext);
+}(PaneContext));
 exports.EditorContext = EditorContext;
 /**
  * *********************************
@@ -856,7 +857,7 @@ var FormContext = (function (_super) {
         }
     };
     return FormContext;
-})(PaneContext);
+}(PaneContext));
 exports.FormContext = FormContext;
 /**
  * *********************************
@@ -1002,7 +1003,7 @@ var QueryContext = (function (_super) {
         configurable: true
     });
     return QueryContext;
-})(PaneContext);
+}(PaneContext));
 exports.QueryContext = QueryContext;
 /**
  * *********************************
@@ -1020,7 +1021,7 @@ var BarcodeScanContext = (function (_super) {
         configurable: true
     });
     return BarcodeScanContext;
-})(EditorContext);
+}(EditorContext));
 exports.BarcodeScanContext = BarcodeScanContext;
 /**
  * *********************************
@@ -1045,7 +1046,7 @@ var DetailsContext = (function (_super) {
         configurable: true
     });
     return DetailsContext;
-})(EditorContext);
+}(EditorContext));
 exports.DetailsContext = DetailsContext;
 /**
  * *********************************
@@ -1063,7 +1064,7 @@ var GeoFixContext = (function (_super) {
         configurable: true
     });
     return GeoFixContext;
-})(EditorContext);
+}(EditorContext));
 exports.GeoFixContext = GeoFixContext;
 /**
  * *********************************
@@ -1081,7 +1082,7 @@ var GeoLocationContext = (function (_super) {
         configurable: true
     });
     return GeoLocationContext;
-})(EditorContext);
+}(EditorContext));
 exports.GeoLocationContext = GeoLocationContext;
 /**
  * *********************************
@@ -1099,7 +1100,7 @@ var CalendarContext = (function (_super) {
         configurable: true
     });
     return CalendarContext;
-})(QueryContext);
+}(QueryContext));
 exports.CalendarContext = CalendarContext;
 /**
  * *********************************
@@ -1117,7 +1118,7 @@ var GraphContext = (function (_super) {
         configurable: true
     });
     return GraphContext;
-})(QueryContext);
+}(QueryContext));
 exports.GraphContext = GraphContext;
 /**
  * *********************************
@@ -1135,7 +1136,7 @@ var ImagePickerContext = (function (_super) {
         configurable: true
     });
     return ImagePickerContext;
-})(QueryContext);
+}(QueryContext));
 exports.ImagePickerContext = ImagePickerContext;
 /**
  * *********************************
@@ -1176,7 +1177,7 @@ var ListContext = (function (_super) {
         configurable: true
     });
     return ListContext;
-})(QueryContext);
+}(QueryContext));
 exports.ListContext = ListContext;
 /**
  * *********************************
@@ -1194,7 +1195,7 @@ var MapContext = (function (_super) {
         configurable: true
     });
     return MapContext;
-})(QueryContext);
+}(QueryContext));
 exports.MapContext = MapContext;
 /**
  * *********************************
@@ -1337,7 +1338,7 @@ var PaneDef = (function () {
         configurable: true
     });
     return PaneDef;
-})();
+}());
 exports.PaneDef = PaneDef;
 /**
  * *********************************
@@ -1348,7 +1349,7 @@ var BarcodeScanDef = (function (_super) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
     return BarcodeScanDef;
-})(PaneDef);
+}(PaneDef));
 exports.BarcodeScanDef = BarcodeScanDef;
 /**
  * *********************************
@@ -1431,7 +1432,7 @@ var CalendarDef = (function (_super) {
         configurable: true
     });
     return CalendarDef;
-})(PaneDef);
+}(PaneDef));
 exports.CalendarDef = CalendarDef;
 /**
  * *********************************
@@ -1490,7 +1491,7 @@ var DetailsDef = (function (_super) {
         configurable: true
     });
     return DetailsDef;
-})(PaneDef);
+}(PaneDef));
 exports.DetailsDef = DetailsDef;
 /**
  * *********************************
@@ -1647,7 +1648,7 @@ var FormDef = (function (_super) {
         configurable: true
     });
     return FormDef;
-})(PaneDef);
+}(PaneDef));
 exports.FormDef = FormDef;
 /**
  * *********************************
@@ -1658,7 +1659,7 @@ var GeoFixDef = (function (_super) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
     return GeoFixDef;
-})(PaneDef);
+}(PaneDef));
 exports.GeoFixDef = GeoFixDef;
 /**
  * *********************************
@@ -1669,7 +1670,7 @@ var GeoLocationDef = (function (_super) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
     return GeoLocationDef;
-})(PaneDef);
+}(PaneDef));
 exports.GeoLocationDef = GeoLocationDef;
 /**
  * *********************************
@@ -1721,7 +1722,7 @@ var GraphDef = (function (_super) {
         configurable: true
     });
     return GraphDef;
-})(PaneDef);
+}(PaneDef));
 exports.GraphDef = GraphDef;
 /**
  * *********************************
@@ -1748,7 +1749,7 @@ var ImagePickerDef = (function (_super) {
         configurable: true
     });
     return ImagePickerDef;
-})(PaneDef);
+}(PaneDef));
 exports.ImagePickerDef = ImagePickerDef;
 /**
  * *********************************
@@ -1835,7 +1836,7 @@ var ListDef = (function (_super) {
         configurable: true
     });
     return ListDef;
-})(PaneDef);
+}(PaneDef));
 exports.ListDef = ListDef;
 /**
  * *********************************
@@ -1902,7 +1903,7 @@ var MapDef = (function (_super) {
         configurable: true
     });
     return MapDef;
-})(PaneDef);
+}(PaneDef));
 exports.MapDef = MapDef;
 /**
  * *********************************
@@ -1927,7 +1928,7 @@ var BinaryRef = (function () {
         configurable: true
     });
     return BinaryRef;
-})();
+}());
 exports.BinaryRef = BinaryRef;
 var InlineBinaryRef = (function (_super) {
     __extends(InlineBinaryRef, _super);
@@ -1947,7 +1948,7 @@ var InlineBinaryRef = (function (_super) {
         return this._inlineData;
     };
     return InlineBinaryRef;
-})(BinaryRef);
+}(BinaryRef));
 exports.InlineBinaryRef = InlineBinaryRef;
 var ObjectBinaryRef = (function (_super) {
     __extends(ObjectBinaryRef, _super);
@@ -1955,7 +1956,7 @@ var ObjectBinaryRef = (function (_super) {
         _super.call(this, settings);
     }
     return ObjectBinaryRef;
-})(BinaryRef);
+}(BinaryRef));
 exports.ObjectBinaryRef = ObjectBinaryRef;
 /**
  * *********************************
@@ -1983,7 +1984,7 @@ var EncodedBinary = (function () {
         return util_5.DataUrl.createDataUrl(this.mimeType, this.data);
     };
     return EncodedBinary;
-})();
+}());
 exports.EncodedBinary = EncodedBinary;
 var UrlBinary = (function () {
     function UrlBinary(_url) {
@@ -2000,7 +2001,7 @@ var UrlBinary = (function () {
         return this.url;
     };
     return UrlBinary;
-})();
+}());
 exports.UrlBinary = UrlBinary;
 /**
  * *********************************
@@ -2020,7 +2021,7 @@ var Redirection = (function () {
         }
     };
     return Redirection;
-})();
+}());
 exports.Redirection = Redirection;
 /**
  * *********************************
@@ -2128,7 +2129,7 @@ var DialogRedirection = (function (_super) {
         configurable: true
     });
     return DialogRedirection;
-})(Redirection);
+}(Redirection));
 exports.DialogRedirection = DialogRedirection;
 /**
  * *********************************
@@ -2140,7 +2141,7 @@ var NullRedirection = (function (_super) {
         this.fromDialogProperties = fromDialogProperties;
     }
     return NullRedirection;
-})(Redirection);
+}(Redirection));
 exports.NullRedirection = NullRedirection;
 /**
  * *********************************
@@ -2165,7 +2166,7 @@ var WebRedirection = (function (_super) {
         configurable: true
     });
     return WebRedirection;
-})(Redirection);
+}(Redirection));
 exports.WebRedirection = WebRedirection;
 /**
  * *********************************
@@ -2203,7 +2204,7 @@ var WorkbenchRedirection = (function (_super) {
         configurable: true
     });
     return WorkbenchRedirection;
-})(Redirection);
+}(Redirection));
 exports.WorkbenchRedirection = WorkbenchRedirection;
 var EntityRecUtil = (function () {
     function EntityRecUtil() {
@@ -2259,7 +2260,7 @@ var EntityRecUtil = (function () {
         return new fp_4.Success(new EntityRecImpl(objectId, props, recAnnos));
     };
     return EntityRecUtil;
-})();
+}());
 exports.EntityRecUtil = EntityRecUtil;
 /**
  * *********************************
@@ -2524,7 +2525,7 @@ var EntityBuffer = (function () {
         return this._after.valueAtName(propName);
     };
     return EntityBuffer;
-})();
+}());
 exports.EntityBuffer = EntityBuffer;
 /**
  * *********************************
@@ -2777,7 +2778,7 @@ var EntityRecImpl = (function () {
         return value;
     };
     return EntityRecImpl;
-})();
+}());
 exports.EntityRecImpl = EntityRecImpl;
 /**
  * *********************************
@@ -3004,7 +3005,7 @@ var NullEntityRec = (function () {
     };
     NullEntityRec.singleton = new NullEntityRec();
     return NullEntityRec;
-})();
+}());
 exports.NullEntityRec = NullEntityRec;
 /**
  * *********************************
@@ -3021,7 +3022,7 @@ var AppContextValues = (function () {
         this.tenantSettings = tenantSettings;
     }
     return AppContextValues;
-})();
+}());
 var AppContext = (function () {
     function AppContext() {
         if (AppContext._singleton) {
@@ -3190,7 +3191,7 @@ var AppContext = (function () {
     };
     AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
     return AppContext;
-})();
+}());
 exports.AppContext = AppContext;
 /**
  * *********************************
@@ -3239,7 +3240,7 @@ var AppWinDef = (function () {
         configurable: true
     });
     return AppWinDef;
-})();
+}());
 exports.AppWinDef = AppWinDef;
 /**
  * *********************************
@@ -3262,7 +3263,7 @@ var CellDef = (function () {
         configurable: true
     });
     return CellDef;
-})();
+}());
 exports.CellDef = CellDef;
 /**
  * *********************************
@@ -3294,7 +3295,7 @@ var CodeRef = (function () {
         return this.code + ":" + this.description;
     };
     return CodeRef;
-})();
+}());
 exports.CodeRef = CodeRef;
 /**
  * *********************************
@@ -3334,7 +3335,7 @@ var ColumnDef = (function () {
         configurable: true
     });
     return ColumnDef;
-})();
+}());
 exports.ColumnDef = ColumnDef;
 /**
  * *********************************
@@ -3353,7 +3354,7 @@ var ContextAction = (function () {
         configurable: true
     });
     return ContextAction;
-})();
+}());
 exports.ContextAction = ContextAction;
 /**
  * *********************************
@@ -3628,7 +3629,7 @@ var DataAnno = (function () {
     DataAnno.PLACEMENT_UNDER = "UNDER";
     DataAnno.PLACEMENT_STRETCH_UNDER = "STRETCH_UNDER";
     return DataAnno;
-})();
+}());
 exports.DataAnno = DataAnno;
 /**
  * *********************************
@@ -3639,7 +3640,7 @@ var DialogHandle = (function () {
         this.sessionHandle = sessionHandle;
     }
     return DialogHandle;
-})();
+}());
 exports.DialogHandle = DialogHandle;
 /**
  * *********************************
@@ -3860,7 +3861,7 @@ var DialogService = (function () {
     DialogService.QUERY_SERVICE_NAME = 'QueryService';
     DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
     return DialogService;
-})();
+}());
 exports.DialogService = DialogService;
 /**
  * *********************************
@@ -4042,7 +4043,7 @@ var DialogTriple = (function () {
         return result;
     };
     return DialogTriple;
-})();
+}());
 exports.DialogTriple = DialogTriple;
 /**
  * *********************************
@@ -4111,7 +4112,7 @@ var EntityRecDef = (function () {
         configurable: true
     });
     return EntityRecDef;
-})();
+}());
 exports.EntityRecDef = EntityRecDef;
 /**
  * *********************************
@@ -4294,7 +4295,7 @@ var FormContextBuilder = (function () {
         return fp_3.Future.sequence(seqOfFutures);
     };
     return FormContextBuilder;
-})();
+}());
 exports.FormContextBuilder = FormContextBuilder;
 /**
  * *********************************
@@ -4327,7 +4328,7 @@ var GatewayService = (function () {
         return endPointFuture;
     };
     return GatewayService;
-})();
+}());
 exports.GatewayService = GatewayService;
 /**
  * *********************************
@@ -4375,7 +4376,7 @@ var GeoFix = (function () {
         return this.latitude + ":" + this.longitude;
     };
     return GeoFix;
-})();
+}());
 exports.GeoFix = GeoFix;
 /**
  * *********************************
@@ -4407,7 +4408,7 @@ var GeoLocation = (function () {
         return this.latitude + ":" + this.longitude;
     };
     return GeoLocation;
-})();
+}());
 exports.GeoLocation = GeoLocation;
 /**
  * *********************************
@@ -4420,7 +4421,7 @@ var GraphDataPointDef = (function () {
         this._legendkey = _legendkey;
     }
     return GraphDataPointDef;
-})();
+}());
 exports.GraphDataPointDef = GraphDataPointDef;
 /**
  * *********************************
@@ -4533,7 +4534,7 @@ var MenuDef = (function () {
         configurable: true
     });
     return MenuDef;
-})();
+}());
 exports.MenuDef = MenuDef;
 var NavRequestUtil = (function () {
     function NavRequestUtil() {
@@ -4566,7 +4567,7 @@ var NavRequestUtil = (function () {
         return result;
     };
     return NavRequestUtil;
-})();
+}());
 exports.NavRequestUtil = NavRequestUtil;
 /**
  * *********************************
@@ -4576,7 +4577,7 @@ var NullNavRequest = (function () {
         this.fromDialogProperties = {};
     }
     return NullNavRequest;
-})();
+}());
 exports.NullNavRequest = NullNavRequest;
 /**
  * *********************************
@@ -4608,7 +4609,7 @@ var ObjectRef = (function () {
         return this.objectId + ":" + this.description;
     };
     return ObjectRef;
-})();
+}());
 exports.ObjectRef = ObjectRef;
 /**
  * *********************************
@@ -4938,7 +4939,7 @@ var PropDef = (function () {
     PropDef.STYLE_INLINE_MEDIA = "inlineMedia";
     PropDef.STYLE_INLINE_MEDIA2 = "Image/Video";
     return PropDef;
-})();
+}());
 exports.PropDef = PropDef;
 /**
  * *********************************
@@ -5015,7 +5016,7 @@ var PropFormatter = (function () {
         }
     };
     return PropFormatter;
-})();
+}());
 exports.PropFormatter = PropFormatter;
 var Prop = (function () {
     function Prop(_name, _value, _annos) {
@@ -5297,7 +5298,7 @@ var Prop = (function () {
         return result;
     };
     return Prop;
-})();
+}());
 exports.Prop = Prop;
 /**
  * *********************************
@@ -5308,7 +5309,7 @@ var QueryResult = (function () {
         this.hasMore = hasMore;
     }
     return QueryResult;
-})();
+}());
 exports.QueryResult = QueryResult;
 /**
  * *********************************
@@ -5320,7 +5321,7 @@ var HasMoreQueryMarker = (function (_super) {
     }
     HasMoreQueryMarker.singleton = new HasMoreQueryMarker();
     return HasMoreQueryMarker;
-})(NullEntityRec);
+}(NullEntityRec));
 exports.HasMoreQueryMarker = HasMoreQueryMarker;
 var IsEmptyQueryMarker = (function (_super) {
     __extends(IsEmptyQueryMarker, _super);
@@ -5329,7 +5330,7 @@ var IsEmptyQueryMarker = (function (_super) {
     }
     IsEmptyQueryMarker.singleton = new IsEmptyQueryMarker();
     return IsEmptyQueryMarker;
-})(NullEntityRec);
+}(NullEntityRec));
 exports.IsEmptyQueryMarker = IsEmptyQueryMarker;
 (function (QueryMarkerOption) {
     QueryMarkerOption[QueryMarkerOption["None"] = 0] = "None";
@@ -5537,7 +5538,7 @@ var QueryScroller = (function () {
         this._buffer = [];
     };
     return QueryScroller;
-})();
+}());
 exports.QueryScroller = QueryScroller;
 /**
  * *********************************
@@ -5625,7 +5626,7 @@ var SessionContextImpl = (function () {
         configurable: true
     });
     return SessionContextImpl;
-})();
+}());
 exports.SessionContextImpl = SessionContextImpl;
 /**
  * *********************************
@@ -5682,7 +5683,7 @@ var SessionService = (function () {
     SessionService.SERVICE_NAME = "SessionService";
     SessionService.SERVICE_PATH = "soi-json-v02/" + SessionService.SERVICE_NAME;
     return SessionService;
-})();
+}());
 exports.SessionService = SessionService;
 /**
  * *********************************
@@ -5707,7 +5708,7 @@ var SortPropDef = (function () {
         configurable: true
     });
     return SortPropDef;
-})();
+}());
 exports.SortPropDef = SortPropDef;
 /**
  * *********************************
@@ -5724,7 +5725,7 @@ var SystemContextImpl = (function () {
         configurable: true
     });
     return SystemContextImpl;
-})();
+}());
 exports.SystemContextImpl = SystemContextImpl;
 /**
  * *********************************
@@ -5759,7 +5760,7 @@ var WorkbenchLaunchAction = (function () {
         configurable: true
     });
     return WorkbenchLaunchAction;
-})();
+}());
 exports.WorkbenchLaunchAction = WorkbenchLaunchAction;
 /**
  * *********************************
@@ -5801,7 +5802,7 @@ var WorkbenchService = (function () {
     WorkbenchService.SERVICE_NAME = "WorkbenchService";
     WorkbenchService.SERVICE_PATH = "soi-json-v02/" + WorkbenchService.SERVICE_NAME;
     return WorkbenchService;
-})();
+}());
 exports.WorkbenchService = WorkbenchService;
 /**
  * *********************************
@@ -5852,7 +5853,7 @@ var Workbench = (function () {
         configurable: true
     });
     return Workbench;
-})();
+}());
 exports.Workbench = Workbench;
 /* XPane Classes */
 /**
@@ -5897,7 +5898,7 @@ var XPaneDef = (function () {
         }
     };
     return XPaneDef;
-})();
+}());
 exports.XPaneDef = XPaneDef;
 /**
  * *********************************
@@ -5911,7 +5912,7 @@ var XBarcodeScanDef = (function (_super) {
         this.title = title;
     }
     return XBarcodeScanDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XBarcodeScanDef = XBarcodeScanDef;
 /**
  * *********************************
@@ -5933,7 +5934,7 @@ var XCalendarDef = (function (_super) {
         this.occurTimeProperty = occurTimeProperty;
     }
     return XCalendarDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XCalendarDef = XCalendarDef;
 /**
  * *********************************
@@ -5958,7 +5959,7 @@ var XChangePaneModeResult = (function () {
         configurable: true
     });
     return XChangePaneModeResult;
-})();
+}());
 exports.XChangePaneModeResult = XChangePaneModeResult;
 /**
  * *********************************
@@ -5991,7 +5992,7 @@ var XDetailsDef = (function (_super) {
         configurable: true
     });
     return XDetailsDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XDetailsDef = XDetailsDef;
 /**
  * *********************************
@@ -6010,7 +6011,7 @@ var XFormDef = (function (_super) {
         this.paneDefRefs = paneDefRefs;
     }
     return XFormDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XFormDef = XFormDef;
 /**
  * *********************************
@@ -6023,7 +6024,7 @@ var XFormModelComp = (function () {
         this.title = title;
     }
     return XFormModelComp;
-})();
+}());
 exports.XFormModelComp = XFormModelComp;
 /**
  * *********************************
@@ -6056,7 +6057,7 @@ var XFormModel = (function () {
         });
     };
     return XFormModel;
-})();
+}());
 exports.XFormModel = XFormModel;
 /**
  * *********************************
@@ -6070,7 +6071,7 @@ var XGeoFixDef = (function (_super) {
         this.title = title;
     }
     return XGeoFixDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XGeoFixDef = XGeoFixDef;
 /**
  * *********************************
@@ -6084,7 +6085,7 @@ var XGeoLocationDef = (function (_super) {
         this.title = title;
     }
     return XGeoLocationDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XGeoLocationDef = XGeoLocationDef;
 /**
  * *********************************
@@ -6102,7 +6103,7 @@ var XGetActiveColumnDefsResult = (function () {
         configurable: true
     });
     return XGetActiveColumnDefsResult;
-})();
+}());
 exports.XGetActiveColumnDefsResult = XGetActiveColumnDefsResult;
 /**
  * *********************************
@@ -6119,7 +6120,7 @@ var XGetAvailableValuesResult = (function () {
         });
     };
     return XGetAvailableValuesResult;
-})();
+}());
 exports.XGetAvailableValuesResult = XGetAvailableValuesResult;
 /**
  * *********************************
@@ -6152,7 +6153,7 @@ var XGetSessionListPropertyResult = (function () {
         return result;
     };
     return XGetSessionListPropertyResult;
-})();
+}());
 exports.XGetSessionListPropertyResult = XGetSessionListPropertyResult;
 /**
  * *********************************
@@ -6172,7 +6173,7 @@ var XGraphDef = (function (_super) {
         this.sampleModel = sampleModel;
     }
     return XGraphDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XGraphDef = XGraphDef;
 /**
  * *********************************
@@ -6188,7 +6189,7 @@ var XImagePickerDef = (function (_super) {
         this.defaultActionId = defaultActionId;
     }
     return XImagePickerDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XImagePickerDef = XImagePickerDef;
 /**
  * *********************************
@@ -6216,7 +6217,7 @@ var XListDef = (function (_super) {
         configurable: true
     });
     return XListDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XListDef = XListDef;
 /**
  * *********************************
@@ -6245,7 +6246,7 @@ var XMapDef = (function (_super) {
         configurable: true
     });
     return XMapDef;
-})(XPaneDef);
+}(XPaneDef));
 exports.XMapDef = XMapDef;
 /**
  * *********************************
@@ -6277,7 +6278,7 @@ var XOpenEditorModelResult = (function () {
         configurable: true
     });
     return XOpenEditorModelResult;
-})();
+}());
 exports.XOpenEditorModelResult = XOpenEditorModelResult;
 /**
  * *********************************
@@ -6299,7 +6300,7 @@ var XOpenQueryModelResult = (function () {
         });
     };
     return XOpenQueryModelResult;
-})();
+}());
 exports.XOpenQueryModelResult = XOpenQueryModelResult;
 /**
  * *********************************
@@ -6312,7 +6313,7 @@ var XPaneDefRef = (function () {
         this.type = type;
     }
     return XPaneDefRef;
-})();
+}());
 exports.XPaneDefRef = XPaneDefRef;
 /**
  * *********************************
@@ -6332,7 +6333,7 @@ var XPropertyChangeResult = (function () {
         configurable: true
     });
     return XPropertyChangeResult;
-})();
+}());
 exports.XPropertyChangeResult = XPropertyChangeResult;
 /**
  * *********************************
@@ -6396,7 +6397,7 @@ var XQueryResult = (function () {
         });
     };
     return XQueryResult;
-})();
+}());
 exports.XQueryResult = XQueryResult;
 /**
  * *********************************
@@ -6429,7 +6430,7 @@ var XReadResult = (function () {
         configurable: true
     });
     return XReadResult;
-})();
+}());
 exports.XReadResult = XReadResult;
 /**
  * *********************************
@@ -6475,7 +6476,7 @@ var XWriteResult = (function () {
         configurable: true
     });
     return XWriteResult;
-})();
+}());
 exports.XWriteResult = XWriteResult;
 /**
  * *********************************
@@ -6485,7 +6486,7 @@ var XWritePropertyResult = (function () {
         this.dialogProperties = dialogProperties;
     }
     return XWritePropertyResult;
-})();
+}());
 exports.XWritePropertyResult = XWritePropertyResult;
 var XReadPropertyResult = (function () {
     function XReadPropertyResult(dialogProperties, hasMore, data, dataLength) {
@@ -6495,7 +6496,7 @@ var XReadPropertyResult = (function () {
         this.dataLength = dataLength;
     }
     return XReadPropertyResult;
-})();
+}());
 exports.XReadPropertyResult = XReadPropertyResult;
 /*
  OType must be last as it references almost all other classes in the module
@@ -6686,7 +6687,7 @@ var OType = (function () {
         'WSWriteResult': XWriteResult.fromWS
     };
     return OType;
-})();
+}());
 exports.OType = OType;
 /**
  * *********************************

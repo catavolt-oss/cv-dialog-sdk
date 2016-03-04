@@ -1,3 +1,4 @@
+"use strict";
 var fp_1 = require("./fp");
 var util_1 = require("./util");
 var fp_2 = require("./fp");
@@ -84,7 +85,7 @@ var XMLHttpClient = (function () {
         return promise.future;
     };
     return XMLHttpClient;
-})();
+}());
 exports.XMLHttpClient = XMLHttpClient;
 var Call = (function () {
     function Call(service, method, params, systemContext, sessionContext) {
@@ -137,7 +138,7 @@ var Call = (function () {
     };
     Call._lastCallId = 0;
     return Call;
-})();
+}());
 exports.Call = Call;
 var Get = (function () {
     function Get(url) {
@@ -167,6 +168,6 @@ var Get = (function () {
         return this._promise;
     };
     return Get;
-})();
+}());
 exports.Get = Get;
 //# sourceMappingURL=ws.js.map

@@ -1,6 +1,7 @@
 /**
  * Created by rburson on 3/6/15.
  */
+"use strict";
 var ArrayUtil = (function () {
     function ArrayUtil() {
     }
@@ -21,7 +22,7 @@ var ArrayUtil = (function () {
         return value;
     };
     return ArrayUtil;
-})();
+}());
 exports.ArrayUtil = ArrayUtil;
 /**
  * *****************************************************
@@ -129,7 +130,7 @@ var Base64 = (function () {
     };
     Base64._keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
     return Base64;
-})();
+}());
 exports.Base64 = Base64;
 /**
  * *****************************************************
@@ -172,7 +173,7 @@ var DataUrl = (function () {
     DataUrl.PROTO_TOKEN = 'data:';
     DataUrl.ENCODING_TOKEN = ';base64,';
     return DataUrl;
-})();
+}());
 exports.DataUrl = DataUrl;
 /**
  * *****************************************************
@@ -248,7 +249,7 @@ var Log = (function () {
     //set default log level here
     Log.init = Log.logLevel(LogLevel.INFO);
     return Log;
-})();
+}());
 exports.Log = Log;
 /**
  * *****************************************************
@@ -299,7 +300,7 @@ var ObjUtil = (function () {
         return new type;
     };
     return ObjUtil;
-})();
+}());
 exports.ObjUtil = ObjUtil;
 /**
  * *****************************************************
@@ -318,6 +319,6 @@ var StringUtil = (function () {
         return [code, desc];
     };
     return StringUtil;
-})();
+}());
 exports.StringUtil = StringUtil;
 //# sourceMappingURL=util.js.map

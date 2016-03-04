@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -85,7 +86,7 @@ var Try = (function () {
         configurable: true
     });
     return Try;
-})();
+}());
 exports.Try = Try;
 var Failure = (function (_super) {
     __extends(Failure, _super);
@@ -108,7 +109,7 @@ var Failure = (function (_super) {
         configurable: true
     });
     return Failure;
-})(Try);
+}(Try));
 exports.Failure = Failure;
 var Success = (function (_super) {
     __extends(Success, _super);
@@ -131,7 +132,7 @@ var Success = (function (_super) {
         configurable: true
     });
     return Success;
-})(Try);
+}(Try));
 exports.Success = Success;
 /**
  * Created by rburson on 3/5/15.
@@ -178,7 +179,7 @@ var Either = (function () {
         configurable: true
     });
     return Either;
-})();
+}());
 exports.Either = Either;
 var Future = (function () {
     /** --------------------- CONSTRUCTORS ------------------------------*/
@@ -342,7 +343,7 @@ var Future = (function () {
         return this;
     };
     return Future;
-})();
+}());
 exports.Future = Future;
 /**
  * Created by rburson on 3/6/15.
@@ -374,6 +375,6 @@ var Promise = (function () {
         this.complete(new Success(value));
     };
     return Promise;
-})();
+}());
 exports.Promise = Promise;
 //# sourceMappingURL=fp.js.map
