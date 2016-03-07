@@ -438,7 +438,7 @@ var PaneContext = (function () {
     PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
     PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
     PaneContext.CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
-    PaneContext.BINARY_CHUNK_SIZE = 32 * 1024; //size in  byes for 'read' operation
+    PaneContext.BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
     return PaneContext;
 }());
 exports.PaneContext = PaneContext;

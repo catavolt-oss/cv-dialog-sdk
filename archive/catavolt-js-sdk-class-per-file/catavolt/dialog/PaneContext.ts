@@ -41,7 +41,7 @@ export class PaneContext {
     private static ANNO_NAME_KEY = "com.catavolt.annoName";
     private static PROP_NAME_KEY = "com.catavolt.propName";
     private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
-    private static BINARY_CHUNK_SIZE = 32 * 1024; //size in  byes for 'read' operation
+    private static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
 
     entityRecDef:EntityRecDef;
 
