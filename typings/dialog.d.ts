@@ -23,7 +23,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class CellValueDef {
+    export  class CellValueDef {
         private _style;
         static fromWS(otype: string, jsonObj: any): Try<CellValueDef>;
         constructor(_style: string);
@@ -33,7 +33,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class AttributeCellValueDef extends CellValueDef {
+    export  class AttributeCellValueDef extends CellValueDef {
         private _propertyName;
         private _presentationLength;
         private _entryMethod;
@@ -56,13 +56,13 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class ForcedLineCellValueDef extends CellValueDef {
+    export  class ForcedLineCellValueDef extends CellValueDef {
         constructor();
     }
     /**
      * *********************************
      */
-    export class LabelCellValueDef extends CellValueDef {
+    export  class LabelCellValueDef extends CellValueDef {
         private _value;
         constructor(_value: string, style: string);
         value: string;
@@ -70,7 +70,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class SubstitutionCellValueDef extends CellValueDef {
+    export  class SubstitutionCellValueDef extends CellValueDef {
         private _value;
         constructor(_value: string, style: string);
         value: string;
@@ -78,13 +78,13 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class TabCellValueDef extends CellValueDef {
+    export  class TabCellValueDef extends CellValueDef {
         constructor();
     }
     /**
      * *********************************
      */
-    export class PaneContext {
+    export  class PaneContext {
         private static ANNO_NAME_KEY;
         private static PROP_NAME_KEY;
         private static CHAR_CHUNK_SIZE;
@@ -124,7 +124,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class EditorContext extends PaneContext {
+    export  class EditorContext extends PaneContext {
         private static GPS_ACCURACY;
         private static GPS_SECONDS;
         private _buffer;
@@ -148,6 +148,9 @@ declare module "catavolt-dialog" {
         read(): Future<EntityRec>;
         requestedAccuracy(): number;
         requestedTimeoutSeconds(): number;
+        setPropValue(name: string, value: any): void;
+        setBinaryPropWithDataUrl(name: string, dataUrl: string): void;
+        setBinaryPropWithEncodedData(name: string, encodedData: string, mimeType: string): void;
         write(): Future<Either<NavRequest, EntityRec>>;
         initialize(): void;
         settings: StringDictionary;
@@ -164,7 +167,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class FormContext extends PaneContext {
+    export  class FormContext extends PaneContext {
         private _dialogRedirection;
         private _actionSource;
         private _formDef;
@@ -193,11 +196,11 @@ declare module "catavolt-dialog" {
         isAnyChildDestroyed: boolean;
         processNavRequestForDestroyed(navRequest: NavRequest): void;
     }
-    export enum QueryDirection {
+    export  enum QueryDirection {
         FORWARD = 0,
         BACKWARD = 1,
     }
-    export class QueryContext extends PaneContext {
+    export  class QueryContext extends PaneContext {
         private _offlineRecs;
         private _settings;
         private _lastQueryFr;
@@ -225,14 +228,14 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class BarcodeScanContext extends EditorContext {
+    export  class BarcodeScanContext extends EditorContext {
         constructor(paneRef: number);
         barcodeScanDef: BarcodeScanDef;
     }
     /**
      * *********************************
      */
-    export class DetailsContext extends EditorContext {
+    export  class DetailsContext extends EditorContext {
         constructor(paneRef: number);
         detailsDef: DetailsDef;
         printMarkupURL: string;
@@ -240,42 +243,42 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class GeoFixContext extends EditorContext {
+    export  class GeoFixContext extends EditorContext {
         constructor(paneRef: number);
         geoFixDef: GeoFixDef;
     }
     /**
      * *********************************
      */
-    export class GeoLocationContext extends EditorContext {
+    export  class GeoLocationContext extends EditorContext {
         constructor(paneRef: number);
         geoLocationDef: GeoLocationDef;
     }
     /**
      * *********************************
      */
-    export class CalendarContext extends QueryContext {
+    export  class CalendarContext extends QueryContext {
         constructor(paneRef: number);
         calendarDef: CalendarDef;
     }
     /**
      * *********************************
      */
-    export class GraphContext extends QueryContext {
+    export  class GraphContext extends QueryContext {
         constructor(paneRef: number);
         graphDef: GraphDef;
     }
     /**
      * *********************************
      */
-    export class ImagePickerContext extends QueryContext {
+    export  class ImagePickerContext extends QueryContext {
         constructor(paneRef: number);
         imagePickerDef: ImagePickerDef;
     }
     /**
      * *********************************
      */
-    export class ListContext extends QueryContext {
+    export  class ListContext extends QueryContext {
         constructor(paneRef: number, offlineRecs?: Array<EntityRec>, settings?: StringDictionary);
         columnHeadings: Array<string>;
         listDef: ListDef;
@@ -285,14 +288,14 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class MapContext extends QueryContext {
+    export  class MapContext extends QueryContext {
         constructor(paneRef: number);
         mapDef: MapDef;
     }
     /**
      * *********************************
      */
-    export class PaneDef {
+    export  class PaneDef {
         private _paneId;
         private _name;
         private _label;
@@ -317,13 +320,13 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class BarcodeScanDef extends PaneDef {
+    export  class BarcodeScanDef extends PaneDef {
         constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
     }
     /**
      * *********************************
      */
-    export class CalendarDef extends PaneDef {
+    export  class CalendarDef extends PaneDef {
         private _descriptionPropName;
         private _initialStyle;
         private _startDatePropName;
@@ -347,7 +350,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class DetailsDef extends PaneDef {
+    export  class DetailsDef extends PaneDef {
         private _cancelButtonText;
         private _commitButtonText;
         private _editable;
@@ -365,7 +368,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class FormDef extends PaneDef {
+    export  class FormDef extends PaneDef {
         private _formLayout;
         private _formStyle;
         private _borderStyle;
@@ -394,19 +397,19 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class GeoFixDef extends PaneDef {
+    export  class GeoFixDef extends PaneDef {
         constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
     }
     /**
      * *********************************
      */
-    export class GeoLocationDef extends PaneDef {
+    export  class GeoLocationDef extends PaneDef {
         constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
     }
     /**
      * *********************************
      */
-    export class GraphDef extends PaneDef {
+    export  class GraphDef extends PaneDef {
         private _graphType;
         private _identityDataPointDef;
         private _groupingDataPointDef;
@@ -423,7 +426,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class ImagePickerDef extends PaneDef {
+    export  class ImagePickerDef extends PaneDef {
         private _URLPropName;
         private _defaultActionId;
         constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _URLPropName: string, _defaultActionId: string);
@@ -433,7 +436,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class ListDef extends PaneDef {
+    export  class ListDef extends PaneDef {
         private _style;
         private _initialColumns;
         private _activeColumnDefs;
@@ -455,7 +458,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class MapDef extends PaneDef {
+    export  class MapDef extends PaneDef {
         private _descriptionPropName;
         private _streetPropName;
         private _cityPropName;
@@ -475,19 +478,19 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class BinaryRef {
+    export  class BinaryRef {
         private _settings;
         constructor(_settings: StringDictionary);
         static fromWSValue(encodedValue: string, settings: StringDictionary): Try<BinaryRef>;
         settings: StringDictionary;
     }
-    export class InlineBinaryRef extends BinaryRef {
+    export  class InlineBinaryRef extends BinaryRef {
         private _inlineData;
         constructor(_inlineData: string, settings: StringDictionary);
         inlineData: string;
         toString(): string;
     }
-    export class ObjectBinaryRef extends BinaryRef {
+    export  class ObjectBinaryRef extends BinaryRef {
         constructor(settings: StringDictionary);
     }
     /**
@@ -499,7 +502,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class EncodedBinary implements Binary {
+    export  class EncodedBinary implements Binary {
         private _data;
         private _mimeType;
         constructor(_data: string, _mimeType?: string);
@@ -507,7 +510,7 @@ declare module "catavolt-dialog" {
         mimeType: string;
         toUrl(): string;
     }
-    export class UrlBinary implements Binary {
+    export  class UrlBinary implements Binary {
         private _url;
         constructor(_url: string);
         url: string;
@@ -516,14 +519,14 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class Redirection {
+    export  class Redirection {
         static fromWS(otype: string, jsonObj: any): Try<Redirection>;
         fromDialogProperties: StringDictionary;
     }
     /**
      * *********************************
      */
-    export class DialogRedirection extends Redirection {
+    export  class DialogRedirection extends Redirection {
         private _dialogHandle;
         private _dialogType;
         private _dialogMode;
@@ -551,14 +554,14 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class NullRedirection extends Redirection {
+    export  class NullRedirection extends Redirection {
         fromDialogProperties: StringDictionary;
         constructor(fromDialogProperties: StringDictionary);
     }
     /**
      * *********************************
      */
-    export class WebRedirection extends Redirection implements NavRequest {
+    export  class WebRedirection extends Redirection implements NavRequest {
         private _webURL;
         private _open;
         private _dialogProperties;
@@ -569,7 +572,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class WorkbenchRedirection extends Redirection {
+    export  class WorkbenchRedirection extends Redirection {
         private _workbenchId;
         private _dialogProperties;
         private _fromDialogProperties;
@@ -625,7 +628,7 @@ declare module "catavolt-dialog" {
         toWS(): StringDictionary;
         valueAtName(propName: string): any;
     }
-    export class EntityRecUtil {
+    export  class EntityRecUtil {
         static newEntityRec(objectId: string, props: Array<Prop>, annos?: Array<DataAnno>): EntityRec;
         static union(l1: Array<Prop>, l2: Array<Prop>): Array<Prop>;
         static fromWSEditorRecord(otype: string, jsonObj: any): Try<EntityRec>;
@@ -633,7 +636,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class EntityBuffer implements EntityRec {
+    export  class EntityBuffer implements EntityRec {
         private _before;
         private _after;
         static createEntityBuffer(objectId: string, before: Array<Prop>, after: Array<Prop>): EntityBuffer;
@@ -688,7 +691,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class EntityRecImpl implements EntityRec {
+    export  class EntityRecImpl implements EntityRec {
         objectId: string;
         props: Array<Prop>;
         annos: Array<DataAnno>;
@@ -736,7 +739,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class NullEntityRec implements EntityRec {
+    export  class NullEntityRec implements EntityRec {
         static singleton: NullEntityRec;
         constructor();
         annos: Array<DataAnno>;
@@ -789,7 +792,7 @@ declare module "catavolt-dialog" {
         fromActionSource: ActionSource;
         virtualPathSuffix: Array<string>;
     }
-    export class AppContext {
+    export  class AppContext {
         private static _singleton;
         private static ONE_DAY_IN_MILLIS;
         lastMaintenanceTime: Date;
@@ -823,7 +826,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class AppWinDef {
+    export  class AppWinDef {
         private _workbenches;
         private _applicationVendors;
         private _windowTitle;
@@ -839,7 +842,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class CellDef {
+    export  class CellDef {
         private _values;
         constructor(_values: Array<CellValueDef>);
         values: Array<CellValueDef>;
@@ -847,7 +850,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class CodeRef {
+    export  class CodeRef {
         private _code;
         private _description;
         static fromFormattedValue(value: string): CodeRef;
@@ -859,7 +862,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class ColumnDef {
+    export  class ColumnDef {
         private _name;
         private _heading;
         private _propertyDef;
@@ -872,7 +875,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class ContextAction implements ActionSource {
+    export  class ContextAction implements ActionSource {
         actionId: string;
         objectId: string;
         fromActionSource: ActionSource;
@@ -882,7 +885,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class DataAnno {
+    export  class DataAnno {
         private _name;
         private _value;
         private static BOLD_TEXT;
@@ -948,7 +951,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class DialogHandle {
+    export  class DialogHandle {
         handleValue: number;
         sessionHandle: string;
         constructor(handleValue: number, sessionHandle: string);
@@ -956,7 +959,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class DialogService {
+    export  class DialogService {
         private static EDITOR_SERVICE_NAME;
         private static EDITOR_SERVICE_PATH;
         private static QUERY_SERVICE_NAME;
@@ -982,7 +985,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class DialogTriple {
+    export  class DialogTriple {
         static extractList<A>(jsonObject: StringDictionary, Ltype: string, extractor: MapFn<any, Try<A>>): Try<A[]>;
         static extractRedirection(jsonObject: StringDictionary, Otype: string): Try<Redirection>;
         static extractTriple<A>(jsonObject: StringDictionary, Otype: string, extractor: TryClosure<A>): Try<Either<Redirection, A>>;
@@ -998,7 +1001,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class EntityRecDef {
+    export  class EntityRecDef {
         private _propDefs;
         constructor(_propDefs: Array<PropDef>);
         propCount: number;
@@ -1010,7 +1013,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class FormContextBuilder {
+    export  class FormContextBuilder {
         private _dialogRedirection;
         private _actionSource;
         private _sessionContext;
@@ -1030,13 +1033,13 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class GatewayService {
+    export  class GatewayService {
         static getServiceEndpoint(tenantId: string, serviceName: string, gatewayHost: string): Future<ServiceEndpoint>;
     }
     /**
      * *********************************
      */
-    export class GeoFix {
+    export  class GeoFix {
         private _latitude;
         private _longitude;
         private _source;
@@ -1052,7 +1055,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class GeoLocation {
+    export  class GeoLocation {
         private _latitude;
         private _longitude;
         static fromFormattedValue(value: string): GeoLocation;
@@ -1064,7 +1067,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class GraphDataPointDef {
+    export  class GraphDataPointDef {
         private _name;
         private _type;
         private _plotType;
@@ -1074,7 +1077,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class MenuDef {
+    export  class MenuDef {
         private _name;
         private _type;
         private _actionId;
@@ -1103,20 +1106,20 @@ declare module "catavolt-dialog" {
      */
     export interface NavRequest {
     }
-    export class NavRequestUtil {
+    export  class NavRequestUtil {
         static fromRedirection(redirection: Redirection, actionSource: ActionSource, sessionContext: SessionContext): Future<NavRequest>;
     }
     /**
      * *********************************
      */
-    export class NullNavRequest implements NavRequest {
+    export  class NullNavRequest implements NavRequest {
         fromDialogProperties: StringDictionary;
         constructor();
     }
     /**
      * *********************************
      */
-    export class ObjectRef {
+    export  class ObjectRef {
         private _objectId;
         private _description;
         static fromFormattedValue(value: string): ObjectRef;
@@ -1128,14 +1131,14 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export enum PaneMode {
+    export  enum PaneMode {
         READ = 0,
         WRITE = 1,
     }
     /**
      * *********************************
      */
-    export class PropDef {
+    export  class PropDef {
         private _name;
         private _type;
         private _elementType;
@@ -1195,13 +1198,13 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class PropFormatter {
+    export  class PropFormatter {
         static formatForRead(prop: any, propDef: PropDef): string;
         static formatForWrite(prop: any, propDef: PropDef): string;
         static parse(value: string, propDef: PropDef): any;
         static toString(o: any): string;
     }
-    export class Prop {
+    export  class Prop {
         private _name;
         private _value;
         private _annos;
@@ -1238,7 +1241,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class QueryResult {
+    export  class QueryResult {
         entityRecs: Array<EntityRec>;
         hasMore: boolean;
         constructor(entityRecs: Array<EntityRec>, hasMore: boolean);
@@ -1246,18 +1249,18 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class HasMoreQueryMarker extends NullEntityRec {
+    export  class HasMoreQueryMarker extends NullEntityRec {
         static singleton: HasMoreQueryMarker;
     }
-    export class IsEmptyQueryMarker extends NullEntityRec {
+    export  class IsEmptyQueryMarker extends NullEntityRec {
         static singleton: IsEmptyQueryMarker;
     }
-    export enum QueryMarkerOption {
+    export  enum QueryMarkerOption {
         None = 0,
         IsEmpty = 1,
         HasMore = 2,
     }
-    export class QueryScroller {
+    export  class QueryScroller {
         private _context;
         private _pageSize;
         private _firstObjectId;
@@ -1297,7 +1300,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class SessionContextImpl implements SessionContext {
+    export  class SessionContextImpl implements SessionContext {
         private _clientType;
         private _gatewayHost;
         private _password;
@@ -1326,7 +1329,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class SessionService {
+    export  class SessionService {
         private static SERVICE_NAME;
         private static SERVICE_PATH;
         static createSession(tenantId: string, userId: string, password: string, clientType: string, systemContext: SystemContext): Future<SessionContext>;
@@ -1337,7 +1340,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class SortPropDef {
+    export  class SortPropDef {
         private _name;
         private _direction;
         constructor(_name: string, _direction: string);
@@ -1347,7 +1350,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class SystemContextImpl implements SystemContext {
+    export  class SystemContextImpl implements SystemContext {
         private _urlString;
         constructor(_urlString: string);
         urlString: string;
@@ -1360,7 +1363,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class WorkbenchLaunchAction implements ActionSource {
+    export  class WorkbenchLaunchAction implements ActionSource {
         id: string;
         workbenchId: string;
         name: string;
@@ -1374,7 +1377,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class WorkbenchService {
+    export  class WorkbenchService {
         private static SERVICE_NAME;
         private static SERVICE_PATH;
         static getAppWinDef(sessionContext: SessionContext): Future<AppWinDef>;
@@ -1384,7 +1387,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class Workbench implements NavRequest {
+    export  class Workbench implements NavRequest {
         private _id;
         private _name;
         private _alias;
@@ -1399,14 +1402,14 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XPaneDef {
+    export  class XPaneDef {
         static fromWS(otype: string, jsonObj: any): Try<XPaneDef>;
         constructor();
     }
     /**
      * *********************************
      */
-    export class XBarcodeScanDef extends XPaneDef {
+    export  class XBarcodeScanDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1415,7 +1418,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XCalendarDef extends XPaneDef {
+    export  class XCalendarDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1432,7 +1435,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XChangePaneModeResult {
+    export  class XChangePaneModeResult {
         editorRecordDef: EntityRecDef;
         dialogProperties: StringDictionary;
         constructor(editorRecordDef: EntityRecDef, dialogProperties: StringDictionary);
@@ -1442,7 +1445,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XDetailsDef extends XPaneDef {
+    export  class XDetailsDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1458,7 +1461,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XFormDef extends XPaneDef {
+    export  class XFormDef extends XPaneDef {
         borderStyle: string;
         formLayout: string;
         formStyle: string;
@@ -1472,7 +1475,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XFormModelComp {
+    export  class XFormModelComp {
         paneId: string;
         redirection: DialogRedirection;
         label: string;
@@ -1482,7 +1485,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XFormModel {
+    export  class XFormModel {
         form: XFormModelComp;
         header: XFormModelComp;
         children: Array<XFormModelComp>;
@@ -1495,7 +1498,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XGeoFixDef extends XPaneDef {
+    export  class XGeoFixDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1504,7 +1507,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XGeoLocationDef extends XPaneDef {
+    export  class XGeoLocationDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1513,7 +1516,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XGetActiveColumnDefsResult {
+    export  class XGetActiveColumnDefsResult {
         columnsStyle: string;
         columns: Array<ColumnDef>;
         constructor(columnsStyle: string, columns: Array<ColumnDef>);
@@ -1522,7 +1525,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XGetAvailableValuesResult {
+    export  class XGetAvailableValuesResult {
         list: Array<any>;
         static fromWS(otype: string, jsonObj: any): Try<XGetAvailableValuesResult>;
         constructor(list: Array<any>);
@@ -1530,7 +1533,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XGetSessionListPropertyResult {
+    export  class XGetSessionListPropertyResult {
         private _list;
         private _dialogProps;
         constructor(_list: Array<string>, _dialogProps: StringDictionary);
@@ -1541,7 +1544,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XGraphDef extends XPaneDef {
+    export  class XGraphDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1556,7 +1559,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XImagePickerDef extends XPaneDef {
+    export  class XImagePickerDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1567,7 +1570,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XListDef extends XPaneDef {
+    export  class XListDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1581,7 +1584,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XMapDef extends XPaneDef {
+    export  class XMapDef extends XPaneDef {
         paneId: string;
         name: string;
         title: string;
@@ -1604,7 +1607,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XOpenEditorModelResult implements XOpenDialogModelResult {
+    export  class XOpenEditorModelResult implements XOpenDialogModelResult {
         editorRecordDef: EntityRecDef;
         formModel: XFormModel;
         constructor(editorRecordDef: EntityRecDef, formModel: XFormModel);
@@ -1615,7 +1618,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XOpenQueryModelResult implements XOpenDialogModelResult {
+    export  class XOpenQueryModelResult implements XOpenDialogModelResult {
         entityRecDef: EntityRecDef;
         sortPropertyDef: Array<SortPropDef>;
         defaultActionId: string;
@@ -1625,7 +1628,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XPaneDefRef {
+    export  class XPaneDefRef {
         name: string;
         paneId: string;
         title: string;
@@ -1635,7 +1638,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XPropertyChangeResult {
+    export  class XPropertyChangeResult {
         availableValueChanges: Array<string>;
         propertyName: string;
         sideEffects: XReadResult;
@@ -1646,7 +1649,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XQueryResult {
+    export  class XQueryResult {
         entityRecs: Array<EntityRec>;
         entityRecDef: EntityRecDef;
         hasMore: boolean;
@@ -1659,7 +1662,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XReadResult {
+    export  class XReadResult {
         private _editorRecord;
         private _editorRecordDef;
         private _dialogProperties;
@@ -1671,7 +1674,7 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XWriteResult {
+    export  class XWriteResult {
         private _editorRecord;
         private _editorRecordDef;
         private _dialogProperties;
@@ -1685,18 +1688,18 @@ declare module "catavolt-dialog" {
     /**
      * *********************************
      */
-    export class XWritePropertyResult {
+    export  class XWritePropertyResult {
         dialogProperties: StringDictionary;
         constructor(dialogProperties: StringDictionary);
     }
-    export class XReadPropertyResult {
+    export  class XReadPropertyResult {
         dialogProperties: StringDictionary;
         hasMore: boolean;
         data: string;
         dataLength: number;
         constructor(dialogProperties: StringDictionary, hasMore: boolean, data: string, dataLength: number);
     }
-    export class OType {
+    export  class OType {
         private static types;
         private static typeFns;
         private static typeInstance(name);
@@ -1708,5 +1711,6 @@ declare module "catavolt-dialog" {
         private static extractLType(Otype);
         private static assignPropIfDefined(prop, value, target, otype?);
     }
+
 
 }

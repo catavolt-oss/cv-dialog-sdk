@@ -26,7 +26,11 @@ export class PropFormatter {
         } else if (propDef.isLongType) {
             propValue = Number(value);
         } else if (propDef.isBooleanType) {
-            propValue = value !== 'false';
+            if(typeof value === 'string') {
+                propValue = value !== 'false';
+            } else {
+                propValue = !!value;
+            }
             /*
              @TODO learn more about these date strings. if they are intended to be UTC we'll need to make sure
              'UTC' is appended to the end of the string before creation

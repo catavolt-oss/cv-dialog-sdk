@@ -31,6 +31,7 @@ import {ObjUtil} from "../util/ObjUtil";
 import {Try} from "../fp/Try";
 import {NavRequestUtil} from "./NavRequest";
 import {EntityRecUtil} from "./EntityRec";
+import {DataUrl} from "../util/DataUrl";
 
 enum EditorState{ READ, WRITE, DESTROYED }
 
@@ -184,6 +185,27 @@ export class EditorContext extends PaneContext {
     requestedTimeoutSeconds():number {
         var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
         return timeoutStr ? Number(timeoutStr) : 30;
+    }
+
+    setPropValue(name:string, value:any):void {
+        const propDef:PropDef = this.propDefAtName(name);
+        if(propDef) {
+            const parsedValue = value ? this.parseValue(value, propDef.name) : null;
+            this.buffer.setValue(propDef.name, parsedValue);
+        }
+    }
+
+    setBinaryPropWithDataUrl(name:string, dataUrl:string) {
+        const urlObj:DataUrl = new DataUrl(dataUrl);
+        this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
+    }
+
+    setBinaryPropWithEncodedData(name:string, encodedData:string, mimeType:string) {
+        const propDef:PropDef = this.propDefAtName(name);
+        if(propDef) {
+            const value = new EncodedBinary(encodedData, mimeType);
+            this.buffer.setValue(propDef.name, value);
+        }
     }
 
     write():Future<Either<NavRequest,EntityRec>> {

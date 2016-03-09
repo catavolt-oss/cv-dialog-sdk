@@ -591,6 +591,24 @@ var EditorContext = (function (_super) {
         var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
         return timeoutStr ? Number(timeoutStr) : 30;
     };
+    EditorContext.prototype.setPropValue = function (name, value) {
+        var propDef = this.propDefAtName(name);
+        if (propDef) {
+            var parsedValue = value ? this.parseValue(value, propDef.name) : null;
+            this.buffer.setValue(propDef.name, parsedValue);
+        }
+    };
+    EditorContext.prototype.setBinaryPropWithDataUrl = function (name, dataUrl) {
+        var urlObj = new util_5.DataUrl(dataUrl);
+        this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
+    };
+    EditorContext.prototype.setBinaryPropWithEncodedData = function (name, encodedData, mimeType) {
+        var propDef = this.propDefAtName(name);
+        if (propDef) {
+            var value = new EncodedBinary(encodedData, mimeType);
+            this.buffer.setValue(propDef.name, value);
+        }
+    };
     EditorContext.prototype.write = function () {
         var _this = this;
         var deltaRec = this.buffer.afterEffects();
@@ -4962,7 +4980,12 @@ var PropFormatter = (function () {
             propValue = Number(value);
         }
         else if (propDef.isBooleanType) {
-            propValue = value !== 'false';
+            if (typeof value === 'string') {
+                propValue = value !== 'false';
+            }
+            else {
+                propValue = !!value;
+            }
         }
         else if (propDef.isDateType) {
             propValue = new Date(value);

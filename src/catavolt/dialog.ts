@@ -542,6 +542,27 @@ export class EditorContext extends PaneContext {
         return timeoutStr ? Number(timeoutStr) : 30;
     }
 
+    setPropValue(name:string, value:any):void {
+        const propDef:PropDef = this.propDefAtName(name);
+        if(propDef) {
+            const parsedValue = value ? this.parseValue(value, propDef.name) : null;
+            this.buffer.setValue(propDef.name, parsedValue);
+        }
+    }
+
+    setBinaryPropWithDataUrl(name:string, dataUrl:string) {
+        const urlObj:DataUrl = new DataUrl(dataUrl);
+        this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
+    }
+
+    setBinaryPropWithEncodedData(name:string, encodedData:string, mimeType:string) {
+        const propDef:PropDef = this.propDefAtName(name);
+        if(propDef) {
+            const value = new EncodedBinary(encodedData, mimeType);
+            this.buffer.setValue(propDef.name, value);
+        }
+    }
+
     write():Future<Either<NavRequest,EntityRec>> {
 
         const deltaRec:EntityRec = this.buffer.afterEffects();
@@ -4563,7 +4584,11 @@ export class PropFormatter {
         } else if (propDef.isLongType) {
             propValue = Number(value);
         } else if (propDef.isBooleanType) {
-            propValue = value !== 'false';
+            if(typeof value === 'string') {
+                propValue = value !== 'false';
+            } else {
+                propValue = !!value;
+            }
             /*
              @TODO learn more about these date strings. if they are intended to be UTC we'll need to make sure
              'UTC' is appended to the end of the string before creation
