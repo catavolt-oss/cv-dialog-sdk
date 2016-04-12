@@ -4196,6 +4196,18 @@ export class GraphDataPointDef {
 
 
 export class MenuDef {
+
+    static findSubMenuDef(md:MenuDef, matcher:(menuDef:MenuDef)=>boolean):MenuDef {
+        if(matcher(md)) return md;
+        if (md.menuDefs) {
+            for (let i = 0; i < md.menuDefs.length; i++) {
+                let result = MenuDef.findSubMenuDef(md.menuDefs[i], matcher);
+                if (result) return result;
+            }
+        }
+        return null;
+    }
+
     constructor(private _name:string,
                 private _type:string,
                 private _actionId:string,
@@ -4225,6 +4237,10 @@ export class MenuDef {
             });
         }
         return result;
+    }
+
+    findContextMenuDef():MenuDef {
+        return MenuDef.findSubMenuDef(this, (md:MenuDef) => { return md.name === 'CONTEXT_MENU'; });
     }
 
     get iconName():string {
