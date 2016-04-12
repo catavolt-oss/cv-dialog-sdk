@@ -1,9 +1,10 @@
 ///<reference path="jasmine.d.ts"/>
-import { Future } from '../src/catavolt';
-import { Success } from '../src/catavolt';
+"use strict";
+var catavolt_1 = require('../src/catavolt');
+var catavolt_2 = require('../src/catavolt');
 xdescribe("Future", function () {
     it("should be created successfully with Try", function () {
-        var f = Future.createCompletedFuture("test", new Success("successfulValue"));
+        var f = catavolt_1.Future.createCompletedFuture("test", new catavolt_2.Success("successfulValue"));
     });
 });
 //# sourceMappingURL=fp.Test.js.map

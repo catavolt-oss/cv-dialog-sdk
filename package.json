@@ -2,7 +2,8 @@
   "name": "catavolt-sdk",
   "version": "1.0.1",
   "description": "Core Catavolt Javascript API",
-  "main": "./src/catavolt.js",
+  "main": "./src/js/catavolt.js",
+  "typings": "./src/catavolt",
   "repository": {
     "type": "git",
     "url": "https://git.catavolt.com/javascript/sdk.git"

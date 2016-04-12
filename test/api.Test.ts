@@ -1,5 +1,4 @@
 ///<reference path="jasmine.d.ts"/>
-///<reference path="../typings/catavolt-sdk.d.ts"/>
 
 import {ObjUtil} from '../src/catavolt'
 import {Log} from '../src/catavolt'

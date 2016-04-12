@@ -1,13 +1,14 @@
 /**
  * Created by rburson on 3/11/15.
  */
-import { XMLHttpClient } from '../src/catavolt';
+"use strict";
+var catavolt_1 = require('../src/catavolt');
 xdescribe("Request::XMLHttpClient", function () {
     it("Should get endpoint successfully", function (done) {
         var SERVICE_PATH = "https://www.catavolt.net/***REMOVED***/soi-json";
-        var client = new XMLHttpClient();
+        var client = new catavolt_1.XMLHttpClient();
         var f = client.jsonGet(SERVICE_PATH, 30000);
-        f.onComplete((t) => {
+        f.onComplete(function (t) {
             expect(t.isSuccess).toBe(true);
             var endPoint = t.success;
             expect(endPoint.responseType).toBe('soi-json');
