@@ -196,6 +196,8 @@ export class PaneContext {
     private _lastRefreshTime:Date = new Date(0);
     private _parentContext:FormContext = null;
     private _paneRef:number = null;
+    
+    public isDestroyed:boolean;
 
     static resolveSettingsFromNavRequest(initialSettings:StringDictionary,
                                          navRequest:NavRequest):StringDictionary {
@@ -399,7 +401,7 @@ export class EditorContext extends PaneContext {
     private _editorState:EditorState;
     private _entityRecDef:EntityRecDef;
     private _settings:StringDictionary;
-
+    
     constructor(paneRef:number) {
         super(paneRef);
     }
