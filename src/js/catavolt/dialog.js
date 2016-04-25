@@ -616,7 +616,7 @@ var EditorContext = (function (_super) {
             var result = DialogService.writeEditorModel(_this.paneDef.dialogRedirection.dialogHandle, deltaRec, _this.sessionContext).bind(function (either) {
                 if (either.isLeft) {
                     var ca = new ContextAction('#write', _this.parentContext.dialogRedirection.objectId, _this.actionSource);
-                    var navRequestFr = NavRequestUtil.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
+                    return NavRequestUtil.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
                         return fp_2.Either.left(navRequest);
                     });
                 }
@@ -3852,7 +3852,9 @@ var DialogService = (function () {
         };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            var writeResultTry = DialogTriple.fromWSDialogObject(result, 'WSWriteResult', OType.factoryFn);
+            var writeResultTry = DialogTriple.extractTriple(result, 'WSWriteResult', function () {
+                return OType.deserializeObject(result, 'XWriteResult', OType.factoryFn);
+            });
             if (writeResultTry.isSuccess && writeResultTry.success.isLeft) {
                 var redirection = writeResultTry.success.left;
                 redirection.fromDialogProperties = result['dialogProperties'] || {};
@@ -6479,11 +6481,6 @@ var XWriteResult = (function () {
         this._editorRecordDef = _editorRecordDef;
         this._dialogProperties = _dialogProperties;
     }
-    XWriteResult.fromWS = function (otype, jsonObj) {
-        return DialogTriple.extractTriple(jsonObj, 'WSWriteResult', function () {
-            return OType.deserializeObject(jsonObj, 'XWriteResult', OType.factoryFn);
-        });
-    };
     Object.defineProperty(XWriteResult.prototype, "dialogProps", {
         get: function () {
             return this._dialogProperties;
@@ -6722,7 +6719,6 @@ var OType = (function () {
         'WSProp': Prop.fromWS,
         'WSQueryResult': XQueryResult.fromWS,
         'WSRedirection': Redirection.fromWS,
-        'WSWriteResult': XWriteResult.fromWS
     };
     return OType;
 }());

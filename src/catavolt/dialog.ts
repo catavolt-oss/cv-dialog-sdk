@@ -569,20 +569,18 @@ export class EditorContext extends PaneContext {
 
         const deltaRec:EntityRec = this.buffer.afterEffects();
         return this.writeBinaries(deltaRec).bind((binResult) => {
-            var result = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
-                this.sessionContext).bind((either:Either<Redirection,XWriteResult>)=> {
+            var result:Future<Either<NavRequest, EntityRec>> = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
+                this.sessionContext).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
                 if (either.isLeft) {
                     var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
-                    var navRequestFr:Future<NavRequest> =
-                        NavRequestUtil.fromRedirection(either.left, ca,
-                            this.sessionContext).map((navRequest:NavRequest)=> {
-                            return Either.left<NavRequest,EntityRec>(navRequest);
-                        });
+                    return NavRequestUtil.fromRedirection(either.left, ca, this.sessionContext).map((navRequest:NavRequest)=> {
+                        return Either.left<NavRequest,EntityRec>(navRequest);
+                    });
                 } else {
                     var writeResult:XWriteResult = either.right;
                     this.putSettings(writeResult.dialogProps);
                     this.entityRecDef = writeResult.entityRecDef;
-                    return Future.createSuccessfulFuture('EditorContext::write', Either.right(writeResult.entityRec));
+                    return Future.createSuccessfulFuture<Either<NavRequest, EntityRec>>('EditorContext::write', Either.right(writeResult.entityRec));
                 }
             });
 
@@ -3586,7 +3584,9 @@ export class DialogService {
         var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
             var writeResultTry:Try<Either<Redirection,XWriteResult>> =
-                DialogTriple.fromWSDialogObject<Either<Redirection,XWriteResult>>(result, 'WSWriteResult', OType.factoryFn);
+                DialogTriple.extractTriple(result, 'WSWriteResult', ()=> {
+                    return OType.deserializeObject<XWriteResult>(result, 'XWriteResult', OType.factoryFn);
+                });
             if (writeResultTry.isSuccess && writeResultTry.success.isLeft) {
                 var redirection = writeResultTry.success.left;
                 redirection.fromDialogProperties = result['dialogProperties'] || {};
@@ -6056,12 +6056,6 @@ export class XReadResult {
 
 export class XWriteResult {
 
-    static fromWS(otype:string, jsonObj):Try<Either<Redirection,XWriteResult>> {
-        return DialogTriple.extractTriple(jsonObj, 'WSWriteResult', ()=> {
-            return OType.deserializeObject<XWriteResult>(jsonObj, 'XWriteResult', OType.factoryFn);
-        });
-    }
-
     constructor(private _editorRecord:EntityRec, private _editorRecordDef:EntityRecDef,
                 private _dialogProperties:StringDictionary) {
     }
@@ -6167,7 +6161,6 @@ export class OType {
         'WSProp': Prop.fromWS,
         'WSQueryResult': XQueryResult.fromWS,
         'WSRedirection': Redirection.fromWS,
-        'WSWriteResult': XWriteResult.fromWS
     }
 
     private static typeInstance(name) {
