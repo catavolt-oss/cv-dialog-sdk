@@ -1870,7 +1870,15 @@ export class WebRedirection extends Redirection implements NavRequest {
     get fromDialogProperties():StringDictionary {
         return this._fromDialogProperties;
     }
-
+    
+    get open():boolean {
+        return this._open;
+    }
+    
+    get webURL():string {
+        return this._webURL;
+    }
+    
     set fromDialogProperties(props:StringDictionary) {
         this._fromDialogProperties = props;
     }

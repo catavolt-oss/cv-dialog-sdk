@@ -2183,6 +2183,20 @@ var WebRedirection = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(WebRedirection.prototype, "open", {
+        get: function () {
+            return this._open;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WebRedirection.prototype, "webURL", {
+        get: function () {
+            return this._webURL;
+        },
+        enumerable: true,
+        configurable: true
+    });
     return WebRedirection;
 }(Redirection));
 exports.WebRedirection = WebRedirection;
