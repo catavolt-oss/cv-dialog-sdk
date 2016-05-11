@@ -2281,6 +2281,7 @@ var EntityRecUtil = (function () {
             var annotatedPropsTry = DataAnno.annotatePropsUsingWSDataAnnotation(props, propAnnosObj);
             if (annotatedPropsTry.isFailure)
                 return new fp_5.Failure(annotatedPropsTry.failure);
+            props = annotatedPropsTry.success;
         }
         var recAnnos = null;
         if (jsonObj['recordAnnotation']) {
@@ -4997,7 +4998,7 @@ var PropFormatter = (function () {
     function PropFormatter() {
     }
     PropFormatter.formatForRead = function (prop, propDef) {
-        return 'R:' + prop ? PropFormatter.toString(prop) : '';
+        return prop ? PropFormatter.toString(prop) : '';
     };
     PropFormatter.formatForWrite = function (prop, propDef) {
         return prop ? PropFormatter.toString(prop) : '';

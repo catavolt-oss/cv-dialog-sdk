@@ -325,6 +325,8 @@ export class StringUtil {
         if(index > -1) {
             code = pairString.substr(0, index)
             desc = pairString.length > index ? pairString.substr(index + 1) : ''
+        } else {
+            code = pairString;
         }
         return [code, desc];
     }

@@ -2036,6 +2036,7 @@ export class EntityRecUtil {
             var propAnnosObj = jsonObj['propertyAnnotations'];
             var annotatedPropsTry:Try<Array<Prop>> = DataAnno.annotatePropsUsingWSDataAnnotation(props, propAnnosObj);
             if (annotatedPropsTry.isFailure) return new Failure<EntityRec>(annotatedPropsTry.failure);
+            props = annotatedPropsTry.success;
         }
         var recAnnos:Array<DataAnno> = null;
         if (jsonObj['recordAnnotation']) {
@@ -4595,7 +4596,7 @@ export class PropDef {
 export class PropFormatter {
 
     static formatForRead(prop:any, propDef:PropDef):string {
-        return 'R:' + prop ? PropFormatter.toString(prop) : '';
+        return prop ? PropFormatter.toString(prop) : '';
     }
 
     static formatForWrite(prop:any, propDef:PropDef):string {
@@ -4616,9 +4617,9 @@ export class PropFormatter {
                 propValue = !!value;
             }
             /*
-             @TODO learn more about these date strings. if they are intended to be UTC we'll need to make sure
-             'UTC' is appended to the end of the string before creation
-             */
+         @TODO learn more about these date strings. if they are intended to be UTC we'll need to make sure
+         'UTC' is appended to the end of the string before creation
+         */
         } else if (propDef.isDateType) {
             propValue = new Date(value);
         } else if (propDef.isDateTimeType) {

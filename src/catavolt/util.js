@@ -316,6 +316,9 @@ var StringUtil = (function () {
             code = pairString.substr(0, index);
             desc = pairString.length > index ? pairString.substr(index + 1) : '';
         }
+        else {
+            code = pairString;
+        }
         return [code, desc];
     };
     StringUtil.hashCode = function (s) {
