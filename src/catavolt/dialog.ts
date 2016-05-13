@@ -4600,7 +4600,7 @@ export class PropFormatter {
     }
 
     static formatForWrite(prop:any, propDef:PropDef):string {
-        return prop ? PropFormatter.toString(prop, propDef) : '';
+        return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     }
 
     static parse(value:string, propDef:PropDef) {
@@ -4640,7 +4640,13 @@ export class PropFormatter {
 
     static toString(o:any, propDef:PropDef):string {
         if (typeof o === 'number') {
-            return String(o);
+            if(propDef.isMoneyType) {
+                return o.toFixed(2);
+            } else if(propDef.isIntType || propDef.isLongType) {
+                return o.toFixed(0);
+            } else if(propDef.isDecimalType || propDef.isDoubleType){
+                return o.toFixed(Math.max(2, (o.toString().split('.')[1] || []).length));
+            }
         } else if (typeof o === 'object') {
             if (o instanceof Date) {
                 return o.toUTCString();

@@ -5001,7 +5001,7 @@ var PropFormatter = (function () {
         return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     };
     PropFormatter.formatForWrite = function (prop, propDef) {
-        return prop ? PropFormatter.toString(prop, propDef) : '';
+        return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     };
     PropFormatter.parse = function (value, propDef) {
         var propValue = value;
@@ -5044,7 +5044,15 @@ var PropFormatter = (function () {
     };
     PropFormatter.toString = function (o, propDef) {
         if (typeof o === 'number') {
-            return String(o);
+            if (propDef.isMoneyType) {
+                return o.toFixed(2);
+            }
+            else if (propDef.isIntType || propDef.isLongType) {
+                return o.toFixed(0);
+            }
+            else if (propDef.isDecimalType || propDef.isDoubleType) {
+                return o.toFixed(Math.max(2, (o.toString().split('.')[1] || []).length));
+            }
         }
         else if (typeof o === 'object') {
             if (o instanceof Date) {
