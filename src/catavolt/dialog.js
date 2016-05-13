@@ -4998,7 +4998,7 @@ var PropFormatter = (function () {
     function PropFormatter() {
     }
     PropFormatter.formatForRead = function (prop, propDef) {
-        return prop ? PropFormatter.toString(prop) : '';
+        return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop) : '';
     };
     PropFormatter.formatForWrite = function (prop, propDef) {
         return prop ? PropFormatter.toString(prop) : '';

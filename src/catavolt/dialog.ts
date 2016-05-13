@@ -4596,11 +4596,11 @@ export class PropDef {
 export class PropFormatter {
 
     static formatForRead(prop:any, propDef:PropDef):string {
-        return prop ? PropFormatter.toString(prop) : '';
+        return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     }
 
     static formatForWrite(prop:any, propDef:PropDef):string {
-        return prop ? PropFormatter.toString(prop) : '';
+        return prop ? PropFormatter.toString(prop, propDef) : '';
     }
 
     static parse(value:string, propDef:PropDef) {
@@ -4638,7 +4638,7 @@ export class PropFormatter {
         return propValue;
     }
 
-    static toString(o:any):string {
+    static toString(o:any, propDef:PropDef):string {
         if (typeof o === 'number') {
             return String(o);
         } else if (typeof o === 'object') {
