@@ -258,7 +258,7 @@ var PaneContext = (function () {
                 return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
             }
             else {
-                return this.readBinary(propName);
+                return this.readBinary(propName, entityRec);
             }
         }
         else if (typeof prop.value === 'string') {
@@ -395,23 +395,12 @@ var PaneContext = (function () {
         return fp_3.Future.sequence(this.entityRecDef.propDefs.filter(function (propDef) {
             return propDef.isBinaryType;
         }).map(function (propDef) {
-            return _this.readBinary(propDef.name);
+            return _this.readBinary(propDef.name, entityRec);
         }));
     };
-    PaneContext.prototype.readBinary = function (propName) {
-        var _this = this;
-        var seq = 0;
-        var buffer = '';
-        var f = function (result) {
-            buffer += result.data;
-            if (result.hasMore) {
-                return DialogService.readProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
-            }
-            else {
-                return fp_3.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
-            }
-        };
-        return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+    //abstract
+    PaneContext.prototype.readBinary = function (propName, entityRec) {
+        return null;
     };
     PaneContext.prototype.writeBinaries = function (entityRec) {
         var _this = this;
@@ -582,6 +571,21 @@ var EditorContext = (function (_super) {
             _this.lastRefreshTime = new Date();
             return entityRec;
         });
+    };
+    EditorContext.prototype.readBinary = function (propName, entityRec) {
+        var _this = this;
+        var seq = 0;
+        var buffer = '';
+        var f = function (result) {
+            buffer += result.data;
+            if (result.hasMore) {
+                return DialogService.readEditorProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
+            }
+            else {
+                return fp_3.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
+            }
+        };
+        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
     };
     EditorContext.prototype.requestedAccuracy = function () {
         var accuracyStr = this.paneDef.settings[EditorContext.GPS_ACCURACY];
@@ -966,6 +970,21 @@ var QueryContext = (function (_super) {
             }
             return fp_3.Future.createSuccessfulFuture('QueryContext::query', result);
         });
+    };
+    QueryContext.prototype.readBinary = function (propName, entityRec) {
+        var _this = this;
+        var seq = 0;
+        var buffer = '';
+        var f = function (result) {
+            buffer += result.data;
+            if (result.hasMore) {
+                return DialogService.readQueryProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, entityRec.objectId, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
+            }
+            else {
+                return fp_3.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
+            }
+        };
+        return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle, propName, entityRec.objectId, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
     };
     QueryContext.prototype.refresh = function () {
         return this._scroller.refresh();
@@ -3848,7 +3867,7 @@ var DialogService = (function () {
             return fp_3.Future.createCompletedFuture('readEditorModel', DialogTriple.fromWSDialogObject(result, 'WSReadResult', OType.factoryFn));
         });
     };
-    DialogService.readProperty = function (dialogHandle, propertyName, readSeq, readLength, sessionContext) {
+    DialogService.readEditorProperty = function (dialogHandle, propertyName, readSeq, readLength, sessionContext) {
         var method = 'readProperty';
         var params = {
             'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
@@ -3857,6 +3876,20 @@ var DialogService = (function () {
             'readLength': readLength
         };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            return fp_3.Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
+        });
+    };
+    DialogService.readQueryProperty = function (dialogHandle, propertyName, objectId, readSeq, readLength, sessionContext) {
+        var method = 'readProperty';
+        var params = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'objectId': objectId,
+            'readSeq': readSeq,
+            'readLength': readLength
+        };
+        var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
             return fp_3.Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
         });

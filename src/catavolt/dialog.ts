@@ -188,7 +188,7 @@ export class PaneContext {
     private static ANNO_NAME_KEY = "com.catavolt.annoName";
     private static PROP_NAME_KEY = "com.catavolt.propName";
     private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
-    private static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
+    static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
 
     entityRecDef:EntityRecDef;
 
@@ -234,7 +234,7 @@ export class PaneContext {
             if(binRef.settings['webURL']) {
                 return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
             } else {
-                return this.readBinary(propName);
+                return this.readBinary(propName, entityRec);
             }
         } else if(typeof prop.value === 'string') {
             return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
@@ -342,25 +342,14 @@ export class PaneContext {
             this.entityRecDef.propDefs.filter((propDef:PropDef)=>{
                 return propDef.isBinaryType
             }).map((propDef:PropDef)=>{
-                return this.readBinary(propDef.name);
+                return this.readBinary(propDef.name, entityRec);
             })
         );
     }
 
-    readBinary(propName:string):Future<Binary> {
-        let seq:number = 0;
-        let buffer:string = '';
-        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) =>{
-            buffer += result.data;
-            if(result.hasMore) {
-                return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle,
-                    propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-            } else {
-                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(buffer));
-            }
-        }
-        return DialogService.readProperty(this.paneDef.dialogRedirection.dialogHandle,
-            propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+    //abstract
+    readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
+        return null;
     }
 
     writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
@@ -532,6 +521,22 @@ export class EditorContext extends PaneContext {
             this.lastRefreshTime = new Date();
             return entityRec;
         });
+    }
+
+    readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
+        let seq:number = 0;
+        let buffer:string = '';
+        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) =>{
+            buffer += result.data;
+            if(result.hasMore) {
+                return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+                    propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            } else {
+                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(buffer));
+            }
+        }
+        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+            propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
     }
 
     requestedAccuracy():number {
@@ -852,6 +857,22 @@ export class QueryContext extends PaneContext {
             }
             return Future.createSuccessfulFuture('QueryContext::query', result);
         });
+    }
+
+    readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
+        let seq:number = 0;
+        let buffer:string = '';
+        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) =>{
+            buffer += result.data;
+            if(result.hasMore) {
+                return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
+                    propName, entityRec.objectId, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            } else {
+                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(buffer));
+            }
+        }
+        return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
+            propName, entityRec.objectId, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
     }
 
     refresh():Future<Array<EntityRec>> {
@@ -3567,7 +3588,7 @@ export class DialogService {
         });
     }
 
-    static readProperty(dialogHandle:DialogHandle, propertyName:string, readSeq:number, readLength:number,
+    static readEditorProperty(dialogHandle:DialogHandle, propertyName:string, readSeq:number, readLength:number,
                          sessionContext:SessionContext):Future<XReadPropertyResult> {
         var method = 'readProperty';
         var params:StringDictionary = {
@@ -3578,6 +3599,24 @@ export class DialogService {
         };
 
         var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('readProperty',
+                DialogTriple.fromWSDialogObject<XReadPropertyResult>(result, 'WSReadPropertyResult', OType.factoryFn));
+        });
+    }
+    
+    static readQueryProperty(dialogHandle:DialogHandle, propertyName:string, objectId:string, readSeq:number, readLength:number,
+                              sessionContext:SessionContext):Future<XReadPropertyResult> {
+        var method = 'readProperty';
+        var params:StringDictionary = {
+            'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
+            'propertyName': propertyName,
+            'objectId': objectId,
+            'readSeq': readSeq,
+            'readLength': readLength
+        };
+
+        var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
             return Future.createCompletedFuture('readProperty',
                 DialogTriple.fromWSDialogObject<XReadPropertyResult>(result, 'WSReadPropertyResult', OType.factoryFn));
