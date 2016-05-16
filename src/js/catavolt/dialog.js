@@ -248,21 +248,26 @@ var PaneContext = (function () {
     });
     PaneContext.prototype.binaryAt = function (propName, entityRec) {
         var prop = entityRec.propAtName(propName);
-        if (prop.value instanceof InlineBinaryRef) {
-            var binRef = prop.value;
-            return fp_3.Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
-        }
-        else if (prop.value instanceof ObjectBinaryRef) {
-            var binRef = prop.value;
-            if (binRef.settings['webURL']) {
-                return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+        if (prop) {
+            if (prop.value instanceof InlineBinaryRef) {
+                var binRef = prop.value;
+                return fp_3.Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+            }
+            else if (prop.value instanceof ObjectBinaryRef) {
+                var binRef = prop.value;
+                if (binRef.settings['webURL']) {
+                    return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+                }
+                else {
+                    return this.readBinary(propName, entityRec);
+                }
+            }
+            else if (typeof prop.value === 'string') {
+                return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
             }
             else {
-                return this.readBinary(propName, entityRec);
+                return fp_3.Future.createFailedFuture('binaryAt', 'No binary found at ' + propName);
             }
-        }
-        else if (typeof prop.value === 'string') {
-            return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
         }
         else {
             return fp_3.Future.createFailedFuture('binaryAt', 'No binary found at ' + propName);

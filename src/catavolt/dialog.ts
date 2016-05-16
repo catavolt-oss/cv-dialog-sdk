@@ -226,18 +226,22 @@ export class PaneContext {
 
     binaryAt(propName:string, entityRec:EntityRec):Future<Binary> {
         const prop:Prop = entityRec.propAtName(propName)
-        if(prop.value instanceof InlineBinaryRef) {
-            const binRef = prop.value as InlineBinaryRef;
-            return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
-        } else if(prop.value instanceof ObjectBinaryRef) {
-            const binRef = prop.value as ObjectBinaryRef;
-            if(binRef.settings['webURL']) {
-                return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+        if(prop) {
+            if (prop.value instanceof InlineBinaryRef) {
+                const binRef = prop.value as InlineBinaryRef;
+                return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+            } else if (prop.value instanceof ObjectBinaryRef) {
+                const binRef = prop.value as ObjectBinaryRef;
+                if (binRef.settings['webURL']) {
+                    return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+                } else {
+                    return this.readBinary(propName, entityRec);
+                }
+            } else if (typeof prop.value === 'string') {
+                return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
             } else {
-                return this.readBinary(propName, entityRec);
+                return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
             }
-        } else if(typeof prop.value === 'string') {
-            return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
         } else {
             return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
         }
