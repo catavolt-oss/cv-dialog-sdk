@@ -593,10 +593,12 @@ var EditorContext = (function (_super) {
     };
     EditorContext.prototype.setPropValue = function (name, value) {
         var propDef = this.propDefAtName(name);
+        var parsedValue = null;
         if (propDef) {
-            var parsedValue = value ? this.parseValue(value, propDef.name) : null;
+            parsedValue = value ? this.parseValue(value, propDef.name) : null;
             this.buffer.setValue(propDef.name, parsedValue);
         }
+        return parsedValue;
     };
     EditorContext.prototype.setBinaryPropWithDataUrl = function (name, dataUrl) {
         var urlObj = new util_5.DataUrl(dataUrl);
@@ -6391,6 +6393,9 @@ var XPropertyChangeResult = (function () {
     Object.defineProperty(XPropertyChangeResult.prototype, "sideEffectsDef", {
         get: function () {
             return this.editorRecordDef;
+        },
+        set: function (sideEffectsDef) {
+            this.editorRecordDef = sideEffectsDef;
         },
         enumerable: true,
         configurable: true

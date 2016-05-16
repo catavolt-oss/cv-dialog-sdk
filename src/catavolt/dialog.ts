@@ -544,12 +544,14 @@ export class EditorContext extends PaneContext {
         return timeoutStr ? Number(timeoutStr) : 30;
     }
 
-    setPropValue(name:string, value:any):void {
+    setPropValue(name:string, value:string):any {
         const propDef:PropDef = this.propDefAtName(name);
+        let parsedValue:any = null;
         if(propDef) {
-            const parsedValue = value ? this.parseValue(value, propDef.name) : null;
+            parsedValue = value ? this.parseValue(value, propDef.name) : null;
             this.buffer.setValue(propDef.name, parsedValue);
         }
+        return parsedValue; 
     }
 
     setBinaryPropWithDataUrl(name:string, dataUrl:string) {
@@ -5964,6 +5966,10 @@ export class XPropertyChangeResult {
 
     get sideEffectsDef():EntityRecDef {
         return this.editorRecordDef;
+    }
+    
+    set sideEffectsDef(sideEffectsDef:EntityRecDef) {
+        this.editorRecordDef = sideEffectsDef;
     }
 
 }
