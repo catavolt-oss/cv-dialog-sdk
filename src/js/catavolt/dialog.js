@@ -4384,17 +4384,14 @@ var GatewayService = (function () {
     }
     GatewayService.getServiceEndpoint = function (tenantId, serviceName, gatewayHost) {
         //We have to fake this for now, due to cross domain issues
-        /*
-         var fakeResponse = {
-         responseType:"soi-json",
-         tenantId:"***REMOVED***z",
-         serverAssignment:"https://dfw.catavolt.net/vs301",
-         appVersion:"1.3.262",soiVersion:"v02"
-         }
-
-         var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
-
-         */
+        /*var fakeResponse = {
+        responseType:"soi-json",
+        tenantId:"***REMOVED***z",
+        serverAssignment:"https://dfw.catavolt.net/vs301",
+        appVersion:"1.3.262",soiVersion:"v02"
+        }*/
+        //var fakeResponse = {responseType:"soi-json",tenantId:"catavolt-qa",serverAssignment:"https://dfw.catavolt.net/vs106",appVersion:"1.3.412",soiVersion:"v02"}
+        //var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
         var f = ws_2.Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
         var endPointFuture = f.bind(function (jsonObject) {
             //'bounce cast' the jsonObject here to coerce into ServiceEndpoint

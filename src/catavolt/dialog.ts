@@ -4141,17 +4141,15 @@ export class GatewayService {
 
 
         //We have to fake this for now, due to cross domain issues
-        /*
-         var fakeResponse = {
+         /*var fakeResponse = {
          responseType:"soi-json",
          tenantId:"***REMOVED***z",
          serverAssignment:"https://dfw.catavolt.net/vs301",
          appVersion:"1.3.262",soiVersion:"v02"
-         }
+         }*/
+         //var fakeResponse = {responseType:"soi-json",tenantId:"catavolt-qa",serverAssignment:"https://dfw.catavolt.net/vs106",appVersion:"1.3.412",soiVersion:"v02"}
+         //var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
 
-         var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
-
-         */
 
         var f:Future<StringDictionary> = Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
         var endPointFuture:Future<ServiceEndpoint> = f.bind(
