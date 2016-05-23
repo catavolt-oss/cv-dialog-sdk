@@ -4759,14 +4759,12 @@ export class Prop {
                      'UTC' is appended to the end of the string before creation
                      */
                 } else if (PType === 'Date') {
-                    //propValue = new Date(strVal);
-                    propValue = strVal;
+                    propValue = new Date(strVal);
                 } else if (PType === 'DateTime') {
-                    //propValue = new Date(strVal);
-                    propValue = strVal;
+                    propValue = new Date(strVal);
                 } else if (PType === 'Time') {
-                    //propValue = new Date(strVal);
-                    propValue = strVal;
+                    propValue = new Date(strVal);
+                    //propValue = strVal;
                 } else if (PType === 'BinaryRef') {
                     var binaryRefTry = BinaryRef.fromWSValue(strVal, value['properties']);
                     if (binaryRefTry.isFailure) return new Failure(binaryRefTry.failure);
