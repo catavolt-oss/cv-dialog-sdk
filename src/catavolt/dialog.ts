@@ -4754,11 +4754,6 @@ export class Prop {
             if (PType) {
                 if (PType === 'Decimal') {
                     propValue = Number(strVal);
-                    /*
-                        Dates are currently assumed to be parsed as 'local time'
-                        However, the Date constructor in Chrome's JS impl parses an ISO string (that doesn't have offset information) as a UTC Date
-                        Other browsers may differ...
-                     */
                 } else if (PType === 'Date') {
                     //parse as UTC
                     propValue = new Date(strVal);

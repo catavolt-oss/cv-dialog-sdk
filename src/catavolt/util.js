@@ -191,8 +191,16 @@ var TimeValue = (function () {
         var _e = secondsPart.split('.'), _f = _e[0], seconds = _f === void 0 ? '0' : _f, _g = _e[1], millis = _g === void 0 ? '0' : _g;
         return new TimeValue(Number(hours), Number(minutes), Number(seconds), Number(millis));
     };
+    TimeValue.fromDateValue = function (dateValue) {
+        return new TimeValue(dateValue.getHours(), dateValue.getMinutes(), dateValue.getSeconds(), dateValue.getMilliseconds());
+    };
     TimeValue.prototype.toString = function () {
         return this.pad(this.hours.toString()) + ":" + this.pad(this.minutes.toString()) + ":" + this.pad(this.seconds.toString()) + "." + this.pad(this.millis.toString(), "000");
+    };
+    TimeValue.prototype.toDateValue = function () {
+        var d = new Date();
+        d.setHours(this.hours, this.minutes, this.seconds, this.millis);
+        return d;
     };
     TimeValue.prototype.pad = function (s, pad) {
         if (pad === void 0) { pad = "00"; }

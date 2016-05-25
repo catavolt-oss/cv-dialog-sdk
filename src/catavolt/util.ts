@@ -199,10 +199,20 @@ export class TimeValue {
         
     }
 
+    public static fromDateValue(dateValue:Date) {
+        return new TimeValue(dateValue.getHours(), dateValue.getMinutes(), dateValue.getSeconds(), dateValue.getMilliseconds());
+    }
+
     constructor(public hours:number, public minutes:number, public seconds:number, public millis:number) {}
     
     public toString():string {
         return `${this.pad(this.hours.toString())}:${this.pad(this.minutes.toString())}:${this.pad(this.seconds.toString())}.${this.pad(this.millis.toString(), "000")}`;
+    }
+
+    public toDateValue():Date {
+        const d = new Date();
+        d.setHours(this.hours, this.minutes, this.seconds, this.millis);
+        return d;
     }
 
     private pad(s:string, pad:string="00") {
