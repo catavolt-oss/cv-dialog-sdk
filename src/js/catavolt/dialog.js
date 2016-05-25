@@ -4,18 +4,22 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+/**
+ * Created by rburson on 3/27/15.
+ */
+var util_1 = require("./util");
 var fp_1 = require("./fp");
 var fp_2 = require("./fp");
 var fp_3 = require("./fp");
-var util_1 = require("./util");
 var util_2 = require("./util");
+var util_3 = require("./util");
 var fp_4 = require("./fp");
 var fp_5 = require("./fp");
-var util_3 = require("./util");
 var util_4 = require("./util");
+var util_5 = require("./util");
 var ws_1 = require("./ws");
 var ws_2 = require("./ws");
-var util_5 = require("./util");
+var util_6 = require("./util");
 /*
  IMPORTANT!
  Note #1: Dependency cycles - These classes must be in a single file (module) because of commonjs and circular dependency issues.
@@ -46,7 +50,7 @@ var CellValueDef = (function () {
             return DialogTriple.fromWSDialogObject(jsonObj['tabCellValueDef'], 'WSTabCellValueDef', OType.factoryFn);
         }
         else {
-            return new fp_5.Failure('CellValueDef::fromWS: unknown CellValueDef type: ' + util_2.ObjUtil.formatRecAttr(jsonObj));
+            return new fp_5.Failure('CellValueDef::fromWS: unknown CellValueDef type: ' + util_3.ObjUtil.formatRecAttr(jsonObj));
         }
     };
     Object.defineProperty(CellValueDef.prototype, "isInlineMediaStyle", {
@@ -226,13 +230,13 @@ var PaneContext = (function () {
         this._binaryCache = {};
     }
     PaneContext.resolveSettingsFromNavRequest = function (initialSettings, navRequest) {
-        var result = util_2.ObjUtil.addAllProps(initialSettings, {});
+        var result = util_3.ObjUtil.addAllProps(initialSettings, {});
         if (navRequest instanceof FormContext) {
-            util_2.ObjUtil.addAllProps(navRequest.dialogRedirection.fromDialogProperties, result);
-            util_2.ObjUtil.addAllProps(navRequest.offlineProps, result);
+            util_3.ObjUtil.addAllProps(navRequest.dialogRedirection.fromDialogProperties, result);
+            util_3.ObjUtil.addAllProps(navRequest.offlineProps, result);
         }
         else if (navRequest instanceof NullNavRequest) {
-            util_2.ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
+            util_3.ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
         }
         var destroyed = result['fromDialogDestroyed'];
         if (destroyed)
@@ -610,7 +614,7 @@ var EditorContext = (function (_super) {
         return parsedValue;
     };
     EditorContext.prototype.setBinaryPropWithDataUrl = function (name, dataUrl) {
-        var urlObj = new util_5.DataUrl(dataUrl);
+        var urlObj = new util_6.DataUrl(dataUrl);
         this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
     };
     EditorContext.prototype.setBinaryPropWithEncodedData = function (name, encodedData, mimeType) {
@@ -663,7 +667,7 @@ var EditorContext = (function (_super) {
     //Module level methods
     EditorContext.prototype.initialize = function () {
         this._entityRecDef = this.paneDef.entityRecDef;
-        this._settings = util_2.ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
+        this._settings = util_3.ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
         this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
     };
     Object.defineProperty(EditorContext.prototype, "settings", {
@@ -727,7 +731,7 @@ var EditorContext = (function (_super) {
         this._settings[key] = value;
     };
     EditorContext.prototype.putSettings = function (settings) {
-        util_2.ObjUtil.addAllProps(settings, this._settings);
+        util_3.ObjUtil.addAllProps(settings, this._settings);
     };
     EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
     EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
@@ -1257,7 +1261,7 @@ var PaneDef = (function () {
     }
     PaneDef.fromOpenPaneResult = function (childXOpenResult, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs) {
         var settings = {};
-        util_2.ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
+        util_3.ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
         var newPaneDef;
         if (childXPaneDef instanceof XListDef) {
             var xListDef = childXPaneDef;
@@ -1305,7 +1309,7 @@ var PaneDef = (function () {
             newPaneDef = new ImagePickerDef(xImagePickerDef.paneId, xImagePickerDef.name, childXComp.label, xImagePickerDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xImagePickerDef.URLProperty, xImagePickerDef.defaultActionId);
         }
         else {
-            return new fp_5.Failure('PaneDef::fromOpenPaneResult needs impl for: ' + util_2.ObjUtil.formatRecAttr(childXPaneDef));
+            return new fp_5.Failure('PaneDef::fromOpenPaneResult needs impl for: ' + util_3.ObjUtil.formatRecAttr(childXPaneDef));
         }
         return new fp_4.Success(newPaneDef);
     };
@@ -1552,7 +1556,7 @@ var FormDef = (function (_super) {
     }
     FormDef.fromOpenFormResult = function (formXOpenResult, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs) {
         var settings = { 'open': true };
-        util_2.ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
+        util_3.ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
         var headerDef = null;
         var childrenDefs = [];
         for (var i = 0; i < childrenXOpens.length; i++) {
@@ -2025,7 +2029,7 @@ var EncodedBinary = (function () {
         configurable: true
     });
     EncodedBinary.prototype.toUrl = function () {
-        return util_5.DataUrl.createDataUrl(this.mimeType, this.data);
+        return util_6.DataUrl.createDataUrl(this.mimeType, this.data);
     };
     return EncodedBinary;
 }());
@@ -2268,10 +2272,10 @@ var EntityRecUtil = (function () {
     function EntityRecUtil() {
     }
     EntityRecUtil.newEntityRec = function (objectId, props, annos) {
-        return annos ? new EntityRecImpl(objectId, util_4.ArrayUtil.copy(props), util_4.ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, util_4.ArrayUtil.copy(props));
+        return annos ? new EntityRecImpl(objectId, util_5.ArrayUtil.copy(props), util_5.ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, util_5.ArrayUtil.copy(props));
     };
     EntityRecUtil.union = function (l1, l2) {
-        var result = util_4.ArrayUtil.copy(l1);
+        var result = util_5.ArrayUtil.copy(l1);
         l2.forEach(function (p2) {
             if (!l1.some(function (p1, i) {
                 if (p1.name === p2.name) {
@@ -3164,7 +3168,7 @@ var AppContext = (function () {
         var result = SessionService.deleteSession(this.sessionContextTry.success);
         result.onComplete(function (deleteSessionTry) {
             if (deleteSessionTry.isFailure) {
-                util_1.Log.error('Error while logging out: ' + util_2.ObjUtil.formatRecAttr(deleteSessionTry.failure));
+                util_2.Log.error('Error while logging out: ' + util_3.ObjUtil.formatRecAttr(deleteSessionTry.failure));
             }
         });
         this.setAppContextStateToLoggedOut();
@@ -3333,7 +3337,7 @@ var CodeRef = (function () {
         this._description = _description;
     }
     CodeRef.fromFormattedValue = function (value) {
-        var pair = util_3.StringUtil.splitSimpleKeyValuePair(value);
+        var pair = util_4.StringUtil.splitSimpleKeyValuePair(value);
         return new CodeRef(pair[0], pair[1]);
     };
     Object.defineProperty(CodeRef.prototype, "code", {
@@ -3440,13 +3444,13 @@ var DataAnno = (function () {
         });
     };
     DataAnno.backgroundColor = function (annos) {
-        var result = util_4.ArrayUtil.find(annos, function (anno) {
+        var result = util_5.ArrayUtil.find(annos, function (anno) {
             return anno.isBackgroundColor;
         });
         return result ? result.backgroundColor : null;
     };
     DataAnno.foregroundColor = function (annos) {
-        var result = util_4.ArrayUtil.find(annos, function (anno) {
+        var result = util_5.ArrayUtil.find(annos, function (anno) {
             return anno.isForegroundColor;
         });
         return result ? result.foregroundColor : null;
@@ -3464,13 +3468,13 @@ var DataAnno = (function () {
         return new fp_4.Success(annos);
     };
     DataAnno.imageName = function (annos) {
-        var result = util_4.ArrayUtil.find(annos, function (anno) {
+        var result = util_5.ArrayUtil.find(annos, function (anno) {
             return anno.isImageName;
         });
         return result ? result.value : null;
     };
     DataAnno.imagePlacement = function (annos) {
-        var result = util_4.ArrayUtil.find(annos, function (anno) {
+        var result = util_5.ArrayUtil.find(annos, function (anno) {
             return anno.isImagePlacement;
         });
         return result ? result.value : null;
@@ -3516,13 +3520,13 @@ var DataAnno = (function () {
         });
     };
     DataAnno.overrideText = function (annos) {
-        var result = util_4.ArrayUtil.find(annos, function (anno) {
+        var result = util_5.ArrayUtil.find(annos, function (anno) {
             return anno.isOverrideText;
         });
         return result ? result.value : null;
     };
     DataAnno.tipText = function (annos) {
-        var result = util_4.ArrayUtil.find(annos, function (anno) {
+        var result = util_5.ArrayUtil.find(annos, function (anno) {
             return anno.isTipText;
         });
         return result ? result.value : null;
@@ -3537,7 +3541,7 @@ var DataAnno = (function () {
         return result;
     };
     DataAnno.parseString = function (formatted) {
-        var pair = util_3.StringUtil.splitSimpleKeyValuePair(formatted);
+        var pair = util_4.StringUtil.splitSimpleKeyValuePair(formatted);
         return new DataAnno(pair[0], pair[1]);
     };
     Object.defineProperty(DataAnno.prototype, "backgroundColor", {
@@ -3857,7 +3861,7 @@ var DialogService = (function () {
         if (fromObjectId && fromObjectId.trim() !== '') {
             params['fromObjectId'] = fromObjectId.trim();
         }
-        util_1.Log.info('Running query');
+        util_2.Log.info('Running query');
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
             var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
@@ -4256,7 +4260,7 @@ var FormContextBuilder = (function () {
     FormContextBuilder.prototype.completeOpenPromise = function (openAllResults) {
         var flattenedTry = fp_1.Try.flatten(openAllResults);
         if (flattenedTry.isFailure) {
-            return new fp_5.Failure('FormContextBuilder::build: ' + util_2.ObjUtil.formatRecAttr(flattenedTry.failure));
+            return new fp_5.Failure('FormContextBuilder::build: ' + util_3.ObjUtil.formatRecAttr(flattenedTry.failure));
         }
         var flattened = flattenedTry.success;
         if (flattened.length != 4)
@@ -4349,7 +4353,7 @@ var FormContextBuilder = (function () {
                 return fp_3.Future.createSuccessfulFuture('fetchXFormDef/success', value);
             }
             else {
-                return fp_3.Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + util_2.ObjUtil.formatRecAttr(value));
+                return fp_3.Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + util_3.ObjUtil.formatRecAttr(value));
             }
         });
     };
@@ -4413,7 +4417,7 @@ var GeoFix = (function () {
         this._accuracy = _accuracy;
     }
     GeoFix.fromFormattedValue = function (value) {
-        var pair = util_3.StringUtil.splitSimpleKeyValuePair(value);
+        var pair = util_4.StringUtil.splitSimpleKeyValuePair(value);
         return new GeoFix(Number(pair[0]), Number(pair[1]), null, null);
     };
     Object.defineProperty(GeoFix.prototype, "latitude", {
@@ -4459,7 +4463,7 @@ var GeoLocation = (function () {
         this._longitude = _longitude;
     }
     GeoLocation.fromFormattedValue = function (value) {
-        var pair = util_3.StringUtil.splitSimpleKeyValuePair(value);
+        var pair = util_4.StringUtil.splitSimpleKeyValuePair(value);
         return new GeoLocation(Number(pair[0]), Number(pair[1]));
     };
     Object.defineProperty(GeoLocation.prototype, "latitude", {
@@ -4645,11 +4649,11 @@ var NavRequestUtil = (function () {
         else if (redirection instanceof NullRedirection) {
             var nullRedir = redirection;
             var nullNavRequest = new NullNavRequest();
-            util_2.ObjUtil.addAllProps(nullRedir.fromDialogProperties, nullNavRequest.fromDialogProperties);
+            util_3.ObjUtil.addAllProps(nullRedir.fromDialogProperties, nullNavRequest.fromDialogProperties);
             result = fp_3.Future.createSuccessfulFuture('NavRequest:fromRedirection/nullRedirection', nullNavRequest);
         }
         else {
-            result = fp_3.Future.createFailedFuture('NavRequest::fromRedirection', 'Unrecognized type of Redirection ' + util_2.ObjUtil.formatRecAttr(redirection));
+            result = fp_3.Future.createFailedFuture('NavRequest::fromRedirection', 'Unrecognized type of Redirection ' + util_3.ObjUtil.formatRecAttr(redirection));
         }
         return result;
     };
@@ -4675,7 +4679,7 @@ var ObjectRef = (function () {
         this._description = _description;
     }
     ObjectRef.fromFormattedValue = function (value) {
-        var pair = util_3.StringUtil.splitSimpleKeyValuePair(value);
+        var pair = util_4.StringUtil.splitSimpleKeyValuePair(value);
         return new ObjectRef(pair[0], pair[1]);
     };
     Object.defineProperty(ObjectRef.prototype, "description", {
@@ -5057,13 +5061,15 @@ var PropFormatter = (function () {
             }
         }
         else if (propDef.isDateType) {
+            //parse as UTC
             propValue = new Date(value);
         }
         else if (propDef.isDateTimeType) {
+            //parse as UTC
             propValue = new Date(value);
         }
         else if (propDef.isTimeType) {
-            propValue = new Date(value);
+            propValue = util_1.TimeValue.fromString(value);
         }
         else if (propDef.isObjRefType) {
             propValue = ObjectRef.fromFormattedValue(value);
@@ -5093,7 +5099,10 @@ var PropFormatter = (function () {
         }
         else if (typeof o === 'object') {
             if (o instanceof Date) {
-                return o.toUTCString();
+                return o.toISOString();
+            }
+            else if (o instanceof util_1.TimeValue) {
+                return o.toString();
             }
             else if (o instanceof CodeRef) {
                 return o.toString();
@@ -5166,13 +5175,15 @@ var Prop = (function () {
                     propValue = Number(strVal);
                 }
                 else if (PType === 'Date') {
+                    //parse as UTC
                     propValue = new Date(strVal);
                 }
                 else if (PType === 'DateTime') {
+                    //parse as UTC
                     propValue = new Date(strVal);
                 }
                 else if (PType === 'Time') {
-                    propValue = new Date(strVal);
+                    propValue = util_1.TimeValue.fromString(strVal);
                 }
                 else if (PType === 'BinaryRef') {
                     var binaryRefTry = BinaryRef.fromWSValue(strVal, value['properties']);
@@ -5219,7 +5230,10 @@ var Prop = (function () {
         }
         else if (typeof o === 'object') {
             if (o instanceof Date) {
-                return { 'WS_PTYPE': 'DateTime', 'value': o.toUTCString() };
+                return { 'WS_PTYPE': 'DateTime', 'value': o.toISOString() };
+            }
+            else if (o instanceof util_1.TimeValue) {
+                return { 'WS_PTYPE': 'Time', 'value': o.toString() };
             }
             else if (o instanceof CodeRef) {
                 return { 'WS_PTYPE': 'CodeRef', 'value': o.toString() };
@@ -5453,7 +5467,7 @@ var QueryScroller = (function () {
     });
     Object.defineProperty(QueryScroller.prototype, "bufferWithMarkers", {
         get: function () {
-            var result = util_4.ArrayUtil.copy(this._buffer);
+            var result = util_5.ArrayUtil.copy(this._buffer);
             if (this.isComplete) {
                 if (this._markerOptions.indexOf(QueryMarkerOption.IsEmpty) > -1) {
                     if (this.isEmpty) {
@@ -5944,7 +5958,7 @@ var Workbench = (function () {
     });
     Object.defineProperty(Workbench.prototype, "workbenchLaunchActions", {
         get: function () {
-            return util_4.ArrayUtil.copy(this._actions);
+            return util_5.ArrayUtil.copy(this._actions);
         },
         enumerable: true,
         configurable: true
@@ -5991,7 +6005,7 @@ var XPaneDef = (function () {
             return DialogTriple.fromWSDialogObject(jsonObj['calendarDef'], 'WSCalendarDef', OType.factoryFn);
         }
         else {
-            return new fp_5.Failure('XPaneDef::fromWS: Cannot determine concrete class for XPaneDef ' + util_2.ObjUtil.formatRecAttr(jsonObj));
+            return new fp_5.Failure('XPaneDef::fromWS: Cannot determine concrete class for XPaneDef ' + util_3.ObjUtil.formatRecAttr(jsonObj));
         }
     };
     return XPaneDef;
@@ -6244,7 +6258,7 @@ var XGetSessionListPropertyResult = (function () {
     XGetSessionListPropertyResult.prototype.valuesAsDictionary = function () {
         var result = {};
         this.values.forEach(function (v) {
-            var pair = util_3.StringUtil.splitSimpleKeyValuePair(v);
+            var pair = util_4.StringUtil.splitSimpleKeyValuePair(v);
             result[pair[0]] = pair[1];
         });
         return result;
@@ -6611,7 +6625,7 @@ var OType = (function () {
         return null;
     };
     OType.deserializeObject = function (obj, Otype, factoryFn) {
-        util_1.Log.debug('Deserializing ' + Otype);
+        util_2.Log.debug('Deserializing ' + Otype);
         if (Array.isArray(obj)) {
             //it's a nested array (no LTYPE!)
             return OType.handleNestedArray(Otype, obj);
@@ -6622,8 +6636,8 @@ var OType = (function () {
             if (objTry) {
                 if (objTry.isFailure) {
                     var error = 'OType::deserializeObject: factory failed to produce object for ' + Otype + " : "
-                        + util_2.ObjUtil.formatRecAttr(objTry.failure);
-                    util_1.Log.error(error);
+                        + util_3.ObjUtil.formatRecAttr(objTry.failure);
+                    util_2.Log.error(error);
                     return new fp_5.Failure(error);
                 }
                 newObj = objTry.success;
@@ -6631,12 +6645,12 @@ var OType = (function () {
             else {
                 newObj = OType.typeInstance(Otype);
                 if (!newObj) {
-                    util_1.Log.error('OType::deserializeObject: no type constructor found for ' + Otype);
+                    util_2.Log.error('OType::deserializeObject: no type constructor found for ' + Otype);
                     return new fp_5.Failure('OType::deserializeObject: no type constructor found for ' + Otype);
                 }
                 for (var prop in obj) {
                     var value = obj[prop];
-                    util_1.Log.debug("prop: " + prop + " is type " + typeof value);
+                    util_2.Log.debug("prop: " + prop + " is type " + typeof value);
                     if (value && typeof value === 'object') {
                         if ('WS_OTYPE' in value) {
                             var otypeTry = DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
@@ -6664,7 +6678,7 @@ var OType = (function () {
     };
     OType.serializeObject = function (obj, Otype, filterFn) {
         var newObj = { 'WS_OTYPE': Otype };
-        return util_2.ObjUtil.copyNonNullFieldsOnly(obj, newObj, function (prop) {
+        return util_3.ObjUtil.copyNonNullFieldsOnly(obj, newObj, function (prop) {
             return prop.charAt(0) !== '_' && (!filterFn || filterFn(prop));
         });
     };
@@ -6712,12 +6726,12 @@ var OType = (function () {
                     target[prop] = value;
                 }
                 else {
-                    util_1.Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
+                    util_2.Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
                 }
             }
         }
         catch (error) {
-            util_1.Log.error('OType::assignPropIfDefined: Failed to set prop: ' + prop + ' on target: ' + error);
+            util_2.Log.error('OType::assignPropIfDefined: Failed to set prop: ' + prop + ' on target: ' + error);
         }
     };
     OType.types = {

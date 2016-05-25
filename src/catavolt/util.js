@@ -178,6 +178,32 @@ exports.DataUrl = DataUrl;
 /**
  * *****************************************************
  */
+var TimeValue = (function () {
+    function TimeValue(hours, minutes, seconds, millis) {
+        this.hours = hours;
+        this.minutes = minutes;
+        this.seconds = seconds;
+        this.millis = millis;
+    }
+    TimeValue.fromString = function (timeString) {
+        /* expecting hh:mm:ss.lll */
+        var _a = timeString.split(':'), _b = _a[0], hours = _b === void 0 ? '0' : _b, _c = _a[1], minutes = _c === void 0 ? '0' : _c, _d = _a[2], secondsPart = _d === void 0 ? '0.0' : _d;
+        var _e = secondsPart.split('.'), _f = _e[0], seconds = _f === void 0 ? '0' : _f, _g = _e[1], millis = _g === void 0 ? '0' : _g;
+        return new TimeValue(Number(hours), Number(minutes), Number(seconds), Number(millis));
+    };
+    TimeValue.prototype.toString = function () {
+        return this.pad(this.hours.toString()) + ":" + this.pad(this.minutes.toString()) + ":" + this.pad(this.seconds.toString()) + "." + this.pad(this.millis.toString(), "000");
+    };
+    TimeValue.prototype.pad = function (s, pad) {
+        if (pad === void 0) { pad = "00"; }
+        return (pad + s).substring(s.length);
+    };
+    return TimeValue;
+}());
+exports.TimeValue = TimeValue;
+/**
+ * *****************************************************
+ */
 (function (LogLevel) {
     LogLevel[LogLevel["ERROR"] = 0] = "ERROR";
     LogLevel[LogLevel["WARN"] = 1] = "WARN";

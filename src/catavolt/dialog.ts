@@ -1,7 +1,7 @@
 /**
  * Created by rburson on 3/27/15.
  */
-import {StringDictionary} from "./util";
+import {StringDictionary, TimeValue} from "./util";
 import {Try} from "./fp";
 import {Either} from "./fp";
 import {SessionContext} from "./ws";
@@ -4659,16 +4659,14 @@ export class PropFormatter {
             } else {
                 propValue = !!value;
             }
-            /*
-         @TODO learn more about these date strings. if they are intended to be UTC we'll need to make sure
-         'UTC' is appended to the end of the string before creation
-         */
         } else if (propDef.isDateType) {
+            //parse as UTC
             propValue = new Date(value);
         } else if (propDef.isDateTimeType) {
+            //parse as UTC
             propValue = new Date(value);
         } else if (propDef.isTimeType) {
-            propValue = new Date(value);
+            propValue = TimeValue.fromString(value);
         } else if (propDef.isObjRefType) {
             propValue = ObjectRef.fromFormattedValue(value);
         } else if (propDef.isCodeRefType) {
@@ -4692,7 +4690,9 @@ export class PropFormatter {
             }
         } else if (typeof o === 'object') {
             if (o instanceof Date) {
-                return o.toUTCString();
+                return o.toISOString();
+            } else if (o instanceof TimeValue) {
+                return o.toString();
             } else if (o instanceof CodeRef) {
                 return o.toString();
             } else if (o instanceof ObjectRef) {
@@ -4755,16 +4755,18 @@ export class Prop {
                 if (PType === 'Decimal') {
                     propValue = Number(strVal);
                     /*
-                     @TODO learn more about these date strings. if they are intended to be UTC we'll need to make sure
-                     'UTC' is appended to the end of the string before creation
+                        Dates are currently assumed to be parsed as 'local time'
+                        However, the Date constructor in Chrome's JS impl parses an ISO string (that doesn't have offset information) as a UTC Date
+                        Other browsers may differ...
                      */
                 } else if (PType === 'Date') {
+                    //parse as UTC
                     propValue = new Date(strVal);
                 } else if (PType === 'DateTime') {
+                    //parse as UTC
                     propValue = new Date(strVal);
                 } else if (PType === 'Time') {
-                    propValue = new Date(strVal);
-                    //propValue = strVal;
+                    propValue = TimeValue.fromString(strVal);
                 } else if (PType === 'BinaryRef') {
                     var binaryRefTry = BinaryRef.fromWSValue(strVal, value['properties']);
                     if (binaryRefTry.isFailure) return new Failure(binaryRefTry.failure);
@@ -4804,7 +4806,9 @@ export class Prop {
             return {'WS_PTYPE': 'Decimal', 'value': String(o)};
         } else if (typeof o === 'object') {
             if (o instanceof Date) {
-                return {'WS_PTYPE': 'DateTime', 'value': o.toUTCString()};
+                return {'WS_PTYPE': 'DateTime', 'value': o.toISOString()};
+            } else if (o instanceof TimeValue) {
+                return {'WS_PTYPE': 'Time', 'value': o.toString()};
             } else if (o instanceof CodeRef) {
                 return {'WS_PTYPE': 'CodeRef', 'value': o.toString()};
             } else if (o instanceof ObjectRef) {
