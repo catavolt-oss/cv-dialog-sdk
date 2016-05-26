@@ -314,7 +314,7 @@ export class PaneContext {
         return this._parentContext;
     }
 
-    parseValue(formattedValue:string, propName:string):any {
+    parseValue(formattedValue:any, propName:string):any {
         return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
     }
 
@@ -553,7 +553,7 @@ export class EditorContext extends PaneContext {
         return timeoutStr ? Number(timeoutStr) : 30;
     }
 
-    setPropValue(name:string, value:string):any {
+    setPropValue(name:string, value:any):any {
         const propDef:PropDef = this.propDefAtName(name);
         let parsedValue:any = null;
         if(propDef) {
@@ -4646,7 +4646,7 @@ export class PropFormatter {
         return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     }
 
-    static parse(value:string, propDef:PropDef) {
+    static parse(value:any, propDef:PropDef) {
 
         var propValue:any = value;
         if (propDef.isDecimalType) {
@@ -4661,20 +4661,20 @@ export class PropFormatter {
             }
         } else if (propDef.isDateType) {
             //parse as UTC
-            propValue = new Date(value);
+            propValue = typeof value === 'object' ? value : new Date(value);
         } else if (propDef.isDateTimeType) {
             //parse as UTC
-            propValue = new Date(value);
+            propValue = typeof value === 'object' ? value : new Date(value);
         } else if (propDef.isTimeType) {
-            propValue = TimeValue.fromString(value);
+            propValue = value instanceof TimeValue ? value : TimeValue.fromString(value);
         } else if (propDef.isObjRefType) {
-            propValue = ObjectRef.fromFormattedValue(value);
+            propValue = value instanceof ObjectRef ? value :ObjectRef.fromFormattedValue(value);
         } else if (propDef.isCodeRefType) {
-            propValue = CodeRef.fromFormattedValue(value);
+            propValue = value instanceof CodeRef ? value : CodeRef.fromFormattedValue(value);
         } else if (propDef.isGeoFixType) {
-            propValue = GeoFix.fromFormattedValue(value);
+            propValue = value instanceof GeoFix ? value : GeoFix.fromFormattedValue(value);
         } else if (propDef.isGeoLocationType) {
-            propValue = GeoLocation.fromFormattedValue(value);
+            propValue = value instanceof GeoLocation ? value : GeoLocation.fromFormattedValue(value);
         }
         return propValue;
     }
@@ -4801,7 +4801,8 @@ export class Prop {
             return {'WS_PTYPE': 'Decimal', 'value': String(o)};
         } else if (typeof o === 'object') {
             if (o instanceof Date) {
-                return {'WS_PTYPE': 'DateTime', 'value': o.toISOString()};
+                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                return {'WS_PTYPE': 'DateTime', 'value': o.toISOString().slice(0, -1)};
             } else if (o instanceof TimeValue) {
                 return {'WS_PTYPE': 'Time', 'value': o.toString()};
             } else if (o instanceof CodeRef) {

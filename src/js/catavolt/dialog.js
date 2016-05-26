@@ -5062,26 +5062,26 @@ var PropFormatter = (function () {
         }
         else if (propDef.isDateType) {
             //parse as UTC
-            propValue = new Date(value);
+            propValue = typeof value === 'object' ? value : new Date(value);
         }
         else if (propDef.isDateTimeType) {
             //parse as UTC
-            propValue = new Date(value);
+            propValue = typeof value === 'object' ? value : new Date(value);
         }
         else if (propDef.isTimeType) {
-            propValue = util_1.TimeValue.fromString(value);
+            propValue = value instanceof util_1.TimeValue ? value : util_1.TimeValue.fromString(value);
         }
         else if (propDef.isObjRefType) {
-            propValue = ObjectRef.fromFormattedValue(value);
+            propValue = value instanceof ObjectRef ? value : ObjectRef.fromFormattedValue(value);
         }
         else if (propDef.isCodeRefType) {
-            propValue = CodeRef.fromFormattedValue(value);
+            propValue = value instanceof CodeRef ? value : CodeRef.fromFormattedValue(value);
         }
         else if (propDef.isGeoFixType) {
-            propValue = GeoFix.fromFormattedValue(value);
+            propValue = value instanceof GeoFix ? value : GeoFix.fromFormattedValue(value);
         }
         else if (propDef.isGeoLocationType) {
-            propValue = GeoLocation.fromFormattedValue(value);
+            propValue = value instanceof GeoLocation ? value : GeoLocation.fromFormattedValue(value);
         }
         return propValue;
     };
@@ -5230,7 +5230,8 @@ var Prop = (function () {
         }
         else if (typeof o === 'object') {
             if (o instanceof Date) {
-                return { 'WS_PTYPE': 'DateTime', 'value': o.toISOString() };
+                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                return { 'WS_PTYPE': 'DateTime', 'value': o.toISOString().slice(0, -1) };
             }
             else if (o instanceof util_1.TimeValue) {
                 return { 'WS_PTYPE': 'Time', 'value': o.toString() };
