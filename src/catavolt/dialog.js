@@ -9,17 +9,7 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var util_1 = require("./util");
 var fp_1 = require("./fp");
-var fp_2 = require("./fp");
-var fp_3 = require("./fp");
-var util_2 = require("./util");
-var util_3 = require("./util");
-var fp_4 = require("./fp");
-var fp_5 = require("./fp");
-var util_4 = require("./util");
-var util_5 = require("./util");
 var ws_1 = require("./ws");
-var ws_2 = require("./ws");
-var util_6 = require("./util");
 /*
  IMPORTANT!
  Note #1: Dependency cycles - These classes must be in a single file (module) because of commonjs and circular dependency issues.
@@ -50,7 +40,7 @@ var CellValueDef = (function () {
             return DialogTriple.fromWSDialogObject(jsonObj['tabCellValueDef'], 'WSTabCellValueDef', OType.factoryFn);
         }
         else {
-            return new fp_5.Failure('CellValueDef::fromWS: unknown CellValueDef type: ' + util_3.ObjUtil.formatRecAttr(jsonObj));
+            return new fp_1.Failure('CellValueDef::fromWS: unknown CellValueDef type: ' + util_1.ObjUtil.formatRecAttr(jsonObj));
         }
     };
     Object.defineProperty(CellValueDef.prototype, "isInlineMediaStyle", {
@@ -230,13 +220,13 @@ var PaneContext = (function () {
         this._binaryCache = {};
     }
     PaneContext.resolveSettingsFromNavRequest = function (initialSettings, navRequest) {
-        var result = util_3.ObjUtil.addAllProps(initialSettings, {});
+        var result = util_1.ObjUtil.addAllProps(initialSettings, {});
         if (navRequest instanceof FormContext) {
-            util_3.ObjUtil.addAllProps(navRequest.dialogRedirection.fromDialogProperties, result);
-            util_3.ObjUtil.addAllProps(navRequest.offlineProps, result);
+            util_1.ObjUtil.addAllProps(navRequest.dialogRedirection.fromDialogProperties, result);
+            util_1.ObjUtil.addAllProps(navRequest.offlineProps, result);
         }
         else if (navRequest instanceof NullNavRequest) {
-            util_3.ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
+            util_1.ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
         }
         var destroyed = result['fromDialogDestroyed'];
         if (destroyed)
@@ -255,26 +245,26 @@ var PaneContext = (function () {
         if (prop) {
             if (prop.value instanceof InlineBinaryRef) {
                 var binRef = prop.value;
-                return fp_3.Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+                return fp_1.Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
             }
             else if (prop.value instanceof ObjectBinaryRef) {
                 var binRef = prop.value;
                 if (binRef.settings['webURL']) {
-                    return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+                    return fp_1.Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
                 }
                 else {
                     return this.readBinary(propName, entityRec);
                 }
             }
             else if (typeof prop.value === 'string') {
-                return fp_3.Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
+                return fp_1.Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
             }
             else {
-                return fp_3.Future.createFailedFuture('binaryAt', 'No binary found at ' + propName);
+                return fp_1.Future.createFailedFuture('binaryAt', 'No binary found at ' + propName);
             }
         }
         else {
-            return fp_3.Future.createFailedFuture('binaryAt', 'No binary found at ' + propName);
+            return fp_1.Future.createFailedFuture('binaryAt', 'No binary found at ' + propName);
         }
     };
     Object.defineProperty(PaneContext.prototype, "dialogAlias", {
@@ -401,7 +391,7 @@ var PaneContext = (function () {
     };
     PaneContext.prototype.readBinaries = function (entityRec) {
         var _this = this;
-        return fp_3.Future.sequence(this.entityRecDef.propDefs.filter(function (propDef) {
+        return fp_1.Future.sequence(this.entityRecDef.propDefs.filter(function (propDef) {
             return propDef.isBinaryType;
         }).map(function (propDef) {
             return _this.readBinary(propDef.name, entityRec);
@@ -413,13 +403,13 @@ var PaneContext = (function () {
     };
     PaneContext.prototype.writeBinaries = function (entityRec) {
         var _this = this;
-        return fp_3.Future.sequence(entityRec.props.filter(function (prop) {
+        return fp_1.Future.sequence(entityRec.props.filter(function (prop) {
             return prop.value instanceof EncodedBinary;
         }).map(function (prop) {
             var ptr = 0;
             var encBin = prop.value;
             var data = encBin.data;
-            var writeFuture = fp_3.Future.createSuccessfulFuture('startSeq', {});
+            var writeFuture = fp_1.Future.createSuccessfulFuture('startSeq', {});
             while (ptr < data.length) {
                 var boundPtr = function (ptr) {
                     writeFuture = writeFuture.bind(function (prevResult) {
@@ -474,7 +464,7 @@ var EditorContext = (function (_super) {
                     _this._editorState = EditorState.WRITE;
                 }
             }
-            return fp_3.Future.createSuccessfulFuture('EditorContext::changePaneMode', _this.entityRecDef);
+            return fp_1.Future.createSuccessfulFuture('EditorContext::changePaneMode', _this.entityRecDef);
         });
     };
     Object.defineProperty(EditorContext.prototype, "entityRec", {
@@ -591,7 +581,7 @@ var EditorContext = (function (_super) {
                 return DialogService.readEditorProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
             }
             else {
-                return fp_3.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
+                return fp_1.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
             }
         };
         return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
@@ -614,7 +604,7 @@ var EditorContext = (function (_super) {
         return parsedValue;
     };
     EditorContext.prototype.setBinaryPropWithDataUrl = function (name, dataUrl) {
-        var urlObj = new util_6.DataUrl(dataUrl);
+        var urlObj = new util_1.DataUrl(dataUrl);
         this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
     };
     EditorContext.prototype.setBinaryPropWithEncodedData = function (name, encodedData, mimeType) {
@@ -632,14 +622,14 @@ var EditorContext = (function (_super) {
                 if (either.isLeft) {
                     var ca = new ContextAction('#write', _this.parentContext.dialogRedirection.objectId, _this.actionSource);
                     return NavRequestUtil.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
-                        return fp_2.Either.left(navRequest);
+                        return fp_1.Either.left(navRequest);
                     });
                 }
                 else {
                     var writeResult = either.right;
                     _this.putSettings(writeResult.dialogProps);
                     _this.entityRecDef = writeResult.entityRecDef;
-                    return fp_3.Future.createSuccessfulFuture('EditorContext::write', fp_2.Either.right(writeResult.entityRec));
+                    return fp_1.Future.createSuccessfulFuture('EditorContext::write', fp_1.Either.right(writeResult.entityRec));
                 }
             });
             return result.map(function (successfulWrite) {
@@ -667,7 +657,7 @@ var EditorContext = (function (_super) {
     //Module level methods
     EditorContext.prototype.initialize = function () {
         this._entityRecDef = this.paneDef.entityRecDef;
-        this._settings = util_3.ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
+        this._settings = util_1.ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
         this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
     };
     Object.defineProperty(EditorContext.prototype, "settings", {
@@ -731,7 +721,7 @@ var EditorContext = (function (_super) {
         this._settings[key] = value;
     };
     EditorContext.prototype.putSettings = function (settings) {
-        util_3.ObjUtil.addAllProps(settings, this._settings);
+        util_1.ObjUtil.addAllProps(settings, this._settings);
     };
     EditorContext.GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
     EditorContext.GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
@@ -977,7 +967,7 @@ var QueryContext = (function (_super) {
             if (_this.lastRefreshTime === new Date(0)) {
                 _this.lastRefreshTime = new Date();
             }
-            return fp_3.Future.createSuccessfulFuture('QueryContext::query', result);
+            return fp_1.Future.createSuccessfulFuture('QueryContext::query', result);
         });
     };
     QueryContext.prototype.readBinary = function (propName, entityRec) {
@@ -990,7 +980,7 @@ var QueryContext = (function (_super) {
                 return DialogService.readQueryProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, entityRec.objectId, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
             }
             else {
-                return fp_3.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
+                return fp_1.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
             }
         };
         return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle, propName, entityRec.objectId, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
@@ -1261,7 +1251,7 @@ var PaneDef = (function () {
     }
     PaneDef.fromOpenPaneResult = function (childXOpenResult, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs) {
         var settings = {};
-        util_3.ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
+        util_1.ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
         var newPaneDef;
         if (childXPaneDef instanceof XListDef) {
             var xListDef = childXPaneDef;
@@ -1281,7 +1271,7 @@ var PaneDef = (function () {
         else if (childXPaneDef instanceof XGraphDef) {
             var xGraphDef = childXPaneDef;
             var xOpenQueryModelResult = childXOpenResult;
-            newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xGraphDef.graphType, xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel);
+            newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xGraphDef.graphType, xGraphDef.displayQuadrantLines, xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel, xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom, xGraphDef.xAxisRangeTo, xGraphDef.yAxisLabel, xGraphDef.yAxisRangeFrom, xGraphDef.yAxisRangeTo);
         }
         else if (childXPaneDef instanceof XBarcodeScanDef) {
             var xBarcodeScanDef = childXPaneDef;
@@ -1309,9 +1299,9 @@ var PaneDef = (function () {
             newPaneDef = new ImagePickerDef(xImagePickerDef.paneId, xImagePickerDef.name, childXComp.label, xImagePickerDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xImagePickerDef.URLProperty, xImagePickerDef.defaultActionId);
         }
         else {
-            return new fp_5.Failure('PaneDef::fromOpenPaneResult needs impl for: ' + util_3.ObjUtil.formatRecAttr(childXPaneDef));
+            return new fp_1.Failure('PaneDef::fromOpenPaneResult needs impl for: ' + util_1.ObjUtil.formatRecAttr(childXPaneDef));
         }
-        return new fp_4.Success(newPaneDef);
+        return new fp_1.Success(newPaneDef);
     };
     Object.defineProperty(PaneDef.prototype, "dialogHandle", {
         get: function () {
@@ -1556,7 +1546,7 @@ var FormDef = (function (_super) {
     }
     FormDef.fromOpenFormResult = function (formXOpenResult, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs) {
         var settings = { 'open': true };
-        util_3.ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
+        util_1.ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
         var headerDef = null;
         var childrenDefs = [];
         for (var i = 0; i < childrenXOpens.length; i++) {
@@ -1568,13 +1558,13 @@ var FormDef = (function (_super) {
             var childXPaneDefRef = formXFormDef.paneDefRefs[i];
             var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs);
             if (paneDefTry.isFailure) {
-                return new fp_5.Failure(paneDefTry.failure);
+                return new fp_1.Failure(paneDefTry.failure);
             }
             else {
                 childrenDefs.push(paneDefTry.success);
             }
         }
-        return new fp_4.Success(new FormDef(formXFormDef.paneId, formXFormDef.name, formXOpenResult.formModel.form.label, formXFormDef.title, formMenuDefs, formXOpenResult.entityRecDef, formXOpenResult.formRedirection, settings, formXFormDef.formLayout, formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childrenDefs));
+        return new fp_1.Success(new FormDef(formXFormDef.paneId, formXFormDef.name, formXOpenResult.formModel.form.label, formXFormDef.title, formMenuDefs, formXOpenResult.entityRecDef, formXOpenResult.formRedirection, settings, formXFormDef.formLayout, formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childrenDefs));
     };
     Object.defineProperty(FormDef.prototype, "borderStyle", {
         get: function () {
@@ -1725,18 +1715,32 @@ exports.GeoLocationDef = GeoLocationDef;
  */
 var GraphDef = (function (_super) {
     __extends(GraphDef, _super);
-    function GraphDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _graphType, _identityDataPointDef, _groupingDataPointDef, _dataPointDefs, _filterDataPointDefs, _sampleModel) {
+    function GraphDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _graphType, _displayQuadrantLines, _identityDataPointDef, _groupingDataPointDef, _dataPointDefs, _filterDataPointDefs, _sampleModel, _xAxisLabel, _xAxisRangeFrom, _xAxisRangeTo, _yAxisLabel, _yAxisRangeFrom, _yAxisRangeTo) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._graphType = _graphType;
+        this._displayQuadrantLines = _displayQuadrantLines;
         this._identityDataPointDef = _identityDataPointDef;
         this._groupingDataPointDef = _groupingDataPointDef;
         this._dataPointDefs = _dataPointDefs;
         this._filterDataPointDefs = _filterDataPointDefs;
         this._sampleModel = _sampleModel;
+        this._xAxisLabel = _xAxisLabel;
+        this._xAxisRangeFrom = _xAxisRangeFrom;
+        this._xAxisRangeTo = _xAxisRangeTo;
+        this._yAxisLabel = _yAxisLabel;
+        this._yAxisRangeFrom = _yAxisRangeFrom;
+        this._yAxisRangeTo = _yAxisRangeTo;
     }
     Object.defineProperty(GraphDef.prototype, "dataPointDefs", {
         get: function () {
             return this._dataPointDefs;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphDef.prototype, "displayQuadrantLines", {
+        get: function () {
+            return this._displayQuadrantLines;
         },
         enumerable: true,
         configurable: true
@@ -1769,6 +1773,55 @@ var GraphDef = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GraphDef.prototype, "xAxisLabel", {
+        get: function () {
+            return this._xAxisLabel;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphDef.prototype, "xAxisRangeFrom", {
+        get: function () {
+            return this._xAxisRangeFrom;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphDef.prototype, "xAxisRangeTo", {
+        get: function () {
+            return this._xAxisRangeTo;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphDef.prototype, "yAxisLabel", {
+        get: function () {
+            return this._xAxisLabel;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphDef.prototype, "yAxisRangeFrom", {
+        get: function () {
+            return this._yAxisRangeFrom;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphDef.prototype, "yAxisRangeTo", {
+        get: function () {
+            return this._yAxisRangeTo;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GraphDef.GRAPH_TYPE_CARTESIAN = "GRAPH_TYPE_BAR";
+    GraphDef.GRAPH_TYPE_PIE = "GRAPH_TYPE_PIE";
+    GraphDef.PLOT_TYPE_BAR = "BAR";
+    GraphDef.PLOT_TYPE_BUBBLE = "BUBBLE";
+    GraphDef.PLOT_TYPE_LINE = "LINE";
+    GraphDef.PLOT_TYPE_SCATTER = "SCATTER";
+    GraphDef.PLOT_TYPE_STACKED = "STACKED";
     return GraphDef;
 }(PaneDef));
 exports.GraphDef = GraphDef;
@@ -1962,10 +2015,10 @@ var BinaryRef = (function () {
     }
     BinaryRef.fromWSValue = function (encodedValue, settings) {
         if (encodedValue && encodedValue.length > 0) {
-            return new fp_4.Success(new InlineBinaryRef(encodedValue, settings));
+            return new fp_1.Success(new InlineBinaryRef(encodedValue, settings));
         }
         else {
-            return new fp_4.Success(new ObjectBinaryRef(settings));
+            return new fp_1.Success(new ObjectBinaryRef(settings));
         }
     };
     Object.defineProperty(BinaryRef.prototype, "settings", {
@@ -2029,7 +2082,7 @@ var EncodedBinary = (function () {
         configurable: true
     });
     EncodedBinary.prototype.toUrl = function () {
-        return util_6.DataUrl.createDataUrl(this.mimeType, this.data);
+        return util_1.DataUrl.createDataUrl(this.mimeType, this.data);
     };
     return EncodedBinary;
 }());
@@ -2272,10 +2325,10 @@ var EntityRecUtil = (function () {
     function EntityRecUtil() {
     }
     EntityRecUtil.newEntityRec = function (objectId, props, annos) {
-        return annos ? new EntityRecImpl(objectId, util_5.ArrayUtil.copy(props), util_5.ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, util_5.ArrayUtil.copy(props));
+        return annos ? new EntityRecImpl(objectId, util_1.ArrayUtil.copy(props), util_1.ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, util_1.ArrayUtil.copy(props));
     };
     EntityRecUtil.union = function (l1, l2) {
-        var result = util_5.ArrayUtil.copy(l1);
+        var result = util_1.ArrayUtil.copy(l1);
         l2.forEach(function (p2) {
             if (!l1.some(function (p1, i) {
                 if (p1.name === p2.name) {
@@ -2294,33 +2347,33 @@ var EntityRecUtil = (function () {
         var objectId = jsonObj['objectId'];
         var namesJson = jsonObj['names'];
         if (namesJson['WS_LTYPE'] !== 'String') {
-            return new fp_5.Failure('fromWSEditorRecord: Expected WS_LTYPE of String but found ' + namesJson['WS_LTYPE']);
+            return new fp_1.Failure('fromWSEditorRecord: Expected WS_LTYPE of String but found ' + namesJson['WS_LTYPE']);
         }
         var namesRaw = namesJson['values'];
         var propsJson = jsonObj['properties'];
         if (propsJson['WS_LTYPE'] !== 'Object') {
-            return new fp_5.Failure('fromWSEditorRecord: Expected WS_LTYPE of Object but found ' + propsJson['WS_LTYPE']);
+            return new fp_1.Failure('fromWSEditorRecord: Expected WS_LTYPE of Object but found ' + propsJson['WS_LTYPE']);
         }
         var propsRaw = propsJson['values'];
         var propsTry = Prop.fromWSNamesAndValues(namesRaw, propsRaw);
         if (propsTry.isFailure)
-            return new fp_5.Failure(propsTry.failure);
+            return new fp_1.Failure(propsTry.failure);
         var props = propsTry.success;
         if (jsonObj['propertyAnnotations']) {
             var propAnnosObj = jsonObj['propertyAnnotations'];
             var annotatedPropsTry = DataAnno.annotatePropsUsingWSDataAnnotation(props, propAnnosObj);
             if (annotatedPropsTry.isFailure)
-                return new fp_5.Failure(annotatedPropsTry.failure);
+                return new fp_1.Failure(annotatedPropsTry.failure);
             props = annotatedPropsTry.success;
         }
         var recAnnos = null;
         if (jsonObj['recordAnnotation']) {
             var recAnnosTry = DataAnno.fromWS('WSDataAnnotation', jsonObj['recordAnnotation']);
             if (recAnnosTry.isFailure)
-                return new fp_5.Failure(recAnnosTry.failure);
+                return new fp_1.Failure(recAnnosTry.failure);
             recAnnos = recAnnosTry.success;
         }
-        return new fp_4.Success(new EntityRecImpl(objectId, props, recAnnos));
+        return new fp_1.Success(new EntityRecImpl(objectId, props, recAnnos));
     };
     return EntityRecUtil;
 }());
@@ -3135,40 +3188,40 @@ var AppContext = (function () {
     });
     AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
-            return fp_3.Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
+            return fp_1.Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
         }
         return WorkbenchService.getWorkbench(sessionContext, workbenchId);
     };
     AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
         var _this = this;
         if (this._appContextState === AppContextState.LOGGED_IN) {
-            return fp_3.Future.createFailedFuture("AppContext::login", "User is already logged in");
+            return fp_1.Future.createFailedFuture("AppContext::login", "User is already logged in");
         }
         var answer;
         var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
         return appContextValuesFr.bind(function (appContextValues) {
             _this.setAppContextStateToLoggedIn(appContextValues);
-            return fp_3.Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+            return fp_1.Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
         });
     };
     AppContext.prototype.loginDirectly = function (url, tenantId, clientType, userId, password) {
         var _this = this;
         if (this._appContextState === AppContextState.LOGGED_IN) {
-            return fp_3.Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
+            return fp_1.Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
         }
         return this.loginFromSystemContext(new SystemContextImpl(url), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
             _this.setAppContextStateToLoggedIn(appContextValues);
-            return fp_3.Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
+            return fp_1.Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
         });
     };
     AppContext.prototype.logout = function () {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
-            return fp_3.Future.createFailedFuture("AppContext::loginDirectly", "User is already logged out");
+            return fp_1.Future.createFailedFuture("AppContext::loginDirectly", "User is already logged out");
         }
         var result = SessionService.deleteSession(this.sessionContextTry.success);
         result.onComplete(function (deleteSessionTry) {
             if (deleteSessionTry.isFailure) {
-                util_2.Log.error('Error while logging out: ' + util_3.ObjUtil.formatRecAttr(deleteSessionTry.failure));
+                util_1.Log.error('Error while logging out: ' + util_1.ObjUtil.formatRecAttr(deleteSessionTry.failure));
             }
         });
         this.setAppContextStateToLoggedOut();
@@ -3176,7 +3229,7 @@ var AppContext = (function () {
     };
     AppContext.prototype.performLaunchAction = function (launchAction) {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
-            return fp_3.Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
+            return fp_1.Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
         }
         return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
     };
@@ -3186,7 +3239,7 @@ var AppContext = (function () {
         var appContextValuesFr = this.finalizeContext(sessionContext, deviceProps);
         return appContextValuesFr.bind(function (appContextValues) {
             _this.setAppContextStateToLoggedIn(appContextValues);
-            return fp_3.Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
+            return fp_1.Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
         });
     };
     Object.defineProperty(AppContext.prototype, "sessionContextTry", {
@@ -3209,7 +3262,7 @@ var AppContext = (function () {
             var listPropName = "com.catavolt.session.property.TenantProperties";
             return SessionService.getSessionListProperty(listPropName, sessionContext).bind(function (listPropertyResult) {
                 return WorkbenchService.getAppWinDef(sessionContext).bind(function (appWinDef) {
-                    return fp_3.Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
+                    return fp_1.Future.createSuccessfulFuture("AppContextCore:loginFromSystemContext", new AppContextValues(sessionContext, appWinDef, listPropertyResult.valuesAsDictionary()));
                 });
             });
         });
@@ -3241,15 +3294,15 @@ var AppContext = (function () {
         });
     };
     AppContext.prototype.setAppContextStateToLoggedIn = function (appContextValues) {
-        this._appWinDefTry = new fp_4.Success(appContextValues.appWinDef);
-        this._tenantSettingsTry = new fp_4.Success(appContextValues.tenantSettings);
-        this._sessionContextTry = new fp_4.Success(appContextValues.sessionContext);
+        this._appWinDefTry = new fp_1.Success(appContextValues.appWinDef);
+        this._tenantSettingsTry = new fp_1.Success(appContextValues.tenantSettings);
+        this._sessionContextTry = new fp_1.Success(appContextValues.sessionContext);
         this._appContextState = AppContextState.LOGGED_IN;
     };
     AppContext.prototype.setAppContextStateToLoggedOut = function () {
-        this._appWinDefTry = new fp_5.Failure("Not logged in");
-        this._tenantSettingsTry = new fp_5.Failure('Not logged in"');
-        this._sessionContextTry = new fp_5.Failure('Not loggged in');
+        this._appWinDefTry = new fp_1.Failure("Not logged in");
+        this._tenantSettingsTry = new fp_1.Failure('Not logged in"');
+        this._sessionContextTry = new fp_1.Failure('Not loggged in');
         this._appContextState = AppContextState.LOGGED_OUT;
     };
     AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
@@ -3337,7 +3390,7 @@ var CodeRef = (function () {
         this._description = _description;
     }
     CodeRef.fromFormattedValue = function (value) {
-        var pair = util_4.StringUtil.splitSimpleKeyValuePair(value);
+        var pair = util_1.StringUtil.splitSimpleKeyValuePair(value);
         return new CodeRef(pair[0], pair[1]);
     };
     Object.defineProperty(CodeRef.prototype, "code", {
@@ -3440,17 +3493,17 @@ var DataAnno = (function () {
                     annotatedProps.push(p);
                 }
             }
-            return new fp_4.Success(annotatedProps);
+            return new fp_1.Success(annotatedProps);
         });
     };
     DataAnno.backgroundColor = function (annos) {
-        var result = util_5.ArrayUtil.find(annos, function (anno) {
+        var result = util_1.ArrayUtil.find(annos, function (anno) {
             return anno.isBackgroundColor;
         });
         return result ? result.backgroundColor : null;
     };
     DataAnno.foregroundColor = function (annos) {
-        var result = util_5.ArrayUtil.find(annos, function (anno) {
+        var result = util_1.ArrayUtil.find(annos, function (anno) {
             return anno.isForegroundColor;
         });
         return result ? result.foregroundColor : null;
@@ -3458,23 +3511,23 @@ var DataAnno = (function () {
     DataAnno.fromWS = function (otype, jsonObj) {
         var stringObj = jsonObj['annotations'];
         if (stringObj['WS_LTYPE'] !== 'String') {
-            return new fp_5.Failure('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
+            return new fp_1.Failure('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
         }
         var annoStrings = stringObj['values'];
         var annos = [];
         for (var i = 0; i < annoStrings.length; i++) {
             annos.push(DataAnno.parseString(annoStrings[i]));
         }
-        return new fp_4.Success(annos);
+        return new fp_1.Success(annos);
     };
     DataAnno.imageName = function (annos) {
-        var result = util_5.ArrayUtil.find(annos, function (anno) {
+        var result = util_1.ArrayUtil.find(annos, function (anno) {
             return anno.isImageName;
         });
         return result ? result.value : null;
     };
     DataAnno.imagePlacement = function (annos) {
-        var result = util_5.ArrayUtil.find(annos, function (anno) {
+        var result = util_1.ArrayUtil.find(annos, function (anno) {
             return anno.isImagePlacement;
         });
         return result ? result.value : null;
@@ -3520,13 +3573,13 @@ var DataAnno = (function () {
         });
     };
     DataAnno.overrideText = function (annos) {
-        var result = util_5.ArrayUtil.find(annos, function (anno) {
+        var result = util_1.ArrayUtil.find(annos, function (anno) {
             return anno.isOverrideText;
         });
         return result ? result.value : null;
     };
     DataAnno.tipText = function (annos) {
-        var result = util_5.ArrayUtil.find(annos, function (anno) {
+        var result = util_1.ArrayUtil.find(annos, function (anno) {
             return anno.isTipText;
         });
         return result ? result.value : null;
@@ -3541,7 +3594,7 @@ var DataAnno = (function () {
         return result;
     };
     DataAnno.parseString = function (formatted) {
-        var pair = util_4.StringUtil.splitSimpleKeyValuePair(formatted);
+        var pair = util_1.StringUtil.splitSimpleKeyValuePair(formatted);
         return new DataAnno(pair[0], pair[1]);
     };
     Object.defineProperty(DataAnno.prototype, "backgroundColor", {
@@ -3697,6 +3750,32 @@ exports.DataAnno = DataAnno;
 /**
  * *********************************
  */
+var DialogException = (function () {
+    function DialogException(iconName, message, name, stackTrace, title, cause, userMessages) {
+        this.iconName = iconName;
+        this.message = message;
+        this.name = name;
+        this.stackTrace = stackTrace;
+        this.title = title;
+        this.cause = cause;
+        this.userMessages = userMessages;
+    }
+    return DialogException;
+}());
+exports.DialogException = DialogException;
+var UserMessage = (function () {
+    function UserMessage(message, messageType, explanation, propertyNames) {
+        this.message = message;
+        this.messageType = messageType;
+        this.explanation = explanation;
+        this.propertyNames = propertyNames;
+    }
+    return UserMessage;
+}());
+exports.UserMessage = UserMessage;
+/**
+ * *********************************
+ */
 var DialogHandle = (function () {
     function DialogHandle(handleValue, sessionHandle) {
         this.handleValue = handleValue;
@@ -3719,7 +3798,7 @@ var DialogService = (function () {
         };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('changePaneMode', DialogTriple.fromWSDialogObject(result, 'WSChangePaneModeResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('changePaneMode', DialogTriple.fromWSDialogObject(result, 'WSChangePaneModeResult', OType.factoryFn));
         });
     };
     DialogService.closeEditorModel = function (dialogHandle, sessionContext) {
@@ -3727,7 +3806,7 @@ var DialogService = (function () {
         var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createSuccessfulFuture('closeEditorModel', result);
+            return fp_1.Future.createSuccessfulFuture('closeEditorModel', result);
         });
     };
     DialogService.getAvailableValues = function (dialogHandle, propertyName, pendingWrites, sessionContext) {
@@ -3740,7 +3819,7 @@ var DialogService = (function () {
             params['pendingWrites'] = pendingWrites.toWSEditorRecord();
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('getAvailableValues', DialogTriple.fromWSDialogObject(result, 'WSGetAvailableValuesResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('getAvailableValues', DialogTriple.fromWSDialogObject(result, 'WSGetAvailableValuesResult', OType.factoryFn));
         });
     };
     DialogService.getActiveColumnDefs = function (dialogHandle, sessionContext) {
@@ -3748,7 +3827,7 @@ var DialogService = (function () {
         var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('getActiveColumnDefs', DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('getActiveColumnDefs', DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', OType.factoryFn));
         });
     };
     DialogService.getEditorModelMenuDefs = function (dialogHandle, sessionContext) {
@@ -3756,7 +3835,7 @@ var DialogService = (function () {
         var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('getEditorModelMenuDefs', DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('getEditorModelMenuDefs', DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', OType.factoryFn));
         });
     };
     DialogService.getEditorModelPaneDef = function (dialogHandle, paneId, sessionContext) {
@@ -3765,7 +3844,7 @@ var DialogService = (function () {
         params['paneId'] = paneId;
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('getEditorModelPaneDef', DialogTriple.fromWSDialogObjectResult(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('getEditorModelPaneDef', DialogTriple.fromWSDialogObjectResult(result, 'WSGetPaneDefResult', 'WSPaneDef', 'paneDef', OType.factoryFn));
         });
     };
     DialogService.getQueryModelMenuDefs = function (dialogHandle, sessionContext) {
@@ -3773,7 +3852,7 @@ var DialogService = (function () {
         var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('getQueryModelMenuDefs', DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('getQueryModelMenuDefs', DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', OType.factoryFn));
         });
     };
     DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
@@ -3786,17 +3865,17 @@ var DialogService = (function () {
             params['objectId'] = redirection.objectId;
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('openEditorModelFromRedir', DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('openEditorModelFromRedir', DialogTriple.fromWSDialogObject(result, 'WSOpenEditorModelResult', OType.factoryFn));
         });
     };
     DialogService.openQueryModelFromRedir = function (redirection, sessionContext) {
         if (!redirection.isQuery)
-            return fp_3.Future.createFailedFuture('DialogService::openQueryModelFromRedir', 'Redirection must be a query');
+            return fp_1.Future.createFailedFuture('DialogService::openQueryModelFromRedir', 'Redirection must be a query');
         var method = 'open';
         var params = { 'dialogHandle': OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle') };
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('openQueryModelFromRedir', DialogTriple.fromWSDialogObject(result, 'WSOpenQueryModelResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('openQueryModelFromRedir', DialogTriple.fromWSDialogObject(result, 'WSOpenQueryModelResult', OType.factoryFn));
         });
     };
     DialogService.performEditorAction = function (dialogHandle, actionId, pendingWrites, sessionContext) {
@@ -3813,9 +3892,9 @@ var DialogService = (function () {
             if (redirectionTry.isSuccess) {
                 var r = redirectionTry.success;
                 r.fromDialogProperties = result['dialogProperties'];
-                redirectionTry = new fp_4.Success(r);
+                redirectionTry = new fp_1.Success(r);
             }
-            return fp_3.Future.createCompletedFuture('performEditorAction', redirectionTry);
+            return fp_1.Future.createCompletedFuture('performEditorAction', redirectionTry);
         });
     };
     DialogService.performQueryAction = function (dialogHandle, actionId, targets, sessionContext) {
@@ -3833,9 +3912,9 @@ var DialogService = (function () {
             if (redirectionTry.isSuccess) {
                 var r = redirectionTry.success;
                 r.fromDialogProperties = result['dialogProperties'];
-                redirectionTry = new fp_4.Success(r);
+                redirectionTry = new fp_1.Success(r);
             }
-            return fp_3.Future.createCompletedFuture('performQueryAction', redirectionTry);
+            return fp_1.Future.createCompletedFuture('performQueryAction', redirectionTry);
         });
     };
     DialogService.processSideEffects = function (dialogHandle, sessionContext, propertyName, propertyValue, pendingWrites) {
@@ -3848,7 +3927,7 @@ var DialogService = (function () {
         };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('processSideEffects', DialogTriple.fromWSDialogObject(result, 'WSHandlePropertyChangeResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('processSideEffects', DialogTriple.fromWSDialogObject(result, 'WSHandlePropertyChangeResult', OType.factoryFn));
         });
     };
     DialogService.queryQueryModel = function (dialogHandle, direction, maxRows, fromObjectId, sessionContext) {
@@ -3861,11 +3940,11 @@ var DialogService = (function () {
         if (fromObjectId && fromObjectId.trim() !== '') {
             params['fromObjectId'] = fromObjectId.trim();
         }
-        util_2.Log.info('Running query');
+        util_1.Log.info('Running query');
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
             var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
-            return fp_3.Future.createCompletedFuture('DialogService::queryQueryModel', DialogTriple.fromWSDialogObject(result, 'WSQueryResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('DialogService::queryQueryModel', DialogTriple.fromWSDialogObject(result, 'WSQueryResult', OType.factoryFn));
         });
     };
     DialogService.readEditorModel = function (dialogHandle, sessionContext) {
@@ -3873,7 +3952,7 @@ var DialogService = (function () {
         var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('readEditorModel', DialogTriple.fromWSDialogObject(result, 'WSReadResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('readEditorModel', DialogTriple.fromWSDialogObject(result, 'WSReadResult', OType.factoryFn));
         });
     };
     DialogService.readEditorProperty = function (dialogHandle, propertyName, readSeq, readLength, sessionContext) {
@@ -3886,7 +3965,7 @@ var DialogService = (function () {
         };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
         });
     };
     DialogService.readQueryProperty = function (dialogHandle, propertyName, objectId, readSeq, readLength, sessionContext) {
@@ -3900,7 +3979,7 @@ var DialogService = (function () {
         };
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
         });
     };
     DialogService.writeEditorModel = function (dialogHandle, entityRec, sessionContext) {
@@ -3917,9 +3996,9 @@ var DialogService = (function () {
             if (writeResultTry.isSuccess && writeResultTry.success.isLeft) {
                 var redirection = writeResultTry.success.left;
                 redirection.fromDialogProperties = result['dialogProperties'] || {};
-                writeResultTry = new fp_4.Success(fp_2.Either.left(redirection));
+                writeResultTry = new fp_1.Success(fp_1.Either.left(redirection));
             }
-            return fp_3.Future.createCompletedFuture('writeEditorModel', writeResultTry);
+            return fp_1.Future.createCompletedFuture('writeEditorModel', writeResultTry);
         });
     };
     DialogService.writeProperty = function (dialogHandle, propertyName, data, append, sessionContext) {
@@ -3932,7 +4011,7 @@ var DialogService = (function () {
         };
         var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture('writeProperty', DialogTriple.fromWSDialogObject(result, 'WSWritePropertyResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture('writeProperty', DialogTriple.fromWSDialogObject(result, 'WSWritePropertyResult', OType.factoryFn));
         });
     };
     DialogService.EDITOR_SERVICE_NAME = 'EditorService';
@@ -3959,37 +4038,37 @@ var DialogTriple = (function () {
                     values.every(function (item) {
                         var extdValue = extractor(item);
                         if (extdValue.isFailure) {
-                            result = new fp_5.Failure(extdValue.failure);
+                            result = new fp_1.Failure(extdValue.failure);
                             return false;
                         }
                         realValues.push(extdValue.success);
                         return true;
                     });
                     if (!result) {
-                        result = new fp_4.Success(realValues);
+                        result = new fp_1.Success(realValues);
                     }
                 }
                 else {
-                    result = new fp_5.Failure("DialogTriple::extractList: Values array not found");
+                    result = new fp_1.Failure("DialogTriple::extractList: Values array not found");
                 }
             }
             else {
-                result = new fp_5.Failure("DialogTriple::extractList: Expected WS_LTYPE " + Ltype + " but found " + lt);
+                result = new fp_1.Failure("DialogTriple::extractList: Expected WS_LTYPE " + Ltype + " but found " + lt);
             }
         }
         return result;
     };
     DialogTriple.extractRedirection = function (jsonObject, Otype) {
         var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, false, function () {
-            return new fp_4.Success(new NullRedirection({}));
+            return new fp_1.Success(new NullRedirection({}));
         });
         var answer;
         if (tripleTry.isSuccess) {
             var triple = tripleTry.success;
-            answer = triple.isLeft ? new fp_4.Success(triple.left) : new fp_4.Success(triple.right);
+            answer = triple.isLeft ? new fp_1.Success(triple.left) : new fp_1.Success(triple.right);
         }
         else {
-            answer = new fp_5.Failure(tripleTry.failure);
+            answer = new fp_1.Failure(tripleTry.failure);
         }
         return answer;
     };
@@ -4005,16 +4084,16 @@ var DialogTriple = (function () {
     DialogTriple.fromWSDialogObject = function (obj, Otype, factoryFn, ignoreRedirection) {
         if (ignoreRedirection === void 0) { ignoreRedirection = false; }
         if (!obj) {
-            return new fp_5.Failure('DialogTriple::fromWSDialogObject: Cannot extract from null value');
+            return new fp_1.Failure('DialogTriple::fromWSDialogObject: Cannot extract from null value');
         }
         else if (typeof obj !== 'object') {
-            return new fp_4.Success(obj);
+            return new fp_1.Success(obj);
         }
         try {
             if (!factoryFn) {
                 /* Assume we're just going to coerce the exiting object */
                 return DialogTriple.extractValue(obj, Otype, function () {
-                    return new fp_4.Success(obj);
+                    return new fp_1.Success(obj);
                 });
             }
             else {
@@ -4031,7 +4110,7 @@ var DialogTriple = (function () {
             }
         }
         catch (e) {
-            return new fp_5.Failure('DialogTriple::fromWSDialogObject: ' + e.name + ": " + e.message);
+            return new fp_1.Failure('DialogTriple::fromWSDialogObject: ' + e.name + ": " + e.message);
         }
     };
     DialogTriple.fromListOfWSDialogObject = function (jsonObject, Ltype, factoryFn, ignoreRedirection) {
@@ -4040,7 +4119,7 @@ var DialogTriple = (function () {
             /*note - we could add a check here to make sure the otype 'is a' ltype, to enforce the generic constraint
              i.e. list items should be lype assignment compatible*/
             if (!value)
-                return new fp_4.Success(null);
+                return new fp_1.Success(null);
             var Otype = value['WS_OTYPE'] || Ltype;
             return DialogTriple.fromWSDialogObject(value, Otype, factoryFn, ignoreRedirection);
         });
@@ -4057,33 +4136,39 @@ var DialogTriple = (function () {
     };
     DialogTriple._extractTriple = function (jsonObject, Otype, ignoreRedirection, extractor) {
         if (!jsonObject) {
-            return new fp_5.Failure('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + Otype + ' because json object is null');
+            return new fp_1.Failure('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + Otype + ' because json object is null');
         }
         else {
             if (Array.isArray(jsonObject)) {
                 //verify we'll dealing with a nested List
                 if (Otype.indexOf('List') !== 0) {
-                    return new fp_5.Failure("DialogTriple::extractTriple: expected OType of List<> for Array obj");
+                    return new fp_1.Failure("DialogTriple::extractTriple: expected OType of List<> for Array obj");
                 }
             }
             else {
                 var ot = jsonObject['WS_OTYPE'];
                 if (!ot || Otype !== ot) {
-                    return new fp_5.Failure('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
+                    return new fp_1.Failure('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
                 }
                 else {
                     if (jsonObject['exception']) {
-                        var dialogException = jsonObject['exception'];
-                        return new fp_5.Failure(dialogException);
+                        var dialogExceptionTry = OType.deserializeObject(jsonObject['exception'], 'WSException', OType.factoryFn);
+                        if (dialogExceptionTry.isFailure) {
+                            util_1.Log.error('Failed to deserialize exception obj: ' + util_1.ObjUtil.formatRecAttr(jsonObject['exception']));
+                            return new fp_1.Failure(jsonObject['exception']);
+                        }
+                        else {
+                            return new fp_1.Failure(dialogExceptionTry.success);
+                        }
                     }
                     else if (jsonObject['redirection'] && !ignoreRedirection) {
                         var drt = DialogTriple.fromWSDialogObject(jsonObject['redirection'], 'WSRedirection', OType.factoryFn);
                         if (drt.isFailure) {
-                            return new fp_5.Failure(drt.failure);
+                            return new fp_1.Failure(drt.failure);
                         }
                         else {
-                            var either = fp_2.Either.left(drt.success);
-                            return new fp_4.Success(either);
+                            var either = fp_1.Either.left(drt.success);
+                            return new fp_1.Success(either);
                         }
                     }
                 }
@@ -4092,14 +4177,14 @@ var DialogTriple = (function () {
             if (extractor) {
                 var valueTry = extractor();
                 if (valueTry.isFailure) {
-                    result = new fp_5.Failure(valueTry.failure);
+                    result = new fp_1.Failure(valueTry.failure);
                 }
                 else {
-                    result = new fp_4.Success(fp_2.Either.right(valueTry.success));
+                    result = new fp_1.Success(fp_1.Either.right(valueTry.success));
                 }
             }
             else {
-                result = new fp_5.Failure('DialogTriple::extractTriple: Triple is not an exception or redirection and no value extractor was provided');
+                result = new fp_1.Failure('DialogTriple::extractTriple: Triple is not an exception or redirection and no value extractor was provided');
             }
             return result;
         }
@@ -4108,15 +4193,15 @@ var DialogTriple = (function () {
         var tripleTry = DialogTriple._extractTriple(jsonObject, Otype, ignoreRedirection, extractor);
         var result;
         if (tripleTry.isFailure) {
-            result = new fp_5.Failure(tripleTry.failure);
+            result = new fp_1.Failure(tripleTry.failure);
         }
         else {
             var triple = tripleTry.success;
             if (triple.isLeft) {
-                result = new fp_5.Failure('DialogTriple::extractValue: Unexpected redirection for O_TYPE: ' + Otype);
+                result = new fp_1.Failure('DialogTriple::extractValue: Unexpected redirection for O_TYPE: ' + Otype);
             }
             else {
-                result = new fp_4.Success(triple.right);
+                result = new fp_1.Success(triple.right);
             }
         }
         return result;
@@ -4212,11 +4297,11 @@ var FormContextBuilder = (function () {
     FormContextBuilder.prototype.build = function () {
         var _this = this;
         if (!this.dialogRedirection.isEditor) {
-            return fp_3.Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
+            return fp_1.Future.createFailedFuture('FormContextBuilder::build', 'Forms with a root query model are not supported');
         }
         var xOpenFr = DialogService.openEditorModelFromRedir(this._dialogRedirection, this.sessionContext);
         var openAllFr = xOpenFr.bind(function (formXOpen) {
-            var formXOpenFr = fp_3.Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
+            var formXOpenFr = fp_1.Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
             var formXFormDefFr = _this.fetchXFormDef(formXOpen);
             var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, _this.sessionContext);
             var formChildrenFr = formXFormDefFr.bind(function (xFormDef) {
@@ -4224,23 +4309,23 @@ var FormContextBuilder = (function () {
                 var childrenXPaneDefsFr = _this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
                 var childrenActiveColDefsFr = _this.fetchChildrenActiveColDefs(formXOpen);
                 var childrenMenuDefsFr = _this.fetchChildrenMenuDefs(formXOpen);
-                return fp_3.Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr]);
+                return fp_1.Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr]);
             });
-            return fp_3.Future.sequence([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
+            return fp_1.Future.sequence([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
         });
         return openAllFr.bind(function (value) {
             var formDefTry = _this.completeOpenPromise(value);
             var formContextTry = null;
             if (formDefTry.isFailure) {
-                formContextTry = new fp_5.Failure(formDefTry.failure);
+                formContextTry = new fp_1.Failure(formDefTry.failure);
             }
             else {
                 var formDef = formDefTry.success;
                 var childContexts = _this.createChildrenContexts(formDef);
                 var formContext = new FormContext(_this.dialogRedirection, _this._actionSource, formDef, childContexts, false, false, _this.sessionContext);
-                formContextTry = new fp_4.Success(formContext);
+                formContextTry = new fp_1.Success(formContext);
             }
-            return fp_3.Future.createCompletedFuture('FormContextBuilder::build', formContextTry);
+            return fp_1.Future.createCompletedFuture('FormContextBuilder::build', formContextTry);
         });
     };
     Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
@@ -4260,17 +4345,17 @@ var FormContextBuilder = (function () {
     FormContextBuilder.prototype.completeOpenPromise = function (openAllResults) {
         var flattenedTry = fp_1.Try.flatten(openAllResults);
         if (flattenedTry.isFailure) {
-            return new fp_5.Failure('FormContextBuilder::build: ' + util_3.ObjUtil.formatRecAttr(flattenedTry.failure));
+            return new fp_1.Failure('FormContextBuilder::build: ' + util_1.ObjUtil.formatRecAttr(flattenedTry.failure));
         }
         var flattened = flattenedTry.success;
         if (flattened.length != 4)
-            return new fp_5.Failure('FormContextBuilder::build: Open form should have resulted in 4 elements');
+            return new fp_1.Failure('FormContextBuilder::build: Open form should have resulted in 4 elements');
         var formXOpen = flattened[0];
         var formXFormDef = flattened[1];
         var formMenuDefs = flattened[2];
         var formChildren = flattened[3];
         if (formChildren.length != 4)
-            return new fp_5.Failure('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
+            return new fp_1.Failure('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
         var childrenXOpens = formChildren[0];
         var childrenXPaneDefs = formChildren[1];
         var childrenXActiveColDefs = formChildren[2];
@@ -4318,10 +4403,10 @@ var FormContextBuilder = (function () {
                 return DialogService.getActiveColumnDefs(xComp.redirection.dialogHandle, _this.sessionContext);
             }
             else {
-                return fp_3.Future.createSuccessfulFuture('FormContextBuilder::fetchChildrenActiveColDefs', null);
+                return fp_1.Future.createSuccessfulFuture('FormContextBuilder::fetchChildrenActiveColDefs', null);
             }
         });
-        return fp_3.Future.sequence(seqOfFutures);
+        return fp_1.Future.sequence(seqOfFutures);
     };
     FormContextBuilder.prototype.fetchChildrenMenuDefs = function (formXOpen) {
         var _this = this;
@@ -4334,7 +4419,7 @@ var FormContextBuilder = (function () {
                 return DialogService.getQueryModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
             }
         });
-        return fp_3.Future.sequence(seqOfFutures);
+        return fp_1.Future.sequence(seqOfFutures);
     };
     FormContextBuilder.prototype.fetchChildrenXPaneDefs = function (formXOpen, xFormDef) {
         var _this = this;
@@ -4343,17 +4428,17 @@ var FormContextBuilder = (function () {
         var seqOfFutures = xRefs.map(function (xRef) {
             return DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, _this.sessionContext);
         });
-        return fp_3.Future.sequence(seqOfFutures);
+        return fp_1.Future.sequence(seqOfFutures);
     };
     FormContextBuilder.prototype.fetchXFormDef = function (xformOpenResult) {
         var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
         var formPaneId = xformOpenResult.formPaneId;
         return DialogService.getEditorModelPaneDef(dialogHandle, formPaneId, this.sessionContext).bind(function (value) {
             if (value instanceof XFormDef) {
-                return fp_3.Future.createSuccessfulFuture('fetchXFormDef/success', value);
+                return fp_1.Future.createSuccessfulFuture('fetchXFormDef/success', value);
             }
             else {
-                return fp_3.Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + util_3.ObjUtil.formatRecAttr(value));
+                return fp_1.Future.createFailedFuture('fetchXFormDef/failure', 'Expected reponse to contain an XFormDef but got ' + util_1.ObjUtil.formatRecAttr(value));
             }
         });
     };
@@ -4371,7 +4456,7 @@ var FormContextBuilder = (function () {
             }
             seqOfFutures.push(nextFr);
         });
-        return fp_3.Future.sequence(seqOfFutures);
+        return fp_1.Future.sequence(seqOfFutures);
     };
     return FormContextBuilder;
 }());
@@ -4396,10 +4481,10 @@ var GatewayService = (function () {
         }*/
         //var fakeResponse = {responseType:"soi-json",tenantId:"catavolt-qa",serverAssignment:"https://dfw.catavolt.net/vs106",appVersion:"1.3.412",soiVersion:"v02"}
         //var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
-        var f = ws_2.Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
+        var f = ws_1.Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
         var endPointFuture = f.bind(function (jsonObject) {
             //'bounce cast' the jsonObject here to coerce into ServiceEndpoint
-            return fp_3.Future.createSuccessfulFuture("serviceEndpoint", jsonObject);
+            return fp_1.Future.createSuccessfulFuture("serviceEndpoint", jsonObject);
         });
         return endPointFuture;
     };
@@ -4417,7 +4502,7 @@ var GeoFix = (function () {
         this._accuracy = _accuracy;
     }
     GeoFix.fromFormattedValue = function (value) {
-        var pair = util_4.StringUtil.splitSimpleKeyValuePair(value);
+        var pair = util_1.StringUtil.splitSimpleKeyValuePair(value);
         return new GeoFix(Number(pair[0]), Number(pair[1]), null, null);
     };
     Object.defineProperty(GeoFix.prototype, "latitude", {
@@ -4463,7 +4548,7 @@ var GeoLocation = (function () {
         this._longitude = _longitude;
     }
     GeoLocation.fromFormattedValue = function (value) {
-        var pair = util_4.StringUtil.splitSimpleKeyValuePair(value);
+        var pair = util_1.StringUtil.splitSimpleKeyValuePair(value);
         return new GeoLocation(Number(pair[0]), Number(pair[1]));
     };
     Object.defineProperty(GeoLocation.prototype, "latitude", {
@@ -4490,11 +4575,16 @@ exports.GeoLocation = GeoLocation;
  * *********************************
  */
 var GraphDataPointDef = (function () {
-    function GraphDataPointDef(_name, _type, _plotType, _legendkey) {
-        this._name = _name;
-        this._type = _type;
-        this._plotType = _plotType;
-        this._legendkey = _legendkey;
+    function GraphDataPointDef(name, type, plotType, legendkey, bubbleRadiusName, bubbleRadiusType, seriesColor, xAxisName, xAxisType) {
+        this.name = name;
+        this.type = type;
+        this.plotType = plotType;
+        this.legendkey = legendkey;
+        this.bubbleRadiusName = bubbleRadiusName;
+        this.bubbleRadiusType = bubbleRadiusType;
+        this.seriesColor = seriesColor;
+        this.xAxisName = xAxisName;
+        this.xAxisType = xAxisType;
     }
     return GraphDataPointDef;
 }());
@@ -4633,7 +4723,7 @@ var NavRequestUtil = (function () {
     NavRequestUtil.fromRedirection = function (redirection, actionSource, sessionContext) {
         var result;
         if (redirection instanceof WebRedirection) {
-            result = fp_3.Future.createSuccessfulFuture('NavRequest::fromRedirection', redirection);
+            result = fp_1.Future.createSuccessfulFuture('NavRequest::fromRedirection', redirection);
         }
         else if (redirection instanceof WorkbenchRedirection) {
             var wbr = redirection;
@@ -4649,11 +4739,11 @@ var NavRequestUtil = (function () {
         else if (redirection instanceof NullRedirection) {
             var nullRedir = redirection;
             var nullNavRequest = new NullNavRequest();
-            util_3.ObjUtil.addAllProps(nullRedir.fromDialogProperties, nullNavRequest.fromDialogProperties);
-            result = fp_3.Future.createSuccessfulFuture('NavRequest:fromRedirection/nullRedirection', nullNavRequest);
+            util_1.ObjUtil.addAllProps(nullRedir.fromDialogProperties, nullNavRequest.fromDialogProperties);
+            result = fp_1.Future.createSuccessfulFuture('NavRequest:fromRedirection/nullRedirection', nullNavRequest);
         }
         else {
-            result = fp_3.Future.createFailedFuture('NavRequest::fromRedirection', 'Unrecognized type of Redirection ' + util_3.ObjUtil.formatRecAttr(redirection));
+            result = fp_1.Future.createFailedFuture('NavRequest::fromRedirection', 'Unrecognized type of Redirection ' + util_1.ObjUtil.formatRecAttr(redirection));
         }
         return result;
     };
@@ -4679,7 +4769,7 @@ var ObjectRef = (function () {
         this._description = _description;
     }
     ObjectRef.fromFormattedValue = function (value) {
-        var pair = util_4.StringUtil.splitSimpleKeyValuePair(value);
+        var pair = util_1.StringUtil.splitSimpleKeyValuePair(value);
         return new ObjectRef(pair[0], pair[1]);
     };
     Object.defineProperty(ObjectRef.prototype, "description", {
@@ -5139,31 +5229,31 @@ var Prop = (function () {
         values.forEach(function (v) {
             var propTry = Prop.fromWSValue(v);
             if (propTry.isFailure)
-                return new fp_5.Failure(propTry.failure);
+                return new fp_1.Failure(propTry.failure);
             props.push(propTry.success);
         });
-        return new fp_4.Success(props);
+        return new fp_1.Success(props);
     };
     Prop.fromWSNameAndWSValue = function (name, value) {
         var propTry = Prop.fromWSValue(value);
         if (propTry.isFailure) {
-            return new fp_5.Failure(propTry.failure);
+            return new fp_1.Failure(propTry.failure);
         }
-        return new fp_4.Success(new Prop(name, propTry.success));
+        return new fp_1.Success(new Prop(name, propTry.success));
     };
     Prop.fromWSNamesAndValues = function (names, values) {
         if (names.length != values.length) {
-            return new fp_5.Failure("Prop::fromWSNamesAndValues: names and values must be of same length");
+            return new fp_1.Failure("Prop::fromWSNamesAndValues: names and values must be of same length");
         }
         var list = [];
         for (var i = 0; i < names.length; i++) {
             var propTry = Prop.fromWSNameAndWSValue(names[i], values[i]);
             if (propTry.isFailure) {
-                return new fp_5.Failure(propTry.failure);
+                return new fp_1.Failure(propTry.failure);
             }
             list.push(propTry.success);
         }
-        return new fp_4.Success(list);
+        return new fp_1.Success(list);
     };
     Prop.fromWSValue = function (value) {
         var propValue = value;
@@ -5188,7 +5278,7 @@ var Prop = (function () {
                 else if (PType === 'BinaryRef') {
                     var binaryRefTry = BinaryRef.fromWSValue(strVal, value['properties']);
                     if (binaryRefTry.isFailure)
-                        return new fp_5.Failure(binaryRefTry.failure);
+                        return new fp_1.Failure(binaryRefTry.failure);
                     propValue = binaryRefTry.success;
                 }
                 else if (PType === 'ObjectRef') {
@@ -5204,25 +5294,25 @@ var Prop = (function () {
                     propValue = GeoLocation.fromFormattedValue(strVal);
                 }
                 else {
-                    return new fp_5.Failure('Prop::fromWSValue: Property WS_PTYPE is not valid: ' + PType);
+                    return new fp_1.Failure('Prop::fromWSValue: Property WS_PTYPE is not valid: ' + PType);
                 }
             }
         }
-        return new fp_4.Success(propValue);
+        return new fp_1.Success(propValue);
     };
     Prop.fromWS = function (otype, jsonObj) {
         var name = jsonObj['name'];
         var valueTry = Prop.fromWSValue(jsonObj['value']);
         if (valueTry.isFailure)
-            return new fp_5.Failure(valueTry.failure);
+            return new fp_1.Failure(valueTry.failure);
         var annos = null;
         if (jsonObj['annos']) {
             var annosListTry = DialogTriple.fromListOfWSDialogObject(jsonObj['annos'], 'WSDataAnno', OType.factoryFn);
             if (annosListTry.isFailure)
-                return new fp_5.Failure(annosListTry.failure);
+                return new fp_1.Failure(annosListTry.failure);
             annos = annosListTry.success;
         }
-        return new fp_4.Success(new Prop(name, valueTry.success, annos));
+        return new fp_1.Success(new Prop(name, valueTry.success, annos));
     };
     Prop.toWSProperty = function (o) {
         if (typeof o === 'number') {
@@ -5468,7 +5558,7 @@ var QueryScroller = (function () {
     });
     Object.defineProperty(QueryScroller.prototype, "bufferWithMarkers", {
         get: function () {
-            var result = util_5.ArrayUtil.copy(this._buffer);
+            var result = util_1.ArrayUtil.copy(this._buffer);
             if (this.isComplete) {
                 if (this._markerOptions.indexOf(QueryMarkerOption.IsEmpty) > -1) {
                     if (this.isEmpty) {
@@ -5546,7 +5636,7 @@ var QueryScroller = (function () {
     QueryScroller.prototype.pageBackward = function () {
         var _this = this;
         if (!this._hasMoreBackward) {
-            return fp_3.Future.createSuccessfulFuture('QueryScroller::pageBackward', []);
+            return fp_1.Future.createSuccessfulFuture('QueryScroller::pageBackward', []);
         }
         if (!this._prevPageFr || this._prevPageFr.isComplete) {
             var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
@@ -5579,7 +5669,7 @@ var QueryScroller = (function () {
     QueryScroller.prototype.pageForward = function () {
         var _this = this;
         if (!this._hasMoreForward) {
-            return fp_3.Future.createSuccessfulFuture('QueryScroller::pageForward', []);
+            return fp_1.Future.createSuccessfulFuture('QueryScroller::pageForward', []);
         }
         if (!this._nextPageFr || this._nextPageFr.isComplete) {
             var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
@@ -5756,7 +5846,7 @@ var SessionService = (function () {
         };
         var call = ws_1.Call.createCallWithoutSession(SessionService.SERVICE_PATH, method, params, systemContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture("createSession/extractSessionContextFromResponse", SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
+            return fp_1.Future.createCompletedFuture("createSession/extractSessionContextFromResponse", SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
         });
     };
     SessionService.deleteSession = function (sessionContext) {
@@ -5766,7 +5856,7 @@ var SessionService = (function () {
         };
         var call = ws_1.Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createSuccessfulFuture("deleteSession/extractVoidResultFromResponse", result);
+            return fp_1.Future.createSuccessfulFuture("deleteSession/extractVoidResultFromResponse", result);
         });
     };
     SessionService.getSessionListProperty = function (propertyName, sessionContext) {
@@ -5777,7 +5867,7 @@ var SessionService = (function () {
         };
         var call = ws_1.Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture("getSessionListProperty/extractResultFromResponse", DialogTriple.fromWSDialogObject(result, 'WSGetSessionListPropertyResult', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture("getSessionListProperty/extractResultFromResponse", DialogTriple.fromWSDialogObject(result, 'WSGetSessionListPropertyResult', OType.factoryFn));
         });
     };
     SessionService.setSessionListProperty = function (propertyName, listProperty, sessionContext) {
@@ -5789,7 +5879,7 @@ var SessionService = (function () {
         };
         var call = ws_1.Call.createCall(SessionService.SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createSuccessfulFuture("setSessionListProperty/extractVoidResultFromResponse", result);
+            return fp_1.Future.createSuccessfulFuture("setSessionListProperty/extractVoidResultFromResponse", result);
         });
     };
     SessionService.SERVICE_NAME = "SessionService";
@@ -5885,7 +5975,7 @@ var WorkbenchService = (function () {
         var params = { 'sessionHandle': sessionContext.sessionHandle };
         var call = ws_1.Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture("createSession/extractAppWinDefFromResult", DialogTriple.fromWSDialogObjectResult(result, 'WSApplicationWindowDefResult', 'WSApplicationWindowDef', 'applicationWindowDef', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture("createSession/extractAppWinDefFromResult", DialogTriple.fromWSDialogObjectResult(result, 'WSApplicationWindowDefResult', 'WSApplicationWindowDef', 'applicationWindowDef', OType.factoryFn));
         });
     };
     WorkbenchService.getWorkbench = function (sessionContext, workbenchId) {
@@ -5896,7 +5986,7 @@ var WorkbenchService = (function () {
         };
         var call = ws_1.Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture("getWorkbench/extractObject", DialogTriple.fromWSDialogObjectResult(result, 'WSWorkbenchResult', 'WSWorkbench', 'workbench', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture("getWorkbench/extractObject", DialogTriple.fromWSDialogObjectResult(result, 'WSWorkbenchResult', 'WSWorkbench', 'workbench', OType.factoryFn));
         });
     };
     WorkbenchService.performLaunchAction = function (actionId, workbenchId, sessionContext) {
@@ -5908,7 +5998,7 @@ var WorkbenchService = (function () {
         };
         var call = ws_1.Call.createCall(WorkbenchService.SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
-            return fp_3.Future.createCompletedFuture("performLaunchAction/extractRedirection", DialogTriple.fromWSDialogObject(result['redirection'], 'WSRedirection', OType.factoryFn));
+            return fp_1.Future.createCompletedFuture("performLaunchAction/extractRedirection", DialogTriple.fromWSDialogObject(result['redirection'], 'WSRedirection', OType.factoryFn));
         });
     };
     WorkbenchService.SERVICE_NAME = "WorkbenchService";
@@ -5959,7 +6049,7 @@ var Workbench = (function () {
     });
     Object.defineProperty(Workbench.prototype, "workbenchLaunchActions", {
         get: function () {
-            return util_5.ArrayUtil.copy(this._actions);
+            return util_1.ArrayUtil.copy(this._actions);
         },
         enumerable: true,
         configurable: true
@@ -6006,7 +6096,7 @@ var XPaneDef = (function () {
             return DialogTriple.fromWSDialogObject(jsonObj['calendarDef'], 'WSCalendarDef', OType.factoryFn);
         }
         else {
-            return new fp_5.Failure('XPaneDef::fromWS: Cannot determine concrete class for XPaneDef ' + util_3.ObjUtil.formatRecAttr(jsonObj));
+            return new fp_1.Failure('XPaneDef::fromWS: Cannot determine concrete class for XPaneDef ' + util_1.ObjUtil.formatRecAttr(jsonObj));
         }
     };
     return XPaneDef;
@@ -6160,11 +6250,11 @@ var XFormModel = (function () {
             if (jsonObj['header']) {
                 var headerTry = DialogTriple.fromWSDialogObject(jsonObj['header'], 'WSFormModelComp', OType.factoryFn, true);
                 if (headerTry.isFailure)
-                    return new fp_5.Failure(headerTry.isFailure);
+                    return new fp_1.Failure(headerTry.isFailure);
                 header = headerTry.success;
             }
             return DialogTriple.fromListOfWSDialogObject(jsonObj['children'], 'WSFormModelComp', OType.factoryFn, true).bind(function (children) {
-                return new fp_4.Success(new XFormModel(form, header, children, jsonObj['placement'], jsonObj['refreshTimer'], jsonObj['sizeToWindow']));
+                return new fp_1.Success(new XFormModel(form, header, children, jsonObj['placement'], jsonObj['refreshTimer'], jsonObj['sizeToWindow']));
             });
         });
     };
@@ -6228,7 +6318,7 @@ var XGetAvailableValuesResult = (function () {
         var listJson = jsonObj['list'];
         var valuesJson = listJson['values'];
         return Prop.fromListOfWSValue(valuesJson).bind(function (values) {
-            return new fp_4.Success(new XGetAvailableValuesResult(values));
+            return new fp_1.Success(new XGetAvailableValuesResult(values));
         });
     };
     return XGetAvailableValuesResult;
@@ -6259,7 +6349,7 @@ var XGetSessionListPropertyResult = (function () {
     XGetSessionListPropertyResult.prototype.valuesAsDictionary = function () {
         var result = {};
         this.values.forEach(function (v) {
-            var pair = util_4.StringUtil.splitSimpleKeyValuePair(v);
+            var pair = util_1.StringUtil.splitSimpleKeyValuePair(v);
             result[pair[0]] = pair[1];
         });
         return result;
@@ -6272,17 +6362,24 @@ exports.XGetSessionListPropertyResult = XGetSessionListPropertyResult;
  */
 var XGraphDef = (function (_super) {
     __extends(XGraphDef, _super);
-    function XGraphDef(paneId, name, title, graphType, identityDataPoint, groupingDataPoint, dataPoints, filterDataPoints, sampleModel) {
+    function XGraphDef(paneId, name, title, graphType, displayQuadrantLines, identityDataPoint, groupingDataPoint, dataPoints, filterDataPoints, sampleModel, xAxisLabel, xAxisRangeFrom, xAxisRangeTo, yAxisLabel, yAxisRangeFrom, yAxisRangeTo) {
         _super.call(this);
         this.paneId = paneId;
         this.name = name;
         this.title = title;
         this.graphType = graphType;
+        this.displayQuadrantLines = displayQuadrantLines;
         this.identityDataPoint = identityDataPoint;
         this.groupingDataPoint = groupingDataPoint;
         this.dataPoints = dataPoints;
         this.filterDataPoints = filterDataPoints;
         this.sampleModel = sampleModel;
+        this.xAxisLabel = xAxisLabel;
+        this.xAxisRangeFrom = xAxisRangeFrom;
+        this.xAxisRangeTo = xAxisRangeTo;
+        this.yAxisLabel = yAxisLabel;
+        this.yAxisRangeFrom = yAxisRangeFrom;
+        this.yAxisRangeTo = yAxisRangeTo;
     }
     return XGraphDef;
 }(XPaneDef));
@@ -6407,7 +6504,7 @@ var XOpenQueryModelResult = (function () {
         return DialogTriple.fromListOfWSDialogObject(queryRecDefJson['propertyDefs'], 'WSPropertyDef', OType.factoryFn).bind(function (propDefs) {
             var entityRecDef = new EntityRecDef(propDefs);
             return DialogTriple.fromListOfWSDialogObject(queryRecDefJson['sortPropertyDefs'], 'WSSortPropertyDef', OType.factoryFn).bind(function (sortPropDefs) {
-                return new fp_4.Success(new XOpenQueryModelResult(entityRecDef, sortPropDefs, defaultActionId));
+                return new fp_1.Success(new XOpenQueryModelResult(entityRecDef, sortPropDefs, defaultActionId));
             });
         });
     };
@@ -6469,37 +6566,37 @@ var XQueryResult = (function () {
             return DialogTriple.fromListOfWSDialogObject(entityRecDefJson['sortPropertyDefs'], 'WSSortPropertyDef', OType.factoryFn).bind(function (sortPropDefs) {
                 var queryRecsJson = jsonObj['queryRecords'];
                 if (queryRecsJson['WS_LTYPE'] !== 'WSQueryRecord') {
-                    return new fp_5.Failure('XQueryResult::fromWS: Expected WS_LTYPE of WSQueryRecord but found ' + queryRecsJson['WS_LTYPE']);
+                    return new fp_1.Failure('XQueryResult::fromWS: Expected WS_LTYPE of WSQueryRecord but found ' + queryRecsJson['WS_LTYPE']);
                 }
                 var queryRecsValues = queryRecsJson['values'];
                 var entityRecs = [];
                 for (var i = 0; i < queryRecsValues.length; i++) {
                     var queryRecValue = queryRecsValues[i];
                     if (queryRecValue['WS_OTYPE'] !== 'WSQueryRecord') {
-                        return new fp_5.Failure('XQueryResult::fromWS: Expected WS_OTYPE of WSQueryRecord but found ' + queryRecValue['WS_LTYPE']);
+                        return new fp_1.Failure('XQueryResult::fromWS: Expected WS_OTYPE of WSQueryRecord but found ' + queryRecValue['WS_LTYPE']);
                     }
                     var objectId = queryRecValue['objectId'];
                     var recPropsObj = queryRecValue['properties'];
                     if (recPropsObj['WS_LTYPE'] !== 'Object') {
-                        return new fp_5.Failure('XQueryResult::fromWS: Expected WS_LTYPE of Object but found ' + recPropsObj['WS_LTYPE']);
+                        return new fp_1.Failure('XQueryResult::fromWS: Expected WS_LTYPE of Object but found ' + recPropsObj['WS_LTYPE']);
                     }
                     var recPropsObjValues = recPropsObj['values'];
                     var propsTry = Prop.fromWSNamesAndValues(entityRecDef.propNames, recPropsObjValues);
                     if (propsTry.isFailure)
-                        return new fp_5.Failure(propsTry.failure);
+                        return new fp_1.Failure(propsTry.failure);
                     var props = propsTry.success;
                     if (queryRecValue['propertyAnnotations']) {
                         var propAnnosJson = queryRecValue['propertyAnnotations'];
                         var annotatedPropsTry = DataAnno.annotatePropsUsingWSDataAnnotation(props, propAnnosJson);
                         if (annotatedPropsTry.isFailure)
-                            return new fp_5.Failure(annotatedPropsTry.failure);
+                            return new fp_1.Failure(annotatedPropsTry.failure);
                         props = annotatedPropsTry.success;
                     }
                     var recAnnos = null;
                     if (queryRecValue['recordAnnotation']) {
                         var recAnnosTry = DialogTriple.fromWSDialogObject(queryRecValue['recordAnnotation'], 'WSDataAnnotation', OType.factoryFn);
                         if (recAnnosTry.isFailure)
-                            return new fp_5.Failure(recAnnosTry.failure);
+                            return new fp_1.Failure(recAnnosTry.failure);
                         recAnnos = recAnnosTry.success;
                     }
                     var entityRec = EntityRecUtil.newEntityRec(objectId, props, recAnnos);
@@ -6507,7 +6604,7 @@ var XQueryResult = (function () {
                 }
                 var dialogProps = jsonObj['dialogProperties'];
                 var hasMore = jsonObj['hasMore'];
-                return new fp_4.Success(new XQueryResult(entityRecs, entityRecDef, hasMore, sortPropDefs, actionId, dialogProps));
+                return new fp_1.Success(new XQueryResult(entityRecs, entityRecDef, hasMore, sortPropDefs, actionId, dialogProps));
             });
         });
     };
@@ -6626,7 +6723,7 @@ var OType = (function () {
         return null;
     };
     OType.deserializeObject = function (obj, Otype, factoryFn) {
-        util_2.Log.debug('Deserializing ' + Otype);
+        util_1.Log.debug('Deserializing ' + Otype);
         if (Array.isArray(obj)) {
             //it's a nested array (no LTYPE!)
             return OType.handleNestedArray(Otype, obj);
@@ -6637,32 +6734,32 @@ var OType = (function () {
             if (objTry) {
                 if (objTry.isFailure) {
                     var error = 'OType::deserializeObject: factory failed to produce object for ' + Otype + " : "
-                        + util_3.ObjUtil.formatRecAttr(objTry.failure);
-                    util_2.Log.error(error);
-                    return new fp_5.Failure(error);
+                        + util_1.ObjUtil.formatRecAttr(objTry.failure);
+                    util_1.Log.error(error);
+                    return new fp_1.Failure(error);
                 }
                 newObj = objTry.success;
             }
             else {
                 newObj = OType.typeInstance(Otype);
                 if (!newObj) {
-                    util_2.Log.error('OType::deserializeObject: no type constructor found for ' + Otype);
-                    return new fp_5.Failure('OType::deserializeObject: no type constructor found for ' + Otype);
+                    util_1.Log.error('OType::deserializeObject: no type constructor found for ' + Otype);
+                    return new fp_1.Failure('OType::deserializeObject: no type constructor found for ' + Otype);
                 }
                 for (var prop in obj) {
                     var value = obj[prop];
-                    util_2.Log.debug("prop: " + prop + " is type " + typeof value);
+                    util_1.Log.debug("prop: " + prop + " is type " + typeof value);
                     if (value && typeof value === 'object') {
                         if ('WS_OTYPE' in value) {
                             var otypeTry = DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
                             if (otypeTry.isFailure)
-                                return new fp_5.Failure(otypeTry.failure);
+                                return new fp_1.Failure(otypeTry.failure);
                             OType.assignPropIfDefined(prop, otypeTry.success, newObj, Otype);
                         }
                         else if ('WS_LTYPE' in value) {
                             var ltypeTry = DialogTriple.fromListOfWSDialogObject(value, value['WS_LTYPE'], OType.factoryFn);
                             if (ltypeTry.isFailure)
-                                return new fp_5.Failure(ltypeTry.failure);
+                                return new fp_1.Failure(ltypeTry.failure);
                             OType.assignPropIfDefined(prop, ltypeTry.success, newObj, Otype);
                         }
                         else {
@@ -6674,12 +6771,12 @@ var OType = (function () {
                     }
                 }
             }
-            return new fp_4.Success(newObj);
+            return new fp_1.Success(newObj);
         }
     };
     OType.serializeObject = function (obj, Otype, filterFn) {
         var newObj = { 'WS_OTYPE': Otype };
-        return util_3.ObjUtil.copyNonNullFieldsOnly(obj, newObj, function (prop) {
+        return util_1.ObjUtil.copyNonNullFieldsOnly(obj, newObj, function (prop) {
             return prop.charAt(0) !== '_' && (!filterFn || filterFn(prop));
         });
     };
@@ -6687,8 +6784,8 @@ var OType = (function () {
         return OType.extractLType(Otype).bind(function (ltype) {
             var newArrayTry = OType.deserializeNestedArray(obj, ltype);
             if (newArrayTry.isFailure)
-                return new fp_5.Failure(newArrayTry.failure);
-            return new fp_4.Success(newArrayTry.success);
+                return new fp_1.Failure(newArrayTry.failure);
+            return new fp_1.Success(newArrayTry.success);
         });
     };
     OType.deserializeNestedArray = function (array, ltype) {
@@ -6698,7 +6795,7 @@ var OType = (function () {
             if (value && typeof value === 'object') {
                 var otypeTry = DialogTriple.fromWSDialogObject(value, ltype, OType.factoryFn);
                 if (otypeTry.isFailure) {
-                    return new fp_5.Failure(otypeTry.failure);
+                    return new fp_1.Failure(otypeTry.failure);
                 }
                 newArray.push(otypeTry.success);
             }
@@ -6706,14 +6803,14 @@ var OType = (function () {
                 newArray.push(value);
             }
         }
-        return new fp_4.Success(newArray);
+        return new fp_1.Success(newArray);
     };
     OType.extractLType = function (Otype) {
         if (Otype.length > 5 && Otype.slice(0, 5) !== 'List<') {
-            return new fp_5.Failure('Expected OType of List<some_type> but found ' + Otype);
+            return new fp_1.Failure('Expected OType of List<some_type> but found ' + Otype);
         }
         var ltype = Otype.slice(5, -1);
-        return new fp_4.Success(ltype);
+        return new fp_1.Success(ltype);
     };
     OType.assignPropIfDefined = function (prop, value, target, otype) {
         if (otype === void 0) { otype = 'object'; }
@@ -6727,12 +6824,12 @@ var OType = (function () {
                     target[prop] = value;
                 }
                 else {
-                    util_2.Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
+                    util_1.Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
                 }
             }
         }
         catch (error) {
-            util_2.Log.error('OType::assignPropIfDefined: Failed to set prop: ' + prop + ' on target: ' + error);
+            util_1.Log.error('OType::assignPropIfDefined: Failed to set prop: ' + prop + ' on target: ' + error);
         }
     };
     OType.types = {
@@ -6781,7 +6878,9 @@ var OType = (function () {
         'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
         'XWriteResult': XWriteResult,
         'WSWritePropertyResult': XWritePropertyResult,
-        'WSReadPropertyResult': XReadPropertyResult
+        'WSReadPropertyResult': XReadPropertyResult,
+        'WSException': DialogException,
+        'WSUserMessage': UserMessage
     };
     OType.typeFns = {
         'WSCellValueDef': CellValueDef.fromWS,

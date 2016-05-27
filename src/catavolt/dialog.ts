@@ -1,25 +1,17 @@
 /**
  * Created by rburson on 3/27/15.
  */
-import {StringDictionary, TimeValue} from "./util";
-import {Try} from "./fp";
-import {Either} from "./fp";
-import {SessionContext} from "./ws";
-import {Future} from "./fp";
-import {Log} from "./util";
-import {ObjUtil} from "./util";
-import {SystemContext} from "./ws";
-import {Success} from "./fp";
-import {Failure} from "./fp";
-import {Base64} from "./util";
-import {StringUtil} from "./util";
-import {ArrayUtil} from "./util";
-import {UserException} from "./util";
-import {Call} from "./ws";
-import {TryClosure} from "./fp";
-import {MapFn} from "./fp";
-import {Get} from "./ws";
-import {DataUrl} from "./util"
+import {
+    StringDictionary,
+    TimeValue,
+    Log,
+    ObjUtil,
+    StringUtil,
+    ArrayUtil,
+    DataUrl
+} from "./util";
+import {Try, Either, Future, Success, Failure, TryClosure, MapFn} from "./fp";
+import {SessionContext, SystemContext, Call, Get} from "./ws";
 
 
 /*
@@ -1114,8 +1106,10 @@ export class PaneDef {
             var xGraphDef:XGraphDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
             newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs,
-                xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xGraphDef.graphType, xGraphDef.identityDataPoint,
-                xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel);
+                xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xGraphDef.graphType, xGraphDef.displayQuadrantLines,
+                xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel,
+                xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom, xGraphDef.xAxisRangeTo, xGraphDef.yAxisLabel, xGraphDef.yAxisRangeFrom,
+                xGraphDef.yAxisRangeTo);
         } else if (childXPaneDef instanceof XBarcodeScanDef) {
             var xBarcodeScanDef:XBarcodeScanDef = childXPaneDef;
             var xOpenEditorModelResult:XOpenEditorModelResult = <XOpenEditorModelResult>childXOpenResult;
@@ -1502,6 +1496,15 @@ export class GeoLocationDef extends PaneDef {
  * *********************************
  */
 export class GraphDef extends PaneDef {
+    
+    static GRAPH_TYPE_CARTESIAN = "GRAPH_TYPE_BAR";
+    static GRAPH_TYPE_PIE = "GRAPH_TYPE_PIE";
+    static PLOT_TYPE_BAR = "BAR";
+    static PLOT_TYPE_BUBBLE = "BUBBLE";
+    static PLOT_TYPE_LINE = "LINE";
+    static PLOT_TYPE_SCATTER = "SCATTER";
+    static PLOT_TYPE_STACKED = "STACKED";
+    
 
     constructor(paneId:string,
                 name:string,
@@ -1512,11 +1515,18 @@ export class GraphDef extends PaneDef {
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
                 private _graphType:string,
+                private _displayQuadrantLines:boolean,
                 private _identityDataPointDef:GraphDataPointDef,
                 private _groupingDataPointDef:GraphDataPointDef,
                 private _dataPointDefs:Array<GraphDataPointDef>,
                 private _filterDataPointDefs:Array<GraphDataPointDef>,
-                private _sampleModel:string) {
+                private _sampleModel:string,
+                private _xAxisLabel:string,
+                private _xAxisRangeFrom:number,
+                private _xAxisRangeTo:number,
+                private _yAxisLabel:string,
+                private _yAxisRangeFrom:number,
+                private _yAxisRangeTo:number) {
 
         super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
 
@@ -1524,6 +1534,10 @@ export class GraphDef extends PaneDef {
 
     get dataPointDefs():Array<GraphDataPointDef> {
         return this._dataPointDefs;
+    }
+    
+    get displayQuadrantLines():boolean {
+        return this._displayQuadrantLines;
     }
 
     get filterDataPointDefs():Array<GraphDataPointDef> {
@@ -1541,6 +1555,31 @@ export class GraphDef extends PaneDef {
     get sampleModel():string {
         return this._sampleModel;
     }
+
+    get xAxisLabel():string {
+        return this._xAxisLabel;
+    }
+
+    get xAxisRangeFrom():number{
+        return this._xAxisRangeFrom;
+    }
+
+    get xAxisRangeTo():number{
+        return this._xAxisRangeTo;
+    }
+
+    get yAxisLabel():string{
+        return this._xAxisLabel;
+    }
+
+    get yAxisRangeFrom():number{
+        return this._yAxisRangeFrom;
+    }
+
+    get yAxisRangeTo():number{
+        return this._yAxisRangeTo;
+    }
+    
 }
 /**
  * *********************************
@@ -3331,18 +3370,28 @@ export class DataAnno {
  * *********************************
  */
 
+export class DialogException {
 
+    constructor(public iconName?:string,
+                public message?:string,
+                public name?:string,
+                public stackTrace?:string,
+                public title?:string,
+                public cause?:DialogException,
+                public userMessages?:Array<UserMessage>){
+    }
 
-
-
-
-
-/*
- @TODO - extend this with UserMessage and methods like java-sdk?
- may not really be appropriate in js....
- * */
-export interface DialogException extends UserException {
 }
+
+export class UserMessage {
+    
+    constructor(public message:string,
+                public  messageType:string,
+                public explanation:string,
+                public propertyNames:Array<string>) {
+    }
+}
+
 /**
  * *********************************
  */
@@ -3822,8 +3871,13 @@ export class DialogTriple {
                     return new Failure<Either<Redirection,A>>('DialogTriple:extractTriple: expected O_TYPE ' + Otype + ' but found ' + ot);
                 } else {
                     if (jsonObject['exception']) {
-                        var dialogException:DialogException = jsonObject['exception'];
-                        return new Failure<Either<Redirection,A>>(dialogException);
+                        var dialogExceptionTry:Try<DialogException> = OType.deserializeObject<DialogException>(jsonObject['exception'], 'WSException', OType.factoryFn);
+                        if(dialogExceptionTry.isFailure) {
+                           Log.error('Failed to deserialize exception obj: ' + ObjUtil.formatRecAttr(jsonObject['exception']));
+                            return new Failure<Either<Redirection,A>>(jsonObject['exception']);
+                        } else {
+                            return new Failure<Either<Redirection,A>>(dialogExceptionTry.success);
+                        }
                     } else if (jsonObject['redirection'] && !ignoreRedirection) {
                         var drt:Try<Redirection> = DialogTriple.fromWSDialogObject<Redirection>(jsonObject['redirection'],
                             'WSRedirection', OType.factoryFn);
@@ -4237,10 +4291,15 @@ export class GeoLocation {
 
 export class GraphDataPointDef {
 
-    constructor(private _name:string,
-                private _type:string,
-                private _plotType:string,
-                private _legendkey:string) {
+    constructor(public name:string,
+                public type:string,
+                public plotType:string,
+                public legendkey:string,
+                public bubbleRadiusName:string,
+                public bubbleRadiusType:string,
+                public seriesColor:string,
+                public xAxisName:string,
+                public xAxisType:string) {
     }
 
 }
@@ -5841,11 +5900,18 @@ export class XGraphDef extends XPaneDef {
                 public name:string,
                 public title:string,
                 public graphType:string,
+                public displayQuadrantLines:boolean,
                 public identityDataPoint:GraphDataPointDef,
                 public groupingDataPoint:GraphDataPointDef,
                 public dataPoints:Array<GraphDataPointDef>,
                 public filterDataPoints:Array<GraphDataPointDef>,
-                public sampleModel:string) {
+                public sampleModel:string,
+                public xAxisLabel:string,
+                public xAxisRangeFrom:number,
+                public xAxisRangeTo:number,
+                public yAxisLabel:string,
+                public yAxisRangeFrom:number,
+                public yAxisRangeTo:number) {
         super();
     }
 
@@ -6207,7 +6273,9 @@ export class OType {
         'WSWorkbenchLaunchAction': WorkbenchLaunchAction,
         'XWriteResult': XWriteResult,
         'WSWritePropertyResult': XWritePropertyResult,
-        'WSReadPropertyResult': XReadPropertyResult
+        'WSReadPropertyResult': XReadPropertyResult,
+        'WSException': DialogException,
+        'WSUserMessage': UserMessage
     };
 
     private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {
