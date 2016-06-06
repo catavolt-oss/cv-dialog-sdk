@@ -4575,11 +4575,11 @@ exports.GeoLocation = GeoLocation;
  * *********************************
  */
 var GraphDataPointDef = (function () {
-    function GraphDataPointDef(name, type, plotType, legendkey, bubbleRadiusName, bubbleRadiusType, seriesColor, xAxisName, xAxisType) {
+    function GraphDataPointDef(name, type, plotType, legendKey, bubbleRadiusName, bubbleRadiusType, seriesColor, xAxisName, xAxisType) {
         this.name = name;
         this.type = type;
         this.plotType = plotType;
-        this.legendkey = legendkey;
+        this.legendKey = legendKey;
         this.bubbleRadiusName = bubbleRadiusName;
         this.bubbleRadiusType = bubbleRadiusType;
         this.seriesColor = seriesColor;

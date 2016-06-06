@@ -4294,7 +4294,7 @@ export class GraphDataPointDef {
     constructor(public name:string,
                 public type:string,
                 public plotType:string,
-                public legendkey:string,
+                public legendKey:string,
                 public bubbleRadiusName:string,
                 public bubbleRadiusType:string,
                 public seriesColor:string,
