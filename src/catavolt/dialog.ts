@@ -1547,6 +1547,10 @@ export class GraphDef extends PaneDef {
     get identityDataPointDef():GraphDataPointDef {
         return this._identityDataPointDef;
     }
+    
+    get graphType():string {
+        return this._graphType;
+    }
 
     get groupingDataPointDef():GraphDataPointDef {
         return this._groupingDataPointDef;
@@ -1569,7 +1573,7 @@ export class GraphDef extends PaneDef {
     }
 
     get yAxisLabel():string{
-        return this._xAxisLabel;
+        return this._yAxisLabel;
     }
 
     get yAxisRangeFrom():number{

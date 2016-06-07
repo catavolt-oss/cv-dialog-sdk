@@ -1759,6 +1759,13 @@ var GraphDef = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GraphDef.prototype, "graphType", {
+        get: function () {
+            return this._graphType;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(GraphDef.prototype, "groupingDataPointDef", {
         get: function () {
             return this._groupingDataPointDef;
@@ -1796,7 +1803,7 @@ var GraphDef = (function (_super) {
     });
     Object.defineProperty(GraphDef.prototype, "yAxisLabel", {
         get: function () {
-            return this._xAxisLabel;
+            return this._yAxisLabel;
         },
         enumerable: true,
         configurable: true
