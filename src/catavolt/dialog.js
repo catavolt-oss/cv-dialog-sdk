@@ -387,8 +387,8 @@ var PaneContext = (function () {
         enumerable: true,
         configurable: true
     });
-    PaneContext.prototype.initialize = function () {
-    };
+    //abstract
+    PaneContext.prototype.initialize = function () { };
     PaneContext.prototype.readBinaries = function (entityRec) {
         var _this = this;
         return fp_1.Future.sequence(this.entityRecDef.propDefs.filter(function (propDef) {
@@ -398,9 +398,7 @@ var PaneContext = (function () {
         }));
     };
     //abstract
-    PaneContext.prototype.readBinary = function (propName, entityRec) {
-        return null;
-    };
+    PaneContext.prototype.readBinary = function (propName, entityRec) { return null; };
     PaneContext.prototype.writeBinaries = function (entityRec) {
         var _this = this;
         return fp_1.Future.sequence(entityRec.props.filter(function (prop) {
@@ -1271,7 +1269,7 @@ var PaneDef = (function () {
         else if (childXPaneDef instanceof XGraphDef) {
             var xGraphDef = childXPaneDef;
             var xOpenQueryModelResult = childXOpenResult;
-            newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xGraphDef.graphType, xGraphDef.displayQuadrantLines, xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel, xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom, xGraphDef.xAxisRangeTo, xGraphDef.yAxisLabel, xGraphDef.yAxisRangeFrom, xGraphDef.yAxisRangeTo);
+            newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xOpenQueryModelResult.defaultActionId, xGraphDef.graphType, xGraphDef.displayQuadrantLines, xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel, xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom, xGraphDef.xAxisRangeTo, xGraphDef.yAxisLabel, xGraphDef.yAxisRangeFrom, xGraphDef.yAxisRangeTo);
         }
         else if (childXPaneDef instanceof XBarcodeScanDef) {
             var xBarcodeScanDef = childXPaneDef;
@@ -1715,8 +1713,9 @@ exports.GeoLocationDef = GeoLocationDef;
  */
 var GraphDef = (function (_super) {
     __extends(GraphDef, _super);
-    function GraphDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _graphType, _displayQuadrantLines, _identityDataPointDef, _groupingDataPointDef, _dataPointDefs, _filterDataPointDefs, _sampleModel, _xAxisLabel, _xAxisRangeFrom, _xAxisRangeTo, _yAxisLabel, _yAxisRangeFrom, _yAxisRangeTo) {
+    function GraphDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _defaultActionId, _graphType, _displayQuadrantLines, _identityDataPointDef, _groupingDataPointDef, _dataPointDefs, _filterDataPointDefs, _sampleModel, _xAxisLabel, _xAxisRangeFrom, _xAxisRangeTo, _yAxisLabel, _yAxisRangeFrom, _yAxisRangeTo) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        this._defaultActionId = _defaultActionId;
         this._graphType = _graphType;
         this._displayQuadrantLines = _displayQuadrantLines;
         this._identityDataPointDef = _identityDataPointDef;
@@ -1734,6 +1733,13 @@ var GraphDef = (function (_super) {
     Object.defineProperty(GraphDef.prototype, "dataPointDefs", {
         get: function () {
             return this._dataPointDefs;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphDef.prototype, "defaultActionId", {
+        get: function () {
+            return this._defaultActionId;
         },
         enumerable: true,
         configurable: true

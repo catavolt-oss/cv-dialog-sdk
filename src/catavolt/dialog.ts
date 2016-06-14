@@ -325,8 +325,9 @@ export class PaneContext {
         return this.paneDef.dialogRedirection;
     }
 
-    initialize() {
-    }
+    
+    //abstract
+    initialize() { }
 
     set parentContext(parentContext:FormContext) {
         this._parentContext = parentContext;
@@ -344,9 +345,7 @@ export class PaneContext {
     }
 
     //abstract
-    readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
-        return null;
-    }
+    readBinary(propName:string, entityRec:EntityRec):Future<Binary> { return null; }
 
     writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
         return Future.sequence<XWritePropertyResult>(
@@ -1106,10 +1105,10 @@ export class PaneDef {
             var xGraphDef:XGraphDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
             newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs,
-                xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xGraphDef.graphType, xGraphDef.displayQuadrantLines,
-                xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel,
-                xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom, xGraphDef.xAxisRangeTo, xGraphDef.yAxisLabel, xGraphDef.yAxisRangeFrom,
-                xGraphDef.yAxisRangeTo);
+                xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xOpenQueryModelResult.defaultActionId,
+                xGraphDef.graphType, xGraphDef.displayQuadrantLines, xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint,
+                xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel, xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom,
+                xGraphDef.xAxisRangeTo, xGraphDef.yAxisLabel, xGraphDef.yAxisRangeFrom, xGraphDef.yAxisRangeTo);
         } else if (childXPaneDef instanceof XBarcodeScanDef) {
             var xBarcodeScanDef:XBarcodeScanDef = childXPaneDef;
             var xOpenEditorModelResult:XOpenEditorModelResult = <XOpenEditorModelResult>childXOpenResult;
@@ -1514,6 +1513,7 @@ export class GraphDef extends PaneDef {
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
+                private _defaultActionId:string,
                 private _graphType:string,
                 private _displayQuadrantLines:boolean,
                 private _identityDataPointDef:GraphDataPointDef,
@@ -1534,6 +1534,10 @@ export class GraphDef extends PaneDef {
 
     get dataPointDefs():Array<GraphDataPointDef> {
         return this._dataPointDefs;
+    }
+    
+    get defaultActionId():string {
+        return this._defaultActionId;
     }
     
     get displayQuadrantLines():boolean {
