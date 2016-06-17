@@ -3869,7 +3869,7 @@ export class DialogTriple {
             return new Failure<Either<Redirection,A>>('DialogTriple::extractTriple: cannot extract object of WS_OTYPE ' + Otype + ' because json object is null');
         } else {
             if (Array.isArray(jsonObject)) {
-                //verify we'll dealing with a nested List
+                //verify we're dealing with a nested List
                 if (Otype.indexOf('List') !== 0) {
                     return new Failure<Either<Redirection, A>>("DialogTriple::extractTriple: expected OType of List<> for Array obj");
                 }
@@ -5858,10 +5858,14 @@ export class XGetAvailableValuesResult {
 
     static fromWS(otype:string, jsonObj):Try<XGetAvailableValuesResult> {
         var listJson = jsonObj['list'];
-        var valuesJson:Array<any> = listJson['values'];
-        return Prop.fromListOfWSValue(valuesJson).bind((values:Array<any>)=> {
-            return new Success(new XGetAvailableValuesResult(values));
-        });
+        if(listJson) {
+            var valuesJson:Array<any> = listJson['values'];
+            return Prop.fromListOfWSValue(valuesJson).bind((values:Array<any>)=> {
+                return new Success(new XGetAvailableValuesResult(values));
+            });
+        } else {
+            return new Success(new XGetAvailableValuesResult([]));
+        }
     }
 
     constructor(public list:Array<any>) {

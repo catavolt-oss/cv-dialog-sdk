@@ -4153,7 +4153,7 @@ var DialogTriple = (function () {
         }
         else {
             if (Array.isArray(jsonObject)) {
-                //verify we'll dealing with a nested List
+                //verify we're dealing with a nested List
                 if (Otype.indexOf('List') !== 0) {
                     return new fp_1.Failure("DialogTriple::extractTriple: expected OType of List<> for Array obj");
                 }
@@ -6329,10 +6329,15 @@ var XGetAvailableValuesResult = (function () {
     }
     XGetAvailableValuesResult.fromWS = function (otype, jsonObj) {
         var listJson = jsonObj['list'];
-        var valuesJson = listJson['values'];
-        return Prop.fromListOfWSValue(valuesJson).bind(function (values) {
-            return new fp_1.Success(new XGetAvailableValuesResult(values));
-        });
+        if (listJson) {
+            var valuesJson = listJson['values'];
+            return Prop.fromListOfWSValue(valuesJson).bind(function (values) {
+                return new fp_1.Success(new XGetAvailableValuesResult(values));
+            });
+        }
+        else {
+            return new fp_1.Success(new XGetAvailableValuesResult([]));
+        }
     };
     return XGetAvailableValuesResult;
 }());
