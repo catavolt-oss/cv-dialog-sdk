@@ -1411,6 +1411,10 @@ export class FormDef extends PaneDef {
         return this._headerDef;
     }
 
+    get isCompositeForm():boolean {
+        return this.formStyle === 'COMPOSITE_FORM'
+    }
+
     get isFlowingLayout():boolean {
         return this.formLayout && this.formLayout === 'FLOWING';
     }

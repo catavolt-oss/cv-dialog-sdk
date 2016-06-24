@@ -1602,6 +1602,13 @@ var FormDef = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(FormDef.prototype, "isCompositeForm", {
+        get: function () {
+            return this.formStyle === 'COMPOSITE_FORM';
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(FormDef.prototype, "isFlowingLayout", {
         get: function () {
             return this.formLayout && this.formLayout === 'FLOWING';
