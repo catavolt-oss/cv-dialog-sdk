@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "description": "Core Catavolt Javascript API",
   "main": "./src/js/catavolt.js",
-  "typings": "./src/catavolt",
+  "typings": "./src/js/catavolt.d.ts",
   "repository": {
     "type": "git",
     "url": "https://git.catavolt.com/javascript/sdk.git"
@@ -13,7 +13,7 @@
     "javascript"
   ],
   "author": "Rob Burson <rob.burson@catavolt.com>",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
     "babel-preset-es2015": "^6.3.13",
