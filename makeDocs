@@ -1,0 +1,3 @@
+#!/bin/sh
+
+typedoc --mode modules --tsconfig ./src/tsconfig.json --theme default --out ../catreact-examples/docs/catavolt-sdk/ ./src/

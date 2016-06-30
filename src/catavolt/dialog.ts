@@ -13,7 +13,6 @@ import {
 import {Try, Either, Future, Success, Failure, TryClosure, MapFn} from "./fp";
 import {SessionContext, SystemContext, Call, Get} from "./ws";
 
-
 /*
  IMPORTANT!
  Note #1: Dependency cycles - These classes must be in a single file (module) because of commonjs and circular dependency issues.
@@ -23,7 +22,6 @@ import {SessionContext, SystemContext, Call, Get} from "./ws";
 /**
  * *********************************
  */
-
 export class CellValueDef {
 
     /* Note compact deserialization will be handled normally by OType */
@@ -175,6 +173,13 @@ export class TabCellValueDef extends CellValueDef {
  */
 
 
+/**
+ * Top-level (abstract) class, representing a Catavolt 'Pane' definition.
+ * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record 
+ * or a list of records.  See {@EntityRecord}
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 export class PaneContext {
 
     private static ANNO_NAME_KEY = "com.catavolt.annoName";
@@ -184,13 +189,22 @@ export class PaneContext {
 
     entityRecDef:EntityRecDef;
 
-    private _binaryCache:{ [index:string] : Array<Binary> }
+    private _binaryCache:{ [index:string]:Array<Binary> }
     private _lastRefreshTime:Date = new Date(0);
     private _parentContext:FormContext = null;
     private _paneRef:number = null;
-    
+
+    /**
+     * Has this 'Pane' been destroyed?
+     */
     public isDestroyed:boolean;
 
+    /**
+     * Updates a settings object with the new settings from a 'Navigation'
+     * @param initialSettings
+     * @param navRequest
+     * @returns {StringDictionary}
+     */
     static resolveSettingsFromNavRequest(initialSettings:StringDictionary,
                                          navRequest:NavRequest):StringDictionary {
 
@@ -207,18 +221,33 @@ export class PaneContext {
 
     }
 
+    /**
+     *
+     * @param paneRef
+     * @private
+     */
     constructor(paneRef:number) {
         this._paneRef = paneRef;
         this._binaryCache = {};
     }
 
+    /**
+     * Get the action source for this Pane
+     * @returns {ActionSource}
+     */
     get actionSource():ActionSource {
         return this.parentContext ? this.parentContext.actionSource : null;
     }
 
+    /**
+     * Load a Binary property from a record
+     * @param propName
+     * @param entityRec
+     * @returns {any}
+     */
     binaryAt(propName:string, entityRec:EntityRec):Future<Binary> {
         const prop:Prop = entityRec.propAtName(propName)
-        if(prop) {
+        if (prop) {
             if (prop.value instanceof InlineBinaryRef) {
                 const binRef = prop.value as InlineBinaryRef;
                 return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
@@ -239,10 +268,19 @@ export class PaneContext {
         }
     }
 
+    /**
+     * Get the dialog alias
+     * @returns {any}
+     */
     get dialogAlias():string {
         return this.dialogRedirection.dialogProperties['dialogAlias'];
     }
 
+    /**
+     * Find a menu def on this Pane with the given actionId
+     * @param actionId
+     * @returns {MenuDef}
+     */
     findMenuDefAt(actionId:string) {
         var result:MenuDef = null;
         if (this.menuDefs) {
@@ -254,38 +292,78 @@ export class PaneContext {
         return result;
     }
 
+    /**
+     * Get a string representation of this property suitable for 'reading'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
     formatForRead(propValue, propName:string):string {
         return PropFormatter.formatForRead(propValue, this.propDefAtName(propName));
     }
 
+    /**
+     * Get a string representation of this property suitable for 'writing'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
     formatForWrite(propValue, propName:string):string {
         return PropFormatter.formatForWrite(propValue, this.propDefAtName(propName));
     }
 
+    /**
+     * Get the underlying form definition {@link FormDef} for this Pane.
+     * If this is not a {@link FormContext} this will be the {@link FormDef} of the owning/parent Form
+     * @returns {FormDef}
+     */
     get formDef():FormDef {
         return this.parentContext.formDef;
     }
 
+    /**
+     * Returns whether or not the data in this pane is out of date
+     * @returns {boolean}
+     */
     get isRefreshNeeded():boolean {
         return this._lastRefreshTime.getTime() < AppContext.singleton.lastMaintenanceTime.getTime();
     }
 
+    /**
+     * Get the last time this pane's data was refreshed
+     * @returns {Date}
+     */
     get lastRefreshTime():Date {
         return this._lastRefreshTime;
     }
 
+    /**
+     * @param time
+     */
     set lastRefreshTime(time:Date) {
         this._lastRefreshTime = time;
     }
 
+    /**
+     * Get the all {@link MenuDef}'s associated with this Pane
+     * @returns {Array<MenuDef>}
+     */
     get menuDefs():Array<MenuDef> {
         return this.paneDef.menuDefs;
     }
 
+    /**
+     * @private
+     * @returns {FormContext|boolean}
+     */
     get offlineCapable():boolean {
         return this._parentContext && this._parentContext.offlineCapable;
     }
 
+    /**
+     * Get the underlying @{link PaneDef} associated with this Context
+     * @returns {PaneDef}
+     */
     get paneDef():PaneDef {
         if (this.paneRef == null) {
             return this.formDef.headerDef;
@@ -294,68 +372,104 @@ export class PaneContext {
         }
     }
 
+    /**
+     * Get the numeric value, representing this Pane's place in the parent {@link FormContext}'s list of child panes.
+     * See {@link FormContext.childrenContexts}
+     * @returns {number}
+     */
     get paneRef():number {
         return this._paneRef;
     }
-    
+
     set paneRef(paneRef:number) {
         this._paneRef = paneRef;
     }
 
+    /**
+     * Get the title of this Pane
+     * @returns {string}
+     */
     get paneTitle():string {
         return this.paneDef.findTitle();
     }
 
+    /**
+     * Get the parent {@link FormContext}
+     * @returns {FormContext}
+     */
     get parentContext():FormContext {
         return this._parentContext;
     }
 
+    /**
+     * Parses a value to prepare for 'writing' back to the server
+     * @param formattedValue
+     * @param propName
+     * @returns {any}
+     */
     parseValue(formattedValue:any, propName:string):any {
         return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
     }
 
+    /**
+     * Get the propery definition for a property name
+     * @param propName
+     * @returns {PropDef}
+     */
     propDefAtName(propName:string):PropDef {
         return this.entityRecDef.propDefAtName(propName);
     }
 
+    /**
+     * Get the session information
+     * @returns {SessionContext}
+     */
     get sessionContext():SessionContext {
         return this.parentContext.sessionContext;
     }
 
-    /** --------------------- MODULE ------------------------------*/
-    //*** let's pretend this has module level visibility
-
+    /**
+     * Get the {@link DialogRedirection} with which this Pane was constructed
+     * @returns {DialogRedirection}
+     */
     get dialogRedirection():DialogRedirection {
         return this.paneDef.dialogRedirection;
     }
 
-    
     //abstract
-    initialize() { }
+    initialize() {
+    }
 
     set parentContext(parentContext:FormContext) {
         this._parentContext = parentContext;
         this.initialize();
     }
 
+    /**
+     * Read all the Binary values in this {@link EntityRec}
+     * @param entityRec
+     * @returns {Future<Array<Try<Binary>>>}
+     */
     readBinaries(entityRec:EntityRec):Future<Array<Try<Binary>>> {
         return Future.sequence<Binary>(
-            this.entityRecDef.propDefs.filter((propDef:PropDef)=>{
+            this.entityRecDef.propDefs.filter((propDef:PropDef)=> {
                 return propDef.isBinaryType
-            }).map((propDef:PropDef)=>{
+            }).map((propDef:PropDef)=> {
                 return this.readBinary(propDef.name, entityRec);
             })
         );
     }
 
-    //abstract
-    readBinary(propName:string, entityRec:EntityRec):Future<Binary> { return null; }
-
+    /**
+     * Write all Binary values in this {@link EntityRecord} back to the server
+     * @param entityRec
+     * @returns {Future<Array<Try<XWritePropertyResult>>>}
+     */
     writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
         return Future.sequence<XWritePropertyResult>(
             entityRec.props.filter((prop:Prop)=> {
                 return prop.value instanceof EncodedBinary;
-            }).map((prop:Prop) =>{
+            }).map((prop:Prop) => {
                 let ptr:number = 0;
                 const encBin:EncodedBinary = prop.value as EncodedBinary;
                 const data = encBin.data;
@@ -374,12 +488,27 @@ export class PaneContext {
             })
         );
     }
+
+    //protected
+
+    //abstract
+    protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
+        return null;
+    }
+
 }
 
 /**
  * *********************************
  */
 
+/**
+ * PanContext Subtype that represents an 'Editor Pane'.
+ * An 'Editor' represents and is backed by a single Record and Record definition.
+ * See {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 export class EditorContext extends PaneContext {
 
     private static GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
@@ -389,11 +518,19 @@ export class EditorContext extends PaneContext {
     private _editorState:EditorState;
     private _entityRecDef:EntityRecDef;
     private _settings:StringDictionary;
-    
+
+    /**
+     * @private
+     * @param paneRef
+     */
     constructor(paneRef:number) {
         super(paneRef);
     }
 
+    /**
+     * Get the current buffered record
+     * @returns {EntityBuffer}
+     */
     get buffer():EntityBuffer {
         if (!this._buffer) {
             this._buffer = new EntityBuffer(NullEntityRec.singleton);
@@ -401,6 +538,11 @@ export class EditorContext extends PaneContext {
         return this._buffer;
     }
 
+    /**
+     * Toggle the current mode of this Editor
+     * @param paneMode
+     * @returns {Future<EntityRecDef>}
+     */
     changePaneMode(paneMode:PaneMode):Future<EntityRecDef> {
         return DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode,
             this.sessionContext).bind((changePaneModeResult:XChangePaneModeResult)=> {
@@ -419,14 +561,26 @@ export class EditorContext extends PaneContext {
         });
     }
 
+    /**
+     * Get the associated entity record
+     * @returns {EntityRec}
+     */
     get entityRec():EntityRec {
         return this._buffer.toEntityRec();
     }
 
+    /**
+     * Get the current version of the entity record, with any pending changes present
+     * @returns {EntityRec}
+     */
     get entityRecNow():EntityRec {
         return this.entityRec;
     }
 
+    /**
+     * Get the associated entity record definition
+     * @returns {EntityRecDef}
+     */
     get entityRecDef():EntityRecDef {
         return this._entityRecDef;
     }
@@ -435,6 +589,11 @@ export class EditorContext extends PaneContext {
         this._entityRecDef = entityRecDef;
     }
 
+    /**
+     * Get the possible values for a 'constrained value' property
+     * @param propName
+     * @returns {Future<Array<any>>}
+     */
     getAvailableValues(propName:string):Future<Array<Object>> {
 
         return DialogService.getAvailableValues(this.paneDef.dialogHandle, propName,
@@ -444,19 +603,37 @@ export class EditorContext extends PaneContext {
 
     }
 
+    /**
+     * Returns whether or not this cell definition contains a binary value
+     * @param cellValueDef
+     * @returns {PropDef|boolean}
+     */
     isBinary(cellValueDef:AttributeCellValueDef):boolean {
         var propDef = this.propDefAtName(cellValueDef.propertyName);
         return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValueDef.isInlineMediaStyle));
     }
 
+    /**
+     * Returns whether or not this Editor Pane is destroyed
+     * @returns {boolean}
+     */
     get isDestroyed():boolean {
         return this._editorState === EditorState.DESTROYED;
     }
 
+    /**
+     * Returns whether or not this Editor is in 'read' mode
+     * @returns {boolean}
+     */
     get isReadMode():boolean {
         return this._editorState === EditorState.READ;
     }
 
+    /**
+     * Returns whether or not this property is read-only
+     * @param propName
+     * @returns {boolean}
+     */
     isReadModeFor(propName:string):boolean {
         if (!this.isReadMode) {
             var propDef = this.propDefAtName(propName);
@@ -465,10 +642,22 @@ export class EditorContext extends PaneContext {
         return true;
     }
 
+    /**
+     * Returns whether or not this property is 'writable'
+     * @returns {boolean}
+     */
     get isWriteMode():boolean {
         return this._editorState === EditorState.WRITE;
     }
 
+    /**
+     * Perform the action associated with the given MenuDef on this EditorPane.
+     * Given that the Editor could possibly be destroyed as a result of this action,
+     * any provided pending writes will be saved if present.
+     * @param menuDef
+     * @param pendingWrites
+     * @returns {Future<NavRequest>}
+     */
     performMenuAction(menuDef:MenuDef, pendingWrites:EntityRec):Future<NavRequest> {
         return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
             pendingWrites, this.sessionContext).bind((redirection:Redirection)=> {
@@ -488,6 +677,15 @@ export class EditorContext extends PaneContext {
         });
     }
 
+    /**
+     * Properties whose {@link PropDef.canCauseSideEffects} value is true, may change other underlying values in the model.
+     * This method will update those underlying values, given the property name that is changing, and the new value.
+     * This is frequently used with {@link EditorContext.getAvailableValues}.  When a value is seleted, other properties
+     * available values may change. (i.e. Country, State, City dropdowns)
+     * @param propertyName
+     * @param value
+     * @returns {Future<null>}
+     */
     processSideEffects(propertyName:string, value:any):Future<void> {
 
         var sideEffectsFr:Future<EntityRec> = DialogService.processSideEffects(this.paneDef.dialogHandle,
@@ -509,6 +707,11 @@ export class EditorContext extends PaneContext {
         });
     }
 
+    /**
+     * Read (load) the {@link EntityRec} assocated with this Editor
+     * The record must be read at least once to initialize the Context
+     * @returns {Future<EntityRec>}
+     */
     read():Future<EntityRec> {
 
         return DialogService.readEditorModel(this.paneDef.dialogHandle,
@@ -522,55 +725,71 @@ export class EditorContext extends PaneContext {
         });
     }
 
-    readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
-        let seq:number = 0;
-        let buffer:string = '';
-        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) =>{
-            buffer += result.data;
-            if(result.hasMore) {
-                return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
-                    propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-            } else {
-                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(buffer));
-            }
-        }
-        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
-            propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-    }
-
+    /**
+     * Get the requested GPS accuracy
+     * @returns {Number}
+     */
     requestedAccuracy():number {
         var accuracyStr = this.paneDef.settings[EditorContext.GPS_ACCURACY];
         return accuracyStr ? Number(accuracyStr) : 500;
     }
 
+    /**
+     * Get the requested GPS timeout in seconds
+     * @returns {Number}
+     */
     requestedTimeoutSeconds():number {
         var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
         return timeoutStr ? Number(timeoutStr) : 30;
     }
 
+    /**
+     * Set the value of a property in this {@link EntityRecord}.
+     * Values may be already constructed target types (CodeRef, TimeValue, Date, etc.)
+     * or primitives, in which case the values will be parsed and objects constructed as necessary.
+     * @param name
+     * @param value
+     * @returns {any}
+     */
     setPropValue(name:string, value:any):any {
         const propDef:PropDef = this.propDefAtName(name);
         let parsedValue:any = null;
-        if(propDef) {
+        if (propDef) {
             parsedValue = value ? this.parseValue(value, propDef.name) : null;
             this.buffer.setValue(propDef.name, parsedValue);
         }
-        return parsedValue; 
+        return parsedValue;
     }
 
+    /**
+     * Set a binary property from a string formatted as a 'data url'
+     * See {@link https://en.wikipedia.org/wiki/Data_URI_scheme}
+     * @param name
+     * @param dataUrl
+     */
     setBinaryPropWithDataUrl(name:string, dataUrl:string) {
         const urlObj:DataUrl = new DataUrl(dataUrl);
         this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
     }
 
+    /**
+     * Set a binary property with base64 encoded data
+     * @param name
+     * @param encodedData
+     * @param mimeType
+     */
     setBinaryPropWithEncodedData(name:string, encodedData:string, mimeType:string) {
         const propDef:PropDef = this.propDefAtName(name);
-        if(propDef) {
+        if (propDef) {
             const value = new EncodedBinary(encodedData, mimeType);
             this.buffer.setValue(propDef.name, value);
         }
     }
 
+    /**
+     * Write this record (i.e. {@link EntityRec}} back to the server
+     * @returns {Future<Either<NavRequest, EntityRec>>}
+     */
     write():Future<Either<NavRequest,EntityRec>> {
 
         const deltaRec:EntityRec = this.buffer.afterEffects();
@@ -614,16 +833,40 @@ export class EditorContext extends PaneContext {
 
     //Module level methods
 
+    /**
+     * @private
+     */
     initialize() {
         this._entityRecDef = this.paneDef.entityRecDef;
         this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
         this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
     }
 
+    /**
+     * Get this Editor Pane's settings
+     * @returns {StringDictionary}
+     */
     get settings():StringDictionary {
         return this._settings;
     }
 
+    //protected 
+
+    protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
+        let seq:number = 0;
+        let buffer:string = '';
+        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
+            buffer += result.data;
+            if (result.hasMore) {
+                return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+                    propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            } else {
+                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(buffer));
+            }
+        }
+        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+            propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+    }
 
     //Private methods
 
@@ -674,11 +917,29 @@ export class EditorContext extends PaneContext {
  * *********************************
  */
 
+/**
+ * PaneContext Subtype that represents a Catavolt Form Definition
+ * A form is a 'container' composed of child panes of various concrete types.
+ * A FormContext parallels this design, and contains a list of 'child' contexts
+ * See also {@link FormDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 export class FormContext extends PaneContext {
 
     private _destroyed:boolean = false;
     private _offlineProps:StringDictionary = {};
 
+    /**
+     * @private
+     * @param _dialogRedirection
+     * @param _actionSource
+     * @param _formDef
+     * @param _childrenContexts
+     * @param _offlineCapable
+     * @param _offlineData
+     * @param _sessionContext
+     */
     constructor(private _dialogRedirection:DialogRedirection, private _actionSource:ActionSource,
                 private _formDef:FormDef, private _childrenContexts:Array<PaneContext>, private _offlineCapable:boolean,
                 private _offlineData:boolean, private _sessionContext:SessionContext) {
@@ -689,34 +950,66 @@ export class FormContext extends PaneContext {
         });
     }
 
+    /**
+     * Get the action source for this Pane
+     * @returns {ActionSource}
+     */
     get actionSource():ActionSource {
         return this.parentContext ? this.parentContext.actionSource : this._actionSource;
     }
 
+    /**
+     * Get the list of child contexts that 'compose' this Form
+     * @returns {Array<PaneContext>}
+     */
     get childrenContexts():Array<PaneContext> {
         return this._childrenContexts;
     }
 
+    /**
+     * Close this form
+     * @returns {Future<VoidResult>}
+     */
     close():Future<VoidResult> {
         return DialogService.closeEditorModel(this.dialogRedirection.dialogHandle, this.sessionContext);
     }
 
+    /**
+     * Get the {@link DialogRedirection} with which this Pane was constructed
+     * @returns {DialogRedirection}
+     */
     get dialogRedirection():DialogRedirection {
         return this._dialogRedirection;
     }
 
+    /**
+     * Get the entity record definition
+     * @returns {EntityRecDef}
+     */
     get entityRecDef():EntityRecDef {
         return this.formDef.entityRecDef;
     }
 
+    /**
+     * Get the underlying Form definition for this FormContext
+     * @returns {FormDef}
+     */
     get formDef():FormDef {
         return this._formDef;
     }
 
+    /**
+     * @private
+     */
     get headerContext():PaneContext {
         throw new Error('FormContext::headerContext: Needs Impl');
     }
 
+    /**
+     * Perform the action associated with the given MenuDef on this Form
+     * @param menuDef
+     * @returns {Future<NavRequest>}
+     */
     performMenuAction(menuDef:MenuDef):Future<NavRequest> {
 
         return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
@@ -730,26 +1023,50 @@ export class FormContext extends PaneContext {
         });
     }
 
+    /**
+     * Returns whether or not this Form is destroyed
+     * @returns {boolean}
+     */
     get isDestroyed():boolean {
         return this._destroyed || this.isAnyChildDestroyed;
     }
 
+    /**
+     * @private
+     * @returns {boolean}
+     */
     get offlineCapable():boolean {
         return this._offlineCapable;
     }
 
+    /**
+     * Get the all {@link MenuDef}'s associated with this Pane
+     * @returns {Array<MenuDef>}
+     */
     get menuDefs():Array<MenuDef> {
         return this.formDef.menuDefs;
     }
 
+    /**
+     * @private
+     * @returns {StringDictionary}
+     */
     get offlineProps():StringDictionary {
         return this._offlineProps;
     }
 
+    /**
+     * Get the underlying form definition associated with this FormContext
+     * @returns {FormDef}
+     */
     get paneDef():PaneDef {
         return this.formDef;
     }
-    
+
+    /**
+     * Get the current session information
+     * @returns {SessionContext}
+     */
     get sessionContext():SessionContext {
         return this._sessionContext;
     }
@@ -758,6 +1075,10 @@ export class FormContext extends PaneContext {
     /** --------------------- MODULE ------------------------------*/
     //*** let's pretend this has module level visibility (no such thing (yet!))
 
+    /**
+     * @private
+     * @returns {boolean}
+     */
     get isAnyChildDestroyed():boolean {
         return this.childrenContexts.some((paneContext:PaneContext)=> {
             if (paneContext instanceof EditorContext || paneContext instanceof QueryContext) {
@@ -767,6 +1088,10 @@ export class FormContext extends PaneContext {
         });
     }
 
+    /**
+     * @private
+     * @param navRequest
+     */
     processNavRequestForDestroyed(navRequest:NavRequest) {
 
         var fromDialogProps:StringDictionary = {};
@@ -789,37 +1114,77 @@ export class FormContext extends PaneContext {
  * *********************************
  */
 
+/**
+ * Enum to manage query states
+ */
 enum QueryState { ACTIVE, DESTROYED }
 
+/**
+ * Enum specifying query direction
+ */
 export enum QueryDirection { FORWARD, BACKWARD }
 
+/**
+ * PaneContext Subtype that represents a 'Query Pane'.
+ * A 'Query' represents and is backed by a list of Records and a single Record definition.
+ * See {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 export class QueryContext extends PaneContext {
 
     private _lastQueryFr:Future<QueryResult>;
     private _queryState:QueryState;
     private _scroller:QueryScroller;
 
+    /**
+     * @private
+     * @param paneRef
+     * @param _offlineRecs
+     * @param _settings
+     */
     constructor(paneRef:number, private _offlineRecs:Array<EntityRec> = [], private _settings:StringDictionary = {}) {
         super(paneRef);
     }
 
+    /**
+     * Get the entity record definition
+     * @returns {EntityRecDef}
+     */
     get entityRecDef():EntityRecDef {
         return this.paneDef.entityRecDef;
     }
 
+    /**
+     * Returns whether or not a column is of a binary type
+     * @param columnDef
+     * @returns {PropDef|boolean}
+     */
     isBinary(columnDef:ColumnDef):boolean {
         var propDef = this.propDefAtName(columnDef.name);
         return propDef && (propDef.isBinaryType || (propDef.isURLType && columnDef.isInlineMediaStyle));
     }
 
+    /**
+     * Returns whether or not this Query Pane is destroyed
+     * @returns {boolean}
+     */
     get isDestroyed():boolean {
         return this._queryState === QueryState.DESTROYED;
     }
 
+    /**
+     * Get the last query result as a {@link Future}
+     * @returns {Future<QueryResult>}
+     */
     get lastQueryFr():Future<QueryResult> {
         return this._lastQueryFr;
     }
 
+    /**
+     * @private
+     * @returns {Array<EntityRec>}
+     */
     get offlineRecs():Array<EntityRec> {
         return this._offlineRecs;
     }
@@ -828,10 +1193,21 @@ export class QueryContext extends PaneContext {
         this._offlineRecs = offlineRecs;
     }
 
+    /**
+     * Get the pane mode
+     * @returns {string}
+     */
     get paneMode():string {
         return this._settings['paneMode'];
     }
 
+    /**
+     * Perform this action associated with the given MenuDef on this Pane.
+     * The targets array is expected to be an array of object ids.
+     * @param menuDef
+     * @param targets
+     * @returns {Future<NavRequest>}
+     */
     performMenuAction(menuDef:MenuDef, targets:Array<string>):Future<NavRequest> {
         return DialogService.performQueryAction(this.paneDef.dialogHandle, menuDef.actionId,
             targets, this.sessionContext).bind((redirection:Redirection)=> {
@@ -847,6 +1223,15 @@ export class QueryContext extends PaneContext {
         });
     }
 
+    /**
+     * Perform a query
+     * Note: {@link QueryScroller} is the preferred way to perform a query.  
+     * see {@link QueryContext.newScroller} and {@link QueryContext.setScroller}
+     * @param maxRows
+     * @param direction
+     * @param fromObjectId
+     * @returns {Future<QueryResult>}
+     */
     query(maxRows:number, direction:QueryDirection, fromObjectId:string):Future<QueryResult> {
         return DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows,
             fromObjectId, this.sessionContext).bind((value:XQueryResult)=> {
@@ -858,12 +1243,61 @@ export class QueryContext extends PaneContext {
         });
     }
 
-    readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
+    /**
+     * Clear the QueryScroller's buffer and perform this query
+     * @returns {Future<Array<EntityRec>>}
+     */
+    refresh():Future<Array<EntityRec>> {
+        return this._scroller.refresh();
+    }
+
+    /**
+     * Get the associated QueryScroller
+     * @returns {QueryScroller}
+     */
+    get scroller():QueryScroller {
+        if (!this._scroller) {
+            this._scroller = this.newScroller();
+        }
+        return this._scroller;
+    }
+
+    /**
+     * Creates a new QueryScroller with the given values
+     * @param pageSize
+     * @param firstObjectId
+     * @param markerOptions
+     * @returns {QueryScroller}
+     */
+    setScroller(pageSize:number, firstObjectId:string, markerOptions:Array<QueryMarkerOption>) {
+        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
+        return this._scroller;
+    }
+
+    /**
+     * Creates a new QueryScroller with default buffer size of 50
+     * @returns {QueryScroller}
+     */
+    newScroller():QueryScroller {
+        return this.setScroller(50, null, [QueryMarkerOption.None]);
+    }
+
+    /**
+     * Get the settings associated with this Query
+     * @returns {StringDictionary}
+     */
+    settings():StringDictionary {
+        return this._settings;
+    }
+
+    //protected 
+
+    protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
         let seq:number = 0;
         let buffer:string = '';
-        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) =>{
+        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
             buffer += result.data;
-            if(result.hasMore) {
+            if (result.hasMore) {
                 return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
                     propName, entityRec.objectId, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
             } else {
@@ -874,31 +1308,6 @@ export class QueryContext extends PaneContext {
             propName, entityRec.objectId, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
     }
 
-    refresh():Future<Array<EntityRec>> {
-        return this._scroller.refresh();
-    }
-
-    get scroller():QueryScroller {
-        if (!this._scroller) {
-            this._scroller = this.newScroller();
-        }
-        return this._scroller;
-    }
-
-    setScroller(pageSize:number, firstObjectId:string, markerOptions:Array<QueryMarkerOption>) {
-        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
-        return this._scroller;
-    }
-
-    //module level methods
-
-    newScroller():QueryScroller {
-        return this.setScroller(50, null, [QueryMarkerOption.None]);
-    }
-
-    settings():StringDictionary {
-        return this._settings;
-    }
 
     private get isDestroyedSetting():boolean {
         var str = this._settings['destroyed'];
@@ -920,10 +1329,15 @@ export class QueryContext extends PaneContext {
     }
 
 }
-/**
- * *********************************
- */
 
+/**
+ * EditorContext Subtype that represents a 'BarcodeScan Pane'.
+ * A Barcode Scan is an Editor Pane with the purpose of displaying property values for a single record that
+ * represents barcode information.
+ * See {@link GeoLocationDef}, {@link EntityRec} and {@link EntityRecDef}
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}.
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 export class BarcodeScanContext extends EditorContext {
 
     constructor(paneRef:number) {
@@ -935,8 +1349,14 @@ export class BarcodeScanContext extends EditorContext {
     }
 
 }
+
 /**
- * *********************************
+ * EditorContext Subtype that represents a 'Details Pane'.
+ * A Details Pane is an Editor Pane with the purpose of displaying property values for a single record,
+ * usually as names/values in a tabular arrangement.
+ * See {@link DetailsDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 export class DetailsContext extends EditorContext {
 
@@ -953,10 +1373,15 @@ export class DetailsContext extends EditorContext {
     }
 
 }
-/**
- * *********************************
- */
 
+/**
+ * EditorContext Subtype that represents a 'GeoFix Pane'.
+ * A GeoFix Pane is an Editor Pane with the purpose of displaying property values for a single record that
+ * represents a GPS location
+ * See {@link GeoFixDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 export class GeoFixContext extends EditorContext {
 
     constructor(paneRef:number) {
@@ -968,8 +1393,14 @@ export class GeoFixContext extends EditorContext {
     }
 
 }
+
 /**
- * *********************************
+ * EditorContext Subtype that represents a 'GeoLocation Pane'.
+ * A GeoLocation Pane is an Editor Pane with the purpose of displaying property values for a single record that
+ * represents a GPS location
+ * See {@link GeoLocationDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 export class GeoLocationContext extends EditorContext {
 
@@ -982,8 +1413,14 @@ export class GeoLocationContext extends EditorContext {
     }
 
 }
+
 /**
- * *********************************
+ * QueryContext Subtype that represents a 'Calendar Pane'.
+ * A 'Calendar' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying Calendar related information.
+ * See {@link CalendarDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 export class CalendarContext extends QueryContext {
 
@@ -996,8 +1433,14 @@ export class CalendarContext extends QueryContext {
     }
 
 }
+
 /**
- * *********************************
+ * QueryContext Subtype that represents a 'Graph Pane'.
+ * A 'Graph' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying graphs and charts.
+ * See {@link GraphDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 export class GraphContext extends QueryContext {
 
@@ -1010,8 +1453,14 @@ export class GraphContext extends QueryContext {
     }
 
 }
-/**
- * *********************************
+
+ /**
+ * QueryContext Subtype that represents an 'Image Picker Pane'.
+ * An 'Image Picker' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying an Image Picker component.
+ * See {@link ImagePickerDef}, {@link EntityRec} and {@link EntityRecDef}.
+  * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+  * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 export class ImagePickerContext extends QueryContext {
 
@@ -1024,8 +1473,14 @@ export class ImagePickerContext extends QueryContext {
     }
 
 }
+
 /**
- * *********************************
+ * QueryContext Subtype that represents a 'List Pane'.
+ * An 'List' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying a tabular list of records.
+ * See {@link ListDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 export class ListContext extends QueryContext {
 
@@ -1055,7 +1510,12 @@ export class ListContext extends QueryContext {
 
 }
 /**
- * *********************************
+ * QueryContext Subtype that represents a 'Map Pane'.
+ * A 'Map' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying an annotated map with location markers.
+ * See {@link MapDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 export class MapContext extends QueryContext {
 
@@ -1068,12 +1528,25 @@ export class MapContext extends QueryContext {
     }
 
 }
-/**
- * *********************************
- */
 
+/**
+ * A PaneDef represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
+ * that is responsible for displaying a data record or records. The Pane describes 'how' and 'where' the data will be
+ * displayed, as well as surrounding 'meta' data (i.e. the Pane title, the Pane's menus).  The Pane itself does not contain
+ * the record or records to be displayed, but may be combined with a {@link EntityRecord}(s) to display the data.
+ */
 export class PaneDef {
 
+    /**
+     * @private
+     * @param childXOpenResult
+     * @param childXComp
+     * @param childXPaneDefRef
+     * @param childXPaneDef
+     * @param childXActiveColDefs
+     * @param childMenuDefs
+     * @returns {any}
+     */
     static fromOpenPaneResult(childXOpenResult:XOpenDialogModelResult,
                               childXComp:XFormModelComp,
                               childXPaneDefRef:XPaneDefRef,
@@ -1150,6 +1623,17 @@ export class PaneDef {
 
     }
 
+    /**
+     * @private
+     * @param _paneId
+     * @param _name
+     * @param _label
+     * @param _title
+     * @param _menuDefs
+     * @param _entityRecDef
+     * @param _dialogRedirection
+     * @param _settings
+     */
     constructor(private _paneId:string,
                 private _name:string,
                 private _label:string,
@@ -1160,18 +1644,34 @@ export class PaneDef {
                 private _settings:StringDictionary) {
     }
 
+    /**
+     * Get the {@link DialogHandle} associated with this PaneDef
+     * @returns {DialogHandle}
+     */
     get dialogHandle():DialogHandle {
         return this._dialogRedirection.dialogHandle;
     }
 
+    /**
+     * Get the {@link DialogRedirection} with which this Pane was constructed
+     * @returns {DialogRedirection}
+     */
     get dialogRedirection():DialogRedirection {
         return this._dialogRedirection;
     }
 
+    /**
+     * Get the entity record definition
+     * @returns {EntityRecDef}
+     */
     get entityRecDef():EntityRecDef {
         return this._entityRecDef;
     }
 
+    /**
+     * Find the title for this Pane
+     * @returns {string}
+     */
     findTitle():string {
         var result:string = this._title ? this._title.trim() : '';
         result = result === 'null' ? '' : result;
@@ -1182,10 +1682,18 @@ export class PaneDef {
         return result;
     }
 
+    /**
+     * Get the label for this Pane
+     * @returns {string}
+     */
     get label():string {
         return this._label;
     }
 
+    /**
+     * Get the all {@link MenuDef}'s associated with this Pane
+     * @returns {Array<MenuDef>}
+     */
     get menuDefs():Array<MenuDef> {
         return this._menuDefs;
     }
@@ -1206,11 +1714,23 @@ export class PaneDef {
         return this._title;
     }
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a Barcode Pane
  */
 export class BarcodeScanDef extends PaneDef {
 
+    /**
+     * @private 
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1224,11 +1744,32 @@ export class BarcodeScanDef extends PaneDef {
 
     }
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a Calendar Pane
  */
 export class CalendarDef extends PaneDef {
 
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _descriptionPropName
+     * @param _initialStyle
+     * @param _startDatePropName
+     * @param _startTimePropName
+     * @param _endDatePropName
+     * @param _endTimePropName
+     * @param _occurDatePropName
+     * @param _occurTimePropName
+     * @param _defaultActionId
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1287,11 +1828,29 @@ export class CalendarDef extends PaneDef {
         return this._defaultActionId;
     }
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a Details Pane
  */
 export class DetailsDef extends PaneDef {
 
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _cancelButtonText
+     * @param _commitButtonText
+     * @param _editable
+     * @param _focusPropName
+     * @param _graphicalMarkup
+     * @param _rows
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1334,11 +1893,23 @@ export class DetailsDef extends PaneDef {
     }
 
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a Form Pane
  */
 export class FormDef extends PaneDef {
 
+    /**
+     * @private
+     * @param formXOpenResult
+     * @param formXFormDef
+     * @param formMenuDefs
+     * @param childrenXOpens
+     * @param childrenXPaneDefs
+     * @param childrenXActiveColDefs
+     * @param childrenMenuDefs
+     * @returns {any}
+     */
     static fromOpenFormResult(formXOpenResult:XOpenEditorModelResult,
                               formXFormDef:XFormDef,
                               formMenuDefs:Array<MenuDef>,
@@ -1373,6 +1944,22 @@ export class FormDef extends PaneDef {
 
     }
 
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _formLayout
+     * @param _formStyle
+     * @param _borderStyle
+     * @param _headerDef
+     * @param _childrenDefs
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1463,11 +2050,23 @@ export class FormDef extends PaneDef {
         return this.formLayout && this.formLayout === 'H(2,V)';
     }
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a GeoFix Pane
  */
 export class GeoFixDef extends PaneDef {
 
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1483,9 +2082,23 @@ export class GeoFixDef extends PaneDef {
 }
 /**
  * *********************************
+ */
+/**
+ * PaneDef Subtype that describes a GeoLocation Pane
  */
 export class GeoLocationDef extends PaneDef {
 
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1499,11 +2112,12 @@ export class GeoLocationDef extends PaneDef {
 
     }
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a Graph Pane
  */
 export class GraphDef extends PaneDef {
-    
+
     static GRAPH_TYPE_CARTESIAN = "GRAPH_TYPE_BAR";
     static GRAPH_TYPE_PIE = "GRAPH_TYPE_PIE";
     static PLOT_TYPE_BAR = "BAR";
@@ -1511,8 +2125,33 @@ export class GraphDef extends PaneDef {
     static PLOT_TYPE_LINE = "LINE";
     static PLOT_TYPE_SCATTER = "SCATTER";
     static PLOT_TYPE_STACKED = "STACKED";
-    
 
+
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _defaultActionId
+     * @param _graphType
+     * @param _displayQuadrantLines
+     * @param _identityDataPointDef
+     * @param _groupingDataPointDef
+     * @param _dataPointDefs
+     * @param _filterDataPointDefs
+     * @param _sampleModel
+     * @param _xAxisLabel
+     * @param _xAxisRangeFrom
+     * @param _xAxisRangeTo
+     * @param _yAxisLabel
+     * @param _yAxisRangeFrom
+     * @param _yAxisRangeTo
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1543,11 +2182,11 @@ export class GraphDef extends PaneDef {
     get dataPointDefs():Array<GraphDataPointDef> {
         return this._dataPointDefs;
     }
-    
+
     get defaultActionId():string {
         return this._defaultActionId;
     }
-    
+
     get displayQuadrantLines():boolean {
         return this._displayQuadrantLines;
     }
@@ -1559,7 +2198,7 @@ export class GraphDef extends PaneDef {
     get identityDataPointDef():GraphDataPointDef {
         return this._identityDataPointDef;
     }
-    
+
     get graphType():string {
         return this._graphType;
     }
@@ -1576,32 +2215,46 @@ export class GraphDef extends PaneDef {
         return this._xAxisLabel;
     }
 
-    get xAxisRangeFrom():number{
+    get xAxisRangeFrom():number {
         return this._xAxisRangeFrom;
     }
 
-    get xAxisRangeTo():number{
+    get xAxisRangeTo():number {
         return this._xAxisRangeTo;
     }
 
-    get yAxisLabel():string{
+    get yAxisLabel():string {
         return this._yAxisLabel;
     }
 
-    get yAxisRangeFrom():number{
+    get yAxisRangeFrom():number {
         return this._yAxisRangeFrom;
     }
 
-    get yAxisRangeTo():number{
+    get yAxisRangeTo():number {
         return this._yAxisRangeTo;
     }
-    
+
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a ImagePicker Pane
  */
 export class ImagePickerDef extends PaneDef {
 
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _URLPropName
+     * @param _defaultActionId
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1625,11 +2278,29 @@ export class ImagePickerDef extends PaneDef {
         return this._URLPropName;
     }
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a List Pane
  */
 export class ListDef extends PaneDef {
 
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _style
+     * @param _initialColumns
+     * @param _activeColumnDefs
+     * @param _columnsStyle
+     * @param _defaultActionId
+     * @param _graphicalMarkup
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1689,11 +2360,30 @@ export class ListDef extends PaneDef {
 
 
 }
+
 /**
- * *********************************
+ * PaneDef Subtype that describes a Map Pane
  */
 export class MapDef extends PaneDef {
 
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _descriptionPropName
+     * @param _streetPropName
+     * @param _cityPropName
+     * @param _statePropName
+     * @param _postalCodePropName
+     * @param _latitudePropName
+     * @param _longitudePropName
+     */
     constructor(paneId:string,
                 name:string,
                 label:string,
@@ -1743,10 +2433,11 @@ export class MapDef extends PaneDef {
     }
 
 }
+
 /**
  * *********************************
  */
-
+    
 export class BinaryRef {
 
     constructor(private _settings:StringDictionary) {
@@ -1796,31 +2487,53 @@ export class ObjectBinaryRef extends BinaryRef {
  * *********************************
  */
 
+/**
+ * Represents a binary value
+ */
 export interface Binary {
+
+    /**
+     * Return a url resprenting this binary value
+     */
     toUrl():string;
 }
-/**
- * *********************************
- */
 
+/**
+ * Represents a base64 encoded binary
+ */
 export class EncodedBinary implements Binary {
 
     constructor(private _data:string, private _mimeType?:string) {
     }
 
+    /**
+     * Get the base64 encoded data
+     * @returns {string}
+     */
     get data():string {
         return this._data;
     }
 
+    /**
+     * Get the mime-type
+     * @returns {string|string}
+     */
     get mimeType():string {
-       return this._mimeType || 'application/octet-stream';
+        return this._mimeType || 'application/octet-stream';
     }
 
+    /**
+     * Returns a 'data url' representation of this binary, including the encoded data
+     * @returns {string}
+     */
     toUrl():string {
         return DataUrl.createDataUrl(this.mimeType, this.data);
     }
 }
 
+/**
+ * Represents a remote binary
+ */
 export class UrlBinary implements Binary {
 
     constructor(private _url:string) {
@@ -1830,6 +2543,10 @@ export class UrlBinary implements Binary {
         return this._url;
     }
 
+    /**
+     * Returns a url that 'points to' the binary data
+     * @returns {string}
+     */
     toUrl():string {
         return this.url;
     }
@@ -1837,10 +2554,8 @@ export class UrlBinary implements Binary {
 
 
 /**
- * *********************************
+ * An object that directs the client to a new resource
  */
-
-
 export class Redirection {
 
     static fromWS(otype:string, jsonObj):Try<Redirection> {
@@ -1857,7 +2572,7 @@ export class Redirection {
 }
 
 /**
- * *********************************
+ * Type of Redirection that represents a new Catavolt resource on the server
  */
 export class DialogRedirection extends Redirection {
 
@@ -1928,18 +2643,14 @@ export class DialogRedirection extends Redirection {
     }
 
 }
-/**
- * *********************************
- */
+
 export class NullRedirection extends Redirection {
 
     constructor(public fromDialogProperties:StringDictionary) {
         super();
     }
 }
-/**
- * *********************************
- */
+
 export class WebRedirection extends Redirection implements NavRequest {
 
     constructor(private _webURL:string,
@@ -1952,24 +2663,22 @@ export class WebRedirection extends Redirection implements NavRequest {
     get fromDialogProperties():StringDictionary {
         return this._fromDialogProperties;
     }
-    
+
     get open():boolean {
         return this._open;
     }
-    
+
     get webURL():string {
         return this._webURL;
     }
-    
+
     set fromDialogProperties(props:StringDictionary) {
         this._fromDialogProperties = props;
     }
 
 
 }
-/**
- * *********************************
- */
+
 export class WorkbenchRedirection extends Redirection {
 
     constructor(private _workbenchId:string,
@@ -1996,12 +2705,15 @@ export class WorkbenchRedirection extends Redirection {
 
 
 }
+
 /**
- * *********************************
+ * Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
  */
 export interface EntityRec {
 
     annos:Array<DataAnno>;
+
     annosAtName(propName:string):Array<DataAnno>;
 
     afterEffects(after:EntityRec):EntityRec;
@@ -2071,6 +2783,9 @@ export interface EntityRec {
     valueAtName(propName:string):any;
 }
 
+/**
+ * Utility for working with EntityRecs
+ */
 export class EntityRecUtil {
 
     static newEntityRec(objectId:string, props:Array<Prop>, annos?:Array<DataAnno>):EntityRec {
@@ -2129,8 +2844,11 @@ export class EntityRecUtil {
         return new Success(new EntityRecImpl(objectId, props, recAnnos));
     }
 }
+
 /**
- * *********************************
+ * An {@link EntityRec} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
+ * An EntityRec Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
  */
 export class EntityBuffer implements EntityRec {
 
@@ -2349,6 +3067,11 @@ export class EntityBuffer implements EntityRec {
 }
 /**
  * *********************************
+ */
+/**
+ * The implementation of {@link EntityRec}.
+ * Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
  */
 export class EntityRecImpl implements EntityRec {
 
@@ -2572,6 +3295,11 @@ export class EntityRecImpl implements EntityRec {
  */
 
 
+/**
+ * An empty or uninitialized {@link EntityRec}.
+ * Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ */
 export class NullEntityRec implements EntityRec {
 
     static singleton:NullEntityRec = new NullEntityRec();
@@ -2779,6 +3507,9 @@ class AppContextValues {
     }
 }
 
+/**
+ * Top-level entry point into the Catavolt API
+ */
 export class AppContext {
 
     private static _singleton:AppContext;
@@ -2796,6 +3527,10 @@ export class AppContext {
         return AppContext.ONE_DAY_IN_MILLIS;
     }
 
+    /**
+     * Get the singleton instance of the AppContext
+     * @returns {AppContext}
+     */
     static get singleton():AppContext {
         if (!AppContext._singleton) {
             AppContext._singleton = new AppContext();
@@ -2803,6 +3538,11 @@ export class AppContext {
         return AppContext._singleton;
     }
 
+    /**
+     * Construct an AppContext
+     * This should not be called directly, instead use the 'singleton' method
+     * @private
+     */
     constructor() {
         if (AppContext._singleton) {
             throw new Error("Singleton instance already created");
@@ -2812,18 +3552,36 @@ export class AppContext {
         AppContext._singleton = this;
     }
 
+    /**
+     * Get the AppWinDef Try
+     * @returns {Try<AppWinDef>}
+     */
     get appWinDefTry():Try<AppWinDef> {
         return this._appWinDefTry;
     }
 
+    /**
+     * Get the device props
+     * @returns {Array<string>}
+     */
     get deviceProps():Array<string> {
         return this._deviceProps;
     }
 
+    /**
+     * Checked logged in status
+     * @returns {boolean}
+     */
     get isLoggedIn() {
         return this._appContextState === AppContextState.LOGGED_IN;
     }
 
+    /**
+     * Get a Worbench by workbenchId
+     * @param sessionContext
+     * @param workbenchId
+     * @returns {Future<Workbench>}
+     */
     getWorkbench(sessionContext:SessionContext, workbenchId:string):Future<Workbench> {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
             return Future.createFailedFuture<Workbench>("AppContext::getWorkbench", "User is logged out");
@@ -2831,6 +3589,15 @@ export class AppContext {
         return WorkbenchService.getWorkbench(sessionContext, workbenchId);
     }
 
+    /**
+     * Log in and retrieve the AppWinDef
+     * @param gatewayHost
+     * @param tenantId
+     * @param clientType
+     * @param userId
+     * @param password
+     * @returns {Future<AppWinDef>}
+     */
     login(gatewayHost:string,
           tenantId:string,
           clientType:string,
@@ -2853,6 +3620,15 @@ export class AppContext {
 
     }
 
+    /**
+     * Login directly to a given url, bypassing the gateway host
+     * @param url
+     * @param tenantId
+     * @param clientType
+     * @param userId
+     * @param password
+     * @returns {Future<AppWinDef>}
+     */
     loginDirectly(url:string,
                   tenantId:string,
                   clientType:string,
@@ -2872,6 +3648,10 @@ export class AppContext {
         );
     }
 
+    /**
+     * Logout and destroy the session
+     * @returns {any}
+     */
     logout():Future<VoidResult> {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
             return Future.createFailedFuture<AppWinDef>("AppContext::loginDirectly", "User is already logged out");
@@ -2887,6 +3667,11 @@ export class AppContext {
     }
 
 
+    /**
+     * Open a {@link WorkbenchLaunchAction}
+     * @param launchAction
+     * @returns {any}
+     */
     performLaunchAction(launchAction:WorkbenchLaunchAction):Future<NavRequest> {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
             return Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
@@ -2894,6 +3679,12 @@ export class AppContext {
         return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
     }
 
+    /**
+     * Refresh the AppContext
+     * @param sessionContext
+     * @param deviceProps
+     * @returns {Future<AppWinDef>}
+     */
     refreshContext(sessionContext:SessionContext, deviceProps:Array<string> = []):Future<AppWinDef> {
         var appContextValuesFr = this.finalizeContext(sessionContext, deviceProps);
         return appContextValuesFr.bind(
@@ -2904,10 +3695,18 @@ export class AppContext {
         );
     }
 
+    /**
+     * Get the SessionContext Try
+     * @returns {Try<SessionContext>}
+     */
     get sessionContextTry():Try<SessionContext> {
         return this._sessionContextTry;
     }
 
+    /**
+     * Get the tenant settings Try
+     * @returns {Try<StringDictionary>}
+     */
     get tenantSettingsTry():Try<StringDictionary> {
         return this._tenantSettingsTry;
     }
@@ -2998,7 +3797,10 @@ export class AppContext {
  * *********************************
  */
 
-
+/**
+ * Represents a singlel 'Window' definition, retrieved upon login.
+ * Workbenches can be obtained through this object.
+ */
 export class AppWinDef {
 
     private _workbenches:Array<Workbench>;
@@ -3007,6 +3809,17 @@ export class AppWinDef {
     private _windowWidth:number;
     private _windowHeight:number;
 
+    /**
+     * Create a new AppWinDef
+     *
+     * @private
+     *
+     * @param workbenches
+     * @param appVendors
+     * @param windowTitle
+     * @param windowWidth
+     * @param windowHeight
+     */
     constructor(workbenches:Array<Workbench>,
                 appVendors:Array<string>,
                 windowTitle:string,
@@ -3020,22 +3833,42 @@ export class AppWinDef {
         this._windowHeight = windowHeight;
     }
 
+    /**
+     * Get the app vendors array
+     * @returns {Array<string>}
+     */
     get appVendors():Array<string> {
         return this._applicationVendors;
     }
 
+    /**
+     * Get the window height
+     * @returns {number}
+     */
     get windowHeight():number {
         return this._windowHeight;
     }
 
+    /**
+     * Get the window title
+     * @returns {string}
+     */
     get windowTitle():string {
         return this._windowTitle;
     }
 
+    /**
+     * Get the window width
+     * @returns {number}
+     */
     get windowWidth():number {
         return this._windowWidth;
     }
 
+    /**
+     * Get the list of available Workbenches
+     * @returns {Array<Workbench>}
+     */
     get workbenches():Array<Workbench> {
         return this._workbenches;
     }
@@ -3044,14 +3877,6 @@ export class AppWinDef {
 
 /**
  * *********************************
- */
-
-
-/*
- @TODO
-
- Test all of the deserialization methods
- They should all be handled, but the cover many of the edge cases (i.e. List<List<CellDef>>)
  */
 
 
@@ -3394,13 +4219,13 @@ export class DialogException {
                 public stackTrace?:string,
                 public title?:string,
                 public cause?:DialogException,
-                public userMessages?:Array<UserMessage>){
+                public userMessages?:Array<UserMessage>) {
     }
 
 }
 
 export class UserMessage {
-    
+
     constructor(public message:string,
                 public  messageType:string,
                 public explanation:string,
@@ -3423,6 +4248,9 @@ export class DialogHandle {
  * *********************************
  */
 
+/**
+ * @private
+ */
 export class DialogService {
 
     private static EDITOR_SERVICE_NAME:string = 'EditorService';
@@ -3658,7 +4486,7 @@ export class DialogService {
     }
 
     static readEditorProperty(dialogHandle:DialogHandle, propertyName:string, readSeq:number, readLength:number,
-                         sessionContext:SessionContext):Future<XReadPropertyResult> {
+                              sessionContext:SessionContext):Future<XReadPropertyResult> {
         var method = 'readProperty';
         var params:StringDictionary = {
             'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
@@ -3673,9 +4501,9 @@ export class DialogService {
                 DialogTriple.fromWSDialogObject<XReadPropertyResult>(result, 'WSReadPropertyResult', OType.factoryFn));
         });
     }
-    
+
     static readQueryProperty(dialogHandle:DialogHandle, propertyName:string, objectId:string, readSeq:number, readLength:number,
-                              sessionContext:SessionContext):Future<XReadPropertyResult> {
+                             sessionContext:SessionContext):Future<XReadPropertyResult> {
         var method = 'readProperty';
         var params:StringDictionary = {
             'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
@@ -3737,6 +4565,9 @@ export class DialogService {
  */
 
 
+/**
+ * @private
+ */
 export class DialogTriple {
 
     static extractList<A>(jsonObject:StringDictionary, Ltype:string, extractor:MapFn<any,Try<A>>) {
@@ -3888,8 +4719,8 @@ export class DialogTriple {
                 } else {
                     if (jsonObject['exception']) {
                         var dialogExceptionTry:Try<DialogException> = OType.deserializeObject<DialogException>(jsonObject['exception'], 'WSException', OType.factoryFn);
-                        if(dialogExceptionTry.isFailure) {
-                           Log.error('Failed to deserialize exception obj: ' + ObjUtil.formatRecAttr(jsonObject['exception']));
+                        if (dialogExceptionTry.isFailure) {
+                            Log.error('Failed to deserialize exception obj: ' + ObjUtil.formatRecAttr(jsonObject['exception']));
                             return new Failure<Either<Redirection,A>>(jsonObject['exception']);
                         } else {
                             return new Failure<Either<Redirection,A>>(dialogExceptionTry.success);
@@ -3956,10 +4787,11 @@ enum EditorState{ READ, WRITE, DESTROYED }
 
 
 /**
- * *********************************
- */
-
-
+ * In the same way that a {@link PropDef} describes a {@link Prop}, an EntityRecDef describes an {@link EntityRec}.
+ * It is composed of {@link PropDef}s while the {@link EntityRec} is composed of {@link Prop}s.
+ * In other words it describes the structure or makeup of a row or record, but does not contain the data values themselves.
+ * The corresponding {@link EntityRec} contains the actual values.
+  */
 export class EntityRecDef {
 
     constructor(private _propDefs:Array<PropDef>) {
@@ -4006,19 +4838,18 @@ export class EntityRecDef {
     }
 
 }
+
 /**
- * *********************************
+ * Utility to construct a FormContext hierarchy from a {@link DialogRedirection}.
  */
-
-
 export class FormContextBuilder {
 
     private _dialogRedirection:DialogRedirection;
     private _actionSource:ActionSource;
     private _sessionContext:SessionContext;
-    private _initialFormXOpenFr:Future<XOpenEditorModelResult>; 
+    private _initialFormXOpenFr:Future<XOpenEditorModelResult>;
     private _initialXFormDefFr:Future<XFormDef>;
-    
+
     public static createWithRedirection(dialogRedirection:DialogRedirection,
                                         actionSource:ActionSource,
                                         sessionContext:SessionContext):FormContextBuilder {
@@ -4028,7 +4859,7 @@ export class FormContextBuilder {
         fb._sessionContext = sessionContext;
         return fb;
     }
-    
+
     public static createWithInitialForm(initialFormXOpenFr:Future<XOpenEditorModelResult>,
                                         initialXFormDefFr:Future<XFormDef>,
                                         dialogRedirection:DialogRedirection,
@@ -4042,20 +4873,25 @@ export class FormContextBuilder {
         fb._sessionContext = sessionContext;
         return fb;
     }
-                                        
-   
-    constructor(){}
 
+
+    constructor() {
+    }
+
+    /**
+     * Get the action source for this Pane
+     * @returns {ActionSource}
+     */
     get actionSource():ActionSource {
         return this._actionSource;
     }
 
     build():Future<FormContext> {
-        
+
         if (this.dialogRedirection && !this.dialogRedirection.isEditor) {
             return Future.createFailedFuture<FormContext>('FormContextBuilder::build', 'Forms with a root query model are not supported');
         }
-        
+
         var xOpenFr = this._initialFormXOpenFr ? this._initialFormXOpenFr :
             DialogService.openEditorModelFromRedir(this.dialogRedirection, this.sessionContext);
         var openAllFr:Future<Array<Try<any>>> = xOpenFr.bind((formXOpen:XOpenEditorModelResult)=> {
@@ -4064,7 +4900,7 @@ export class FormContextBuilder {
             var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
             //expect a sequence of child def components or a sequence of FormContexts (nested forms)
             var formChildrenFr:Future<Array<Try<any>>> = formXFormDefFr.bind((xFormDef:XFormDef)=> {
-                if(!this.containsNestedForms(formXOpen, xFormDef)) {
+                if (!this.containsNestedForms(formXOpen, xFormDef)) {
                     var childrenXOpenFr = this.openChildren(formXOpen);
                     var childrenXPaneDefsFr = this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
                     var childrenActiveColDefsFr = this.fetchChildrenActiveColDefs(formXOpen);
@@ -4079,17 +4915,20 @@ export class FormContextBuilder {
         });
 
         return openAllFr.bind((value:Array<Try<any>>)=> {
-            
+
             var flattenedTry:Try<Array<any>> = this.getFlattenedResults(value);
-            if(flattenedTry.failure) {
+            if (flattenedTry.failure) {
                 return Future.createCompletedFuture<FormContext>('FormContextBuilder::build', new Failure<FormContext>(flattenedTry.failure));
             }
-            
+
             var formDefTry = this.completeOpenPromise(flattenedTry.success);
             //check for nested form contexts and set the paneRefs
             var formContexts:Array<PaneContext> = this.retrieveChildFormContexts(flattenedTry.success)
-                .map((formContext:FormContext, n:number)=>{ formContext.paneRef = n; return formContext; });
-            
+                .map((formContext:FormContext, n:number)=> {
+                    formContext.paneRef = n;
+                    return formContext;
+                });
+
             var formContextTry:Try<FormContext> = null;
             if (formDefTry.isFailure) {
                 formContextTry = new Failure<FormContext>(formDefTry.failure);
@@ -4106,6 +4945,10 @@ export class FormContextBuilder {
 
     }
 
+    /**
+     * Get the {@link DialogRedirection} with which this Form was constructed
+     * @returns {DialogRedirection}
+     */
     get dialogRedirection():DialogRedirection {
         return this._dialogRedirection;
     }
@@ -4122,7 +4965,7 @@ export class FormContextBuilder {
             topFormXOpen.formModel.placement, topFormXOpen.formModel.refreshTimer, topFormXOpen.formModel.sizeToWindow);
         return formModel;
     }
-   
+
     private completeOpenPromise(flattened:Array<any>):Try<FormDef> {
 
         if (flattened.length != 4) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 4 elements');
@@ -4131,16 +4974,18 @@ export class FormContextBuilder {
         var formXFormDef:XFormDef = flattened[1];
         var formMenuDefs:Array<MenuDef> = flattened[2];
         var formChildren:Array<any> = flattened[3];
-        
-        if(formChildren.length === 0) return new Failure<FormDef>('FormContextBuilder::build: Form has no children');
-        
-        if(formChildren[0] instanceof FormContext) {
+
+        if (formChildren.length === 0) return new Failure<FormDef>('FormContextBuilder::build: Form has no children');
+
+        if (formChildren[0] instanceof FormContext) {
             //we're dealing with a nested form
-            const childPaneDefs:Array<PaneDef> = formChildren.map((formContext:FormContext)=>{ return formContext.formDef });
+            const childPaneDefs:Array<PaneDef> = formChildren.map((formContext:FormContext)=> {
+                return formContext.formDef
+            });
             var settings:StringDictionary = {'open': true};
             ObjUtil.addAllProps(formXOpen.formRedirection.dialogProperties, settings);
             var headerDef:DetailsDef = null;
-            
+
             return new Success(new FormDef(formXOpen.formPaneId, formXFormDef.name, formXOpen.formModel.form.label, formXFormDef.title,
                 formMenuDefs, formXOpen.entityRecDef, formXOpen.formRedirection, settings, formXFormDef.formLayout,
                 formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childPaneDefs));
@@ -4160,9 +5005,11 @@ export class FormContextBuilder {
     }
 
     private containsNestedForms(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):boolean {
-        return xFormDef.paneDefRefs.some((paneDefRef:XPaneDefRef)=> { return paneDefRef.type === XPaneDefRef.FORM_TYPE});
+        return xFormDef.paneDefRefs.some((paneDefRef:XPaneDefRef)=> {
+            return paneDefRef.type === XPaneDefRef.FORM_TYPE
+        });
     }
-    
+
     private createChildrenContexts(formDef:FormDef):Array<PaneContext> {
         var result:Array<PaneContext> = [];
         formDef.childrenDefs.forEach((paneDef:PaneDef, i)=> {
@@ -4228,7 +5075,7 @@ export class FormContextBuilder {
         var formPaneId = xformOpenResult.formPaneId;
         return this.fetchXFormDef(dialogHandle, formPaneId);
     }
-    
+
     private fetchXFormDef(dialogHandle:DialogHandle, formPaneId:string):Future<XFormDef> {
         return DialogService.getEditorModelPaneDef(dialogHandle, formPaneId,
             this.sessionContext).bind((value:XPaneDef)=> {
@@ -4240,7 +5087,7 @@ export class FormContextBuilder {
             }
         });
     }
-    
+
     private getFlattenedResults(openAllResults:Array<Try<any>>):Try<Array<any>> {
 
         var flattenedTry:Try<Array<any>> = Try.flatten(openAllResults);
@@ -4249,22 +5096,22 @@ export class FormContextBuilder {
         }
         return flattenedTry;
     }
-    
+
     private loadNestedForms(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):Array<Future<FormContext>> {
 
-        const seqOfFutures:Array<Future<FormContext>> = xFormDef.paneDefRefs.filter((paneDefRef:XPaneDefRef)=>{
+        const seqOfFutures:Array<Future<FormContext>> = xFormDef.paneDefRefs.filter((paneDefRef:XPaneDefRef)=> {
             return paneDefRef.type === XPaneDefRef.FORM_TYPE;
-        }).map((paneDefRef:XPaneDefRef)=>{
+        }).map((paneDefRef:XPaneDefRef)=> {
             //find the child 'formComp' (from the XOpenEditorModelResult) for each 'child pane' in the formDef (from the XFormDef)
-            const xChildFormCompForPaneDefRef = ArrayUtil.find(formXOpen.formModel.children, (xChildComp:XFormModelComp)=>{
+            const xChildFormCompForPaneDefRef = ArrayUtil.find(formXOpen.formModel.children, (xChildComp:XFormModelComp)=> {
                 return xChildComp.paneId === paneDefRef.paneId;
             });
             //fetch the form def, for the child form
             return this.fetchXFormDef(xChildFormCompForPaneDefRef.redirection.dialogHandle, xChildFormCompForPaneDefRef.paneId)
-                .bind((childXFormDef:XFormDef)=>{
+                .bind((childXFormDef:XFormDef)=> {
                     //fetch child form's children (child comps)
-                    const childFormModelComps = childXFormDef.paneDefRefs.map((childPaneDefRef:XPaneDefRef)=>{
-                        return ArrayUtil.find(formXOpen.formModel.children, (xChildComp:XFormModelComp)=>{
+                    const childFormModelComps = childXFormDef.paneDefRefs.map((childPaneDefRef:XPaneDefRef)=> {
+                        return ArrayUtil.find(formXOpen.formModel.children, (xChildComp:XFormModelComp)=> {
                             return xChildComp.paneId === childPaneDefRef.paneId;
                         });
                     });
@@ -4298,13 +5145,13 @@ export class FormContextBuilder {
         });
         return Future.sequence<XOpenDialogModelResult>(seqOfFutures);
     }
-    
+
     private retrieveChildFormContexts(flattened:Array<any>):Array<FormContext> {
         let formContexts = [];
-        if(flattened.length > 3) {
+        if (flattened.length > 3) {
             var formChildren:Array<any> = flattened[3];
             if (formChildren && formChildren.length > 0) {
-                if(formChildren[0] instanceof FormContext) {
+                if (formChildren[0] instanceof FormContext) {
                     formContexts = formChildren;
                 }
             }
@@ -4319,28 +5166,14 @@ export class FormContextBuilder {
  */
 
 
-
-/*
- @TODO - current the gateway response is mocked, due to cross-domain issues
- This should be removed (and the commented section uncommented for production!!!
+/**
+ * @private
  */
 export class GatewayService {
 
     static getServiceEndpoint(tenantId:string,
                               serviceName:string,
                               gatewayHost:string):Future<ServiceEndpoint> {
-
-
-        //We have to fake this for now, due to cross domain issues
-         /*var fakeResponse = {
-         responseType:"soi-json",
-         tenantId:"***REMOVED***z",
-         serverAssignment:"https://dfw.catavolt.net/vs301",
-         appVersion:"1.3.262",soiVersion:"v02"
-         }*/
-         //var fakeResponse = {responseType:"soi-json",tenantId:"catavolt-qa",serverAssignment:"https://dfw.catavolt.net/vs106",appVersion:"1.3.412",soiVersion:"v02"}
-         //var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
-
 
         var f:Future<StringDictionary> = Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
         var endPointFuture:Future<ServiceEndpoint> = f.bind(
@@ -4448,7 +5281,7 @@ export class GraphDataPointDef {
 export class MenuDef {
 
     static findSubMenuDef(md:MenuDef, matcher:(menuDef:MenuDef)=>boolean):MenuDef {
-        if(matcher(md)) return md;
+        if (matcher(md)) return md;
         if (md.menuDefs) {
             for (let i = 0; i < md.menuDefs.length; i++) {
                 let result = MenuDef.findSubMenuDef(md.menuDefs[i], matcher);
@@ -4490,7 +5323,9 @@ export class MenuDef {
     }
 
     findContextMenuDef():MenuDef {
-        return MenuDef.findSubMenuDef(this, (md:MenuDef) => { return md.name === 'CONTEXT_MENU'; });
+        return MenuDef.findSubMenuDef(this, (md:MenuDef) => {
+            return md.name === 'CONTEXT_MENU';
+        });
     }
 
     get iconName():string {
@@ -4517,6 +5352,10 @@ export class MenuDef {
         return this._label;
     }
 
+    /**
+     * Get the child {@link MenuDef}'s
+     * @returns {Array<MenuDef>}
+     */
     get menuDefs():Array<MenuDef> {
         return this._menuDefs;
     }
@@ -4623,10 +5462,12 @@ export class ObjectRef {
 export enum PaneMode {
     READ, WRITE
 }
-/**
- * *********************************
- */
 
+/**
+ * Contains information that 'defines' a property {@link Prop} (name/value)
+ * The information describes the property and can be thought of as the property 'type.
+ * An instance of the {@link Prop} contains the actual data value.
+ */
 export class PropDef {
 
     static STYLE_INLINE_MEDIA = "inlineMedia";
@@ -4646,6 +5487,10 @@ export class PropDef {
                 private _canCauseSideEffects:boolean) {
     }
 
+    /**
+     * Gets whether or not a refresh is needed after a change in this property's value
+     * @returns {boolean}
+     */
     get canCauseSideEffects():boolean {
         return this._canCauseSideEffects;
     }
@@ -4827,21 +5672,39 @@ export class PropDef {
 
 
 }
+
 /**
- * *********************************
+ * Helper for transforming values to and from formats suitable for reading and writing to the server
+ * (i.e. object to string and string to object)
  */
-
-
 export class PropFormatter {
 
+    /**
+     * Get a string representation of this property suitable for 'reading'
+     * @param prop
+     * @param propDef
+     * @returns {string}
+     */
     static formatForRead(prop:any, propDef:PropDef):string {
         return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     }
 
+    /**
+     * Get a string representation of this property suitable for 'writing'
+     * @param prop
+     * @param propDef
+     * @returns {string}
+     */
     static formatForWrite(prop:any, propDef:PropDef):string {
         return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     }
 
+    /**
+     * Attempt to construct (or preserve) the appropriate data type given primitive (or already constructed) value. 
+     * @param value
+     * @param propDef
+     * @returns {any}
+     */
     static parse(value:any, propDef:PropDef) {
 
         var propValue:any = value;
@@ -4850,7 +5713,7 @@ export class PropFormatter {
         } else if (propDef.isLongType) {
             propValue = Number(value);
         } else if (propDef.isBooleanType) {
-            if(typeof value === 'string') {
+            if (typeof value === 'string') {
                 propValue = value !== 'false';
             } else {
                 propValue = !!value;
@@ -4864,7 +5727,7 @@ export class PropFormatter {
         } else if (propDef.isTimeType) {
             propValue = value instanceof TimeValue ? value : TimeValue.fromString(value);
         } else if (propDef.isObjRefType) {
-            propValue = value instanceof ObjectRef ? value :ObjectRef.fromFormattedValue(value);
+            propValue = value instanceof ObjectRef ? value : ObjectRef.fromFormattedValue(value);
         } else if (propDef.isCodeRefType) {
             propValue = value instanceof CodeRef ? value : CodeRef.fromFormattedValue(value);
         } else if (propDef.isGeoFixType) {
@@ -4875,13 +5738,19 @@ export class PropFormatter {
         return propValue;
     }
 
+    /**
+     * Render this value as a string
+     * @param o
+     * @param propDef
+     * @returns {any}
+     */
     static toString(o:any, propDef:PropDef):string {
         if (typeof o === 'number') {
-            if(propDef.isMoneyType) {
+            if (propDef.isMoneyType) {
                 return o.toFixed(2);
-            } else if(propDef.isIntType || propDef.isLongType) {
+            } else if (propDef.isIntType || propDef.isLongType) {
                 return o.toFixed(0);
-            } else if(propDef.isDecimalType || propDef.isDoubleType){
+            } else if (propDef.isDecimalType || propDef.isDoubleType) {
                 return o.toFixed(Math.max(2, (o.toString().split('.')[1] || []).length));
             }
         } else if (typeof o === 'object') {
@@ -4907,8 +5776,19 @@ export class PropFormatter {
 }
 
 
+/**
+ * Represents a 'value' or field in a row or record. See {@link EntityRec}
+ * A Prop has a corresponding {@link PropDef} that describes the property.
+ * Like an {@link EntityRec}, a Prop may also have {@link DataAnno}s (style annotations),
+ * but these apply to the property only
+ */
 export class Prop {
 
+    /**
+     * @private
+     * @param values
+     * @returns {Success}
+     */
     static fromListOfWSValue(values:Array<any>):Try<Array<any>> {
         var props = [];
         values.forEach((v)=> {
@@ -4919,6 +5799,12 @@ export class Prop {
         return new Success(props);
     }
 
+    /**
+     * @private
+     * @param name
+     * @param value
+     * @returns {any}
+     */
     static fromWSNameAndWSValue(name:string, value:any):Try<Prop> {
         var propTry:Try<any> = Prop.fromWSValue(value);
         if (propTry.isFailure) {
@@ -4927,6 +5813,12 @@ export class Prop {
         return new Success<Prop>(new Prop(name, propTry.success));
     }
 
+    /**
+     * @private
+     * @param names
+     * @param values
+     * @returns {any}
+     */
     static fromWSNamesAndValues(names:Array<string>, values:Array<any>):Try<Array<Prop>> {
         if (names.length != values.length) {
             return new Failure<Array<Prop>>("Prop::fromWSNamesAndValues: names and values must be of same length");
@@ -4942,6 +5834,11 @@ export class Prop {
         return new Success<Array<Prop>>(list);
     }
 
+    /**
+     * @private
+     * @param value
+     * @returns {any}
+     */
     static fromWSValue(value:any):Try<any> {
         var propValue = value;
         if (value && 'object' === typeof value) {
@@ -4978,6 +5875,12 @@ export class Prop {
         return new Success(propValue);
     }
 
+    /**
+     * @private
+     * @param otype
+     * @param jsonObj
+     * @returns {any}
+     */
     static fromWS(otype:string, jsonObj):Try<Prop> {
         var name:string = jsonObj['name'];
         var valueTry = Prop.fromWSValue(jsonObj['value']);
@@ -4992,6 +5895,11 @@ export class Prop {
         return new Success(new Prop(name, valueTry.success, annos));
     }
 
+    /**
+     * @private
+     * @param o
+     * @returns {any}
+     */
     static toWSProperty(o:any) {
         if (typeof o === 'number') {
             return {'WS_PTYPE': 'Decimal', 'value': String(o)};
@@ -5017,6 +5925,11 @@ export class Prop {
         }
     }
 
+    /**
+     * 
+     * @param list
+     * @returns {StringDictionary}
+     */
     static toWSListOfProperties(list:Array<any>):StringDictionary {
         var result:StringDictionary = {'WS_LTYPE': 'Object'};
         var values = [];
@@ -5027,10 +5940,21 @@ export class Prop {
         return result;
     }
 
+    /**
+     * @private
+     * @param list
+     * @returns {{WS_LTYPE: string, values: Array<string>}}
+     */
     static toWSListOfString(list:Array<string>):StringDictionary {
         return {'WS_LTYPE': 'String', 'values': list};
     }
 
+    /**
+     *
+     * @private
+     * @param props
+     * @returns {StringDictionary}
+     */
     static toListOfWSProp(props:Array<Prop>):StringDictionary {
         var result:StringDictionary = {'WS_LTYPE': 'WSProp'};
         var values = [];
@@ -5041,9 +5965,20 @@ export class Prop {
         return result;
     }
 
+    /**
+     *
+     * @private
+     * @param _name
+     * @param _value
+     * @param _annos
+     */
     constructor(private _name:string, private _value:any, private _annos:Array<DataAnno> = []) {
     }
 
+    /**
+     * Get the data annotations associated with this property
+     * @returns {Array<DataAnno>}
+     */
     get annos():Array<DataAnno> {
         return this._annos;
     }
@@ -5100,6 +6035,10 @@ export class Prop {
         return DataAnno.isUnderlineText(this.annos);
     }
 
+    /**
+     * Get the property name
+     * @returns {string}
+     */
     get name():string {
         return this._name;
     }
@@ -5112,6 +6051,10 @@ export class Prop {
         return DataAnno.tipText(this.annos);
     }
 
+    /**
+     * Get the property value
+     * @returns {any}
+     */
     get value():any {
         return this._value;
     }
@@ -5120,6 +6063,10 @@ export class Prop {
         this._value = value;
     }
 
+    /**
+     * @private
+     * @returns {StringDictionary}
+     */
     toWS():StringDictionary {
         var result:StringDictionary = {'WS_OTYPE': 'WSProp', 'name': this.name, 'value': Prop.toWSProperty(this.value)};
         if (this.annos) {
@@ -5372,7 +6319,7 @@ export class SessionContextImpl implements SessionContext {
     systemContext:SystemContext;
     userName:string;
 
-    static fromWSCreateSessionResult(jsonObject:{[id: string]: any},
+    static fromWSCreateSessionResult(jsonObject:{[id:string]:any},
                                      systemContext:SystemContext):Try<SessionContext> {
 
         var sessionContextTry:Try<SessionContext> = DialogTriple.fromWSDialogObject<SessionContext>(jsonObject,
@@ -5452,6 +6399,9 @@ export class SessionContextImpl implements SessionContext {
  */
 
 
+/**
+ * @private
+ */
 export class SessionService {
 
     private static SERVICE_NAME = "SessionService";
@@ -5642,6 +6592,9 @@ export class WorkbenchLaunchAction implements ActionSource {
  */
 
 
+/**
+ * @private
+ */
 export class WorkbenchService {
 
     private static SERVICE_NAME = "WorkbenchService";
@@ -5744,8 +6697,9 @@ export class Workbench implements NavRequest {
 
 
 /* XPane Classes */
+
 /**
- * *********************************
+ * @private
  */
 export class XPaneDef {
 
@@ -5784,6 +6738,9 @@ export class XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XBarcodeScanDef extends XPaneDef {
 
     constructor(public paneId:string,
@@ -5798,6 +6755,9 @@ export class XBarcodeScanDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XCalendarDef extends XPaneDef {
 
     constructor(public paneId:string,
@@ -5820,6 +6780,9 @@ export class XCalendarDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XChangePaneModeResult {
 
     constructor(public editorRecordDef:EntityRecDef,
@@ -5839,14 +6802,8 @@ export class XChangePaneModeResult {
  * *********************************
  */
 
-
-
-
-/*
- @TODO
-
- Note! Use this as a test example!
- It has an Array of Array with subitems that also have Array of Array!!
+/**
+ * @private
  */
 export class XDetailsDef extends XPaneDef {
 
@@ -5872,6 +6829,9 @@ export class XDetailsDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XFormDef extends XPaneDef {
 
     constructor(public borderStyle:string,
@@ -5890,6 +6850,9 @@ export class XFormDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XFormModelComp {
 
     constructor(public paneId:string,
@@ -5904,6 +6867,9 @@ export class XFormModelComp {
  */
 
 
+/**
+ * @private
+ */
 export class XFormModel {
 
     constructor(public form:XFormModelComp,
@@ -5944,6 +6910,9 @@ export class XFormModel {
  */
 
 
+/**
+ * @private
+ */
 export class XGeoFixDef extends XPaneDef {
 
     constructor(public paneId:string, public name:string, public title:string) {
@@ -5956,6 +6925,9 @@ export class XGeoFixDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XGeoLocationDef extends XPaneDef {
 
     constructor(public paneId:string, public name:string, public title:string) {
@@ -5968,6 +6940,9 @@ export class XGeoLocationDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XGetActiveColumnDefsResult {
 
     constructor(public columnsStyle:string, public columns:Array<ColumnDef>) {
@@ -5983,11 +6958,14 @@ export class XGetActiveColumnDefsResult {
  */
 
 
+/**
+ * @private
+ */
 export class XGetAvailableValuesResult {
 
     static fromWS(otype:string, jsonObj):Try<XGetAvailableValuesResult> {
         var listJson = jsonObj['list'];
-        if(listJson) {
+        if (listJson) {
             var valuesJson:Array<any> = listJson['values'];
             return Prop.fromListOfWSValue(valuesJson).bind((values:Array<any>)=> {
                 return new Success(new XGetAvailableValuesResult(values));
@@ -6006,6 +6984,9 @@ export class XGetAvailableValuesResult {
  */
 
 
+/**
+ * @private
+ */
 export class XGetSessionListPropertyResult {
 
     constructor(private _list:Array<string>, private _dialogProps:StringDictionary) {
@@ -6035,6 +7016,9 @@ export class XGetSessionListPropertyResult {
  */
 
 
+/**
+ * @private
+ */
 export class XGraphDef extends XPaneDef {
 
     constructor(public paneId:string,
@@ -6062,6 +7046,9 @@ export class XGraphDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XImagePickerDef extends XPaneDef {
 
     constructor(public paneId:string,
@@ -6078,6 +7065,9 @@ export class XImagePickerDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XListDef extends XPaneDef {
 
     constructor(public paneId:string,
@@ -6104,6 +7094,9 @@ export class XListDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export class XMapDef extends XPaneDef {
 
     constructor(public paneId:string,
@@ -6130,6 +7123,9 @@ export class XMapDef extends XPaneDef {
  */
 
 
+/**
+ * @private
+ */
 export interface XOpenDialogModelResult {
 
     entityRecDef:EntityRecDef;
@@ -6140,6 +7136,9 @@ export interface XOpenDialogModelResult {
  */
 
 
+/**
+ * @private
+ */
 export class XOpenEditorModelResult implements XOpenDialogModelResult {
 
     constructor(public editorRecordDef:EntityRecDef, public formModel:XFormModel) {
@@ -6163,6 +7162,9 @@ export class XOpenEditorModelResult implements XOpenDialogModelResult {
  */
 
 
+/**
+ * @private
+ */
 export class XOpenQueryModelResult implements XOpenDialogModelResult {
 
     static fromWS(otype:string, jsonObj):Try<XOpenQueryModelResult> {
@@ -6189,8 +7191,11 @@ export class XOpenQueryModelResult implements XOpenDialogModelResult {
  * *********************************
  */
 
+/**
+ * @private
+ */
 export class XPaneDefRef {
-    
+
     public static FORM_TYPE:string = 'FORM';
 
     constructor(public name:string,
@@ -6204,6 +7209,9 @@ export class XPaneDefRef {
  */
 
 
+/**
+ * @private
+ */
 export class XPropertyChangeResult {
 
     constructor(public availableValueChanges:Array<string>,
@@ -6215,7 +7223,7 @@ export class XPropertyChangeResult {
     get sideEffectsDef():EntityRecDef {
         return this.editorRecordDef;
     }
-    
+
     set sideEffectsDef(sideEffectsDef:EntityRecDef) {
         this.editorRecordDef = sideEffectsDef;
     }
@@ -6226,6 +7234,9 @@ export class XPropertyChangeResult {
  */
 
 
+/**
+ * @private
+ */
 export class XQueryResult {
 
     constructor(public entityRecs:Array<EntityRec>,
@@ -6298,6 +7309,9 @@ export class XQueryResult {
  */
 
 
+/**
+ * @private
+ */
 export class XReadResult {
 
     constructor(private _editorRecord:EntityRec,
@@ -6323,6 +7337,9 @@ export class XReadResult {
  */
 
 
+/**
+ * @private
+ */
 export class XWriteResult {
 
     constructor(private _editorRecord:EntityRec, private _editorRecordDef:EntityRecDef,
@@ -6351,11 +7368,17 @@ export class XWriteResult {
  * *********************************
  */
 
+/**
+ * @private
+ */
 export class XWritePropertyResult {
     constructor(public dialogProperties:StringDictionary) {
     }
 }
 
+/**
+ * @private
+ */
 export class XReadPropertyResult {
     constructor(public dialogProperties:StringDictionary,
                 public hasMore:boolean,
@@ -6367,6 +7390,9 @@ export class XReadPropertyResult {
 
 /*
  OType must be last as it references almost all other classes in the module
+ */
+/**
+ * @private
  */
 export class OType {
 

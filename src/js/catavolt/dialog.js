@@ -211,7 +211,19 @@ exports.TabCellValueDef = TabCellValueDef;
 /**
  * *********************************
  */
+/**
+ * Top-level (abstract) class, representing a Catavolt 'Pane' definition.
+ * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
+ * or a list of records.  See {@EntityRecord}
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 var PaneContext = (function () {
+    /**
+     *
+     * @param paneRef
+     * @private
+     */
     function PaneContext(paneRef) {
         this._lastRefreshTime = new Date(0);
         this._parentContext = null;
@@ -219,6 +231,12 @@ var PaneContext = (function () {
         this._paneRef = paneRef;
         this._binaryCache = {};
     }
+    /**
+     * Updates a settings object with the new settings from a 'Navigation'
+     * @param initialSettings
+     * @param navRequest
+     * @returns {StringDictionary}
+     */
     PaneContext.resolveSettingsFromNavRequest = function (initialSettings, navRequest) {
         var result = util_1.ObjUtil.addAllProps(initialSettings, {});
         if (navRequest instanceof FormContext) {
@@ -234,12 +252,22 @@ var PaneContext = (function () {
         return result;
     };
     Object.defineProperty(PaneContext.prototype, "actionSource", {
+        /**
+         * Get the action source for this Pane
+         * @returns {ActionSource}
+         */
         get: function () {
             return this.parentContext ? this.parentContext.actionSource : null;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Load a Binary property from a record
+     * @param propName
+     * @param entityRec
+     * @returns {any}
+     */
     PaneContext.prototype.binaryAt = function (propName, entityRec) {
         var prop = entityRec.propAtName(propName);
         if (prop) {
@@ -268,12 +296,21 @@ var PaneContext = (function () {
         }
     };
     Object.defineProperty(PaneContext.prototype, "dialogAlias", {
+        /**
+         * Get the dialog alias
+         * @returns {any}
+         */
         get: function () {
             return this.dialogRedirection.dialogProperties['dialogAlias'];
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Find a menu def on this Pane with the given actionId
+     * @param actionId
+     * @returns {MenuDef}
+     */
     PaneContext.prototype.findMenuDefAt = function (actionId) {
         var result = null;
         if (this.menuDefs) {
@@ -284,13 +321,30 @@ var PaneContext = (function () {
         }
         return result;
     };
+    /**
+     * Get a string representation of this property suitable for 'reading'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
     PaneContext.prototype.formatForRead = function (propValue, propName) {
         return PropFormatter.formatForRead(propValue, this.propDefAtName(propName));
     };
+    /**
+     * Get a string representation of this property suitable for 'writing'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
     PaneContext.prototype.formatForWrite = function (propValue, propName) {
         return PropFormatter.formatForWrite(propValue, this.propDefAtName(propName));
     };
     Object.defineProperty(PaneContext.prototype, "formDef", {
+        /**
+         * Get the underlying form definition {@link FormDef} for this Pane.
+         * If this is not a {@link FormContext} this will be the {@link FormDef} of the owning/parent Form
+         * @returns {FormDef}
+         */
         get: function () {
             return this.parentContext.formDef;
         },
@@ -298,6 +352,10 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "isRefreshNeeded", {
+        /**
+         * Returns whether or not the data in this pane is out of date
+         * @returns {boolean}
+         */
         get: function () {
             return this._lastRefreshTime.getTime() < AppContext.singleton.lastMaintenanceTime.getTime();
         },
@@ -305,9 +363,16 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "lastRefreshTime", {
+        /**
+         * Get the last time this pane's data was refreshed
+         * @returns {Date}
+         */
         get: function () {
             return this._lastRefreshTime;
         },
+        /**
+         * @param time
+         */
         set: function (time) {
             this._lastRefreshTime = time;
         },
@@ -315,6 +380,10 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "menuDefs", {
+        /**
+         * Get the all {@link MenuDef}'s associated with this Pane
+         * @returns {Array<MenuDef>}
+         */
         get: function () {
             return this.paneDef.menuDefs;
         },
@@ -322,6 +391,10 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "offlineCapable", {
+        /**
+         * @private
+         * @returns {FormContext|boolean}
+         */
         get: function () {
             return this._parentContext && this._parentContext.offlineCapable;
         },
@@ -329,6 +402,10 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "paneDef", {
+        /**
+         * Get the underlying @{link PaneDef} associated with this Context
+         * @returns {PaneDef}
+         */
         get: function () {
             if (this.paneRef == null) {
                 return this.formDef.headerDef;
@@ -341,6 +418,11 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "paneRef", {
+        /**
+         * Get the numeric value, representing this Pane's place in the parent {@link FormContext}'s list of child panes.
+         * See {@link FormContext.childrenContexts}
+         * @returns {number}
+         */
         get: function () {
             return this._paneRef;
         },
@@ -351,6 +433,10 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "paneTitle", {
+        /**
+         * Get the title of this Pane
+         * @returns {string}
+         */
         get: function () {
             return this.paneDef.findTitle();
         },
@@ -358,6 +444,10 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "parentContext", {
+        /**
+         * Get the parent {@link FormContext}
+         * @returns {FormContext}
+         */
         get: function () {
             return this._parentContext;
         },
@@ -368,13 +458,28 @@ var PaneContext = (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Parses a value to prepare for 'writing' back to the server
+     * @param formattedValue
+     * @param propName
+     * @returns {any}
+     */
     PaneContext.prototype.parseValue = function (formattedValue, propName) {
         return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
     };
+    /**
+     * Get the propery definition for a property name
+     * @param propName
+     * @returns {PropDef}
+     */
     PaneContext.prototype.propDefAtName = function (propName) {
         return this.entityRecDef.propDefAtName(propName);
     };
     Object.defineProperty(PaneContext.prototype, "sessionContext", {
+        /**
+         * Get the session information
+         * @returns {SessionContext}
+         */
         get: function () {
             return this.parentContext.sessionContext;
         },
@@ -382,8 +487,10 @@ var PaneContext = (function () {
         configurable: true
     });
     Object.defineProperty(PaneContext.prototype, "dialogRedirection", {
-        /** --------------------- MODULE ------------------------------*/
-        //*** let's pretend this has module level visibility
+        /**
+         * Get the {@link DialogRedirection} with which this Pane was constructed
+         * @returns {DialogRedirection}
+         */
         get: function () {
             return this.paneDef.dialogRedirection;
         },
@@ -391,7 +498,13 @@ var PaneContext = (function () {
         configurable: true
     });
     //abstract
-    PaneContext.prototype.initialize = function () { };
+    PaneContext.prototype.initialize = function () {
+    };
+    /**
+     * Read all the Binary values in this {@link EntityRec}
+     * @param entityRec
+     * @returns {Future<Array<Try<Binary>>>}
+     */
     PaneContext.prototype.readBinaries = function (entityRec) {
         var _this = this;
         return fp_1.Future.sequence(this.entityRecDef.propDefs.filter(function (propDef) {
@@ -400,8 +513,11 @@ var PaneContext = (function () {
             return _this.readBinary(propDef.name, entityRec);
         }));
     };
-    //abstract
-    PaneContext.prototype.readBinary = function (propName, entityRec) { return null; };
+    /**
+     * Write all Binary values in this {@link EntityRecord} back to the server
+     * @param entityRec
+     * @returns {Future<Array<Try<XWritePropertyResult>>>}
+     */
     PaneContext.prototype.writeBinaries = function (entityRec) {
         var _this = this;
         return fp_1.Future.sequence(entityRec.props.filter(function (prop) {
@@ -424,6 +540,11 @@ var PaneContext = (function () {
             return writeFuture;
         }));
     };
+    //protected
+    //abstract
+    PaneContext.prototype.readBinary = function (propName, entityRec) {
+        return null;
+    };
     PaneContext.ANNO_NAME_KEY = "com.catavolt.annoName";
     PaneContext.PROP_NAME_KEY = "com.catavolt.propName";
     PaneContext.CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
@@ -434,12 +555,27 @@ exports.PaneContext = PaneContext;
 /**
  * *********************************
  */
+/**
+ * PanContext Subtype that represents an 'Editor Pane'.
+ * An 'Editor' represents and is backed by a single Record and Record definition.
+ * See {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 var EditorContext = (function (_super) {
     __extends(EditorContext, _super);
+    /**
+     * @private
+     * @param paneRef
+     */
     function EditorContext(paneRef) {
         _super.call(this, paneRef);
     }
     Object.defineProperty(EditorContext.prototype, "buffer", {
+        /**
+         * Get the current buffered record
+         * @returns {EntityBuffer}
+         */
         get: function () {
             if (!this._buffer) {
                 this._buffer = new EntityBuffer(NullEntityRec.singleton);
@@ -449,6 +585,11 @@ var EditorContext = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Toggle the current mode of this Editor
+     * @param paneMode
+     * @returns {Future<EntityRecDef>}
+     */
     EditorContext.prototype.changePaneMode = function (paneMode) {
         var _this = this;
         return DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode, this.sessionContext).bind(function (changePaneModeResult) {
@@ -469,6 +610,10 @@ var EditorContext = (function (_super) {
         });
     };
     Object.defineProperty(EditorContext.prototype, "entityRec", {
+        /**
+         * Get the associated entity record
+         * @returns {EntityRec}
+         */
         get: function () {
             return this._buffer.toEntityRec();
         },
@@ -476,6 +621,10 @@ var EditorContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(EditorContext.prototype, "entityRecNow", {
+        /**
+         * Get the current version of the entity record, with any pending changes present
+         * @returns {EntityRec}
+         */
         get: function () {
             return this.entityRec;
         },
@@ -483,6 +632,10 @@ var EditorContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(EditorContext.prototype, "entityRecDef", {
+        /**
+         * Get the associated entity record definition
+         * @returns {EntityRecDef}
+         */
         get: function () {
             return this._entityRecDef;
         },
@@ -492,16 +645,30 @@ var EditorContext = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Get the possible values for a 'constrained value' property
+     * @param propName
+     * @returns {Future<Array<any>>}
+     */
     EditorContext.prototype.getAvailableValues = function (propName) {
         return DialogService.getAvailableValues(this.paneDef.dialogHandle, propName, this.buffer.afterEffects(), this.sessionContext).map(function (valuesResult) {
             return valuesResult.list;
         });
     };
+    /**
+     * Returns whether or not this cell definition contains a binary value
+     * @param cellValueDef
+     * @returns {PropDef|boolean}
+     */
     EditorContext.prototype.isBinary = function (cellValueDef) {
         var propDef = this.propDefAtName(cellValueDef.propertyName);
         return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValueDef.isInlineMediaStyle));
     };
     Object.defineProperty(EditorContext.prototype, "isDestroyed", {
+        /**
+         * Returns whether or not this Editor Pane is destroyed
+         * @returns {boolean}
+         */
         get: function () {
             return this._editorState === EditorState.DESTROYED;
         },
@@ -509,12 +676,21 @@ var EditorContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(EditorContext.prototype, "isReadMode", {
+        /**
+         * Returns whether or not this Editor is in 'read' mode
+         * @returns {boolean}
+         */
         get: function () {
             return this._editorState === EditorState.READ;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Returns whether or not this property is read-only
+     * @param propName
+     * @returns {boolean}
+     */
     EditorContext.prototype.isReadModeFor = function (propName) {
         if (!this.isReadMode) {
             var propDef = this.propDefAtName(propName);
@@ -523,12 +699,24 @@ var EditorContext = (function (_super) {
         return true;
     };
     Object.defineProperty(EditorContext.prototype, "isWriteMode", {
+        /**
+         * Returns whether or not this property is 'writable'
+         * @returns {boolean}
+         */
         get: function () {
             return this._editorState === EditorState.WRITE;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Perform the action associated with the given MenuDef on this EditorPane.
+     * Given that the Editor could possibly be destroyed as a result of this action,
+     * any provided pending writes will be saved if present.
+     * @param menuDef
+     * @param pendingWrites
+     * @returns {Future<NavRequest>}
+     */
     EditorContext.prototype.performMenuAction = function (menuDef, pendingWrites) {
         var _this = this;
         return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId, pendingWrites, this.sessionContext).bind(function (redirection) {
@@ -545,6 +733,15 @@ var EditorContext = (function (_super) {
             });
         });
     };
+    /**
+     * Properties whose {@link PropDef.canCauseSideEffects} value is true, may change other underlying values in the model.
+     * This method will update those underlying values, given the property name that is changing, and the new value.
+     * This is frequently used with {@link EditorContext.getAvailableValues}.  When a value is seleted, other properties
+     * available values may change. (i.e. Country, State, City dropdowns)
+     * @param propertyName
+     * @param value
+     * @returns {Future<null>}
+     */
     EditorContext.prototype.processSideEffects = function (propertyName, value) {
         var _this = this;
         var sideEffectsFr = DialogService.processSideEffects(this.paneDef.dialogHandle, this.sessionContext, propertyName, value, this.buffer.afterEffects()).map(function (changeResult) {
@@ -561,6 +758,11 @@ var EditorContext = (function (_super) {
             return null;
         });
     };
+    /**
+     * Read (load) the {@link EntityRec} assocated with this Editor
+     * The record must be read at least once to initialize the Context
+     * @returns {Future<EntityRec>}
+     */
     EditorContext.prototype.read = function () {
         var _this = this;
         return DialogService.readEditorModel(this.paneDef.dialogHandle, this.sessionContext).map(function (readResult) {
@@ -572,29 +774,30 @@ var EditorContext = (function (_super) {
             return entityRec;
         });
     };
-    EditorContext.prototype.readBinary = function (propName, entityRec) {
-        var _this = this;
-        var seq = 0;
-        var buffer = '';
-        var f = function (result) {
-            buffer += result.data;
-            if (result.hasMore) {
-                return DialogService.readEditorProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
-            }
-            else {
-                return fp_1.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
-            }
-        };
-        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-    };
+    /**
+     * Get the requested GPS accuracy
+     * @returns {Number}
+     */
     EditorContext.prototype.requestedAccuracy = function () {
         var accuracyStr = this.paneDef.settings[EditorContext.GPS_ACCURACY];
         return accuracyStr ? Number(accuracyStr) : 500;
     };
+    /**
+     * Get the requested GPS timeout in seconds
+     * @returns {Number}
+     */
     EditorContext.prototype.requestedTimeoutSeconds = function () {
         var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
         return timeoutStr ? Number(timeoutStr) : 30;
     };
+    /**
+     * Set the value of a property in this {@link EntityRecord}.
+     * Values may be already constructed target types (CodeRef, TimeValue, Date, etc.)
+     * or primitives, in which case the values will be parsed and objects constructed as necessary.
+     * @param name
+     * @param value
+     * @returns {any}
+     */
     EditorContext.prototype.setPropValue = function (name, value) {
         var propDef = this.propDefAtName(name);
         var parsedValue = null;
@@ -604,10 +807,22 @@ var EditorContext = (function (_super) {
         }
         return parsedValue;
     };
+    /**
+     * Set a binary property from a string formatted as a 'data url'
+     * See {@link https://en.wikipedia.org/wiki/Data_URI_scheme}
+     * @param name
+     * @param dataUrl
+     */
     EditorContext.prototype.setBinaryPropWithDataUrl = function (name, dataUrl) {
         var urlObj = new util_1.DataUrl(dataUrl);
         this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
     };
+    /**
+     * Set a binary property with base64 encoded data
+     * @param name
+     * @param encodedData
+     * @param mimeType
+     */
     EditorContext.prototype.setBinaryPropWithEncodedData = function (name, encodedData, mimeType) {
         var propDef = this.propDefAtName(name);
         if (propDef) {
@@ -615,6 +830,10 @@ var EditorContext = (function (_super) {
             this.buffer.setValue(propDef.name, value);
         }
     };
+    /**
+     * Write this record (i.e. {@link EntityRec}} back to the server
+     * @returns {Future<Either<NavRequest, EntityRec>>}
+     */
     EditorContext.prototype.write = function () {
         var _this = this;
         var deltaRec = this.buffer.afterEffects();
@@ -656,18 +875,41 @@ var EditorContext = (function (_super) {
         });
     };
     //Module level methods
+    /**
+     * @private
+     */
     EditorContext.prototype.initialize = function () {
         this._entityRecDef = this.paneDef.entityRecDef;
         this._settings = util_1.ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
         this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
     };
     Object.defineProperty(EditorContext.prototype, "settings", {
+        /**
+         * Get this Editor Pane's settings
+         * @returns {StringDictionary}
+         */
         get: function () {
             return this._settings;
         },
         enumerable: true,
         configurable: true
     });
+    //protected 
+    EditorContext.prototype.readBinary = function (propName, entityRec) {
+        var _this = this;
+        var seq = 0;
+        var buffer = '';
+        var f = function (result) {
+            buffer += result.data;
+            if (result.hasMore) {
+                return DialogService.readEditorProperty(_this.paneDef.dialogRedirection.dialogHandle, propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, _this.sessionContext).bind(f);
+            }
+            else {
+                return fp_1.Future.createSuccessfulFuture('readProperty', new EncodedBinary(buffer));
+            }
+        };
+        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+    };
     //Private methods
     EditorContext.prototype.initBuffer = function (entityRec) {
         this._buffer = entityRec ? new EntityBuffer(entityRec) : new EntityBuffer(NullEntityRec.singleton);
@@ -732,8 +974,26 @@ exports.EditorContext = EditorContext;
 /**
  * *********************************
  */
+/**
+ * PaneContext Subtype that represents a Catavolt Form Definition
+ * A form is a 'container' composed of child panes of various concrete types.
+ * A FormContext parallels this design, and contains a list of 'child' contexts
+ * See also {@link FormDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 var FormContext = (function (_super) {
     __extends(FormContext, _super);
+    /**
+     * @private
+     * @param _dialogRedirection
+     * @param _actionSource
+     * @param _formDef
+     * @param _childrenContexts
+     * @param _offlineCapable
+     * @param _offlineData
+     * @param _sessionContext
+     */
     function FormContext(_dialogRedirection, _actionSource, _formDef, _childrenContexts, _offlineCapable, _offlineData, _sessionContext) {
         var _this = this;
         _super.call(this, null);
@@ -752,6 +1012,10 @@ var FormContext = (function (_super) {
         });
     }
     Object.defineProperty(FormContext.prototype, "actionSource", {
+        /**
+         * Get the action source for this Pane
+         * @returns {ActionSource}
+         */
         get: function () {
             return this.parentContext ? this.parentContext.actionSource : this._actionSource;
         },
@@ -759,16 +1023,28 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "childrenContexts", {
+        /**
+         * Get the list of child contexts that 'compose' this Form
+         * @returns {Array<PaneContext>}
+         */
         get: function () {
             return this._childrenContexts;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Close this form
+     * @returns {Future<VoidResult>}
+     */
     FormContext.prototype.close = function () {
         return DialogService.closeEditorModel(this.dialogRedirection.dialogHandle, this.sessionContext);
     };
     Object.defineProperty(FormContext.prototype, "dialogRedirection", {
+        /**
+         * Get the {@link DialogRedirection} with which this Pane was constructed
+         * @returns {DialogRedirection}
+         */
         get: function () {
             return this._dialogRedirection;
         },
@@ -776,6 +1052,10 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "entityRecDef", {
+        /**
+         * Get the entity record definition
+         * @returns {EntityRecDef}
+         */
         get: function () {
             return this.formDef.entityRecDef;
         },
@@ -783,6 +1063,10 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "formDef", {
+        /**
+         * Get the underlying Form definition for this FormContext
+         * @returns {FormDef}
+         */
         get: function () {
             return this._formDef;
         },
@@ -790,12 +1074,20 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "headerContext", {
+        /**
+         * @private
+         */
         get: function () {
             throw new Error('FormContext::headerContext: Needs Impl');
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Perform the action associated with the given MenuDef on this Form
+     * @param menuDef
+     * @returns {Future<NavRequest>}
+     */
     FormContext.prototype.performMenuAction = function (menuDef) {
         var _this = this;
         return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId, NullEntityRec.singleton, this.sessionContext).bind(function (value) {
@@ -808,6 +1100,10 @@ var FormContext = (function (_super) {
         });
     };
     Object.defineProperty(FormContext.prototype, "isDestroyed", {
+        /**
+         * Returns whether or not this Form is destroyed
+         * @returns {boolean}
+         */
         get: function () {
             return this._destroyed || this.isAnyChildDestroyed;
         },
@@ -815,6 +1111,10 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "offlineCapable", {
+        /**
+         * @private
+         * @returns {boolean}
+         */
         get: function () {
             return this._offlineCapable;
         },
@@ -822,6 +1122,10 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "menuDefs", {
+        /**
+         * Get the all {@link MenuDef}'s associated with this Pane
+         * @returns {Array<MenuDef>}
+         */
         get: function () {
             return this.formDef.menuDefs;
         },
@@ -829,6 +1133,10 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "offlineProps", {
+        /**
+         * @private
+         * @returns {StringDictionary}
+         */
         get: function () {
             return this._offlineProps;
         },
@@ -836,6 +1144,10 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "paneDef", {
+        /**
+         * Get the underlying form definition associated with this FormContext
+         * @returns {FormDef}
+         */
         get: function () {
             return this.formDef;
         },
@@ -843,6 +1155,10 @@ var FormContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(FormContext.prototype, "sessionContext", {
+        /**
+         * Get the current session information
+         * @returns {SessionContext}
+         */
         get: function () {
             return this._sessionContext;
         },
@@ -852,6 +1168,10 @@ var FormContext = (function (_super) {
     Object.defineProperty(FormContext.prototype, "isAnyChildDestroyed", {
         /** --------------------- MODULE ------------------------------*/
         //*** let's pretend this has module level visibility (no such thing (yet!))
+        /**
+         * @private
+         * @returns {boolean}
+         */
         get: function () {
             return this.childrenContexts.some(function (paneContext) {
                 if (paneContext instanceof EditorContext || paneContext instanceof QueryContext) {
@@ -863,6 +1183,10 @@ var FormContext = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * @private
+     * @param navRequest
+     */
     FormContext.prototype.processNavRequestForDestroyed = function (navRequest) {
         var fromDialogProps = {};
         if (navRequest instanceof FormContext) {
@@ -886,18 +1210,37 @@ exports.FormContext = FormContext;
 /**
  * *********************************
  */
+/**
+ * Enum to manage query states
+ */
 var QueryState;
 (function (QueryState) {
     QueryState[QueryState["ACTIVE"] = 0] = "ACTIVE";
     QueryState[QueryState["DESTROYED"] = 1] = "DESTROYED";
 })(QueryState || (QueryState = {}));
+/**
+ * Enum specifying query direction
+ */
 (function (QueryDirection) {
     QueryDirection[QueryDirection["FORWARD"] = 0] = "FORWARD";
     QueryDirection[QueryDirection["BACKWARD"] = 1] = "BACKWARD";
 })(exports.QueryDirection || (exports.QueryDirection = {}));
 var QueryDirection = exports.QueryDirection;
+/**
+ * PaneContext Subtype that represents a 'Query Pane'.
+ * A 'Query' represents and is backed by a list of Records and a single Record definition.
+ * See {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
 var QueryContext = (function (_super) {
     __extends(QueryContext, _super);
+    /**
+     * @private
+     * @param paneRef
+     * @param _offlineRecs
+     * @param _settings
+     */
     function QueryContext(paneRef, _offlineRecs, _settings) {
         if (_offlineRecs === void 0) { _offlineRecs = []; }
         if (_settings === void 0) { _settings = {}; }
@@ -906,17 +1249,30 @@ var QueryContext = (function (_super) {
         this._settings = _settings;
     }
     Object.defineProperty(QueryContext.prototype, "entityRecDef", {
+        /**
+         * Get the entity record definition
+         * @returns {EntityRecDef}
+         */
         get: function () {
             return this.paneDef.entityRecDef;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Returns whether or not a column is of a binary type
+     * @param columnDef
+     * @returns {PropDef|boolean}
+     */
     QueryContext.prototype.isBinary = function (columnDef) {
         var propDef = this.propDefAtName(columnDef.name);
         return propDef && (propDef.isBinaryType || (propDef.isURLType && columnDef.isInlineMediaStyle));
     };
     Object.defineProperty(QueryContext.prototype, "isDestroyed", {
+        /**
+         * Returns whether or not this Query Pane is destroyed
+         * @returns {boolean}
+         */
         get: function () {
             return this._queryState === QueryState.DESTROYED;
         },
@@ -924,6 +1280,10 @@ var QueryContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(QueryContext.prototype, "lastQueryFr", {
+        /**
+         * Get the last query result as a {@link Future}
+         * @returns {Future<QueryResult>}
+         */
         get: function () {
             return this._lastQueryFr;
         },
@@ -931,6 +1291,10 @@ var QueryContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(QueryContext.prototype, "offlineRecs", {
+        /**
+         * @private
+         * @returns {Array<EntityRec>}
+         */
         get: function () {
             return this._offlineRecs;
         },
@@ -941,12 +1305,23 @@ var QueryContext = (function (_super) {
         configurable: true
     });
     Object.defineProperty(QueryContext.prototype, "paneMode", {
+        /**
+         * Get the pane mode
+         * @returns {string}
+         */
         get: function () {
             return this._settings['paneMode'];
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Perform this action associated with the given MenuDef on this Pane.
+     * The targets array is expected to be an array of object ids.
+     * @param menuDef
+     * @param targets
+     * @returns {Future<NavRequest>}
+     */
     QueryContext.prototype.performMenuAction = function (menuDef, targets) {
         var _this = this;
         return DialogService.performQueryAction(this.paneDef.dialogHandle, menuDef.actionId, targets, this.sessionContext).bind(function (redirection) {
@@ -961,6 +1336,15 @@ var QueryContext = (function (_super) {
             return navRequest;
         });
     };
+    /**
+     * Perform a query
+     * Note: {@link QueryScroller} is the preferred way to perform a query.
+     * see {@link QueryContext.newScroller} and {@link QueryContext.setScroller}
+     * @param maxRows
+     * @param direction
+     * @param fromObjectId
+     * @returns {Future<QueryResult>}
+     */
     QueryContext.prototype.query = function (maxRows, direction, fromObjectId) {
         var _this = this;
         return DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows, fromObjectId, this.sessionContext).bind(function (value) {
@@ -971,6 +1355,53 @@ var QueryContext = (function (_super) {
             return fp_1.Future.createSuccessfulFuture('QueryContext::query', result);
         });
     };
+    /**
+     * Clear the QueryScroller's buffer and perform this query
+     * @returns {Future<Array<EntityRec>>}
+     */
+    QueryContext.prototype.refresh = function () {
+        return this._scroller.refresh();
+    };
+    Object.defineProperty(QueryContext.prototype, "scroller", {
+        /**
+         * Get the associated QueryScroller
+         * @returns {QueryScroller}
+         */
+        get: function () {
+            if (!this._scroller) {
+                this._scroller = this.newScroller();
+            }
+            return this._scroller;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Creates a new QueryScroller with the given values
+     * @param pageSize
+     * @param firstObjectId
+     * @param markerOptions
+     * @returns {QueryScroller}
+     */
+    QueryContext.prototype.setScroller = function (pageSize, firstObjectId, markerOptions) {
+        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
+        return this._scroller;
+    };
+    /**
+     * Creates a new QueryScroller with default buffer size of 50
+     * @returns {QueryScroller}
+     */
+    QueryContext.prototype.newScroller = function () {
+        return this.setScroller(50, null, [QueryMarkerOption.None]);
+    };
+    /**
+     * Get the settings associated with this Query
+     * @returns {StringDictionary}
+     */
+    QueryContext.prototype.settings = function () {
+        return this._settings;
+    };
+    //protected 
     QueryContext.prototype.readBinary = function (propName, entityRec) {
         var _this = this;
         var seq = 0;
@@ -985,30 +1416,6 @@ var QueryContext = (function (_super) {
             }
         };
         return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle, propName, entityRec.objectId, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-    };
-    QueryContext.prototype.refresh = function () {
-        return this._scroller.refresh();
-    };
-    Object.defineProperty(QueryContext.prototype, "scroller", {
-        get: function () {
-            if (!this._scroller) {
-                this._scroller = this.newScroller();
-            }
-            return this._scroller;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    QueryContext.prototype.setScroller = function (pageSize, firstObjectId, markerOptions) {
-        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
-        return this._scroller;
-    };
-    //module level methods
-    QueryContext.prototype.newScroller = function () {
-        return this.setScroller(50, null, [QueryMarkerOption.None]);
-    };
-    QueryContext.prototype.settings = function () {
-        return this._settings;
     };
     Object.defineProperty(QueryContext.prototype, "isDestroyedSetting", {
         get: function () {
@@ -1045,7 +1452,12 @@ var QueryContext = (function (_super) {
 }(PaneContext));
 exports.QueryContext = QueryContext;
 /**
- * *********************************
+ * EditorContext Subtype that represents a 'BarcodeScan Pane'.
+ * A Barcode Scan is an Editor Pane with the purpose of displaying property values for a single record that
+ * represents barcode information.
+ * See {@link GeoLocationDef}, {@link EntityRec} and {@link EntityRecDef}
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}.
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 var BarcodeScanContext = (function (_super) {
     __extends(BarcodeScanContext, _super);
@@ -1063,7 +1475,12 @@ var BarcodeScanContext = (function (_super) {
 }(EditorContext));
 exports.BarcodeScanContext = BarcodeScanContext;
 /**
- * *********************************
+ * EditorContext Subtype that represents a 'Details Pane'.
+ * A Details Pane is an Editor Pane with the purpose of displaying property values for a single record,
+ * usually as names/values in a tabular arrangement.
+ * See {@link DetailsDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 var DetailsContext = (function (_super) {
     __extends(DetailsContext, _super);
@@ -1088,7 +1505,12 @@ var DetailsContext = (function (_super) {
 }(EditorContext));
 exports.DetailsContext = DetailsContext;
 /**
- * *********************************
+ * EditorContext Subtype that represents a 'GeoFix Pane'.
+ * A GeoFix Pane is an Editor Pane with the purpose of displaying property values for a single record that
+ * represents a GPS location
+ * See {@link GeoFixDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 var GeoFixContext = (function (_super) {
     __extends(GeoFixContext, _super);
@@ -1106,7 +1528,12 @@ var GeoFixContext = (function (_super) {
 }(EditorContext));
 exports.GeoFixContext = GeoFixContext;
 /**
- * *********************************
+ * EditorContext Subtype that represents a 'GeoLocation Pane'.
+ * A GeoLocation Pane is an Editor Pane with the purpose of displaying property values for a single record that
+ * represents a GPS location
+ * See {@link GeoLocationDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 var GeoLocationContext = (function (_super) {
     __extends(GeoLocationContext, _super);
@@ -1124,7 +1551,12 @@ var GeoLocationContext = (function (_super) {
 }(EditorContext));
 exports.GeoLocationContext = GeoLocationContext;
 /**
- * *********************************
+ * QueryContext Subtype that represents a 'Calendar Pane'.
+ * A 'Calendar' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying Calendar related information.
+ * See {@link CalendarDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 var CalendarContext = (function (_super) {
     __extends(CalendarContext, _super);
@@ -1142,7 +1574,12 @@ var CalendarContext = (function (_super) {
 }(QueryContext));
 exports.CalendarContext = CalendarContext;
 /**
- * *********************************
+ * QueryContext Subtype that represents a 'Graph Pane'.
+ * A 'Graph' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying graphs and charts.
+ * See {@link GraphDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 var GraphContext = (function (_super) {
     __extends(GraphContext, _super);
@@ -1160,8 +1597,13 @@ var GraphContext = (function (_super) {
 }(QueryContext));
 exports.GraphContext = GraphContext;
 /**
- * *********************************
- */
+* QueryContext Subtype that represents an 'Image Picker Pane'.
+* An 'Image Picker' is a type of query backed by a list of Records and a single Record definition, with the
+* purpose of displaying an Image Picker component.
+* See {@link ImagePickerDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+*/
 var ImagePickerContext = (function (_super) {
     __extends(ImagePickerContext, _super);
     function ImagePickerContext(paneRef) {
@@ -1178,7 +1620,12 @@ var ImagePickerContext = (function (_super) {
 }(QueryContext));
 exports.ImagePickerContext = ImagePickerContext;
 /**
- * *********************************
+ * QueryContext Subtype that represents a 'List Pane'.
+ * An 'List' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying a tabular list of records.
+ * See {@link ListDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 var ListContext = (function (_super) {
     __extends(ListContext, _super);
@@ -1219,7 +1666,12 @@ var ListContext = (function (_super) {
 }(QueryContext));
 exports.ListContext = ListContext;
 /**
- * *********************************
+ * QueryContext Subtype that represents a 'Map Pane'.
+ * A 'Map' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying an annotated map with location markers.
+ * See {@link MapDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 var MapContext = (function (_super) {
     __extends(MapContext, _super);
@@ -1237,9 +1689,23 @@ var MapContext = (function (_super) {
 }(QueryContext));
 exports.MapContext = MapContext;
 /**
- * *********************************
+ * A PaneDef represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
+ * that is responsible for displaying a data record or records. The Pane describes 'how' and 'where' the data will be
+ * displayed, as well as surrounding 'meta' data (i.e. the Pane title, the Pane's menus).  The Pane itself does not contain
+ * the record or records to be displayed, but may be combined with a {@link EntityRecord}(s) to display the data.
  */
 var PaneDef = (function () {
+    /**
+     * @private
+     * @param _paneId
+     * @param _name
+     * @param _label
+     * @param _title
+     * @param _menuDefs
+     * @param _entityRecDef
+     * @param _dialogRedirection
+     * @param _settings
+     */
     function PaneDef(_paneId, _name, _label, _title, _menuDefs, _entityRecDef, _dialogRedirection, _settings) {
         this._paneId = _paneId;
         this._name = _name;
@@ -1250,6 +1716,16 @@ var PaneDef = (function () {
         this._dialogRedirection = _dialogRedirection;
         this._settings = _settings;
     }
+    /**
+     * @private
+     * @param childXOpenResult
+     * @param childXComp
+     * @param childXPaneDefRef
+     * @param childXPaneDef
+     * @param childXActiveColDefs
+     * @param childMenuDefs
+     * @returns {any}
+     */
     PaneDef.fromOpenPaneResult = function (childXOpenResult, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs) {
         var settings = {};
         util_1.ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
@@ -1305,6 +1781,10 @@ var PaneDef = (function () {
         return new fp_1.Success(newPaneDef);
     };
     Object.defineProperty(PaneDef.prototype, "dialogHandle", {
+        /**
+         * Get the {@link DialogHandle} associated with this PaneDef
+         * @returns {DialogHandle}
+         */
         get: function () {
             return this._dialogRedirection.dialogHandle;
         },
@@ -1312,6 +1792,10 @@ var PaneDef = (function () {
         configurable: true
     });
     Object.defineProperty(PaneDef.prototype, "dialogRedirection", {
+        /**
+         * Get the {@link DialogRedirection} with which this Pane was constructed
+         * @returns {DialogRedirection}
+         */
         get: function () {
             return this._dialogRedirection;
         },
@@ -1319,12 +1803,20 @@ var PaneDef = (function () {
         configurable: true
     });
     Object.defineProperty(PaneDef.prototype, "entityRecDef", {
+        /**
+         * Get the entity record definition
+         * @returns {EntityRecDef}
+         */
         get: function () {
             return this._entityRecDef;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Find the title for this Pane
+     * @returns {string}
+     */
     PaneDef.prototype.findTitle = function () {
         var result = this._title ? this._title.trim() : '';
         result = result === 'null' ? '' : result;
@@ -1335,6 +1827,10 @@ var PaneDef = (function () {
         return result;
     };
     Object.defineProperty(PaneDef.prototype, "label", {
+        /**
+         * Get the label for this Pane
+         * @returns {string}
+         */
         get: function () {
             return this._label;
         },
@@ -1342,6 +1838,10 @@ var PaneDef = (function () {
         configurable: true
     });
     Object.defineProperty(PaneDef.prototype, "menuDefs", {
+        /**
+         * Get the all {@link MenuDef}'s associated with this Pane
+         * @returns {Array<MenuDef>}
+         */
         get: function () {
             return this._menuDefs;
         },
@@ -1380,10 +1880,21 @@ var PaneDef = (function () {
 }());
 exports.PaneDef = PaneDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a Barcode Pane
  */
 var BarcodeScanDef = (function (_super) {
     __extends(BarcodeScanDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
     function BarcodeScanDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
@@ -1391,10 +1902,30 @@ var BarcodeScanDef = (function (_super) {
 }(PaneDef));
 exports.BarcodeScanDef = BarcodeScanDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a Calendar Pane
  */
 var CalendarDef = (function (_super) {
     __extends(CalendarDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _descriptionPropName
+     * @param _initialStyle
+     * @param _startDatePropName
+     * @param _startTimePropName
+     * @param _endDatePropName
+     * @param _endTimePropName
+     * @param _occurDatePropName
+     * @param _occurTimePropName
+     * @param _defaultActionId
+     */
     function CalendarDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _descriptionPropName, _initialStyle, _startDatePropName, _startTimePropName, _endDatePropName, _endTimePropName, _occurDatePropName, _occurTimePropName, _defaultActionId) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._descriptionPropName = _descriptionPropName;
@@ -1474,10 +2005,27 @@ var CalendarDef = (function (_super) {
 }(PaneDef));
 exports.CalendarDef = CalendarDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a Details Pane
  */
 var DetailsDef = (function (_super) {
     __extends(DetailsDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _cancelButtonText
+     * @param _commitButtonText
+     * @param _editable
+     * @param _focusPropName
+     * @param _graphicalMarkup
+     * @param _rows
+     */
     function DetailsDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _cancelButtonText, _commitButtonText, _editable, _focusPropName, _graphicalMarkup, _rows) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._cancelButtonText = _cancelButtonText;
@@ -1533,10 +2081,26 @@ var DetailsDef = (function (_super) {
 }(PaneDef));
 exports.DetailsDef = DetailsDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a Form Pane
  */
 var FormDef = (function (_super) {
     __extends(FormDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _formLayout
+     * @param _formStyle
+     * @param _borderStyle
+     * @param _headerDef
+     * @param _childrenDefs
+     */
     function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._formLayout = _formLayout;
@@ -1545,6 +2109,17 @@ var FormDef = (function (_super) {
         this._headerDef = _headerDef;
         this._childrenDefs = _childrenDefs;
     }
+    /**
+     * @private
+     * @param formXOpenResult
+     * @param formXFormDef
+     * @param formMenuDefs
+     * @param childrenXOpens
+     * @param childrenXPaneDefs
+     * @param childrenXActiveColDefs
+     * @param childrenMenuDefs
+     * @returns {any}
+     */
     FormDef.fromOpenFormResult = function (formXOpenResult, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs) {
         var settings = { 'open': true };
         util_1.ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
@@ -1697,10 +2272,21 @@ var FormDef = (function (_super) {
 }(PaneDef));
 exports.FormDef = FormDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a GeoFix Pane
  */
 var GeoFixDef = (function (_super) {
     __extends(GeoFixDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
     function GeoFixDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
@@ -1710,8 +2296,22 @@ exports.GeoFixDef = GeoFixDef;
 /**
  * *********************************
  */
+/**
+ * PaneDef Subtype that describes a GeoLocation Pane
+ */
 var GeoLocationDef = (function (_super) {
     __extends(GeoLocationDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
     function GeoLocationDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
@@ -1719,10 +2319,35 @@ var GeoLocationDef = (function (_super) {
 }(PaneDef));
 exports.GeoLocationDef = GeoLocationDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a Graph Pane
  */
 var GraphDef = (function (_super) {
     __extends(GraphDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _defaultActionId
+     * @param _graphType
+     * @param _displayQuadrantLines
+     * @param _identityDataPointDef
+     * @param _groupingDataPointDef
+     * @param _dataPointDefs
+     * @param _filterDataPointDefs
+     * @param _sampleModel
+     * @param _xAxisLabel
+     * @param _xAxisRangeFrom
+     * @param _xAxisRangeTo
+     * @param _yAxisLabel
+     * @param _yAxisRangeFrom
+     * @param _yAxisRangeTo
+     */
     function GraphDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _defaultActionId, _graphType, _displayQuadrantLines, _identityDataPointDef, _groupingDataPointDef, _dataPointDefs, _filterDataPointDefs, _sampleModel, _xAxisLabel, _xAxisRangeFrom, _xAxisRangeTo, _yAxisLabel, _yAxisRangeFrom, _yAxisRangeTo) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._defaultActionId = _defaultActionId;
@@ -1849,10 +2474,23 @@ var GraphDef = (function (_super) {
 }(PaneDef));
 exports.GraphDef = GraphDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a ImagePicker Pane
  */
 var ImagePickerDef = (function (_super) {
     __extends(ImagePickerDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _URLPropName
+     * @param _defaultActionId
+     */
     function ImagePickerDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _URLPropName, _defaultActionId) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._URLPropName = _URLPropName;
@@ -1876,10 +2514,27 @@ var ImagePickerDef = (function (_super) {
 }(PaneDef));
 exports.ImagePickerDef = ImagePickerDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a List Pane
  */
 var ListDef = (function (_super) {
     __extends(ListDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _style
+     * @param _initialColumns
+     * @param _activeColumnDefs
+     * @param _columnsStyle
+     * @param _defaultActionId
+     * @param _graphicalMarkup
+     */
     function ListDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _style, _initialColumns, _activeColumnDefs, _columnsStyle, _defaultActionId, _graphicalMarkup) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._style = _style;
@@ -1963,10 +2618,28 @@ var ListDef = (function (_super) {
 }(PaneDef));
 exports.ListDef = ListDef;
 /**
- * *********************************
+ * PaneDef Subtype that describes a Map Pane
  */
 var MapDef = (function (_super) {
     __extends(MapDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _descriptionPropName
+     * @param _streetPropName
+     * @param _cityPropName
+     * @param _statePropName
+     * @param _postalCodePropName
+     * @param _latitudePropName
+     * @param _longitudePropName
+     */
     function MapDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _descriptionPropName, _streetPropName, _cityPropName, _statePropName, _postalCodePropName, _latitudePropName, _longitudePropName) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._descriptionPropName = _descriptionPropName;
@@ -2083,7 +2756,7 @@ var ObjectBinaryRef = (function (_super) {
 }(BinaryRef));
 exports.ObjectBinaryRef = ObjectBinaryRef;
 /**
- * *********************************
+ * Represents a base64 encoded binary
  */
 var EncodedBinary = (function () {
     function EncodedBinary(_data, _mimeType) {
@@ -2091,6 +2764,10 @@ var EncodedBinary = (function () {
         this._mimeType = _mimeType;
     }
     Object.defineProperty(EncodedBinary.prototype, "data", {
+        /**
+         * Get the base64 encoded data
+         * @returns {string}
+         */
         get: function () {
             return this._data;
         },
@@ -2098,18 +2775,29 @@ var EncodedBinary = (function () {
         configurable: true
     });
     Object.defineProperty(EncodedBinary.prototype, "mimeType", {
+        /**
+         * Get the mime-type
+         * @returns {string|string}
+         */
         get: function () {
             return this._mimeType || 'application/octet-stream';
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Returns a 'data url' representation of this binary, including the encoded data
+     * @returns {string}
+     */
     EncodedBinary.prototype.toUrl = function () {
         return util_1.DataUrl.createDataUrl(this.mimeType, this.data);
     };
     return EncodedBinary;
 }());
 exports.EncodedBinary = EncodedBinary;
+/**
+ * Represents a remote binary
+ */
 var UrlBinary = (function () {
     function UrlBinary(_url) {
         this._url = _url;
@@ -2121,6 +2809,10 @@ var UrlBinary = (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Returns a url that 'points to' the binary data
+     * @returns {string}
+     */
     UrlBinary.prototype.toUrl = function () {
         return this.url;
     };
@@ -2128,7 +2820,7 @@ var UrlBinary = (function () {
 }());
 exports.UrlBinary = UrlBinary;
 /**
- * *********************************
+ * An object that directs the client to a new resource
  */
 var Redirection = (function () {
     function Redirection() {
@@ -2148,7 +2840,7 @@ var Redirection = (function () {
 }());
 exports.Redirection = Redirection;
 /**
- * *********************************
+ * Type of Redirection that represents a new Catavolt resource on the server
  */
 var DialogRedirection = (function (_super) {
     __extends(DialogRedirection, _super);
@@ -2255,9 +2947,6 @@ var DialogRedirection = (function (_super) {
     return DialogRedirection;
 }(Redirection));
 exports.DialogRedirection = DialogRedirection;
-/**
- * *********************************
- */
 var NullRedirection = (function (_super) {
     __extends(NullRedirection, _super);
     function NullRedirection(fromDialogProperties) {
@@ -2267,9 +2956,6 @@ var NullRedirection = (function (_super) {
     return NullRedirection;
 }(Redirection));
 exports.NullRedirection = NullRedirection;
-/**
- * *********************************
- */
 var WebRedirection = (function (_super) {
     __extends(WebRedirection, _super);
     function WebRedirection(_webURL, _open, _dialogProperties, _fromDialogProperties) {
@@ -2306,9 +2992,6 @@ var WebRedirection = (function (_super) {
     return WebRedirection;
 }(Redirection));
 exports.WebRedirection = WebRedirection;
-/**
- * *********************************
- */
 var WorkbenchRedirection = (function (_super) {
     __extends(WorkbenchRedirection, _super);
     function WorkbenchRedirection(_workbenchId, _dialogProperties, _fromDialogProperties) {
@@ -2344,6 +3027,9 @@ var WorkbenchRedirection = (function (_super) {
     return WorkbenchRedirection;
 }(Redirection));
 exports.WorkbenchRedirection = WorkbenchRedirection;
+/**
+ * Utility for working with EntityRecs
+ */
 var EntityRecUtil = (function () {
     function EntityRecUtil() {
     }
@@ -2402,7 +3088,9 @@ var EntityRecUtil = (function () {
 }());
 exports.EntityRecUtil = EntityRecUtil;
 /**
- * *********************************
+ * An {@link EntityRec} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
+ * An EntityRec Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
  */
 var EntityBuffer = (function () {
     function EntityBuffer(_before, _after) {
@@ -2669,6 +3357,11 @@ exports.EntityBuffer = EntityBuffer;
 /**
  * *********************************
  */
+/**
+ * The implementation of {@link EntityRec}.
+ * Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ */
 var EntityRecImpl = (function () {
     function EntityRecImpl(objectId, props, annos) {
         if (props === void 0) { props = []; }
@@ -2922,6 +3615,11 @@ exports.EntityRecImpl = EntityRecImpl;
 /**
  * *********************************
  */
+/**
+ * An empty or uninitialized {@link EntityRec}.
+ * Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ */
 var NullEntityRec = (function () {
     function NullEntityRec() {
     }
@@ -3162,7 +3860,15 @@ var AppContextValues = (function () {
     }
     return AppContextValues;
 }());
+/**
+ * Top-level entry point into the Catavolt API
+ */
 var AppContext = (function () {
+    /**
+     * Construct an AppContext
+     * This should not be called directly, instead use the 'singleton' method
+     * @private
+     */
     function AppContext() {
         if (AppContext._singleton) {
             throw new Error("Singleton instance already created");
@@ -3179,6 +3885,10 @@ var AppContext = (function () {
         configurable: true
     });
     Object.defineProperty(AppContext, "singleton", {
+        /**
+         * Get the singleton instance of the AppContext
+         * @returns {AppContext}
+         */
         get: function () {
             if (!AppContext._singleton) {
                 AppContext._singleton = new AppContext();
@@ -3189,6 +3899,10 @@ var AppContext = (function () {
         configurable: true
     });
     Object.defineProperty(AppContext.prototype, "appWinDefTry", {
+        /**
+         * Get the AppWinDef Try
+         * @returns {Try<AppWinDef>}
+         */
         get: function () {
             return this._appWinDefTry;
         },
@@ -3196,6 +3910,10 @@ var AppContext = (function () {
         configurable: true
     });
     Object.defineProperty(AppContext.prototype, "deviceProps", {
+        /**
+         * Get the device props
+         * @returns {Array<string>}
+         */
         get: function () {
             return this._deviceProps;
         },
@@ -3203,18 +3921,37 @@ var AppContext = (function () {
         configurable: true
     });
     Object.defineProperty(AppContext.prototype, "isLoggedIn", {
+        /**
+         * Checked logged in status
+         * @returns {boolean}
+         */
         get: function () {
             return this._appContextState === AppContextState.LOGGED_IN;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Get a Worbench by workbenchId
+     * @param sessionContext
+     * @param workbenchId
+     * @returns {Future<Workbench>}
+     */
     AppContext.prototype.getWorkbench = function (sessionContext, workbenchId) {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
             return fp_1.Future.createFailedFuture("AppContext::getWorkbench", "User is logged out");
         }
         return WorkbenchService.getWorkbench(sessionContext, workbenchId);
     };
+    /**
+     * Log in and retrieve the AppWinDef
+     * @param gatewayHost
+     * @param tenantId
+     * @param clientType
+     * @param userId
+     * @param password
+     * @returns {Future<AppWinDef>}
+     */
     AppContext.prototype.login = function (gatewayHost, tenantId, clientType, userId, password) {
         var _this = this;
         if (this._appContextState === AppContextState.LOGGED_IN) {
@@ -3227,6 +3964,15 @@ var AppContext = (function () {
             return fp_1.Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
         });
     };
+    /**
+     * Login directly to a given url, bypassing the gateway host
+     * @param url
+     * @param tenantId
+     * @param clientType
+     * @param userId
+     * @param password
+     * @returns {Future<AppWinDef>}
+     */
     AppContext.prototype.loginDirectly = function (url, tenantId, clientType, userId, password) {
         var _this = this;
         if (this._appContextState === AppContextState.LOGGED_IN) {
@@ -3237,6 +3983,10 @@ var AppContext = (function () {
             return fp_1.Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
         });
     };
+    /**
+     * Logout and destroy the session
+     * @returns {any}
+     */
     AppContext.prototype.logout = function () {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
             return fp_1.Future.createFailedFuture("AppContext::loginDirectly", "User is already logged out");
@@ -3250,12 +4000,23 @@ var AppContext = (function () {
         this.setAppContextStateToLoggedOut();
         return result;
     };
+    /**
+     * Open a {@link WorkbenchLaunchAction}
+     * @param launchAction
+     * @returns {any}
+     */
     AppContext.prototype.performLaunchAction = function (launchAction) {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
             return fp_1.Future.createFailedFuture("AppContext::performLaunchAction", "User is logged out");
         }
         return this.performLaunchActionOnline(launchAction, this.sessionContextTry.success);
     };
+    /**
+     * Refresh the AppContext
+     * @param sessionContext
+     * @param deviceProps
+     * @returns {Future<AppWinDef>}
+     */
     AppContext.prototype.refreshContext = function (sessionContext, deviceProps) {
         var _this = this;
         if (deviceProps === void 0) { deviceProps = []; }
@@ -3266,6 +4027,10 @@ var AppContext = (function () {
         });
     };
     Object.defineProperty(AppContext.prototype, "sessionContextTry", {
+        /**
+         * Get the SessionContext Try
+         * @returns {Try<SessionContext>}
+         */
         get: function () {
             return this._sessionContextTry;
         },
@@ -3273,6 +4038,10 @@ var AppContext = (function () {
         configurable: true
     });
     Object.defineProperty(AppContext.prototype, "tenantSettingsTry", {
+        /**
+         * Get the tenant settings Try
+         * @returns {Try<StringDictionary>}
+         */
         get: function () {
             return this._tenantSettingsTry;
         },
@@ -3335,7 +4104,22 @@ exports.AppContext = AppContext;
 /**
  * *********************************
  */
+/**
+ * Represents a singlel 'Window' definition, retrieved upon login.
+ * Workbenches can be obtained through this object.
+ */
 var AppWinDef = (function () {
+    /**
+     * Create a new AppWinDef
+     *
+     * @private
+     *
+     * @param workbenches
+     * @param appVendors
+     * @param windowTitle
+     * @param windowWidth
+     * @param windowHeight
+     */
     function AppWinDef(workbenches, appVendors, windowTitle, windowWidth, windowHeight) {
         this._workbenches = workbenches || [];
         this._applicationVendors = appVendors || [];
@@ -3344,6 +4128,10 @@ var AppWinDef = (function () {
         this._windowHeight = windowHeight;
     }
     Object.defineProperty(AppWinDef.prototype, "appVendors", {
+        /**
+         * Get the app vendors array
+         * @returns {Array<string>}
+         */
         get: function () {
             return this._applicationVendors;
         },
@@ -3351,6 +4139,10 @@ var AppWinDef = (function () {
         configurable: true
     });
     Object.defineProperty(AppWinDef.prototype, "windowHeight", {
+        /**
+         * Get the window height
+         * @returns {number}
+         */
         get: function () {
             return this._windowHeight;
         },
@@ -3358,6 +4150,10 @@ var AppWinDef = (function () {
         configurable: true
     });
     Object.defineProperty(AppWinDef.prototype, "windowTitle", {
+        /**
+         * Get the window title
+         * @returns {string}
+         */
         get: function () {
             return this._windowTitle;
         },
@@ -3365,6 +4161,10 @@ var AppWinDef = (function () {
         configurable: true
     });
     Object.defineProperty(AppWinDef.prototype, "windowWidth", {
+        /**
+         * Get the window width
+         * @returns {number}
+         */
         get: function () {
             return this._windowWidth;
         },
@@ -3372,6 +4172,10 @@ var AppWinDef = (function () {
         configurable: true
     });
     Object.defineProperty(AppWinDef.prototype, "workbenches", {
+        /**
+         * Get the list of available Workbenches
+         * @returns {Array<Workbench>}
+         */
         get: function () {
             return this._workbenches;
         },
@@ -3383,12 +4187,6 @@ var AppWinDef = (function () {
 exports.AppWinDef = AppWinDef;
 /**
  * *********************************
- */
-/*
- @TODO
-
- Test all of the deserialization methods
- They should all be handled, but the cover many of the edge cases (i.e. List<List<CellDef>>)
  */
 var CellDef = (function () {
     function CellDef(_values) {
@@ -3810,6 +4608,9 @@ exports.DialogHandle = DialogHandle;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var DialogService = (function () {
     function DialogService() {
     }
@@ -4047,6 +4848,9 @@ exports.DialogService = DialogService;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var DialogTriple = (function () {
     function DialogTriple() {
     }
@@ -4243,8 +5047,11 @@ var EditorState;
 })(EditorState || (EditorState = {}));
 ;
 /**
- * *********************************
- */
+ * In the same way that a {@link PropDef} describes a {@link Prop}, an EntityRecDef describes an {@link EntityRec}.
+ * It is composed of {@link PropDef}s while the {@link EntityRec} is composed of {@link Prop}s.
+ * In other words it describes the structure or makeup of a row or record, but does not contain the data values themselves.
+ * The corresponding {@link EntityRec} contains the actual values.
+  */
 var EntityRecDef = (function () {
     function EntityRecDef(_propDefs) {
         this._propDefs = _propDefs;
@@ -4302,7 +5109,7 @@ var EntityRecDef = (function () {
 }());
 exports.EntityRecDef = EntityRecDef;
 /**
- * *********************************
+ * Utility to construct a FormContext hierarchy from a {@link DialogRedirection}.
  */
 var FormContextBuilder = (function () {
     function FormContextBuilder() {
@@ -4324,6 +5131,10 @@ var FormContextBuilder = (function () {
         return fb;
     };
     Object.defineProperty(FormContextBuilder.prototype, "actionSource", {
+        /**
+         * Get the action source for this Pane
+         * @returns {ActionSource}
+         */
         get: function () {
             return this._actionSource;
         },
@@ -4365,7 +5176,10 @@ var FormContextBuilder = (function () {
             var formDefTry = _this.completeOpenPromise(flattenedTry.success);
             //check for nested form contexts and set the paneRefs
             var formContexts = _this.retrieveChildFormContexts(flattenedTry.success)
-                .map(function (formContext, n) { formContext.paneRef = n; return formContext; });
+                .map(function (formContext, n) {
+                formContext.paneRef = n;
+                return formContext;
+            });
             var formContextTry = null;
             if (formDefTry.isFailure) {
                 formContextTry = new fp_1.Failure(formDefTry.failure);
@@ -4381,6 +5195,10 @@ var FormContextBuilder = (function () {
         });
     };
     Object.defineProperty(FormContextBuilder.prototype, "dialogRedirection", {
+        /**
+         * Get the {@link DialogRedirection} with which this Form was constructed
+         * @returns {DialogRedirection}
+         */
         get: function () {
             return this._dialogRedirection;
         },
@@ -4410,7 +5228,9 @@ var FormContextBuilder = (function () {
             return new fp_1.Failure('FormContextBuilder::build: Form has no children');
         if (formChildren[0] instanceof FormContext) {
             //we're dealing with a nested form
-            var childPaneDefs = formChildren.map(function (formContext) { return formContext.formDef; });
+            var childPaneDefs = formChildren.map(function (formContext) {
+                return formContext.formDef;
+            });
             var settings = { 'open': true };
             util_1.ObjUtil.addAllProps(formXOpen.formRedirection.dialogProperties, settings);
             var headerDef = null;
@@ -4428,7 +5248,9 @@ var FormContextBuilder = (function () {
         }
     };
     FormContextBuilder.prototype.containsNestedForms = function (formXOpen, xFormDef) {
-        return xFormDef.paneDefRefs.some(function (paneDefRef) { return paneDefRef.type === XPaneDefRef.FORM_TYPE; });
+        return xFormDef.paneDefRefs.some(function (paneDefRef) {
+            return paneDefRef.type === XPaneDefRef.FORM_TYPE;
+        });
     };
     FormContextBuilder.prototype.createChildrenContexts = function (formDef) {
         var result = [];
@@ -4580,23 +5402,13 @@ exports.FormContextBuilder = FormContextBuilder;
 /**
  * *********************************
  */
-/*
- @TODO - current the gateway response is mocked, due to cross-domain issues
- This should be removed (and the commented section uncommented for production!!!
+/**
+ * @private
  */
 var GatewayService = (function () {
     function GatewayService() {
     }
     GatewayService.getServiceEndpoint = function (tenantId, serviceName, gatewayHost) {
-        //We have to fake this for now, due to cross domain issues
-        /*var fakeResponse = {
-        responseType:"soi-json",
-        tenantId:"***REMOVED***z",
-        serverAssignment:"https://dfw.catavolt.net/vs301",
-        appVersion:"1.3.262",soiVersion:"v02"
-        }*/
-        //var fakeResponse = {responseType:"soi-json",tenantId:"catavolt-qa",serverAssignment:"https://dfw.catavolt.net/vs106",appVersion:"1.3.412",soiVersion:"v02"}
-        //var endPointFuture = Future.createSuccessfulFuture<ServiceEndpoint>('serviceEndpoint', <any>fakeResponse);
         var f = ws_1.Get.fromUrl('https://' + gatewayHost + '/' + tenantId + '/' + serviceName).perform();
         var endPointFuture = f.bind(function (jsonObject) {
             //'bounce cast' the jsonObject here to coerce into ServiceEndpoint
@@ -4758,7 +5570,9 @@ var MenuDef = (function () {
         return result;
     };
     MenuDef.prototype.findContextMenuDef = function () {
-        return MenuDef.findSubMenuDef(this, function (md) { return md.name === 'CONTEXT_MENU'; });
+        return MenuDef.findSubMenuDef(this, function (md) {
+            return md.name === 'CONTEXT_MENU';
+        });
     };
     Object.defineProperty(MenuDef.prototype, "iconName", {
         get: function () {
@@ -4803,6 +5617,10 @@ var MenuDef = (function () {
         configurable: true
     });
     Object.defineProperty(MenuDef.prototype, "menuDefs", {
+        /**
+         * Get the child {@link MenuDef}'s
+         * @returns {Array<MenuDef>}
+         */
         get: function () {
             return this._menuDefs;
         },
@@ -4917,7 +5735,9 @@ exports.ObjectRef = ObjectRef;
 })(exports.PaneMode || (exports.PaneMode = {}));
 var PaneMode = exports.PaneMode;
 /**
- * *********************************
+ * Contains information that 'defines' a property {@link Prop} (name/value)
+ * The information describes the property and can be thought of as the property 'type.
+ * An instance of the {@link Prop} contains the actual data value.
  */
 var PropDef = (function () {
     function PropDef(_name, _type, _elementType, _style, _propertyLength, _propertyScale, _presLength, _presScale, _dataDictionaryKey, _maintainable, _writeEnabled, _canCauseSideEffects) {
@@ -4935,6 +5755,10 @@ var PropDef = (function () {
         this._canCauseSideEffects = _canCauseSideEffects;
     }
     Object.defineProperty(PropDef.prototype, "canCauseSideEffects", {
+        /**
+         * Gets whether or not a refresh is needed after a change in this property's value
+         * @returns {boolean}
+         */
         get: function () {
             return this._canCauseSideEffects;
         },
@@ -5239,17 +6063,36 @@ var PropDef = (function () {
 }());
 exports.PropDef = PropDef;
 /**
- * *********************************
+ * Helper for transforming values to and from formats suitable for reading and writing to the server
+ * (i.e. object to string and string to object)
  */
 var PropFormatter = (function () {
     function PropFormatter() {
     }
+    /**
+     * Get a string representation of this property suitable for 'reading'
+     * @param prop
+     * @param propDef
+     * @returns {string}
+     */
     PropFormatter.formatForRead = function (prop, propDef) {
         return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     };
+    /**
+     * Get a string representation of this property suitable for 'writing'
+     * @param prop
+     * @param propDef
+     * @returns {string}
+     */
     PropFormatter.formatForWrite = function (prop, propDef) {
         return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
     };
+    /**
+     * Attempt to construct (or preserve) the appropriate data type given primitive (or already constructed) value.
+     * @param value
+     * @param propDef
+     * @returns {any}
+     */
     PropFormatter.parse = function (value, propDef) {
         var propValue = value;
         if (propDef.isDecimalType) {
@@ -5291,6 +6134,12 @@ var PropFormatter = (function () {
         }
         return propValue;
     };
+    /**
+     * Render this value as a string
+     * @param o
+     * @param propDef
+     * @returns {any}
+     */
     PropFormatter.toString = function (o, propDef) {
         if (typeof o === 'number') {
             if (propDef.isMoneyType) {
@@ -5333,13 +6182,31 @@ var PropFormatter = (function () {
     return PropFormatter;
 }());
 exports.PropFormatter = PropFormatter;
+/**
+ * Represents a 'value' or field in a row or record. See {@link EntityRec}
+ * A Prop has a corresponding {@link PropDef} that describes the property.
+ * Like an {@link EntityRec}, a Prop may also have {@link DataAnno}s (style annotations),
+ * but these apply to the property only
+ */
 var Prop = (function () {
+    /**
+     *
+     * @private
+     * @param _name
+     * @param _value
+     * @param _annos
+     */
     function Prop(_name, _value, _annos) {
         if (_annos === void 0) { _annos = []; }
         this._name = _name;
         this._value = _value;
         this._annos = _annos;
     }
+    /**
+     * @private
+     * @param values
+     * @returns {Success}
+     */
     Prop.fromListOfWSValue = function (values) {
         var props = [];
         values.forEach(function (v) {
@@ -5350,6 +6217,12 @@ var Prop = (function () {
         });
         return new fp_1.Success(props);
     };
+    /**
+     * @private
+     * @param name
+     * @param value
+     * @returns {any}
+     */
     Prop.fromWSNameAndWSValue = function (name, value) {
         var propTry = Prop.fromWSValue(value);
         if (propTry.isFailure) {
@@ -5357,6 +6230,12 @@ var Prop = (function () {
         }
         return new fp_1.Success(new Prop(name, propTry.success));
     };
+    /**
+     * @private
+     * @param names
+     * @param values
+     * @returns {any}
+     */
     Prop.fromWSNamesAndValues = function (names, values) {
         if (names.length != values.length) {
             return new fp_1.Failure("Prop::fromWSNamesAndValues: names and values must be of same length");
@@ -5371,6 +6250,11 @@ var Prop = (function () {
         }
         return new fp_1.Success(list);
     };
+    /**
+     * @private
+     * @param value
+     * @returns {any}
+     */
     Prop.fromWSValue = function (value) {
         var propValue = value;
         if (value && 'object' === typeof value) {
@@ -5416,6 +6300,12 @@ var Prop = (function () {
         }
         return new fp_1.Success(propValue);
     };
+    /**
+     * @private
+     * @param otype
+     * @param jsonObj
+     * @returns {any}
+     */
     Prop.fromWS = function (otype, jsonObj) {
         var name = jsonObj['name'];
         var valueTry = Prop.fromWSValue(jsonObj['value']);
@@ -5430,6 +6320,11 @@ var Prop = (function () {
         }
         return new fp_1.Success(new Prop(name, valueTry.success, annos));
     };
+    /**
+     * @private
+     * @param o
+     * @returns {any}
+     */
     Prop.toWSProperty = function (o) {
         if (typeof o === 'number') {
             return { 'WS_PTYPE': 'Decimal', 'value': String(o) };
@@ -5462,6 +6357,11 @@ var Prop = (function () {
             return o;
         }
     };
+    /**
+     *
+     * @param list
+     * @returns {StringDictionary}
+     */
     Prop.toWSListOfProperties = function (list) {
         var result = { 'WS_LTYPE': 'Object' };
         var values = [];
@@ -5471,9 +6371,20 @@ var Prop = (function () {
         result['values'] = values;
         return result;
     };
+    /**
+     * @private
+     * @param list
+     * @returns {{WS_LTYPE: string, values: Array<string>}}
+     */
     Prop.toWSListOfString = function (list) {
         return { 'WS_LTYPE': 'String', 'values': list };
     };
+    /**
+     *
+     * @private
+     * @param props
+     * @returns {StringDictionary}
+     */
     Prop.toListOfWSProp = function (props) {
         var result = { 'WS_LTYPE': 'WSProp' };
         var values = [];
@@ -5484,6 +6395,10 @@ var Prop = (function () {
         return result;
     };
     Object.defineProperty(Prop.prototype, "annos", {
+        /**
+         * Get the data annotations associated with this property
+         * @returns {Array<DataAnno>}
+         */
         get: function () {
             return this._annos;
         },
@@ -5578,6 +6493,10 @@ var Prop = (function () {
         configurable: true
     });
     Object.defineProperty(Prop.prototype, "name", {
+        /**
+         * Get the property name
+         * @returns {string}
+         */
         get: function () {
             return this._name;
         },
@@ -5599,6 +6518,10 @@ var Prop = (function () {
         configurable: true
     });
     Object.defineProperty(Prop.prototype, "value", {
+        /**
+         * Get the property value
+         * @returns {any}
+         */
         get: function () {
             return this._value;
         },
@@ -5608,6 +6531,10 @@ var Prop = (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * @private
+     * @returns {StringDictionary}
+     */
     Prop.prototype.toWS = function () {
         var result = { 'WS_OTYPE': 'WSProp', 'name': this.name, 'value': Prop.toWSProperty(this.value) };
         if (this.annos) {
@@ -5949,6 +6876,9 @@ exports.SessionContextImpl = SessionContextImpl;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var SessionService = (function () {
     function SessionService() {
     }
@@ -6083,6 +7013,9 @@ exports.WorkbenchLaunchAction = WorkbenchLaunchAction;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var WorkbenchService = (function () {
     function WorkbenchService() {
     }
@@ -6175,7 +7108,7 @@ var Workbench = (function () {
 exports.Workbench = Workbench;
 /* XPane Classes */
 /**
- * *********************************
+ * @private
  */
 var XPaneDef = (function () {
     function XPaneDef() {
@@ -6221,6 +7154,9 @@ exports.XPaneDef = XPaneDef;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XBarcodeScanDef = (function (_super) {
     __extends(XBarcodeScanDef, _super);
     function XBarcodeScanDef(paneId, name, title) {
@@ -6234,6 +7170,9 @@ var XBarcodeScanDef = (function (_super) {
 exports.XBarcodeScanDef = XBarcodeScanDef;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XCalendarDef = (function (_super) {
     __extends(XCalendarDef, _super);
@@ -6256,6 +7195,9 @@ var XCalendarDef = (function (_super) {
 exports.XCalendarDef = XCalendarDef;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XChangePaneModeResult = (function () {
     function XChangePaneModeResult(editorRecordDef, dialogProperties) {
@@ -6282,11 +7224,8 @@ exports.XChangePaneModeResult = XChangePaneModeResult;
 /**
  * *********************************
  */
-/*
- @TODO
-
- Note! Use this as a test example!
- It has an Array of Array with subitems that also have Array of Array!!
+/**
+ * @private
  */
 var XDetailsDef = (function (_super) {
     __extends(XDetailsDef, _super);
@@ -6315,6 +7254,9 @@ exports.XDetailsDef = XDetailsDef;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XFormDef = (function (_super) {
     __extends(XFormDef, _super);
     function XFormDef(borderStyle, formLayout, formStyle, name, paneId, title, headerDefRef, paneDefRefs) {
@@ -6334,6 +7276,9 @@ exports.XFormDef = XFormDef;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XFormModelComp = (function () {
     function XFormModelComp(paneId, redirection, label, title) {
         this.paneId = paneId;
@@ -6346,6 +7291,9 @@ var XFormModelComp = (function () {
 exports.XFormModelComp = XFormModelComp;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XFormModel = (function () {
     function XFormModel(form, header, children, placement, refreshTimer, sizeToWindow) {
@@ -6380,6 +7328,9 @@ exports.XFormModel = XFormModel;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XGeoFixDef = (function (_super) {
     __extends(XGeoFixDef, _super);
     function XGeoFixDef(paneId, name, title) {
@@ -6394,6 +7345,9 @@ exports.XGeoFixDef = XGeoFixDef;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XGeoLocationDef = (function (_super) {
     __extends(XGeoLocationDef, _super);
     function XGeoLocationDef(paneId, name, title) {
@@ -6407,6 +7361,9 @@ var XGeoLocationDef = (function (_super) {
 exports.XGeoLocationDef = XGeoLocationDef;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XGetActiveColumnDefsResult = (function () {
     function XGetActiveColumnDefsResult(columnsStyle, columns) {
@@ -6425,6 +7382,9 @@ var XGetActiveColumnDefsResult = (function () {
 exports.XGetActiveColumnDefsResult = XGetActiveColumnDefsResult;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XGetAvailableValuesResult = (function () {
     function XGetAvailableValuesResult(list) {
@@ -6447,6 +7407,9 @@ var XGetAvailableValuesResult = (function () {
 exports.XGetAvailableValuesResult = XGetAvailableValuesResult;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XGetSessionListPropertyResult = (function () {
     function XGetSessionListPropertyResult(_list, _dialogProps) {
@@ -6481,6 +7444,9 @@ exports.XGetSessionListPropertyResult = XGetSessionListPropertyResult;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XGraphDef = (function (_super) {
     __extends(XGraphDef, _super);
     function XGraphDef(paneId, name, title, graphType, displayQuadrantLines, identityDataPoint, groupingDataPoint, dataPoints, filterDataPoints, sampleModel, xAxisLabel, xAxisRangeFrom, xAxisRangeTo, yAxisLabel, yAxisRangeFrom, yAxisRangeTo) {
@@ -6508,6 +7474,9 @@ exports.XGraphDef = XGraphDef;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XImagePickerDef = (function (_super) {
     __extends(XImagePickerDef, _super);
     function XImagePickerDef(paneId, name, title, URLProperty, defaultActionId) {
@@ -6523,6 +7492,9 @@ var XImagePickerDef = (function (_super) {
 exports.XImagePickerDef = XImagePickerDef;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XListDef = (function (_super) {
     __extends(XListDef, _super);
@@ -6552,6 +7524,9 @@ exports.XListDef = XListDef;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XMapDef = (function (_super) {
     __extends(XMapDef, _super);
     function XMapDef(paneId, name, title, descriptionProperty, streetProperty, cityProperty, stateProperty, postalCodeProperty, latitudeProperty, longitudeProperty) {
@@ -6580,6 +7555,9 @@ var XMapDef = (function (_super) {
 exports.XMapDef = XMapDef;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XOpenEditorModelResult = (function () {
     function XOpenEditorModelResult(editorRecordDef, formModel) {
@@ -6613,6 +7591,9 @@ exports.XOpenEditorModelResult = XOpenEditorModelResult;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XOpenQueryModelResult = (function () {
     function XOpenQueryModelResult(entityRecDef, sortPropertyDef, defaultActionId) {
         this.entityRecDef = entityRecDef;
@@ -6635,6 +7616,9 @@ exports.XOpenQueryModelResult = XOpenQueryModelResult;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XPaneDefRef = (function () {
     function XPaneDefRef(name, paneId, title, type) {
         this.name = name;
@@ -6648,6 +7632,9 @@ var XPaneDefRef = (function () {
 exports.XPaneDefRef = XPaneDefRef;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XPropertyChangeResult = (function () {
     function XPropertyChangeResult(availableValueChanges, propertyName, sideEffects, editorRecordDef) {
@@ -6671,6 +7658,9 @@ var XPropertyChangeResult = (function () {
 exports.XPropertyChangeResult = XPropertyChangeResult;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XQueryResult = (function () {
     function XQueryResult(entityRecs, entityRecDef, hasMore, sortPropDefs, defaultActionId, dialogProps) {
@@ -6736,6 +7726,9 @@ exports.XQueryResult = XQueryResult;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XReadResult = (function () {
     function XReadResult(_editorRecord, _editorRecordDef, _dialogProperties) {
         this._editorRecord = _editorRecord;
@@ -6768,6 +7761,9 @@ var XReadResult = (function () {
 exports.XReadResult = XReadResult;
 /**
  * *********************************
+ */
+/**
+ * @private
  */
 var XWriteResult = (function () {
     function XWriteResult(_editorRecord, _editorRecordDef, _dialogProperties) {
@@ -6810,6 +7806,9 @@ exports.XWriteResult = XWriteResult;
 /**
  * *********************************
  */
+/**
+ * @private
+ */
 var XWritePropertyResult = (function () {
     function XWritePropertyResult(dialogProperties) {
         this.dialogProperties = dialogProperties;
@@ -6817,6 +7816,9 @@ var XWritePropertyResult = (function () {
     return XWritePropertyResult;
 }());
 exports.XWritePropertyResult = XWritePropertyResult;
+/**
+ * @private
+ */
 var XReadPropertyResult = (function () {
     function XReadPropertyResult(dialogProperties, hasMore, data, dataLength) {
         this.dialogProperties = dialogProperties;
@@ -6829,6 +7831,9 @@ var XReadPropertyResult = (function () {
 exports.XReadPropertyResult = XReadPropertyResult;
 /*
  OType must be last as it references almost all other classes in the module
+ */
+/**
+ * @private
  */
 var OType = (function () {
     function OType() {
