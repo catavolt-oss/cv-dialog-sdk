@@ -6363,8 +6363,9 @@ var Prop = (function () {
                 return { 'WS_PTYPE': 'DateTime', 'value': o.dateObj.toISOString().slice(0, -1) };
             }
             else if (o instanceof util_1.DateValue) {
-                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
-                return { 'WS_PTYPE': 'Date', 'value': o.dateObj.toISOString().slice(0, -1) };
+                //remove all Time information from the end of the ISO string from the 'T' to the end...
+                var isoString = o.dataObj.toISOString;
+                return { 'WS_PTYPE': 'Date', 'value': isoString.slice(0, isoString.indexOf('T')) };
             }
             else if (o instanceof util_1.TimeValue) {
                 return { 'WS_PTYPE': 'Time', 'value': o.toString() };
