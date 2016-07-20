@@ -3,8 +3,13 @@
     "compilerOptions": {
         "target": "ES5",
 	    "module": "commonjs",
+        "moduleResolution": "node",
         "sourceMap": false,
-        "outDir": "./js",
+        "rootDir": "./",
+        "outDir": "../js",
         "declaration": true
-    }
+    },
+    "files":[
+      "./src/catavolt.ts"
+    ]
 }

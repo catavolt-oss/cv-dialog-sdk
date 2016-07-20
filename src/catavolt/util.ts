@@ -225,6 +225,24 @@ export class TimeValue {
  * *****************************************************
  */
 
+export class DateValue {
+    
+    constructor(public dateObj:Date) {}
+    
+}
+
+/**
+ * *****************************************************
+ */
+    
+export class DateTimeValue {
+    constructor(public dateObj:Date) {}
+}
+
+/**
+ * *****************************************************
+ */
+
 
 
 export enum LogLevel { ERROR, WARN, INFO, DEBUG }

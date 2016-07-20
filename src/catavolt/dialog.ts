@@ -5848,10 +5848,10 @@ export class Prop {
                 if (PType === 'Decimal') {
                     propValue = Number(strVal);
                 } else if (PType === 'Date') {
-                    //parse as UTC
+                    //parse as ISO - no offset specified by server right now, so we assume UTC
                     propValue = new Date(strVal);
                 } else if (PType === 'DateTime') {
-                    //parse as UTC
+                    //parse as ISO - no offset specified by server right now, so we assume UTC
                     propValue = new Date(strVal);
                 } else if (PType === 'Time') {
                     propValue = TimeValue.fromString(strVal);
