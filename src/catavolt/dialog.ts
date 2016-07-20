@@ -4,6 +4,8 @@
 import {
     StringDictionary,
     TimeValue,
+    DateValue,
+    DateTimeValue,
     Log,
     ObjUtil,
     StringUtil,
@@ -5718,12 +5720,27 @@ export class PropFormatter {
             } else {
                 propValue = !!value;
             }
+            
         } else if (propDef.isDateType) {
-            //parse as UTC
-            propValue = typeof value === 'object' ? value : new Date(value);
+            //this could be a DateValue, a Date, or a string    
+            if(value instanceof DateValue) {
+                propValue = value;
+            }else if(typeof value === 'object') {
+                propValue = new DateValue(value);
+            } else {
+                //parse as UTC
+                propValue = new DateValue(new Date(value));
+            }
         } else if (propDef.isDateTimeType) {
-            //parse as UTC
-            propValue = typeof value === 'object' ? value : new Date(value);
+            //this could be a DateTimeValue, a Date, or a string    
+            if(value instanceof DateTimeValue) {
+                propValue = value;
+            }else if(typeof value === 'object') {
+                propValue = new DateTimeValue(value);
+            } else {
+                //parse as UTC
+                propValue = new DateTimeValue(new Date(value));
+            }
         } else if (propDef.isTimeType) {
             propValue = value instanceof TimeValue ? value : TimeValue.fromString(value);
         } else if (propDef.isObjRefType) {
@@ -5756,6 +5773,10 @@ export class PropFormatter {
         } else if (typeof o === 'object') {
             if (o instanceof Date) {
                 return o.toISOString();
+            } else if (o instanceof DateValue) {
+                return (o as DateValue).dateObj.toISOString();
+            } else if (o instanceof DateTimeValue) {
+                return (o as DateTimeValue).dateObj.toISOString();
             } else if (o instanceof TimeValue) {
                 return o.toString();
             } else if (o instanceof CodeRef) {
@@ -5907,6 +5928,12 @@ export class Prop {
             if (o instanceof Date) {
                 //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
                 return {'WS_PTYPE': 'DateTime', 'value': o.toISOString().slice(0, -1)};
+            } else if (o instanceof DateTimeValue) {
+                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                return {'WS_PTYPE': 'DateTime', 'value': o.dateObj.toISOString().slice(0, -1)};
+            } else if (o instanceof DateValue) {
+                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                return {'WS_PTYPE': 'Date', 'value': o.dateObj.toISOString().slice(0, -1)};
             } else if (o instanceof TimeValue) {
                 return {'WS_PTYPE': 'Time', 'value': o.toString()};
             } else if (o instanceof CodeRef) {

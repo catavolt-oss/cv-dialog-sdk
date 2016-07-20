@@ -6110,12 +6110,30 @@ var PropFormatter = (function () {
             }
         }
         else if (propDef.isDateType) {
-            //parse as UTC
-            propValue = typeof value === 'object' ? value : new Date(value);
+            //this could be a DateValue, a Date, or a string    
+            if (value instanceof util_1.DateValue) {
+                propValue = value;
+            }
+            else if (typeof value === 'object') {
+                propValue = new util_1.DateValue(value);
+            }
+            else {
+                //parse as UTC
+                propValue = new util_1.DateValue(new Date(value));
+            }
         }
         else if (propDef.isDateTimeType) {
-            //parse as UTC
-            propValue = typeof value === 'object' ? value : new Date(value);
+            //this could be a DateTimeValue, a Date, or a string    
+            if (value instanceof util_1.DateTimeValue) {
+                propValue = value;
+            }
+            else if (typeof value === 'object') {
+                propValue = new util_1.DateTimeValue(value);
+            }
+            else {
+                //parse as UTC
+                propValue = new util_1.DateTimeValue(new Date(value));
+            }
         }
         else if (propDef.isTimeType) {
             propValue = value instanceof util_1.TimeValue ? value : util_1.TimeValue.fromString(value);
@@ -6155,6 +6173,12 @@ var PropFormatter = (function () {
         else if (typeof o === 'object') {
             if (o instanceof Date) {
                 return o.toISOString();
+            }
+            else if (o instanceof util_1.DateValue) {
+                return o.dateObj.toISOString();
+            }
+            else if (o instanceof util_1.DateTimeValue) {
+                return o.dateObj.toISOString();
             }
             else if (o instanceof util_1.TimeValue) {
                 return o.toString();
@@ -6333,6 +6357,14 @@ var Prop = (function () {
             if (o instanceof Date) {
                 //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
                 return { 'WS_PTYPE': 'DateTime', 'value': o.toISOString().slice(0, -1) };
+            }
+            else if (o instanceof util_1.DateTimeValue) {
+                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                return { 'WS_PTYPE': 'DateTime', 'value': o.dateObj.toISOString().slice(0, -1) };
+            }
+            else if (o instanceof util_1.DateValue) {
+                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                return { 'WS_PTYPE': 'Date', 'value': o.dateObj.toISOString().slice(0, -1) };
             }
             else if (o instanceof util_1.TimeValue) {
                 return { 'WS_PTYPE': 'Time', 'value': o.toString() };
