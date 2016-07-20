@@ -5933,7 +5933,7 @@ export class Prop {
                 return {'WS_PTYPE': 'DateTime', 'value': o.dateObj.toISOString().slice(0, -1)};
             } else if (o instanceof DateValue) {
                 //remove all Time information from the end of the ISO string from the 'T' to the end...
-                const isoString = o.dataObj.toISOString;
+                const isoString = o.dateObj.toISOString();
                 return {'WS_PTYPE': 'Date', 'value': isoString.slice(0, isoString.indexOf('T'))};
             } else if (o instanceof TimeValue) {
                 return {'WS_PTYPE': 'Time', 'value': o.toString()};

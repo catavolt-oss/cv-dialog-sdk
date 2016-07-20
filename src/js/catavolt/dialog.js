@@ -6364,7 +6364,7 @@ var Prop = (function () {
             }
             else if (o instanceof util_1.DateValue) {
                 //remove all Time information from the end of the ISO string from the 'T' to the end...
-                var isoString = o.dataObj.toISOString;
+                var isoString = o.dateObj.toISOString();
                 return { 'WS_PTYPE': 'Date', 'value': isoString.slice(0, isoString.indexOf('T')) };
             }
             else if (o instanceof util_1.TimeValue) {
