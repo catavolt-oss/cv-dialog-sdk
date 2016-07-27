@@ -802,7 +802,7 @@ var EditorContext = (function (_super) {
         var propDef = this.propDefAtName(name);
         var parsedValue = null;
         if (propDef) {
-            parsedValue = value ? this.parseValue(value, propDef.name) : null;
+            parsedValue = (value !== null && value !== undefined) ? this.parseValue(value, propDef.name) : null;
             this.buffer.setValue(propDef.name, parsedValue);
         }
         return parsedValue;

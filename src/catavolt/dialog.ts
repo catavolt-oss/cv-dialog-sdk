@@ -757,7 +757,7 @@ export class EditorContext extends PaneContext {
         const propDef:PropDef = this.propDefAtName(name);
         let parsedValue:any = null;
         if (propDef) {
-            parsedValue = value ? this.parseValue(value, propDef.name) : null;
+            parsedValue = (value !== null && value !== undefined) ? this.parseValue(value, propDef.name) : null;
             this.buffer.setValue(propDef.name, parsedValue);
         }
         return parsedValue;
