@@ -7883,7 +7883,7 @@ var OType = (function () {
         return null;
     };
     OType.deserializeObject = function (obj, Otype, factoryFn) {
-        util_1.Log.debug('Deserializing ' + Otype);
+        //Log.debug('Deserializing ' + Otype);
         if (Array.isArray(obj)) {
             //it's a nested array (no LTYPE!)
             return OType.handleNestedArray(Otype, obj);
@@ -7908,7 +7908,7 @@ var OType = (function () {
                 }
                 for (var prop in obj) {
                     var value = obj[prop];
-                    util_1.Log.debug("prop: " + prop + " is type " + typeof value);
+                    //Log.debug("prop: " + prop + " is type " + typeof value);
                     if (value && typeof value === 'object') {
                         if ('WS_OTYPE' in value) {
                             var otypeTry = DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
@@ -7984,7 +7984,6 @@ var OType = (function () {
                     target[prop] = value;
                 }
                 else {
-                    util_1.Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
                 }
             }
         }

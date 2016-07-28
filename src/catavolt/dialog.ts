@@ -7503,7 +7503,7 @@ export class OType {
 
     static deserializeObject<A>(obj, Otype:string, factoryFn:(otype:string, jsonObj?)=>any):Try<A> {
 
-        Log.debug('Deserializing ' + Otype);
+        //Log.debug('Deserializing ' + Otype);
         if (Array.isArray(obj)) {
             //it's a nested array (no LTYPE!)
             return OType.handleNestedArray<A>(Otype, obj);
@@ -7526,7 +7526,7 @@ export class OType {
                 }
                 for (var prop in obj) {
                     var value = obj[prop];
-                    Log.debug("prop: " + prop + " is type " + typeof value);
+                    //Log.debug("prop: " + prop + " is type " + typeof value);
                     if (value && typeof value === 'object') {
                         if ('WS_OTYPE' in value) {
                             var otypeTry = DialogTriple.fromWSDialogObject(value, value['WS_OTYPE'], OType.factoryFn);
@@ -7600,7 +7600,7 @@ export class OType {
                     target[prop] = value;
                     //Log.info('Assigning public prop ' + prop + ' = ' + value);
                 } else {
-                    Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
+                    //Log.debug("Didn't find target value for prop " + prop + " on target for " + otype);
                 }
             }
         } catch (error) {
