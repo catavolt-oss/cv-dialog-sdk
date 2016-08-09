@@ -62,6 +62,9 @@ var XMLHttpClient = (function () {
                 }
             }
         };
+        util_1.Log.debug("XmlHttpClient: Calling: " + targetUrl);
+        util_1.Log.debug("XmlHttpClient: body: " + body);
+        xmlHttpRequest.open(method, targetUrl, true);
         if (timeoutMillis) {
             //check for timeout support on the xmlHttpRequest itself
             if (typeof xmlHttpRequest.ontimeout !== "undefined") {
@@ -72,9 +75,6 @@ var XMLHttpClient = (function () {
                 wRequestTimer = setTimeout(timeoutCallback, timeoutMillis);
             }
         }
-        util_1.Log.debug("XmlHttpClient: Calling: " + targetUrl);
-        util_1.Log.debug("XmlHttpClient: body: " + body);
-        xmlHttpRequest.open(method, targetUrl, true);
         if (method === 'POST') {
             xmlHttpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             xmlHttpRequest.send(body);

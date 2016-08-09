@@ -81,6 +81,12 @@ export class XMLHttpClient implements Client {
             }
         };
 
+
+        Log.debug("XmlHttpClient: Calling: " + targetUrl);
+        Log.debug("XmlHttpClient: body: " + body);
+
+        xmlHttpRequest.open(method, targetUrl, true);
+        
         if (timeoutMillis) {
             //check for timeout support on the xmlHttpRequest itself
             if (typeof xmlHttpRequest.ontimeout !== "undefined") {
@@ -90,11 +96,6 @@ export class XMLHttpClient implements Client {
                 wRequestTimer = setTimeout(timeoutCallback, timeoutMillis);
             }
         }
-
-        Log.debug("XmlHttpClient: Calling: " + targetUrl);
-        Log.debug("XmlHttpClient: body: " + body);
-
-        xmlHttpRequest.open(method, targetUrl, true);
         if (method === 'POST') {
             xmlHttpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             xmlHttpRequest.send(body);
