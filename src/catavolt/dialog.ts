@@ -5871,7 +5871,7 @@ export class Prop {
                     propValue = Number(strVal);
                 } else if (PType === 'Date') {
                     //parse as ISO - no offset specified by server right now, so we assume local time
-                    propValue = moment(strVal).toDate();
+                    propValue = moment(strVal, 'YYYY-M-D').toDate();
                 } else if (PType === 'DateTime') {
                     //parse as ISO - no offset specified by server right now, so we assume local time
                     propValue = moment(strVal).toDate();
