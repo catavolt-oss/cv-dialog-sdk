@@ -10,6 +10,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 var util_1 = require("./util");
 var fp_1 = require("./fp");
 var ws_1 = require("./ws");
+var moment = require('moment');
 /*
  IMPORTANT!
  Note #1: Dependency cycles - These classes must be in a single file (module) because of commonjs and circular dependency issues.
@@ -6118,8 +6119,8 @@ var PropFormatter = (function () {
                 propValue = new util_1.DateValue(value);
             }
             else {
-                //parse as UTC
-                propValue = new util_1.DateValue(new Date(value));
+                //parse as local time
+                propValue = new util_1.DateValue(moment(value).toDate());
             }
         }
         else if (propDef.isDateTimeType) {
@@ -6131,8 +6132,8 @@ var PropFormatter = (function () {
                 propValue = new util_1.DateTimeValue(value);
             }
             else {
-                //parse as UTC
-                propValue = new util_1.DateTimeValue(new Date(value));
+                //parse as local time
+                propValue = new util_1.DateTimeValue(moment(value).toDate());
             }
         }
         else if (propDef.isTimeType) {
@@ -6289,12 +6290,12 @@ var Prop = (function () {
                     propValue = Number(strVal);
                 }
                 else if (PType === 'Date') {
-                    //parse as ISO - no offset specified by server right now, so we assume UTC
-                    propValue = new Date(strVal);
+                    //parse as ISO - no offset specified by server right now, so we assume local time
+                    propValue = moment(strVal).toDate();
                 }
                 else if (PType === 'DateTime') {
-                    //parse as ISO - no offset specified by server right now, so we assume UTC
-                    propValue = new Date(strVal);
+                    //parse as ISO - no offset specified by server right now, so we assume local time
+                    propValue = moment(strVal).toDate();
                 }
                 else if (PType === 'Time') {
                     propValue = util_1.TimeValue.fromString(strVal);

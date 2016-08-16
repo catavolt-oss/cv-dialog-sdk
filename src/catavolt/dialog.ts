@@ -14,6 +14,7 @@ import {
 } from "./util";
 import {Try, Either, Future, Success, Failure, TryClosure, MapFn} from "./fp";
 import {SessionContext, SystemContext, Call, Get} from "./ws";
+import * as moment from 'moment';
 
 /*
  IMPORTANT!
@@ -5728,8 +5729,8 @@ export class PropFormatter {
             }else if(typeof value === 'object') {
                 propValue = new DateValue(value);
             } else {
-                //parse as UTC
-                propValue = new DateValue(new Date(value));
+                //parse as local time
+                propValue = new DateValue(moment(value).toDate());
             }
         } else if (propDef.isDateTimeType) {
             //this could be a DateTimeValue, a Date, or a string    
@@ -5738,8 +5739,8 @@ export class PropFormatter {
             }else if(typeof value === 'object') {
                 propValue = new DateTimeValue(value);
             } else {
-                //parse as UTC
-                propValue = new DateTimeValue(new Date(value));
+                //parse as local time
+                propValue = new DateTimeValue(moment(value).toDate());
             }
         } else if (propDef.isTimeType) {
             propValue = value instanceof TimeValue ? value : TimeValue.fromString(value);
@@ -5869,11 +5870,11 @@ export class Prop {
                 if (PType === 'Decimal') {
                     propValue = Number(strVal);
                 } else if (PType === 'Date') {
-                    //parse as ISO - no offset specified by server right now, so we assume UTC
-                    propValue = new Date(strVal);
+                    //parse as ISO - no offset specified by server right now, so we assume local time
+                    propValue = moment(strVal).toDate();
                 } else if (PType === 'DateTime') {
-                    //parse as ISO - no offset specified by server right now, so we assume UTC
-                    propValue = new Date(strVal);
+                    //parse as ISO - no offset specified by server right now, so we assume local time
+                    propValue = moment(strVal).toDate();
                 } else if (PType === 'Time') {
                     propValue = TimeValue.fromString(strVal);
                 } else if (PType === 'BinaryRef') {
