@@ -6787,6 +6787,9 @@ var QueryScroller = (function () {
         var _this = this;
         this.clear();
         return this.pageForward().map(function (entityRecList) {
+            if (entityRecList.length > 0) {
+                _this._firstResultOid = entityRecList[0].objectId;
+            }
             _this.context.lastRefreshTime = new Date();
             return entityRecList;
         });
@@ -6808,13 +6811,20 @@ var QueryScroller = (function () {
         }
         this._buffer = newBuffer;
         this._hasMoreForward = true;
-        if (this._buffer.length === 0)
-            this._hasMoreBackward = true;
+        if (this._buffer.length > 0) {
+            //the catavolt server doesn't tell us acurately when there are no more records in the backwards direction
+            //so we're trying to match up the first record here
+            //this is not a great solution because the result composition could change, but this is what we have for now...
+            if (this._buffer[0].objectId === this._firstResultOid) {
+                this._hasMoreBackward = false;
+            }
+        }
     };
     QueryScroller.prototype.clear = function () {
         this._hasMoreBackward = !!this._firstObjectId;
         this._hasMoreForward = true;
         this._buffer = [];
+        this._firstResultOid = null;
     };
     return QueryScroller;
 }());

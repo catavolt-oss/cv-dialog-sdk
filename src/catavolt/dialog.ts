@@ -6141,6 +6141,7 @@ export class QueryScroller {
     private _hasMoreForward:boolean;
     private _nextPageFr:Future<QueryResult>;
     private _prevPageFr:Future<QueryResult>;
+    private _firstResultOid:string;
 
     constructor(private _context:QueryContext,
                 private _pageSize:number,
@@ -6283,6 +6284,9 @@ export class QueryScroller {
     refresh():Future<Array<EntityRec>> {
         this.clear();
         return this.pageForward().map((entityRecList:Array<EntityRec>)=> {
+            if(entityRecList.length > 0) {
+                this._firstResultOid = entityRecList[0].objectId;
+            }
             this.context.lastRefreshTime = new Date();
             return entityRecList;
         });
@@ -6305,13 +6309,21 @@ export class QueryScroller {
         }
         this._buffer = newBuffer;
         this._hasMoreForward = true;
-        if (this._buffer.length === 0) this._hasMoreBackward = true;
+        if (this._buffer.length > 0){
+            //the catavolt server doesn't tell us acurately when there are no more records in the backwards direction
+            //so we're trying to match up the first record here
+            //this is not a great solution because the result composition could change, but this is what we have for now...
+            if(this._buffer[0].objectId === this._firstResultOid) {
+                this._hasMoreBackward = false;
+            }
+        }
     }
 
     private clear() {
         this._hasMoreBackward = !!this._firstObjectId;
         this._hasMoreForward = true;
         this._buffer = [];
+        this._firstResultOid = null;
     }
 
 }

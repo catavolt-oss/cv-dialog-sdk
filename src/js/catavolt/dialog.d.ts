@@ -2257,6 +2257,7 @@ export declare class QueryScroller {
     private _hasMoreForward;
     private _nextPageFr;
     private _prevPageFr;
+    private _firstResultOid;
     constructor(_context: QueryContext, _pageSize: number, _firstObjectId: string, _markerOptions?: Array<QueryMarkerOption>);
     buffer: Array<EntityRec>;
     bufferWithMarkers: Array<EntityRec>;
