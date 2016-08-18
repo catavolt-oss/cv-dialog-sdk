@@ -6801,8 +6801,6 @@ var QueryScroller = (function () {
         }
         this._buffer = newBuffer;
         this._hasMoreBackward = true;
-        if (this._buffer.length === 0)
-            this._hasMoreForward = true;
     };
     QueryScroller.prototype.trimLast = function (n) {
         var newBuffer = [];
@@ -6811,14 +6809,6 @@ var QueryScroller = (function () {
         }
         this._buffer = newBuffer;
         this._hasMoreForward = true;
-        if (this._buffer.length > 0) {
-            //the catavolt server doesn't tell us acurately when there are no more records in the backwards direction
-            //so we're trying to match up the first record here
-            //this is not a great solution because the result composition could change, but this is what we have for now...
-            if (this._buffer[0].objectId === this._firstResultOid) {
-                this._hasMoreBackward = false;
-            }
-        }
     };
     QueryScroller.prototype.clear = function () {
         this._hasMoreBackward = !!this._firstObjectId;
