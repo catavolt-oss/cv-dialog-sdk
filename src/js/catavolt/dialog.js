@@ -6086,14 +6086,18 @@ var PropFormatter = (function () {
      * @returns {string}
      */
     PropFormatter.formatForWrite = function (prop, propDef) {
-        if (propDef.isCodeRefType) {
+        if (prop === null || prop === undefined
+            || prop.value === null || prop.value === undefined) {
+            return '';
+        }
+        else if (propDef.isCodeRefType) {
             return prop.value.description;
         }
         else if (propDef.isObjRefType) {
             return prop.value.description;
         }
         else {
-            return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
+            return PropFormatter.toString(prop, propDef);
         }
     };
     /**
