@@ -6097,7 +6097,7 @@ var PropFormatter = (function () {
             return prop.value.description;
         }
         else {
-            return PropFormatter.toString(prop, propDef);
+            return PropFormatter.toString(prop.value, propDef);
         }
     };
     /**

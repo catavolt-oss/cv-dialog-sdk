@@ -5707,7 +5707,7 @@ export class PropFormatter {
         } else if (propDef.isObjRefType) {
             return (prop.value as ObjectRef).description;
         } else {
-            return PropFormatter.toString(prop, propDef);
+            return PropFormatter.toString(prop.value, propDef);
         }
     }
 
