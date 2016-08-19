@@ -5701,7 +5701,7 @@ export class PropFormatter {
     static formatForWrite(prop:any, propDef:PropDef):string {
         if (prop === null || prop === undefined
             || prop.value === null || prop.value === undefined){
-            return '';
+            return null;
         } else if (propDef.isCodeRefType) {
             return (prop.value as CodeRef).description;
         } else if (propDef.isObjRefType) {

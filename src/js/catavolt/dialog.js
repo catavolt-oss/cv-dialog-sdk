@@ -6088,7 +6088,7 @@ var PropFormatter = (function () {
     PropFormatter.formatForWrite = function (prop, propDef) {
         if (prop === null || prop === undefined
             || prop.value === null || prop.value === undefined) {
-            return '';
+            return null;
         }
         else if (propDef.isCodeRefType) {
             return prop.value.description;
