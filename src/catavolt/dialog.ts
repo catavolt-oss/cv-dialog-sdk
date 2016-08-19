@@ -5699,7 +5699,13 @@ export class PropFormatter {
      * @returns {string}
      */
     static formatForWrite(prop:any, propDef:PropDef):string {
-        return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
+        if (propDef.isCodeRefType) {
+            return (prop.value as CodeRef).description;
+        } else if (propDef.isObjRefType) {
+            return (prop.value as ObjectRef).description;
+        } else {
+            return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
+        }
     }
 
     /**

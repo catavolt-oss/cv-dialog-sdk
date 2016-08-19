@@ -6086,7 +6086,15 @@ var PropFormatter = (function () {
      * @returns {string}
      */
     PropFormatter.formatForWrite = function (prop, propDef) {
-        return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
+        if (propDef.isCodeRefType) {
+            return prop.value.description;
+        }
+        else if (propDef.isObjRefType) {
+            return prop.value.description;
+        }
+        else {
+            return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
+        }
     };
     /**
      * Attempt to construct (or preserve) the appropriate data type given primitive (or already constructed) value.
