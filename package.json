@@ -1,6 +1,6 @@
 {
   "name": "catavolt-sdk",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Core Catavolt Javascript API",
   "main": "./src/js/catavolt.js",
   "typings": "./src/js/catavolt.d.ts",
