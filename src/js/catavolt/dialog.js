@@ -6307,7 +6307,9 @@ var Prop = (function () {
                 }
                 else if (PType === 'DateTime') {
                     //parse as ISO - no offset specified by server right now, so we assume local time
-                    propValue = moment(strVal).toDate();
+                    //strip invalid suffix (sometimes) provided by server 
+                    var i = strVal.indexOf('T0:');
+                    propValue = moment((i > -1) ? strVal.substring(0, i) : strVal).toDate();
                 }
                 else if (PType === 'Time') {
                     propValue = util_1.TimeValue.fromString(strVal);

@@ -5883,7 +5883,9 @@ export class Prop {
                     propValue = moment(strVal, 'YYYY-M-D').toDate();
                 } else if (PType === 'DateTime') {
                     //parse as ISO - no offset specified by server right now, so we assume local time
-                    propValue = moment(strVal).toDate();
+                    //strip invalid suffix (sometimes) provided by server 
+                    const i = strVal.indexOf('T0:');
+                    propValue = moment((i > -1) ? strVal.substring(0, i) : strVal).toDate();
                 } else if (PType === 'Time') {
                     propValue = TimeValue.fromString(strVal);
                 } else if (PType === 'BinaryRef') {
