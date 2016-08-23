@@ -94,6 +94,7 @@ export declare class ObjUtil {
 export declare class StringUtil {
     static splitSimpleKeyValuePair(pairString: string): Array<string>;
     static hashCode(s: string): number;
+    static endsWith(subjectString: string, searchString: string, position?: number): boolean;
 }
 /**
  * *****************************************************
