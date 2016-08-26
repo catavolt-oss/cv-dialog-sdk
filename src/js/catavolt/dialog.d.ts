@@ -2091,6 +2091,7 @@ export declare class PropFormatter {
      * @returns {string}
      */
     static formatForRead(prop: any, propDef: PropDef): string;
+    static formatValueForRead(value: any, propDef: PropDef): string;
     /**
      * Get a string representation of this property suitable for 'writing'
      * @param prop

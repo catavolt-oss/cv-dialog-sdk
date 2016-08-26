@@ -5692,13 +5692,20 @@ export class PropFormatter {
         if (prop === null || prop === undefined
             || prop.value === null || prop.value === undefined){
             return '';
-        } else if ((propDef && propDef.isCodeRefType) || prop.value instanceof CodeRef) {
-            return (prop.value as CodeRef).description;
-        } else if ((propDef && propDef.isObjRefType) || prop.value instanceof ObjectRef) {
-            return (prop.value as ObjectRef).description;
         } else {
-            return PropFormatter.toString(prop.value, propDef);
+            return PropFormatter.formatValueForRead(prop.value, propDef);
         }
+    }
+    
+    static formatValueForRead(value: any, propDef:PropDef) {
+        if ((propDef && propDef.isCodeRefType) || value instanceof CodeRef) {
+            return (value as CodeRef).description;
+        } else if ((propDef && propDef.isObjRefType) || value instanceof ObjectRef) {
+            return (value as ObjectRef).description;
+        } else {
+           return PropFormatter.toString(value, propDef); 
+        }
+        
     }
 
     /**
