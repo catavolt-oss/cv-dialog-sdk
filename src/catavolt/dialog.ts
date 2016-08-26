@@ -5903,6 +5903,8 @@ export class Prop {
                 } else {
                     return new Failure('Prop::fromWSValue: Property WS_PTYPE is not valid: ' + PType);
                 }
+            } else if(value['WS_LTYPE']) {
+                return Prop.fromListOfWSValue(value['values']);
             }
         }
         return new Success(propValue);

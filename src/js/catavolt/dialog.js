@@ -6336,6 +6336,9 @@ var Prop = (function () {
                     return new fp_1.Failure('Prop::fromWSValue: Property WS_PTYPE is not valid: ' + PType);
                 }
             }
+            else if (value['WS_LTYPE']) {
+                return Prop.fromListOfWSValue(value['values']);
+            }
         }
         return new fp_1.Success(propValue);
     };
