@@ -6400,6 +6400,12 @@ var Prop = (function () {
             else if (o instanceof InlineBinaryRef) {
                 return { 'WS_PTYPE': 'BinaryRef', 'value': o.toString(), properties: o.settings };
             }
+            else if (Array.isArray(o)) {
+                return Prop.toWSListOfProperties(o);
+            }
+            else {
+                return o;
+            }
         }
         else {
             return o;

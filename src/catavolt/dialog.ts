@@ -5959,6 +5959,10 @@ export class Prop {
                 return {'WS_PTYPE': 'GeoLocation', 'value': o.toString()};
             } else if (o instanceof InlineBinaryRef) {
                 return {'WS_PTYPE': 'BinaryRef', 'value': o.toString(), properties: (o as BinaryRef).settings}
+            } else if (Array.isArray(o)) {
+                return Prop.toWSListOfProperties(o);
+            } else {
+                return o;
             }
         } else {
             return o;
