@@ -6077,7 +6077,19 @@ var PropFormatter = (function () {
      * @returns {string}
      */
     PropFormatter.formatForRead = function (prop, propDef) {
-        return (prop !== null && prop !== undefined) ? PropFormatter.toString(prop, propDef) : '';
+        if (prop === null || prop === undefined
+            || prop.value === null || prop.value === undefined) {
+            return '';
+        }
+        else if ((propDef && propDef.isCodeRefType) || prop.value instanceof CodeRef) {
+            return prop.value.description;
+        }
+        else if ((propDef && propDef.isObjRefType) || prop.value instanceof ObjectRef) {
+            return prop.value.description;
+        }
+        else {
+            return PropFormatter.toString(prop.value, propDef);
+        }
     };
     /**
      * Get a string representation of this property suitable for 'writing'
@@ -6090,10 +6102,10 @@ var PropFormatter = (function () {
             || prop.value === null || prop.value === undefined) {
             return null;
         }
-        else if (propDef.isCodeRefType) {
+        else if ((propDef && propDef.isCodeRefType) || prop.value instanceof CodeRef) {
             return prop.value.description;
         }
-        else if (propDef.isObjRefType) {
+        else if ((propDef && propDef.isObjRefType) || prop.value instanceof ObjectRef) {
             return prop.value.description;
         }
         else {
@@ -6173,14 +6185,19 @@ var PropFormatter = (function () {
      */
     PropFormatter.toString = function (o, propDef) {
         if (typeof o === 'number') {
-            if (propDef.isMoneyType) {
-                return o.toFixed(2);
+            if (propDef) {
+                if (propDef.isMoneyType) {
+                    return o.toFixed(2);
+                }
+                else if (propDef.isIntType || propDef.isLongType) {
+                    return o.toFixed(0);
+                }
+                else if (propDef.isDecimalType || propDef.isDoubleType) {
+                    return o.toFixed(Math.max(2, (o.toString().split('.')[1] || []).length));
+                }
             }
-            else if (propDef.isIntType || propDef.isLongType) {
-                return o.toFixed(0);
-            }
-            else if (propDef.isDecimalType || propDef.isDoubleType) {
-                return o.toFixed(Math.max(2, (o.toString().split('.')[1] || []).length));
+            else {
+                return String(o);
             }
         }
         else if (typeof o === 'object') {
