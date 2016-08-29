@@ -328,8 +328,8 @@ var PaneContext = (function () {
      * @param propName
      * @returns {string}
      */
-    PaneContext.prototype.formatForRead = function (propValue, propName) {
-        return PropFormatter.formatForRead(propValue, this.propDefAtName(propName));
+    PaneContext.prototype.formatForRead = function (prop, propName) {
+        return PropFormatter.formatForRead(prop, this.propDefAtName(propName));
     };
     /**
      * Get a string representation of this property suitable for 'writing'
@@ -337,8 +337,8 @@ var PaneContext = (function () {
      * @param propName
      * @returns {string}
      */
-    PaneContext.prototype.formatForWrite = function (propValue, propName) {
-        return PropFormatter.formatForWrite(propValue, this.propDefAtName(propName));
+    PaneContext.prototype.formatForWrite = function (prop, propName) {
+        return PropFormatter.formatForWrite(prop, this.propDefAtName(propName));
     };
     Object.defineProperty(PaneContext.prototype, "formDef", {
         /**

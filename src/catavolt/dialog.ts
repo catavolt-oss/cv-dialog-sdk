@@ -301,8 +301,8 @@ export class PaneContext {
      * @param propName
      * @returns {string}
      */
-    formatForRead(propValue, propName:string):string {
-        return PropFormatter.formatForRead(propValue, this.propDefAtName(propName));
+    formatForRead(prop:Prop, propName:string):string {
+        return PropFormatter.formatForRead(prop, this.propDefAtName(propName));
     }
 
     /**
@@ -311,8 +311,8 @@ export class PaneContext {
      * @param propName
      * @returns {string}
      */
-    formatForWrite(propValue, propName:string):string {
-        return PropFormatter.formatForWrite(propValue, this.propDefAtName(propName));
+    formatForWrite(prop:Prop, propName:string):string {
+        return PropFormatter.formatForWrite(prop, this.propDefAtName(propName));
     }
 
     /**
@@ -5688,7 +5688,7 @@ export class PropFormatter {
      * @param propDef
      * @returns {string}
      */
-    static formatForRead(prop:any, propDef:PropDef):string {
+    static formatForRead(prop:Prop, propDef:PropDef):string {
         if (prop === null || prop === undefined
             || prop.value === null || prop.value === undefined){
             return '';
@@ -5714,7 +5714,7 @@ export class PropFormatter {
      * @param propDef
      * @returns {string}
      */
-    static formatForWrite(prop:any, propDef:PropDef):string {
+    static formatForWrite(prop:Prop, propDef:PropDef):string {
         if (prop === null || prop === undefined
             || prop.value === null || prop.value === undefined){
             return null;

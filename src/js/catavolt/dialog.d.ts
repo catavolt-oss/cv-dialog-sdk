@@ -131,14 +131,14 @@ export declare class PaneContext {
      * @param propName
      * @returns {string}
      */
-    formatForRead(propValue: any, propName: string): string;
+    formatForRead(prop: Prop, propName: string): string;
     /**
      * Get a string representation of this property suitable for 'writing'
      * @param propValue
      * @param propName
      * @returns {string}
      */
-    formatForWrite(propValue: any, propName: string): string;
+    formatForWrite(prop: Prop, propName: string): string;
     /**
      * Get the underlying form definition {@link FormDef} for this Pane.
      * If this is not a {@link FormContext} this will be the {@link FormDef} of the owning/parent Form
@@ -2090,7 +2090,7 @@ export declare class PropFormatter {
      * @param propDef
      * @returns {string}
      */
-    static formatForRead(prop: any, propDef: PropDef): string;
+    static formatForRead(prop: Prop, propDef: PropDef): string;
     static formatValueForRead(value: any, propDef: PropDef): string;
     /**
      * Get a string representation of this property suitable for 'writing'
@@ -2098,7 +2098,7 @@ export declare class PropFormatter {
      * @param propDef
      * @returns {string}
      */
-    static formatForWrite(prop: any, propDef: PropDef): string;
+    static formatForWrite(prop: Prop, propDef: PropDef): string;
     /**
      * Attempt to construct (or preserve) the appropriate data type given primitive (or already constructed) value.
      * @param value
