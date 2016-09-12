@@ -5082,6 +5082,7 @@ export class FormContextBuilder {
             } else if (paneDef instanceof GeoLocationDef) {
                 result.push(new GeoLocationContext(i));
             }else if(paneDef instanceof ErrorDef) {
+                result.push(new PaneContext(i));
             }
         });
         return result;

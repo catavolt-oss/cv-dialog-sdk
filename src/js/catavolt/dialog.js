@@ -5338,6 +5338,7 @@ var FormContextBuilder = (function () {
                 result.push(new GeoLocationContext(i));
             }
             else if (paneDef instanceof ErrorDef) {
+                result.push(new PaneContext(i));
             }
         });
         return result;
