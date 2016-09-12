@@ -213,7 +213,7 @@ exports.TabCellValueDef = TabCellValueDef;
  * *********************************
  */
 /**
- * Top-level (abstract) class, representing a Catavolt 'Pane' definition.
+ * Top-level class, representing a Catavolt 'Pane' definition.
  * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
  * or a list of records.  See {@EntityRecord}
  * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
@@ -348,6 +348,33 @@ var PaneContext = (function () {
          */
         get: function () {
             return this.parentContext.formDef;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PaneContext.prototype, "hasError", {
+        /**
+         * Returns whether or not this pane loaded properly
+         * @returns {boolean}
+         */
+        get: function () {
+            return this.paneDef instanceof ErrorDef;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PaneContext.prototype, "error", {
+        /**
+         * Return the error associated with this pane, if any
+         * @returns {any}
+         */
+        get: function () {
+            if (this.hasError) {
+                return this.paneDef.exception;
+            }
+            else {
+                return null;
+            }
         },
         enumerable: true,
         configurable: true
@@ -1731,7 +1758,11 @@ var PaneDef = (function () {
         var settings = {};
         util_1.ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
         var newPaneDef;
-        if (childXPaneDef instanceof XListDef) {
+        if (childXOpenResult instanceof XOpenDialogModelErrorResult) {
+            var xOpenDialogModelErrorResult = childXOpenResult;
+            newPaneDef = new ErrorDef(childXComp.redirection, settings, xOpenDialogModelErrorResult.exception);
+        }
+        else if (childXPaneDef instanceof XListDef) {
             var xListDef = childXPaneDef;
             var xOpenQueryModelResult = childXOpenResult;
             newPaneDef = new ListDef(xListDef.paneId, xListDef.name, childXComp.label, xListDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xListDef.style, xListDef.initialColumns, childXActiveColDefs.columnDefs, xListDef.columnsStyle, xOpenQueryModelResult.defaultActionId, xListDef.graphicalMarkup);
@@ -2081,6 +2112,29 @@ var DetailsDef = (function (_super) {
     return DetailsDef;
 }(PaneDef));
 exports.DetailsDef = DetailsDef;
+/**
+ * PaneDef Subtype that represents an error
+ */
+var ErrorDef = (function (_super) {
+    __extends(ErrorDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
+    function ErrorDef(dialogRedirection, settings, exception) {
+        _super.call(this, null, null, null, null, null, null, dialogRedirection, settings);
+        this.exception = exception;
+    }
+    return ErrorDef;
+}(PaneDef));
+exports.ErrorDef = ErrorDef;
 /**
  * PaneDef Subtype that describes a Form Pane
  */
@@ -5283,6 +5337,8 @@ var FormContextBuilder = (function () {
             else if (paneDef instanceof GeoLocationDef) {
                 result.push(new GeoLocationContext(i));
             }
+            else if (paneDef instanceof ErrorDef) {
+            }
         });
         return result;
     };
@@ -5383,7 +5439,11 @@ var FormContextBuilder = (function () {
             }
             seqOfFutures.push(nextFr);
         });
-        return fp_1.Future.sequence(seqOfFutures);
+        return fp_1.Future.sequence(seqOfFutures).map(function (results) {
+            return results.map(function (openTry) {
+                return openTry.isFailure ? new fp_1.Success(new XOpenDialogModelErrorResult(openTry.failure)) : openTry;
+            });
+        });
     };
     FormContextBuilder.prototype.retrieveChildFormContexts = function (flattened) {
         var formContexts = [];
@@ -7692,6 +7752,20 @@ var XOpenQueryModelResult = (function () {
     return XOpenQueryModelResult;
 }());
 exports.XOpenQueryModelResult = XOpenQueryModelResult;
+/**
+ * *********************************
+ */
+/**
+ * @private
+ */
+var XOpenDialogModelErrorResult = (function () {
+    function XOpenDialogModelErrorResult(exception) {
+        this.exception = exception;
+        this.entityRecDef = null;
+    }
+    return XOpenDialogModelErrorResult;
+}());
+exports.XOpenDialogModelErrorResult = XOpenDialogModelErrorResult;
 /**
  * *********************************
  */

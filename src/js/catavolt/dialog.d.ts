@@ -69,7 +69,7 @@ export declare class TabCellValueDef extends CellValueDef {
  * *********************************
  */
 /**
- * Top-level (abstract) class, representing a Catavolt 'Pane' definition.
+ * Top-level class, representing a Catavolt 'Pane' definition.
  * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
  * or a list of records.  See {@EntityRecord}
  * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
@@ -145,6 +145,16 @@ export declare class PaneContext {
      * @returns {FormDef}
      */
     formDef: FormDef;
+    /**
+     * Returns whether or not this pane loaded properly
+     * @returns {boolean}
+     */
+    hasError: boolean;
+    /**
+     * Return the error associated with this pane, if any
+     * @returns {any}
+     */
+    error: DialogException;
     /**
      * Returns whether or not the data in this pane is out of date
      * @returns {boolean}
@@ -895,6 +905,24 @@ export declare class DetailsDef extends PaneDef {
     focusPropName: string;
     graphicalMarkup: string;
     rows: Array<Array<CellDef>>;
+}
+/**
+ * PaneDef Subtype that represents an error
+ */
+export declare class ErrorDef extends PaneDef {
+    exception: DialogException;
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
+    constructor(dialogRedirection: DialogRedirection, settings: StringDictionary, exception: DialogException);
 }
 /**
  * PaneDef Subtype that describes a Form Pane
@@ -2683,6 +2711,17 @@ export declare class XOpenQueryModelResult implements XOpenDialogModelResult {
     defaultActionId: string;
     static fromWS(otype: string, jsonObj: any): Try<XOpenQueryModelResult>;
     constructor(entityRecDef: EntityRecDef, sortPropertyDef: Array<SortPropDef>, defaultActionId: string);
+}
+/**
+ * *********************************
+ */
+/**
+ * @private
+ */
+export declare class XOpenDialogModelErrorResult implements XOpenDialogModelResult {
+    exception: DialogException;
+    entityRecDef: EntityRecDef;
+    constructor(exception: DialogException);
 }
 /**
  * *********************************

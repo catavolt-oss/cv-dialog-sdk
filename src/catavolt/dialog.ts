@@ -177,7 +177,7 @@ export class TabCellValueDef extends CellValueDef {
 
 
 /**
- * Top-level (abstract) class, representing a Catavolt 'Pane' definition.
+ * Top-level class, representing a Catavolt 'Pane' definition.
  * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record 
  * or a list of records.  See {@EntityRecord}
  * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
@@ -322,6 +322,26 @@ export class PaneContext {
      */
     get formDef():FormDef {
         return this.parentContext.formDef;
+    }
+
+    /**
+     * Returns whether or not this pane loaded properly
+     * @returns {boolean}
+     */
+    get hasError():boolean {
+        return this.paneDef instanceof ErrorDef;
+    }
+
+    /**
+     * Return the error associated with this pane, if any
+     * @returns {any}
+     */
+    get error():DialogException {
+        if(this.hasError) {
+            return (this.paneDef as ErrorDef).exception;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -1562,7 +1582,10 @@ export class PaneDef {
 
         var newPaneDef:PaneDef;
 
-        if (childXPaneDef instanceof XListDef) {
+        if(childXOpenResult instanceof XOpenDialogModelErrorResult) {
+            var xOpenDialogModelErrorResult:XOpenDialogModelErrorResult = <XOpenDialogModelErrorResult>childXOpenResult;
+            newPaneDef = new ErrorDef(childXComp.redirection, settings, xOpenDialogModelErrorResult.exception);
+        } else if (childXPaneDef instanceof XListDef) {
             var xListDef:XListDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
             newPaneDef = new ListDef(xListDef.paneId, xListDef.name, childXComp.label, xListDef.title, childMenuDefs,
@@ -1895,6 +1918,30 @@ export class DetailsDef extends PaneDef {
         return this._rows;
     }
 
+}
+
+
+/**
+ * PaneDef Subtype that represents an error
+ */
+export class ErrorDef extends PaneDef {
+
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     */
+    constructor(dialogRedirection:DialogRedirection, settings:StringDictionary, public exception:DialogException) {
+
+        super(null, null, null, null, null, null, dialogRedirection, settings);
+
+    }
 }
 
 /**
@@ -5034,6 +5081,7 @@ export class FormContextBuilder {
                 result.push(new GeoFixContext(i));
             } else if (paneDef instanceof GeoLocationDef) {
                 result.push(new GeoLocationContext(i));
+            }else if(paneDef instanceof ErrorDef) {
             }
         });
         return result;
@@ -5146,7 +5194,11 @@ export class FormContextBuilder {
             }
             seqOfFutures.push(nextFr);
         });
-        return Future.sequence<XOpenDialogModelResult>(seqOfFutures);
+        return Future.sequence<XOpenDialogModelResult>(seqOfFutures).map((results:Array<Try<XOpenDialogModelResult>>)=>{
+            return results.map((openTry:Try<XOpenDialogModelResult>)=>{
+                return openTry.isFailure ? new Success(new XOpenDialogModelErrorResult(openTry.failure)) : openTry;
+            });
+        });
     }
 
     private retrieveChildFormContexts(flattened:Array<any>):Array<FormContext> {
@@ -7204,7 +7256,6 @@ export interface XOpenDialogModelResult {
  * *********************************
  */
 
-
 /**
  * @private
  */
@@ -7256,6 +7307,24 @@ export class XOpenQueryModelResult implements XOpenDialogModelResult {
                 public defaultActionId:string) {
     }
 }
+
+/**
+ * *********************************
+ */
+
+/**
+ * @private
+ */
+export class XOpenDialogModelErrorResult implements XOpenDialogModelResult {
+    
+    public entityRecDef:EntityRecDef = null;
+    
+    constructor(public exception:DialogException){}
+    
+    
+}
+
+
 /**
  * *********************************
  */
