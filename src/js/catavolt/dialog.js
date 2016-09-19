@@ -3987,6 +3987,14 @@ var AppContext = (function () {
         configurable: true
     });
     /**
+     * Open a {@link WorkbenchLaunchAction} expecting a Redirection
+     * @param launchAction
+     * @returns {Future<Redirection>}
+     */
+    AppContext.prototype.getRedirForLaunchAction = function (launchAction) {
+        return WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, this.sessionContextTry.success);
+    };
+    /**
      * Get a Worbench by workbenchId
      * @param sessionContext
      * @param workbenchId
@@ -4054,6 +4062,9 @@ var AppContext = (function () {
         });
         this.setAppContextStateToLoggedOut();
         return result;
+    };
+    AppContext.prototype.openRedirection = function (redirection, actionSource) {
+        return NavRequestUtil.fromRedirection(redirection, actionSource, this.sessionContextTry.success);
     };
     /**
      * Open a {@link WorkbenchLaunchAction}
@@ -5243,7 +5254,7 @@ var FormContextBuilder = (function () {
                 var formDef = formDefTry.success;
                 //if this is a nested form, use the child form contexts, otherwise, create new children
                 var childContexts = (formContexts && formContexts.length > 0) ? formContexts : _this.createChildrenContexts(formDef);
-                var formContext = new FormContext(_this.dialogRedirection, _this._actionSource, formDef, childContexts, false, false, _this.sessionContext);
+                var formContext = new FormContext(formDef.dialogRedirection, _this._actionSource, formDef, childContexts, false, false, _this.sessionContext);
                 formContextTry = new fp_1.Success(formContext);
             }
             return fp_1.Future.createCompletedFuture('FormContextBuilder::build', formContextTry);

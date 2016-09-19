@@ -2726,7 +2726,6 @@ export class WebRedirection extends Redirection implements NavRequest {
         this._fromDialogProperties = props;
     }
 
-
 }
 
 export class WorkbenchRedirection extends Redirection {
@@ -3625,6 +3624,16 @@ export class AppContext {
     get isLoggedIn() {
         return this._appContextState === AppContextState.LOGGED_IN;
     }
+    
+    /**
+     * Open a {@link WorkbenchLaunchAction} expecting a Redirection
+     * @param launchAction
+     * @returns {Future<Redirection>}
+     */
+    getRedirForLaunchAction(launchAction:WorkbenchLaunchAction):Future<Redirection> {
+        return WorkbenchService.performLaunchAction(launchAction.id, launchAction.workbenchId, this.sessionContextTry.success);
+    }
+
 
     /**
      * Get a Worbench by workbenchId
@@ -3715,7 +3724,11 @@ export class AppContext {
         this.setAppContextStateToLoggedOut();
         return result;
     }
-
+    
+   
+    openRedirection(redirection:Redirection, actionSource:ActionSource):Future<NavRequest> {
+        return NavRequestUtil.fromRedirection(redirection, actionSource, this.sessionContextTry.success);
+    }
 
     /**
      * Open a {@link WorkbenchLaunchAction}
@@ -4986,7 +4999,7 @@ export class FormContextBuilder {
                 var formDef:FormDef = formDefTry.success;
                 //if this is a nested form, use the child form contexts, otherwise, create new children
                 var childContexts = (formContexts && formContexts.length > 0) ? formContexts : this.createChildrenContexts(formDef);
-                var formContext = new FormContext(this.dialogRedirection,
+                var formContext = new FormContext(formDef.dialogRedirection,
                     this._actionSource, formDef, childContexts, false, false, this.sessionContext);
                 formContextTry = new Success(formContext);
             }

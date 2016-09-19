@@ -1575,6 +1575,12 @@ export declare class AppContext {
      */
     isLoggedIn: boolean;
     /**
+     * Open a {@link WorkbenchLaunchAction} expecting a Redirection
+     * @param launchAction
+     * @returns {Future<Redirection>}
+     */
+    getRedirForLaunchAction(launchAction: WorkbenchLaunchAction): Future<Redirection>;
+    /**
      * Get a Worbench by workbenchId
      * @param sessionContext
      * @param workbenchId
@@ -1606,6 +1612,7 @@ export declare class AppContext {
      * @returns {any}
      */
     logout(): Future<VoidResult>;
+    openRedirection(redirection: Redirection, actionSource: ActionSource): Future<NavRequest>;
     /**
      * Open a {@link WorkbenchLaunchAction}
      * @param launchAction
