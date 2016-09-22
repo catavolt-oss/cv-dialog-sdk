@@ -3724,8 +3724,52 @@ export class AppContext {
         this.setAppContextStateToLoggedOut();
         return result;
     }
-    
-   
+
+    /**
+     * Login and create a new SessionContext
+     * 
+     * @param systemContext
+     * @param tenantId
+     * @param userId
+     * @param password
+     * @param deviceProps
+     * @param clientType
+     * @returns {Future<SessionContext>}
+     */
+    newSessionContext(systemContext:SystemContext,
+                                   tenantId:string,
+                                   userId:string,
+                                   password:string,
+                                   deviceProps:Array<string>,
+                                   clientType:string):Future<SessionContext> {
+
+        return SessionService.createSession(tenantId, userId, password, clientType, systemContext);
+    }
+
+    /**
+     * Get a SystemContext obj (containing the server endpoint)
+     * 
+     * @param gatewayHost
+     * @param tenantId
+     * @returns {Future<SystemContextImpl>}
+     */
+    newSystemContext(gatewayHost:string, tenantId:string):Future<SystemContext> {
+        var serviceEndpoint:Future<ServiceEndpoint> = GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
+        return serviceEndpoint.map(
+            (serviceEndpoint:ServiceEndpoint)=> {
+                return new SystemContextImpl(serviceEndpoint.serverAssignment);
+            }
+        );
+    }
+
+
+    /**
+     * Open a redirection
+     * 
+     * @param redirection
+     * @param actionSource
+     * @returns {Future<NavRequest>}
+     */
     openRedirection(redirection:Redirection, actionSource:ActionSource):Future<NavRequest> {
         return NavRequestUtil.fromRedirection(redirection, actionSource, this.sessionContextTry.success);
     }
@@ -3748,8 +3792,8 @@ export class AppContext {
      * @param deviceProps
      * @returns {Future<AppWinDef>}
      */
-    refreshContext(sessionContext:SessionContext, deviceProps:Array<string> = []):Future<AppWinDef> {
-        var appContextValuesFr = this.finalizeContext(sessionContext, deviceProps);
+    refreshContext(sessionContext:SessionContext):Future<AppWinDef> {
+        var appContextValuesFr = this.finalizeContext(sessionContext, this.deviceProps);
         return appContextValuesFr.bind(
             (appContextValues:AppContextValues)=> {
                 this.setAppContextStateToLoggedIn(appContextValues);
@@ -3800,7 +3844,7 @@ export class AppContext {
                         password:string,
                         deviceProps:Array<string>):Future<AppContextValues> {
 
-        var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
+        var systemContextFr = this.newSystemContext(gatewayHost, tenantId);
         return systemContextFr.bind(
             (sc:SystemContext)=> {
                 return this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
@@ -3819,15 +3863,6 @@ export class AppContext {
         return sessionContextFuture.bind(
             (sessionContext:SessionContext)=> {
                 return this.finalizeContext(sessionContext, deviceProps);
-            }
-        );
-    }
-
-    private newSystemContextFr(gatewayHost:string, tenantId:string):Future<SystemContext> {
-        var serviceEndpoint:Future<ServiceEndpoint> = GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
-        return serviceEndpoint.map(
-            (serviceEndpoint:ServiceEndpoint)=> {
-                return new SystemContextImpl(serviceEndpoint.serverAssignment);
             }
         );
     }

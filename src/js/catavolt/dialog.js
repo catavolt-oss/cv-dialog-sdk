@@ -4063,6 +4063,40 @@ var AppContext = (function () {
         this.setAppContextStateToLoggedOut();
         return result;
     };
+    /**
+     * Login and create a new SessionContext
+     *
+     * @param systemContext
+     * @param tenantId
+     * @param userId
+     * @param password
+     * @param deviceProps
+     * @param clientType
+     * @returns {Future<SessionContext>}
+     */
+    AppContext.prototype.newSessionContext = function (systemContext, tenantId, userId, password, deviceProps, clientType) {
+        return SessionService.createSession(tenantId, userId, password, clientType, systemContext);
+    };
+    /**
+     * Get a SystemContext obj (containing the server endpoint)
+     *
+     * @param gatewayHost
+     * @param tenantId
+     * @returns {Future<SystemContextImpl>}
+     */
+    AppContext.prototype.newSystemContext = function (gatewayHost, tenantId) {
+        var serviceEndpoint = GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
+        return serviceEndpoint.map(function (serviceEndpoint) {
+            return new SystemContextImpl(serviceEndpoint.serverAssignment);
+        });
+    };
+    /**
+     * Open a redirection
+     *
+     * @param redirection
+     * @param actionSource
+     * @returns {Future<NavRequest>}
+     */
     AppContext.prototype.openRedirection = function (redirection, actionSource) {
         return NavRequestUtil.fromRedirection(redirection, actionSource, this.sessionContextTry.success);
     };
@@ -4083,10 +4117,9 @@ var AppContext = (function () {
      * @param deviceProps
      * @returns {Future<AppWinDef>}
      */
-    AppContext.prototype.refreshContext = function (sessionContext, deviceProps) {
+    AppContext.prototype.refreshContext = function (sessionContext) {
         var _this = this;
-        if (deviceProps === void 0) { deviceProps = []; }
-        var appContextValuesFr = this.finalizeContext(sessionContext, deviceProps);
+        var appContextValuesFr = this.finalizeContext(sessionContext, this.deviceProps);
         return appContextValuesFr.bind(function (appContextValues) {
             _this.setAppContextStateToLoggedIn(appContextValues);
             return fp_1.Future.createSuccessfulFuture('AppContext::login', appContextValues.appWinDef);
@@ -4127,7 +4160,7 @@ var AppContext = (function () {
     };
     AppContext.prototype.loginOnline = function (gatewayHost, tenantId, clientType, userId, password, deviceProps) {
         var _this = this;
-        var systemContextFr = this.newSystemContextFr(gatewayHost, tenantId);
+        var systemContextFr = this.newSystemContext(gatewayHost, tenantId);
         return systemContextFr.bind(function (sc) {
             return _this.loginFromSystemContext(sc, tenantId, userId, password, deviceProps, clientType);
         });
@@ -4137,12 +4170,6 @@ var AppContext = (function () {
         var sessionContextFuture = SessionService.createSession(tenantId, userId, password, clientType, systemContext);
         return sessionContextFuture.bind(function (sessionContext) {
             return _this.finalizeContext(sessionContext, deviceProps);
-        });
-    };
-    AppContext.prototype.newSystemContextFr = function (gatewayHost, tenantId) {
-        var serviceEndpoint = GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
-        return serviceEndpoint.map(function (serviceEndpoint) {
-            return new SystemContextImpl(serviceEndpoint.serverAssignment);
         });
     };
     AppContext.prototype.performLaunchActionOnline = function (launchAction, sessionContext) {

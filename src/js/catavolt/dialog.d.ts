@@ -1612,6 +1612,33 @@ export declare class AppContext {
      * @returns {any}
      */
     logout(): Future<VoidResult>;
+    /**
+     * Login and create a new SessionContext
+     *
+     * @param systemContext
+     * @param tenantId
+     * @param userId
+     * @param password
+     * @param deviceProps
+     * @param clientType
+     * @returns {Future<SessionContext>}
+     */
+    newSessionContext(systemContext: SystemContext, tenantId: string, userId: string, password: string, deviceProps: Array<string>, clientType: string): Future<SessionContext>;
+    /**
+     * Get a SystemContext obj (containing the server endpoint)
+     *
+     * @param gatewayHost
+     * @param tenantId
+     * @returns {Future<SystemContextImpl>}
+     */
+    newSystemContext(gatewayHost: string, tenantId: string): Future<SystemContext>;
+    /**
+     * Open a redirection
+     *
+     * @param redirection
+     * @param actionSource
+     * @returns {Future<NavRequest>}
+     */
     openRedirection(redirection: Redirection, actionSource: ActionSource): Future<NavRequest>;
     /**
      * Open a {@link WorkbenchLaunchAction}
@@ -1625,7 +1652,7 @@ export declare class AppContext {
      * @param deviceProps
      * @returns {Future<AppWinDef>}
      */
-    refreshContext(sessionContext: SessionContext, deviceProps?: Array<string>): Future<AppWinDef>;
+    refreshContext(sessionContext: SessionContext): Future<AppWinDef>;
     /**
      * Get the SessionContext Try
      * @returns {Try<SessionContext>}
@@ -1639,7 +1666,6 @@ export declare class AppContext {
     private finalizeContext(sessionContext, deviceProps);
     private loginOnline(gatewayHost, tenantId, clientType, userId, password, deviceProps);
     private loginFromSystemContext(systemContext, tenantId, userId, password, deviceProps, clientType);
-    private newSystemContextFr(gatewayHost, tenantId);
     private performLaunchActionOnline(launchAction, sessionContext);
     private setAppContextStateToLoggedIn(appContextValues);
     private setAppContextStateToLoggedOut();
