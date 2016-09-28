@@ -4453,7 +4453,7 @@ export class DialogService {
     static openEditorModelFromRedir(redirection:DialogRedirection,
                                     sessionContext:SessionContext):Future<XOpenEditorModelResult> {
 
-        var method = 'open2';
+        var method = 'reopen';
         var params:StringDictionary = {
             'editorMode': redirection.dialogMode,
             'dialogHandle': OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle')

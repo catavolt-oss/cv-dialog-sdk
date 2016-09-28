@@ -4773,7 +4773,7 @@ var DialogService = (function () {
         });
     };
     DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
-        var method = 'open2';
+        var method = 'reopen';
         var params = {
             'editorMode': redirection.dialogMode,
             'dialogHandle': OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle')
