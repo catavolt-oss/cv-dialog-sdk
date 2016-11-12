@@ -6480,13 +6480,13 @@ export class SessionContextImpl implements SessionContext {
     private _gatewayHost:string;
     private _password:string;
     private _remoteSession:boolean;
-    private _tenantId:string;
     private _userId:string;
 
     currentDivision:string;
     serverVersion:string;
     sessionHandle:string;
     systemContext:SystemContext;
+    tenantId:string;
     userName:string;
 
     static fromWSCreateSessionResult(jsonObject:{[id:string]:any},
@@ -6506,9 +6506,8 @@ export class SessionContextImpl implements SessionContext {
                                 userId:string,
                                 password:string):SessionContext {
 
-        var sessionContext = new SessionContextImpl(null, userId, "", null, null);
+        var sessionContext = new SessionContextImpl(null, userId, "", null, null, tenantId);
         sessionContext._gatewayHost = gatewayHost;
-        sessionContext._tenantId = tenantId;
         sessionContext._clientType = clientType;
         sessionContext._userId = userId;
         sessionContext._password = password;
@@ -6521,13 +6520,15 @@ export class SessionContextImpl implements SessionContext {
                 userName:string,
                 currentDivision:string,
                 serverVersion:string,
-                systemContext:SystemContext) {
+                systemContext:SystemContext,
+                tenantId:string) {
 
         this.sessionHandle = sessionHandle;
         this.userName = userName;
         this.currentDivision = currentDivision;
         this.serverVersion = serverVersion;
         this.systemContext = systemContext;
+        this.tenantId = tenantId;
         this._remoteSession = true;
     }
 
@@ -6549,10 +6550,6 @@ export class SessionContextImpl implements SessionContext {
 
     get password() {
         return this._password;
-    }
-
-    get tenantId() {
-        return this._tenantId;
     }
 
     get userId() {

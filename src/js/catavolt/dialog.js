@@ -6967,12 +6967,13 @@ exports.QueryScroller = QueryScroller;
  * *********************************
  */
 var SessionContextImpl = (function () {
-    function SessionContextImpl(sessionHandle, userName, currentDivision, serverVersion, systemContext) {
+    function SessionContextImpl(sessionHandle, userName, currentDivision, serverVersion, systemContext, tenantId) {
         this.sessionHandle = sessionHandle;
         this.userName = userName;
         this.currentDivision = currentDivision;
         this.serverVersion = serverVersion;
         this.systemContext = systemContext;
+        this.tenantId = tenantId;
         this._remoteSession = true;
     }
     SessionContextImpl.fromWSCreateSessionResult = function (jsonObject, systemContext) {
@@ -6983,9 +6984,8 @@ var SessionContextImpl = (function () {
         });
     };
     SessionContextImpl.createSessionContext = function (gatewayHost, tenantId, clientType, userId, password) {
-        var sessionContext = new SessionContextImpl(null, userId, "", null, null);
+        var sessionContext = new SessionContextImpl(null, userId, "", null, null, tenantId);
         sessionContext._gatewayHost = gatewayHost;
-        sessionContext._tenantId = tenantId;
         sessionContext._clientType = clientType;
         sessionContext._userId = userId;
         sessionContext._password = password;
@@ -7023,13 +7023,6 @@ var SessionContextImpl = (function () {
     Object.defineProperty(SessionContextImpl.prototype, "password", {
         get: function () {
             return this._password;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SessionContextImpl.prototype, "tenantId", {
-        get: function () {
-            return this._tenantId;
         },
         enumerable: true,
         configurable: true
