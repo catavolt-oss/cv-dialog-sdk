@@ -253,6 +253,7 @@ export interface SessionContext {
     serverVersion: string;
     sessionHandle: string;
     systemContext: SystemContext;
+    tenantId: string;
     userName: string;
 }
 
