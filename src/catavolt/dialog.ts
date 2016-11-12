@@ -6490,12 +6490,14 @@ export class SessionContextImpl implements SessionContext {
     userName:string;
 
     static fromWSCreateSessionResult(jsonObject:{[id:string]:any},
-                                     systemContext:SystemContext):Try<SessionContext> {
+                                     systemContext:SystemContext,
+                                     tenantId:string):Try<SessionContext> {
 
         var sessionContextTry:Try<SessionContext> = DialogTriple.fromWSDialogObject<SessionContext>(jsonObject,
             'WSCreateSessionResult', OType.factoryFn);
         return sessionContextTry.map((sessionContext:SessionContext)=> {
             sessionContext.systemContext = systemContext;
+            sessionContext.tenantId = tenantId;
             return sessionContext;
         });
     }
@@ -6593,7 +6595,7 @@ export class SessionService {
         return call.perform().bind(
             (result:StringDictionary)=> {
                 return Future.createCompletedFuture("createSession/extractSessionContextFromResponse",
-                    SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
+                    SessionContextImpl.fromWSCreateSessionResult(result, systemContext, tenantId));
             }
         );
 

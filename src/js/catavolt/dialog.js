@@ -6976,10 +6976,11 @@ var SessionContextImpl = (function () {
         this.tenantId = tenantId;
         this._remoteSession = true;
     }
-    SessionContextImpl.fromWSCreateSessionResult = function (jsonObject, systemContext) {
+    SessionContextImpl.fromWSCreateSessionResult = function (jsonObject, systemContext, tenantId) {
         var sessionContextTry = DialogTriple.fromWSDialogObject(jsonObject, 'WSCreateSessionResult', OType.factoryFn);
         return sessionContextTry.map(function (sessionContext) {
             sessionContext.systemContext = systemContext;
+            sessionContext.tenantId = tenantId;
             return sessionContext;
         });
     };
@@ -7063,7 +7064,7 @@ var SessionService = (function () {
         };
         var call = ws_1.Call.createCallWithoutSession(SessionService.SERVICE_PATH, method, params, systemContext);
         return call.perform().bind(function (result) {
-            return fp_1.Future.createCompletedFuture("createSession/extractSessionContextFromResponse", SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
+            return fp_1.Future.createCompletedFuture("createSession/extractSessionContextFromResponse", SessionContextImpl.fromWSCreateSessionResult(result, systemContext, tenantId));
         });
     };
     SessionService.deleteSession = function (sessionContext) {

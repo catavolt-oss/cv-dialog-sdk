@@ -2364,7 +2364,7 @@ export declare class SessionContextImpl implements SessionContext {
     userName: string;
     static fromWSCreateSessionResult(jsonObject: {
         [id: string]: any;
-    }, systemContext: SystemContext): Try<SessionContext>;
+    }, systemContext: SystemContext, tenantId: string): Try<SessionContext>;
     static createSessionContext(gatewayHost: string, tenantId: string, clientType: string, userId: string, password: string): SessionContext;
     constructor(sessionHandle: string, userName: string, currentDivision: string, serverVersion: string, systemContext: SystemContext, tenantId: string);
     clientType: string;
