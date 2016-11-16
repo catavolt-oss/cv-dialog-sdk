@@ -5034,6 +5034,9 @@ export class FormContextBuilder {
                 var formDef:FormDef = formDefTry.success;
                 //if this is a nested form, use the child form contexts, otherwise, create new children
                 var childContexts = (formContexts && formContexts.length > 0) ? formContexts : this.createChildrenContexts(formDef);
+                if(this.dialogRedirection && this.dialogRedirection.fromDialogProperties) {
+                    formDef.dialogRedirection.fromDialogProperties = ObjUtil.addAllProps(this.dialogRedirection.fromDialogProperties, {});
+                }
                 var formContext = new FormContext(formDef.dialogRedirection,
                     this._actionSource, formDef, childContexts, false, false, this.sessionContext);
                 formContextTry = new Success(formContext);
