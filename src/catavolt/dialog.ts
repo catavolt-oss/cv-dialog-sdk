@@ -5034,6 +5034,9 @@ export class FormContextBuilder {
                 var formDef:FormDef = formDefTry.success;
                 //if this is a nested form, use the child form contexts, otherwise, create new children
                 var childContexts = (formContexts && formContexts.length > 0) ? formContexts : this.createChildrenContexts(formDef);
+                if(this.dialogRedirection && this.dialogRedirection.fromDialogProperties) {
+                    formDef.dialogRedirection.fromDialogProperties = ObjUtil.addAllProps(this.dialogRedirection.fromDialogProperties, {});
+                }
                 var formContext = new FormContext(formDef.dialogRedirection,
                     this._actionSource, formDef, childContexts, false, false, this.sessionContext);
                 formContextTry = new Success(formContext);
@@ -6480,22 +6483,24 @@ export class SessionContextImpl implements SessionContext {
     private _gatewayHost:string;
     private _password:string;
     private _remoteSession:boolean;
-    private _tenantId:string;
     private _userId:string;
 
     currentDivision:string;
     serverVersion:string;
     sessionHandle:string;
     systemContext:SystemContext;
+    tenantId:string;
     userName:string;
 
     static fromWSCreateSessionResult(jsonObject:{[id:string]:any},
-                                     systemContext:SystemContext):Try<SessionContext> {
+                                     systemContext:SystemContext,
+                                     tenantId:string):Try<SessionContext> {
 
         var sessionContextTry:Try<SessionContext> = DialogTriple.fromWSDialogObject<SessionContext>(jsonObject,
             'WSCreateSessionResult', OType.factoryFn);
         return sessionContextTry.map((sessionContext:SessionContext)=> {
             sessionContext.systemContext = systemContext;
+            sessionContext.tenantId = tenantId;
             return sessionContext;
         });
     }
@@ -6506,9 +6511,8 @@ export class SessionContextImpl implements SessionContext {
                                 userId:string,
                                 password:string):SessionContext {
 
-        var sessionContext = new SessionContextImpl(null, userId, "", null, null);
+        var sessionContext = new SessionContextImpl(null, userId, "", null, null, tenantId);
         sessionContext._gatewayHost = gatewayHost;
-        sessionContext._tenantId = tenantId;
         sessionContext._clientType = clientType;
         sessionContext._userId = userId;
         sessionContext._password = password;
@@ -6521,13 +6525,15 @@ export class SessionContextImpl implements SessionContext {
                 userName:string,
                 currentDivision:string,
                 serverVersion:string,
-                systemContext:SystemContext) {
+                systemContext:SystemContext,
+                tenantId:string) {
 
         this.sessionHandle = sessionHandle;
         this.userName = userName;
         this.currentDivision = currentDivision;
         this.serverVersion = serverVersion;
         this.systemContext = systemContext;
+        this.tenantId = tenantId;
         this._remoteSession = true;
     }
 
@@ -6549,10 +6555,6 @@ export class SessionContextImpl implements SessionContext {
 
     get password() {
         return this._password;
-    }
-
-    get tenantId() {
-        return this._tenantId;
     }
 
     get userId() {
@@ -6596,7 +6598,7 @@ export class SessionService {
         return call.perform().bind(
             (result:StringDictionary)=> {
                 return Future.createCompletedFuture("createSession/extractSessionContextFromResponse",
-                    SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
+                    SessionContextImpl.fromWSCreateSessionResult(result, systemContext, tenantId));
             }
         );
 

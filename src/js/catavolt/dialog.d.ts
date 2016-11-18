@@ -2355,24 +2355,23 @@ export declare class SessionContextImpl implements SessionContext {
     private _gatewayHost;
     private _password;
     private _remoteSession;
-    private _tenantId;
     private _userId;
     currentDivision: string;
     serverVersion: string;
     sessionHandle: string;
     systemContext: SystemContext;
+    tenantId: string;
     userName: string;
     static fromWSCreateSessionResult(jsonObject: {
         [id: string]: any;
-    }, systemContext: SystemContext): Try<SessionContext>;
+    }, systemContext: SystemContext, tenantId: string): Try<SessionContext>;
     static createSessionContext(gatewayHost: string, tenantId: string, clientType: string, userId: string, password: string): SessionContext;
-    constructor(sessionHandle: string, userName: string, currentDivision: string, serverVersion: string, systemContext: SystemContext);
+    constructor(sessionHandle: string, userName: string, currentDivision: string, serverVersion: string, systemContext: SystemContext, tenantId: string);
     clientType: string;
     gatewayHost: string;
     isLocalSession: boolean;
     isRemoteSession: boolean;
     password: string;
-    tenantId: string;
     userId: string;
     online: boolean;
 }

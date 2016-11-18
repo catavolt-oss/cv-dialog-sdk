@@ -5281,6 +5281,9 @@ var FormContextBuilder = (function () {
                 var formDef = formDefTry.success;
                 //if this is a nested form, use the child form contexts, otherwise, create new children
                 var childContexts = (formContexts && formContexts.length > 0) ? formContexts : _this.createChildrenContexts(formDef);
+                if (_this.dialogRedirection && _this.dialogRedirection.fromDialogProperties) {
+                    formDef.dialogRedirection.fromDialogProperties = util_1.ObjUtil.addAllProps(_this.dialogRedirection.fromDialogProperties, {});
+                }
                 var formContext = new FormContext(formDef.dialogRedirection, _this._actionSource, formDef, childContexts, false, false, _this.sessionContext);
                 formContextTry = new fp_1.Success(formContext);
             }
@@ -6967,25 +6970,26 @@ exports.QueryScroller = QueryScroller;
  * *********************************
  */
 var SessionContextImpl = (function () {
-    function SessionContextImpl(sessionHandle, userName, currentDivision, serverVersion, systemContext) {
+    function SessionContextImpl(sessionHandle, userName, currentDivision, serverVersion, systemContext, tenantId) {
         this.sessionHandle = sessionHandle;
         this.userName = userName;
         this.currentDivision = currentDivision;
         this.serverVersion = serverVersion;
         this.systemContext = systemContext;
+        this.tenantId = tenantId;
         this._remoteSession = true;
     }
-    SessionContextImpl.fromWSCreateSessionResult = function (jsonObject, systemContext) {
+    SessionContextImpl.fromWSCreateSessionResult = function (jsonObject, systemContext, tenantId) {
         var sessionContextTry = DialogTriple.fromWSDialogObject(jsonObject, 'WSCreateSessionResult', OType.factoryFn);
         return sessionContextTry.map(function (sessionContext) {
             sessionContext.systemContext = systemContext;
+            sessionContext.tenantId = tenantId;
             return sessionContext;
         });
     };
     SessionContextImpl.createSessionContext = function (gatewayHost, tenantId, clientType, userId, password) {
-        var sessionContext = new SessionContextImpl(null, userId, "", null, null);
+        var sessionContext = new SessionContextImpl(null, userId, "", null, null, tenantId);
         sessionContext._gatewayHost = gatewayHost;
-        sessionContext._tenantId = tenantId;
         sessionContext._clientType = clientType;
         sessionContext._userId = userId;
         sessionContext._password = password;
@@ -7027,13 +7031,6 @@ var SessionContextImpl = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(SessionContextImpl.prototype, "tenantId", {
-        get: function () {
-            return this._tenantId;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(SessionContextImpl.prototype, "userId", {
         get: function () {
             return this._userId;
@@ -7070,7 +7067,7 @@ var SessionService = (function () {
         };
         var call = ws_1.Call.createCallWithoutSession(SessionService.SERVICE_PATH, method, params, systemContext);
         return call.perform().bind(function (result) {
-            return fp_1.Future.createCompletedFuture("createSession/extractSessionContextFromResponse", SessionContextImpl.fromWSCreateSessionResult(result, systemContext));
+            return fp_1.Future.createCompletedFuture("createSession/extractSessionContextFromResponse", SessionContextImpl.fromWSCreateSessionResult(result, systemContext, tenantId));
         });
     };
     SessionService.deleteSession = function (sessionContext) {
