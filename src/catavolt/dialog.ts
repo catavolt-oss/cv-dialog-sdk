@@ -1552,6 +1552,24 @@ export class MapContext extends QueryContext {
 
 }
 
+export class PrintMarkupContext extends EditorContext {
+
+    constructor(paneRef:number) {
+        super(paneRef);
+    }
+
+    get printMarkupDef():PrintMarkupDef {
+        return <PrintMarkupDef>this.paneDef;
+    }
+
+    // get printMarkupURL():string {     NOTE: Access this property on the PrintMarkupDef
+    //     return this.paneDef.dialogRedirection.dialogProperties['formsURL'];
+    // }
+
+}
+
+
+
 /**
  * A PaneDef represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
  * that is responsible for displaying a data record or records. The Pane describes 'how' and 'where' the data will be
@@ -1594,9 +1612,15 @@ export class PaneDef {
         } else if (childXPaneDef instanceof XDetailsDef) {
             var xDetailsDef:XDetailsDef = childXPaneDef;
             var xOpenEditorModelResult:XOpenEditorModelResult = <XOpenEditorModelResult>childXOpenResult;
-            newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs,
-                xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText,
-                xDetailsDef.editable, xDetailsDef.focusPropertyName, xDetailsDef.graphicalMarkup, xDetailsDef.rows);
+            if (childXComp.redirection.dialogProperties['formsURL']) {
+                newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs,
+                    xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText,
+                    xDetailsDef.editable, xDetailsDef.focusPropertyName, childXComp.redirection.dialogProperties['formsURL'], xDetailsDef.rows);
+            } else {
+                newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs,
+                    xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText,
+                    xDetailsDef.editable, xDetailsDef.focusPropertyName, xDetailsDef.graphicalMarkup, xDetailsDef.rows);
+            }
         } else if (childXPaneDef instanceof XMapDef) {
             var xMapDef:XMapDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
@@ -2483,6 +2507,76 @@ export class MapDef extends PaneDef {
     }
 
 }
+
+/**
+ * *********************************
+ */
+
+/**
+ * PaneDef Subtype that describes a Details Pane to be displayed as form
+ */
+export class PrintMarkupDef extends PaneDef {
+
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _cancelButtonText
+     * @param _commitButtonText
+     * @param _editable
+     * @param _focusPropName
+     * @param _printMarkup
+     * @param _rows
+     */
+    constructor(paneId:string,
+                name:string,
+                label:string,
+                title:string,
+                menuDefs:Array<MenuDef>,
+                entityRecDef:EntityRecDef,
+                dialogRedirection:DialogRedirection,
+                settings:StringDictionary,
+                private _cancelButtonText:string,
+                private _commitButtonText:string,
+                private _editable:boolean,
+                private _focusPropName:string,
+                private _printMarkup:string,
+                private _rows:Array<Array<CellDef>>) {
+        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    }
+
+    get cancelButtonText():string {
+        return this._cancelButtonText;
+    }
+
+    get commitButtonText():string {
+        return this._commitButtonText;
+    }
+
+    get editable():boolean {
+        return this._editable;
+    }
+
+    get focusPropName():string {
+        return this._focusPropName;
+    }
+
+    get printMarkup():string {
+        return this._printMarkup;
+    }
+
+    get rows():Array<Array<CellDef>> {
+        return this._rows;
+    }
+
+}
+
 
 /**
  * *********************************
@@ -5118,6 +5212,8 @@ export class FormContextBuilder {
                 result.push(new ListContext(i));
             } else if (paneDef instanceof DetailsDef) {
                 result.push(new DetailsContext(i));
+            } else if (paneDef instanceof PrintMarkupDef) {
+                result.push(new PrintMarkupContext(i));
             } else if (paneDef instanceof MapDef) {
                 result.push(new MapContext(i));
             } else if (paneDef instanceof GraphDef) {

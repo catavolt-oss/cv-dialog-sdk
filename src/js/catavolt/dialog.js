@@ -1716,6 +1716,21 @@ var MapContext = (function (_super) {
     return MapContext;
 }(QueryContext));
 exports.MapContext = MapContext;
+var PrintMarkupContext = (function (_super) {
+    __extends(PrintMarkupContext, _super);
+    function PrintMarkupContext(paneRef) {
+        _super.call(this, paneRef);
+    }
+    Object.defineProperty(PrintMarkupContext.prototype, "printMarkupDef", {
+        get: function () {
+            return this.paneDef;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PrintMarkupContext;
+}(EditorContext));
+exports.PrintMarkupContext = PrintMarkupContext;
 /**
  * A PaneDef represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
  * that is responsible for displaying a data record or records. The Pane describes 'how' and 'where' the data will be
@@ -1770,7 +1785,12 @@ var PaneDef = (function () {
         else if (childXPaneDef instanceof XDetailsDef) {
             var xDetailsDef = childXPaneDef;
             var xOpenEditorModelResult = childXOpenResult;
-            newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, xDetailsDef.graphicalMarkup, xDetailsDef.rows);
+            if (childXComp.redirection.dialogProperties['formsURL']) {
+                newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, childXComp.redirection.dialogProperties['formsURL'], xDetailsDef.rows);
+            }
+            else {
+                newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, xDetailsDef.graphicalMarkup, xDetailsDef.rows);
+            }
         }
         else if (childXPaneDef instanceof XMapDef) {
             var xMapDef = childXPaneDef;
@@ -2757,6 +2777,85 @@ var MapDef = (function (_super) {
     return MapDef;
 }(PaneDef));
 exports.MapDef = MapDef;
+/**
+ * *********************************
+ */
+/**
+ * PaneDef Subtype that describes a Details Pane to be displayed as form
+ */
+var PrintMarkupDef = (function (_super) {
+    __extends(PrintMarkupDef, _super);
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _cancelButtonText
+     * @param _commitButtonText
+     * @param _editable
+     * @param _focusPropName
+     * @param _printMarkup
+     * @param _rows
+     */
+    function PrintMarkupDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _cancelButtonText, _commitButtonText, _editable, _focusPropName, _printMarkup, _rows) {
+        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        this._cancelButtonText = _cancelButtonText;
+        this._commitButtonText = _commitButtonText;
+        this._editable = _editable;
+        this._focusPropName = _focusPropName;
+        this._printMarkup = _printMarkup;
+        this._rows = _rows;
+    }
+    Object.defineProperty(PrintMarkupDef.prototype, "cancelButtonText", {
+        get: function () {
+            return this._cancelButtonText;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PrintMarkupDef.prototype, "commitButtonText", {
+        get: function () {
+            return this._commitButtonText;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PrintMarkupDef.prototype, "editable", {
+        get: function () {
+            return this._editable;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PrintMarkupDef.prototype, "focusPropName", {
+        get: function () {
+            return this._focusPropName;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PrintMarkupDef.prototype, "printMarkup", {
+        get: function () {
+            return this._printMarkup;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PrintMarkupDef.prototype, "rows", {
+        get: function () {
+            return this._rows;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PrintMarkupDef;
+}(PaneDef));
+exports.PrintMarkupDef = PrintMarkupDef;
 /**
  * *********************************
  */
@@ -5356,6 +5455,9 @@ var FormContextBuilder = (function () {
             }
             else if (paneDef instanceof DetailsDef) {
                 result.push(new DetailsContext(i));
+            }
+            else if (paneDef instanceof PrintMarkupDef) {
+                result.push(new PrintMarkupContext(i));
             }
             else if (paneDef instanceof MapDef) {
                 result.push(new MapContext(i));

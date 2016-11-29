@@ -737,6 +737,10 @@ export declare class MapContext extends QueryContext {
     constructor(paneRef: number);
     mapDef: MapDef;
 }
+export declare class PrintMarkupContext extends EditorContext {
+    constructor(paneRef: number);
+    printMarkupDef: PrintMarkupDef;
+}
 /**
  * A PaneDef represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
  * that is responsible for displaying a data record or records. The Pane describes 'how' and 'where' the data will be
@@ -1183,6 +1187,44 @@ export declare class MapDef extends PaneDef {
     postalCodePropName: string;
     statePropName: string;
     streetPropName: string;
+}
+/**
+ * *********************************
+ */
+/**
+ * PaneDef Subtype that describes a Details Pane to be displayed as form
+ */
+export declare class PrintMarkupDef extends PaneDef {
+    private _cancelButtonText;
+    private _commitButtonText;
+    private _editable;
+    private _focusPropName;
+    private _printMarkup;
+    private _rows;
+    /**
+     * @private
+     * @param paneId
+     * @param name
+     * @param label
+     * @param title
+     * @param menuDefs
+     * @param entityRecDef
+     * @param dialogRedirection
+     * @param settings
+     * @param _cancelButtonText
+     * @param _commitButtonText
+     * @param _editable
+     * @param _focusPropName
+     * @param _printMarkup
+     * @param _rows
+     */
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _cancelButtonText: string, _commitButtonText: string, _editable: boolean, _focusPropName: string, _printMarkup: string, _rows: Array<Array<CellDef>>);
+    cancelButtonText: string;
+    commitButtonText: string;
+    editable: boolean;
+    focusPropName: string;
+    printMarkup: string;
+    rows: Array<Array<CellDef>>;
 }
 /**
  * *********************************
