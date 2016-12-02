@@ -9,3 +9,4 @@ __export(require('./catavolt/util'));
 __export(require('./catavolt/fp'));
 __export(require('./catavolt/ws'));
 __export(require('./catavolt/dialog'));
+__export(require('./catavolt/print'));

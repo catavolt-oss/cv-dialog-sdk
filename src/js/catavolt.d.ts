@@ -5,3 +5,4 @@ export * from './catavolt/util';
 export * from './catavolt/fp';
 export * from './catavolt/ws';
 export * from './catavolt/dialog';
+export * from './catavolt/print';
