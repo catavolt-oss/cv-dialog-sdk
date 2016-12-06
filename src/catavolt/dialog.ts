@@ -5405,6 +5405,7 @@ export class MenuDef {
                 private _label:string,
                 private _iconName:string,
                 private _directive:string,
+                private _showOnMenu:boolean,
                 private _menuDefs:Array<MenuDef>) {
     }
 
@@ -5473,6 +5474,14 @@ export class MenuDef {
 
     get name():string {
         return this._name;
+    }
+    
+    get showOnMenu():boolean {
+        if(this._showOnMenu == null) {
+            return true;
+        }else{
+            return this._showOnMenu;
+        }
     }
 
     get type():string {
