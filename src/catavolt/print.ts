@@ -23,57 +23,70 @@ import * as moment from 'moment';
 // Skipped in initial port: BarChart, BarcodeScanner, BarOrientation,
 //                          DatePicker, Defaults, GaugeChart
 
+const XML_CELL = "Cell";
+const XML_FORM = "Form";
+const XML_GRID = "Grid";
+const XML_PAGE = "Page";
 
+const XML_BUTTON = "Button";
+const XML_CHECKBOX = "CheckBox";
+const XML_IMAGE = "Image";
+const XML_LABEL = "Label";
+const XML_SIGNATURE_CAPTURE = "SignatureCapture";
+const XML_TEXT_AREA = "TextArea";
+const XML_TEXT_FIELD = "TextField";
+const XML_TIME_PICKER = "TimePicker";
+const XML_VALUE_PICKER = "ValuePicker";
 
+const XML_CHILDREN = "Children";
 
-const XML_ALLOW_ANNOTATIONS:string = "AllowAnnotations";
-const XML_ALLOW_PICKER:string = "AllowPicker";
-const XML_ALLOW_PICK_OPTIONS:string = "AllowPickOptions";
-const XML_ALPHA:string = "Alpha";
-const XML_ASPECT_MODE:string = "AspectMode";
-const XML_BACKGROUND_COLOR:string = "BackgroundColor";
-const XML_BINDING:string = "Binding";
-const XML_BLUE:string = "Blue";
-const XML_BOLD:string = "Bold";
-const XML_BORDER_COLOR:string = "BorderColor";
-const XML_BORDER_WIDTHS:string = "BorderWidths";
-const XML_BOTTOM:string = "Bottom";
-const XML_BUTTON:string = "Button";
-const XML_CAP_INSETS:string = "CapInsets";
-const XML_CAPTURE_BOUNDS:string = "CaptureBounds";
-const XML_CHECKED_COLOR:string = "CheckedColor";
-const XML_COLUMN:string = "Column";
-const XML_ENABLED_IN_READ_MODE:string = "EnabledInReadMode";
-const XML_ENTRY_SEQ:string = "EntrySeq";
-const XML_GREEN:string = "Green";
-const XML_HEIGHT:string = "Height";
-const XML_ID:string = "Id";
-const XML_ITALIC:string = "Italic";
-const XML_LAYOUT:string = "Layout";
-const XML_LEFT:string = "Left";
-const XML_LINE_COLOR:string = "LineColor";
-const XML_LINE_WIDTH:string = "LineWidth";
-const XML_NUMBER_OF_LINES:string = "NumberOfLines";
-const XML_ORIGIN:string = "Origin";
-const XML_PADDING:string = "Padding";
-const XML_RADIO_GROUP:string = "RadioGroup";
-const XML_RED:string = "Red";
-const XML_REFRESH_TIMER:string = "RefreshTimer";
-const XML_RESIZE_MODE:string = "ResizeMode";
-const XML_RIGHT:string = "Right";
-const XML_ROW:string = "Row";
-const XML_SIZE:string = "Size";
-const XML_TEXT:string = "Text";
-const XML_TEXT_ALIGNMENT:string = "TextAlignment";
-const XML_TEXT_COLOR:string = "TextColor";
-const XML_TOP:string = "Top";
-const XML_UNCHECKED_COLOR:string = "UncheckedColor";
-const XML_UNDERLINE:string = "Underline";
-const XML_UOM:string = "UOM";
-const XML_URL:string = "URL";
-const XML_WIDTH:string = "Width";
-const XML_X:string = "X";
-const XML_Y:string = "Y";
+const XML_ALLOW_ANNOTATIONS = "AllowAnnotations";
+const XML_ALLOW_PICKER = "AllowPicker";
+const XML_ALLOW_PICK_OPTIONS = "AllowPickOptions";
+const XML_ALPHA = "Alpha";
+const XML_ASPECT_MODE = "AspectMode";
+const XML_BACKGROUND_COLOR = "BackgroundColor";
+const XML_BINDING = "Binding";
+const XML_BLUE = "Blue";
+const XML_BOLD = "Bold";
+const XML_BORDER_COLOR = "BorderColor";
+const XML_BORDER_WIDTHS = "BorderWidths";
+const XML_BOTTOM = "Bottom";
+const XML_CAP_INSETS = "CapInsets";
+const XML_CAPTURE_BOUNDS = "CaptureBounds";
+const XML_CHECKED_COLOR = "CheckedColor";
+const XML_COLUMN = "Column";
+const XML_ENABLED_IN_READ_MODE = "EnabledInReadMode";
+const XML_ENTRY_SEQ = "EntrySeq";
+const XML_GREEN = "Green";
+const XML_HEIGHT = "Height";
+const XML_ID = "Id";
+const XML_ITALIC = "Italic";
+const XML_LAYOUT = "Layout";
+const XML_LEFT = "Left";
+const XML_LINE_COLOR = "LineColor";
+const XML_LINE_WIDTH = "LineWidth";
+const XML_NUMBER_OF_LINES = "NumberOfLines";
+const XML_ORIGIN = "Origin";
+const XML_PADDING = "Padding";
+const XML_RADIO_GROUP = "RadioGroup";
+const XML_RED = "Red";
+const XML_REFRESH_TIMER = "RefreshTimer";
+const XML_RESIZE_MODE = "ResizeMode";
+const XML_RIGHT = "Right";
+const XML_ROW = "Row";
+const XML_SIZE = "Size";
+const XML_TEXT = "Text";
+const XML_TEXT_ALIGNMENT = "TextAlignment";
+const XML_TEXT_COLOR = "TextColor";
+const XML_TOP = "Top";
+const XML_UNCHECKED_COLOR = "UncheckedColor";
+const XML_UNDERLINE = "Underline";
+const XML_UOM = "UOM";
+const XML_URL = "URL";
+const XML_WIDTH = "Width";
+const XML_X = "X";
+const XML_Y = "Y";
 
 
 
@@ -82,8 +95,9 @@ const XML_Y:string = "Y";
 /**
  * *********************************
  */
+var GenID=1;  //  Generate a unique number if need be for IDs
 
-export class Spec {
+export abstract class Spec {
     protected nodeChildDict:Object = {};
     constructor(node:Node) {
         PrintUtil.forEachChildNode(node, (n:Node)=>{
@@ -91,6 +105,72 @@ export class Spec {
         })
     }
 }
+
+export abstract class Component extends Spec {
+    private _backgroundColor:Color;
+    private _binding:Binding;
+    private _id:string;
+    private _layout:Layout;
+    private _padding:Edges;
+
+    // PRIVATE MUTABLE FIELDS
+    private _actualHeights:Array<number>;
+    private _actualWidths:Array<number>;
+    private _actualX:number;
+    private _actualY:number;
+    private _height:number;
+    // private _parent:Container;
+    private _width:number;
+    private _x:number;
+    private _y:number;
+    constructor(node:Node) {
+        super(node);
+        PrintUtil.ifChild(this.nodeChildDict[XML_BACKGROUND_COLOR], (n:Node)=>{ this._backgroundColor = new Color(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_BINDING], (n:Node)=>{ this._binding = new Binding(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_ID], (n:Node)=>{ this._id = PrintUtil.singleChildText(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_LAYOUT], (n:Node)=>{ this._layout = new Layout(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_PADDING], (n:Node)=>{ this._padding = new Edges(n) });
+        if (!this.id) {
+            this._id="GenID-" + GenID++;
+        }
+    }
+
+    public get backgroundColor():Color { return this._backgroundColor }
+    public get binding():Binding { return this._binding }
+    public get id():string { return this._id }
+    public get layout():Layout { return this._layout }
+    public get padding():Edges { return this._padding}
+    public get actualHeights():Array<number> { return this._actualHeights }
+    public get actualWidths():Array<number> { return this._actualWidths }
+    public get actualX():number { return this._actualX }
+    public get actualY():number { return this._actualY }
+    public get height():number { return this._height }
+    public get width():number { return this._width }
+    public get x():number { return this._x }
+    public get y():number { return this._y }
+}
+
+export abstract class Container extends Component {
+    private _children:Array<Component> = new Array();
+    constructor(node:Node) {
+        super(node);
+        if (this.nodeChildDict[XML_CHILDREN]) {
+            PrintUtil.forEachChildNode(this.nodeChildDict[XML_CHILDREN], (n: Node)=> {
+                let c: Component = ComponentFactory.fromNode(n);
+                if (c) {
+                    this._children.push(c);
+                }
+            });
+        }
+    }
+    public get children():Array<Component> { return this._children };
+}
+
+export abstract class Property extends Spec {
+    constructor(node:Node) {
+        super(node);
+    }
+};
 
 /**
  * *********************************
@@ -200,61 +280,6 @@ export class Color extends Spec {
     public get red():number { return this._red }
     public get green():number { return this._green }
     public get blue():number { return this._blue }
-}
-
-export class Component extends Spec {
-    private _backgroundColor:Color;
-    private _binding:Binding;
-    private _id:string;
-    private _layout:Layout;
-    private _padding:Edges;
-
-    // PRIVATE MUTABLE FIELDS
-    private _actualHeights:Array<number>;
-    private _actualWidths:Array<number>;
-    private _actualX:number;
-    private _actualY:number;
-    private _height:number;
-    // private _parent:Container;
-    private _width:number;
-    private _x:number;
-    private _y:number;
-    constructor(node:Node) {
-        super(node);
-        PrintUtil.ifChild(this.nodeChildDict[XML_BACKGROUND_COLOR], (n:Node)=>{ this._backgroundColor = new Color(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_BINDING], (n:Node)=>{ this._binding = new Binding(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_ID], (n:Node)=>{ this._id = PrintUtil.singleChildText(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_LAYOUT], (n:Node)=>{ this._layout = new Layout(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_PADDING], (n:Node)=>{ this._padding = new Edges(n) })
-    }
-
-    public get backgroundColor():Color { return this._backgroundColor }
-    public get binding():Binding { return this._binding }
-    public get id():string { return this._id }
-    public get layout():Layout { return this._layout }
-    public get padding():Edges { return this._padding}
-    public get actualHeights():Array<number> { return this._actualHeights }
-    public get actualWidths():Array<number> { return this._actualWidths }
-    public get actualX():number { return this._actualX }
-    public get actualY():number { return this._actualY }
-    public get height():number { return this._height }
-    public get width():number { return this._width }
-    public get x():number { return this._x }
-    public get y():number { return this._y }
-}
-
-export class Container extends Component {
-    private _children:Array<Component> = new Array();
-    constructor(node:Node) {
-        super(node);
-        PrintUtil.forEachChildNode(node, (n:Node)=>{
-            let c:Component = ComponentFactory.fromNode(n);
-            if (c) {
-                this._children.push(c);
-            }
-        });
-    }
-    public get children():Array<Component> { return this._children };
 }
 
 export class DatePicker extends Component {
@@ -412,12 +437,6 @@ export class Layout extends Spec {
 
 export class Page extends Container {}
 
-export class Property extends Spec {
-    constructor(node:Node) {
-        super(node);
-    }
-};
-
 export class Settings extends Spec {
     private _refreshTimer:number;
     constructor(node:Node) {
@@ -560,11 +579,19 @@ class ComponentFactory {
         var answer:Component = null;
         switch(node.nodeName) {
             case XML_BUTTON: answer = new Button(node); break;
-            // case "BackgroundColor": answer = new Color(node); break;
-            // case "Binding": answer = new Binding(node); break;
-            // case "BorderColor": answer = new Color(node); break;
-            // case "BorderWidths": answer = new Edges(node); break;
-            // default: Log.error("Factory method not found for: " + node.nodeName);  Expected case
+            case XML_CHECKBOX: answer = new Checkbox(node); break;
+            case XML_IMAGE: answer = new Image(node); break;
+            case XML_LABEL: answer = new Label(node); break;
+            case XML_SIGNATURE_CAPTURE: answer = new SignatureCapture(node); break;
+            case XML_TEXT_AREA: answer = new TextArea(node); break;
+            case XML_TEXT_FIELD: answer = new TextField(node); break;
+            case XML_TIME_PICKER: answer = new TimePicker(node); break;
+            case XML_VALUE_PICKER: answer = new ValuePicker(node); break;
+
+            case XML_CELL: answer = new Cell(node); break;
+            case XML_FORM: answer = new Form(node); break;
+            case XML_GRID: answer = new Grid(node); break;
+            case XML_PAGE: answer = new Page(node); break;
         }
         return answer;
     }
@@ -576,7 +603,7 @@ class PrintUtil {
     public static arrayOfNumbers(node:Node, name:string):Array<number> {
         let answer:Array<number>=[];
         PrintUtil.forEachChildNode(node, (n:Node)=>{
-            if (n.nodeName == "name") { answer.push(PrintUtil.singleChildNumber(n))}
+            if (n.nodeName == name) { answer.push(PrintUtil.singleChildNumber(n))}
         });
         return answer;
     }

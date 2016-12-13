@@ -13,7 +13,7 @@ import {
     DataUrl
 } from "./util";
 import {Try, Either, Future, Success, Failure, TryClosure, MapFn} from "./fp";
-import {SessionContext, SystemContext, Call, Get} from "./ws";
+import {SessionContext, SystemContext, Call, Get, XMLHttpClient} from "./ws";
 import * as moment from 'moment';
 
 /*
@@ -1593,7 +1593,8 @@ export class PaneDef {
                               childXPaneDefRef:XPaneDefRef,
                               childXPaneDef:XPaneDef,
                               childXActiveColDefs:XGetActiveColumnDefsResult,
-                              childMenuDefs:Array<MenuDef>):Try<PaneDef> {
+                              childMenuDefs:Array<MenuDef>,
+                              printMarkupXML:string):Try<PaneDef> {
 
         var settings:StringDictionary = {};
         ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
@@ -1612,10 +1613,10 @@ export class PaneDef {
         } else if (childXPaneDef instanceof XDetailsDef) {
             var xDetailsDef:XDetailsDef = childXPaneDef;
             var xOpenEditorModelResult:XOpenEditorModelResult = <XOpenEditorModelResult>childXOpenResult;
-            if (childXComp.redirection.dialogProperties['formsURL']) {
+            if (printMarkupXML) {
                 newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs,
                     xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText,
-                    xDetailsDef.editable, xDetailsDef.focusPropertyName, childXComp.redirection.dialogProperties['formsURL'], xDetailsDef.rows);
+                    xDetailsDef.editable, xDetailsDef.focusPropertyName, printMarkupXML, xDetailsDef.rows);
             } else {
                 newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs,
                     xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText,
@@ -1990,7 +1991,8 @@ export class FormDef extends PaneDef {
                               childrenXOpens:Array<XOpenDialogModelResult>,
                               childrenXPaneDefs:Array<XPaneDef>,
                               childrenXActiveColDefs:Array<XGetActiveColumnDefsResult>,
-                              childrenMenuDefs:Array<Array<MenuDef>>):Try<FormDef> {
+                              childrenMenuDefs:Array<Array<MenuDef>>,
+                              childrenPrintMarkupXML:Array<string>):Try<FormDef> {
 
         var settings:StringDictionary = {'open': true};
         ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
@@ -2003,8 +2005,9 @@ export class FormDef extends PaneDef {
             var childMenuDefs = childrenMenuDefs[i];
             var childXComp = formXOpenResult.formModel.children[i];
             var childXPaneDefRef = formXFormDef.paneDefRefs[i];
+            var childPrintMarkupXML = childrenPrintMarkupXML[i];
             var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef,
-                childXActiveColDefs, childMenuDefs);
+                childXActiveColDefs, childMenuDefs, childPrintMarkupXML);
             if (paneDefTry.isFailure) {
                 return new Failure<FormDef>(paneDefTry.failure);
             } else {
@@ -2046,7 +2049,8 @@ export class FormDef extends PaneDef {
                 private _formStyle:string,
                 private _borderStyle:string,
                 private _headerDef:DetailsDef,
-                private _childrenDefs:Array<PaneDef>) {
+                private _childrenDefs:Array<PaneDef>,
+                private _printMarkupXML?:string) {
 
         super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
 
@@ -2122,6 +2126,10 @@ export class FormDef extends PaneDef {
 
     get isTwoVerticalLayout():boolean {
         return this.formLayout && this.formLayout === 'H(2,V)';
+    }
+
+    get printMarkupXML():string {
+        return this._printMarkupXML;
     }
 }
 
@@ -2546,7 +2554,7 @@ export class PrintMarkupDef extends PaneDef {
                 private _commitButtonText:string,
                 private _editable:boolean,
                 private _focusPropName:string,
-                private _printMarkup:string,
+                private _printMarkupXML:string,
                 private _rows:Array<Array<CellDef>>) {
         super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
     }
@@ -2567,8 +2575,8 @@ export class PrintMarkupDef extends PaneDef {
         return this._focusPropName;
     }
 
-    get printMarkup():string {
-        return this._printMarkup;
+    get printMarkupXML():string {
+        return this._printMarkupXML;
     }
 
     get rows():Array<Array<CellDef>> {
@@ -5097,7 +5105,8 @@ export class FormContextBuilder {
                     var childrenXPaneDefsFr = this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
                     var childrenActiveColDefsFr = this.fetchChildrenActiveColDefs(formXOpen);
                     var childrenMenuDefsFr = this.fetchChildrenMenuDefs(formXOpen);
-                    return Future.sequence<any>([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr]);
+                    var childrenPrintMarkupXMLFr = this.fetchChildrenPrintMarkupXMLs(formXOpen);
+                    return Future.sequence<any>([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr, childrenPrintMarkupXMLFr]);
                 } else {
                     //added to support nested forms
                     return Future.sequence<any>(this.loadNestedForms(formXOpen, xFormDef));
@@ -5186,15 +5195,16 @@ export class FormContextBuilder {
                 formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childPaneDefs));
         } else {
             //build the form with child components
-            if (formChildren.length != 4) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
+            if (formChildren.length != 5) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 5 elements for children panes');
 
             var childrenXOpens:Array<XOpenDialogModelResult> = formChildren[0];
             var childrenXPaneDefs:Array<XPaneDef> = formChildren[1];
             var childrenXActiveColDefs:Array<XGetActiveColumnDefsResult> = formChildren[2];
             var childrenMenuDefs:Array<Array<MenuDef>> = formChildren[3];
+            var childrenPrintMarkupXML:Array<string> = formChildren[4];
 
             return FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens,
-                childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs);
+                childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenPrintMarkupXML);
         }
 
     }
@@ -5266,6 +5276,22 @@ export class FormContextBuilder {
         var seqOfFutures:Array<Future<XPaneDef>> = xRefs.map((xRef:XPaneDefRef)=> {
             return DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, this.sessionContext);
         });
+        return Future.sequence(seqOfFutures);
+    }
+
+    private fetchChildrenPrintMarkupXMLs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XPaneDef>>> {
+        var seqOfFutures:Array<Future<string>> = [];
+        for (let x of formXOpen.formModel.children) {
+            let url:string=""; // x.redirection.dialogProperties["formsURL"];  // Prevent pre-ship of Print function
+            if (url) {
+                url="https://dl.dropboxusercontent.com/u/81169924/formR0.xml";   // Test form as others are zipped.
+                let wC=new XMLHttpClient();
+                var f=wC.stringGet(url);
+            } else {
+                f=Future.createSuccessfulFuture('fetchChildrenPrintMarkupXMLs/printMarkupXML', "");
+            }
+            seqOfFutures.push(f);
+        }
         return Future.sequence(seqOfFutures);
     }
 

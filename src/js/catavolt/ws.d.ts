@@ -6,12 +6,13 @@ import { Future } from "./fp";
 export interface Client {
     jsonGet(targetUrl: string, timeoutMillis?: number): Future<StringDictionary>;
     jsonPost(targetUrl: string, jsonObj?: StringDictionary, timeoutMillis?: number): Future<StringDictionary>;
-    jsonCall(targetUrl: string, jsonObj?: StringDictionary, method?: string, timeoutMillis?: number): Future<StringDictionary>;
+    stringGet(targetUrl: string, timeoutMillis?: number): Future<string>;
 }
 export declare class XMLHttpClient implements Client {
     jsonGet(targetUrl: string, timeoutMillis?: number): Future<StringDictionary>;
+    stringGet(targetUrl: string, timeoutMillis?: number): Future<string>;
     jsonPost(targetUrl: string, jsonObj?: StringDictionary, timeoutMillis?: number): Future<StringDictionary>;
-    jsonCall(targetUrl: string, jsonObj?: StringDictionary, method?: string, timeoutMillis?: number): Future<StringDictionary>;
+    private sendRequest(targetUrl, body, method, timeoutMillis?);
 }
 export interface Request {
 }

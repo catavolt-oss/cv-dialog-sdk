@@ -7,15 +7,23 @@ var XMLHttpClient = (function () {
     function XMLHttpClient() {
     }
     XMLHttpClient.prototype.jsonGet = function (targetUrl, timeoutMillis) {
-        return this.jsonCall(targetUrl, null, 'GET', timeoutMillis);
+        var t = this.sendRequest(targetUrl, null, 'GET', timeoutMillis);
+        return t.map(function (s) {
+            return JSON.parse(s);
+        });
+    };
+    XMLHttpClient.prototype.stringGet = function (targetUrl, timeoutMillis) {
+        return this.sendRequest(targetUrl, null, 'GET', timeoutMillis);
     };
     XMLHttpClient.prototype.jsonPost = function (targetUrl, jsonObj, timeoutMillis) {
-        return this.jsonCall(targetUrl, jsonObj, 'POST', timeoutMillis);
-    };
-    XMLHttpClient.prototype.jsonCall = function (targetUrl, jsonObj, method, timeoutMillis) {
-        if (method === void 0) { method = 'GET'; }
-        if (timeoutMillis === void 0) { timeoutMillis = 30000; }
         var body = jsonObj && JSON.stringify(jsonObj);
+        var t = this.sendRequest(targetUrl, body, 'POST', timeoutMillis);
+        return t.map(function (s) {
+            return JSON.parse(s);
+        });
+    };
+    XMLHttpClient.prototype.sendRequest = function (targetUrl, body, method, timeoutMillis) {
+        if (timeoutMillis === void 0) { timeoutMillis = 30000; }
         //var promise = new Promise<StringDictionary>("XMLHttpClient::jsonCall");
         var promise = new fp_2.Promise("XMLHttpClient::" + targetUrl + ":" + body);
         if (method !== 'GET' && method !== 'POST') {
@@ -25,23 +33,25 @@ var XMLHttpClient = (function () {
         var successCallback = function (request) {
             try {
                 util_1.Log.debug("XMLHttpClient: Got successful response: " + request.responseText);
-                var responseObj = JSON.parse(request.responseText);
-                promise.success(responseObj);
+                promise.success(request.responseText);
             }
             catch (error) {
                 promise.failure("XMLHttpClient::jsonCall: Failed to parse response: " + request.responseText);
             }
         };
         var errorCallback = function (request) {
-            util_1.Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
+            util_1.Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText
+                + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
             promise.failure('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
         };
         var timeoutCallback = function () {
             if (promise.isComplete()) {
-                util_1.Log.error('XMLHttpClient::jsonCall: Timeoutreceived but Promise was already complete.');
+                util_1.Log.error('XMLHttpClient::jsonCall: Timeoutreceived but Promise was already complete.'
+                    + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
             }
             else {
-                util_1.Log.error('XMLHttpClient::jsonCall: Timeoutreceived.');
+                util_1.Log.error('XMLHttpClient::jsonCall: Timeoutreceived.'
+                    + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
                 promise.failure('XMLHttpClient::jsonCall: Call timed out');
             }
         };

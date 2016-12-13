@@ -15,24 +15,35 @@ import {Try} from "./fp";
 export interface Client {
     jsonGet(targetUrl:string, timeoutMillis?:number):Future<StringDictionary>;
     jsonPost(targetUrl:string, jsonObj?:StringDictionary, timeoutMillis?:number):Future<StringDictionary>;
-    jsonCall(targetUrl:string, jsonObj?:StringDictionary, method?:string, timeoutMillis?:number):Future<StringDictionary>;
+    // jsonCall(targetUrl:string, jsonObj?:StringDictionary, method?:string, timeoutMillis?:number):Future<StringDictionary>;
+    stringGet(targetUrl:string, timeoutMillis?:number):Future<string>;
 }
 
 export class XMLHttpClient implements Client {
 
     jsonGet(targetUrl:string, timeoutMillis?:number):Future<StringDictionary> {
-        return this.jsonCall(targetUrl, null, 'GET', timeoutMillis);
+        let t:Future<string>=this.sendRequest(targetUrl, null, 'GET', timeoutMillis);
+        return t.map((s:string)=>{
+           return JSON.parse(s);
+        });
+    }
+
+    stringGet(targetUrl:string, timeoutMillis?:number):Future<string> {
+        return this.sendRequest(targetUrl, null, 'GET', timeoutMillis);
     }
 
     jsonPost(targetUrl:string, jsonObj?:StringDictionary, timeoutMillis?:number):Future<StringDictionary> {
-        return this.jsonCall(targetUrl, jsonObj, 'POST', timeoutMillis);
+        let body:string = jsonObj && JSON.stringify(jsonObj);
+        let t:Future<string>=this.sendRequest(targetUrl, body, 'POST', timeoutMillis);
+        return t.map((s:string)=>{
+            return JSON.parse(s);
+        });
     }
 
-    jsonCall(targetUrl:string, jsonObj?:StringDictionary, method = 'GET', timeoutMillis = 30000):Future<StringDictionary> {
+    private sendRequest(targetUrl:string, body:string, method:string, timeoutMillis = 30000):Future<string> {
 
-        var body = jsonObj && JSON.stringify(jsonObj);
         //var promise = new Promise<StringDictionary>("XMLHttpClient::jsonCall");
-        var promise = new Promise<StringDictionary>("XMLHttpClient::" + targetUrl + ":" + body);
+        var promise = new Promise<string>("XMLHttpClient::" + targetUrl + ":" + body);
 
         if (method !== 'GET' && method !== 'POST') {
             promise.failure(method + " method not supported.");
@@ -42,23 +53,25 @@ export class XMLHttpClient implements Client {
         var successCallback = (request:XMLHttpRequest) => {
             try {
                 Log.debug("XMLHttpClient: Got successful response: " + request.responseText);
-                var responseObj = JSON.parse(request.responseText);
-                promise.success(responseObj);
+                promise.success(request.responseText);
             } catch (error) {
                 promise.failure("XMLHttpClient::jsonCall: Failed to parse response: " + request.responseText);
             }
         };
 
         var errorCallback = (request:XMLHttpRequest) => {
-            Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
+            Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText
+                + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
             promise.failure('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText);
         };
 
         var timeoutCallback = () => {
             if (promise.isComplete()) {
-                Log.error('XMLHttpClient::jsonCall: Timeoutreceived but Promise was already complete.');
+                Log.error('XMLHttpClient::jsonCall: Timeoutreceived but Promise was already complete.'
+                    + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
             } else {
-                Log.error('XMLHttpClient::jsonCall: Timeoutreceived.');
+                Log.error('XMLHttpClient::jsonCall: Timeoutreceived.'
+                    + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
                 promise.failure('XMLHttpClient::jsonCall: Call timed out');
             }
         };

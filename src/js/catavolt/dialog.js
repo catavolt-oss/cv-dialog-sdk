@@ -1769,7 +1769,7 @@ var PaneDef = (function () {
      * @param childMenuDefs
      * @returns {any}
      */
-    PaneDef.fromOpenPaneResult = function (childXOpenResult, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs) {
+    PaneDef.fromOpenPaneResult = function (childXOpenResult, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs, printMarkupXML) {
         var settings = {};
         util_1.ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
         var newPaneDef;
@@ -1785,8 +1785,8 @@ var PaneDef = (function () {
         else if (childXPaneDef instanceof XDetailsDef) {
             var xDetailsDef = childXPaneDef;
             var xOpenEditorModelResult = childXOpenResult;
-            if (childXComp.redirection.dialogProperties['formsURL']) {
-                newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, childXComp.redirection.dialogProperties['formsURL'], xDetailsDef.rows);
+            if (printMarkupXML) {
+                newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, printMarkupXML, xDetailsDef.rows);
             }
             else {
                 newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, xDetailsDef.graphicalMarkup, xDetailsDef.rows);
@@ -2176,13 +2176,14 @@ var FormDef = (function (_super) {
      * @param _headerDef
      * @param _childrenDefs
      */
-    function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs) {
+    function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs, _printMarkupXML) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._formLayout = _formLayout;
         this._formStyle = _formStyle;
         this._borderStyle = _borderStyle;
         this._headerDef = _headerDef;
         this._childrenDefs = _childrenDefs;
+        this._printMarkupXML = _printMarkupXML;
     }
     /**
      * @private
@@ -2195,7 +2196,7 @@ var FormDef = (function (_super) {
      * @param childrenMenuDefs
      * @returns {any}
      */
-    FormDef.fromOpenFormResult = function (formXOpenResult, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs) {
+    FormDef.fromOpenFormResult = function (formXOpenResult, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenPrintMarkupXML) {
         var settings = { 'open': true };
         util_1.ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
         var headerDef = null;
@@ -2207,7 +2208,8 @@ var FormDef = (function (_super) {
             var childMenuDefs = childrenMenuDefs[i];
             var childXComp = formXOpenResult.formModel.children[i];
             var childXPaneDefRef = formXFormDef.paneDefRefs[i];
-            var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs);
+            var childPrintMarkupXML = childrenPrintMarkupXML[i];
+            var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs, childPrintMarkupXML);
             if (paneDefTry.isFailure) {
                 return new fp_1.Failure(paneDefTry.failure);
             }
@@ -2339,6 +2341,13 @@ var FormDef = (function (_super) {
     Object.defineProperty(FormDef.prototype, "isTwoVerticalLayout", {
         get: function () {
             return this.formLayout && this.formLayout === 'H(2,V)';
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FormDef.prototype, "printMarkupXML", {
+        get: function () {
+            return this._printMarkupXML;
         },
         enumerable: true,
         configurable: true
@@ -2802,13 +2811,13 @@ var PrintMarkupDef = (function (_super) {
      * @param _printMarkup
      * @param _rows
      */
-    function PrintMarkupDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _cancelButtonText, _commitButtonText, _editable, _focusPropName, _printMarkup, _rows) {
+    function PrintMarkupDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _cancelButtonText, _commitButtonText, _editable, _focusPropName, _printMarkupXML, _rows) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._cancelButtonText = _cancelButtonText;
         this._commitButtonText = _commitButtonText;
         this._editable = _editable;
         this._focusPropName = _focusPropName;
-        this._printMarkup = _printMarkup;
+        this._printMarkupXML = _printMarkupXML;
         this._rows = _rows;
     }
     Object.defineProperty(PrintMarkupDef.prototype, "cancelButtonText", {
@@ -2839,9 +2848,9 @@ var PrintMarkupDef = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(PrintMarkupDef.prototype, "printMarkup", {
+    Object.defineProperty(PrintMarkupDef.prototype, "printMarkupXML", {
         get: function () {
-            return this._printMarkup;
+            return this._printMarkupXML;
         },
         enumerable: true,
         configurable: true
@@ -5351,7 +5360,8 @@ var FormContextBuilder = (function () {
                     var childrenXPaneDefsFr = _this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
                     var childrenActiveColDefsFr = _this.fetchChildrenActiveColDefs(formXOpen);
                     var childrenMenuDefsFr = _this.fetchChildrenMenuDefs(formXOpen);
-                    return fp_1.Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr]);
+                    var childrenPrintMarkupXMLFr = _this.fetchChildrenPrintMarkupXMLs(formXOpen);
+                    return fp_1.Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr, childrenPrintMarkupXMLFr]);
                 }
                 else {
                     //added to support nested forms
@@ -5433,13 +5443,14 @@ var FormContextBuilder = (function () {
         }
         else {
             //build the form with child components
-            if (formChildren.length != 4)
-                return new fp_1.Failure('FormContextBuilder::build: Open form should have resulted in 3 elements for children panes');
+            if (formChildren.length != 5)
+                return new fp_1.Failure('FormContextBuilder::build: Open form should have resulted in 5 elements for children panes');
             var childrenXOpens = formChildren[0];
             var childrenXPaneDefs = formChildren[1];
             var childrenXActiveColDefs = formChildren[2];
             var childrenMenuDefs = formChildren[3];
-            return FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs);
+            var childrenPrintMarkupXML = formChildren[4];
+            return FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenPrintMarkupXML);
         }
     };
     FormContextBuilder.prototype.containsNestedForms = function (formXOpen, xFormDef) {
@@ -5519,6 +5530,23 @@ var FormContextBuilder = (function () {
         var seqOfFutures = xRefs.map(function (xRef) {
             return DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, _this.sessionContext);
         });
+        return fp_1.Future.sequence(seqOfFutures);
+    };
+    FormContextBuilder.prototype.fetchChildrenPrintMarkupXMLs = function (formXOpen) {
+        var seqOfFutures = [];
+        for (var _i = 0, _a = formXOpen.formModel.children; _i < _a.length; _i++) {
+            var x = _a[_i];
+            var url = ""; // x.redirection.dialogProperties["formsURL"];  // Prevent pre-ship of Print function
+            if (url) {
+                url = "https://dl.dropboxusercontent.com/u/81169924/formR0.xml"; // Test form as others are zipped.
+                var wC = new ws_1.XMLHttpClient();
+                var f = wC.stringGet(url);
+            }
+            else {
+                f = fp_1.Future.createSuccessfulFuture('fetchChildrenPrintMarkupXMLs/printMarkupXML', "");
+            }
+            seqOfFutures.push(f);
+        }
         return fp_1.Future.sequence(seqOfFutures);
     };
     FormContextBuilder.prototype.fetchXFormDefWithXOpenResult = function (xformOpenResult) {

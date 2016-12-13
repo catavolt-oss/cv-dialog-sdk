@@ -766,7 +766,7 @@ export declare class PaneDef {
      * @param childMenuDefs
      * @returns {any}
      */
-    static fromOpenPaneResult(childXOpenResult: XOpenDialogModelResult, childXComp: XFormModelComp, childXPaneDefRef: XPaneDefRef, childXPaneDef: XPaneDef, childXActiveColDefs: XGetActiveColumnDefsResult, childMenuDefs: Array<MenuDef>): Try<PaneDef>;
+    static fromOpenPaneResult(childXOpenResult: XOpenDialogModelResult, childXComp: XFormModelComp, childXPaneDefRef: XPaneDefRef, childXPaneDef: XPaneDef, childXActiveColDefs: XGetActiveColumnDefsResult, childMenuDefs: Array<MenuDef>, printMarkupXML: string): Try<PaneDef>;
     /**
      * @private
      * @param _paneId
@@ -937,6 +937,7 @@ export declare class FormDef extends PaneDef {
     private _borderStyle;
     private _headerDef;
     private _childrenDefs;
+    private _printMarkupXML;
     /**
      * @private
      * @param formXOpenResult
@@ -948,7 +949,7 @@ export declare class FormDef extends PaneDef {
      * @param childrenMenuDefs
      * @returns {any}
      */
-    static fromOpenFormResult(formXOpenResult: XOpenEditorModelResult, formXFormDef: XFormDef, formMenuDefs: Array<MenuDef>, childrenXOpens: Array<XOpenDialogModelResult>, childrenXPaneDefs: Array<XPaneDef>, childrenXActiveColDefs: Array<XGetActiveColumnDefsResult>, childrenMenuDefs: Array<Array<MenuDef>>): Try<FormDef>;
+    static fromOpenFormResult(formXOpenResult: XOpenEditorModelResult, formXFormDef: XFormDef, formMenuDefs: Array<MenuDef>, childrenXOpens: Array<XOpenDialogModelResult>, childrenXPaneDefs: Array<XPaneDef>, childrenXActiveColDefs: Array<XGetActiveColumnDefsResult>, childrenMenuDefs: Array<Array<MenuDef>>, childrenPrintMarkupXML: Array<string>): Try<FormDef>;
     /**
      * @private
      * @param paneId
@@ -965,7 +966,7 @@ export declare class FormDef extends PaneDef {
      * @param _headerDef
      * @param _childrenDefs
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _formLayout: string, _formStyle: string, _borderStyle: string, _headerDef: DetailsDef, _childrenDefs: Array<PaneDef>);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _formLayout: string, _formStyle: string, _borderStyle: string, _headerDef: DetailsDef, _childrenDefs: Array<PaneDef>, _printMarkupXML?: string);
     borderStyle: string;
     childrenDefs: Array<PaneDef>;
     formLayout: string;
@@ -984,6 +985,7 @@ export declare class FormDef extends PaneDef {
     isThreeBoxOneUnderLayout: boolean;
     isTopDownLayout: boolean;
     isTwoVerticalLayout: boolean;
+    printMarkupXML: string;
 }
 /**
  * PaneDef Subtype that describes a GeoFix Pane
@@ -1199,7 +1201,7 @@ export declare class PrintMarkupDef extends PaneDef {
     private _commitButtonText;
     private _editable;
     private _focusPropName;
-    private _printMarkup;
+    private _printMarkupXML;
     private _rows;
     /**
      * @private
@@ -1218,12 +1220,12 @@ export declare class PrintMarkupDef extends PaneDef {
      * @param _printMarkup
      * @param _rows
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _cancelButtonText: string, _commitButtonText: string, _editable: boolean, _focusPropName: string, _printMarkup: string, _rows: Array<Array<CellDef>>);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _cancelButtonText: string, _commitButtonText: string, _editable: boolean, _focusPropName: string, _printMarkupXML: string, _rows: Array<Array<CellDef>>);
     cancelButtonText: string;
     commitButtonText: string;
     editable: boolean;
     focusPropName: string;
-    printMarkup: string;
+    printMarkupXML: string;
     rows: Array<Array<CellDef>>;
 }
 /**
@@ -1990,6 +1992,7 @@ export declare class FormContextBuilder {
     private fetchChildrenActiveColDefs(formXOpen);
     private fetchChildrenMenuDefs(formXOpen);
     private fetchChildrenXPaneDefs(formXOpen, xFormDef);
+    private fetchChildrenPrintMarkupXMLs(formXOpen);
     private fetchXFormDefWithXOpenResult(xformOpenResult);
     private fetchXFormDef(dialogHandle, formPaneId);
     private getFlattenedResults(openAllResults);
