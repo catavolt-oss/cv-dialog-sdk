@@ -2049,8 +2049,7 @@ export class FormDef extends PaneDef {
                 private _formStyle:string,
                 private _borderStyle:string,
                 private _headerDef:DetailsDef,
-                private _childrenDefs:Array<PaneDef>,
-                private _printMarkupXML?:string) {
+                private _childrenDefs:Array<PaneDef>) {
 
         super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
 
@@ -2128,9 +2127,6 @@ export class FormDef extends PaneDef {
         return this.formLayout && this.formLayout === 'H(2,V)';
     }
 
-    get printMarkupXML():string {
-        return this._printMarkupXML;
-    }
 }
 
 /**

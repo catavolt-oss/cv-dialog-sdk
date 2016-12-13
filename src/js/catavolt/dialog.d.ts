@@ -937,7 +937,6 @@ export declare class FormDef extends PaneDef {
     private _borderStyle;
     private _headerDef;
     private _childrenDefs;
-    private _printMarkupXML;
     /**
      * @private
      * @param formXOpenResult
@@ -966,7 +965,7 @@ export declare class FormDef extends PaneDef {
      * @param _headerDef
      * @param _childrenDefs
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _formLayout: string, _formStyle: string, _borderStyle: string, _headerDef: DetailsDef, _childrenDefs: Array<PaneDef>, _printMarkupXML?: string);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _formLayout: string, _formStyle: string, _borderStyle: string, _headerDef: DetailsDef, _childrenDefs: Array<PaneDef>);
     borderStyle: string;
     childrenDefs: Array<PaneDef>;
     formLayout: string;
@@ -985,7 +984,6 @@ export declare class FormDef extends PaneDef {
     isThreeBoxOneUnderLayout: boolean;
     isTopDownLayout: boolean;
     isTwoVerticalLayout: boolean;
-    printMarkupXML: string;
 }
 /**
  * PaneDef Subtype that describes a GeoFix Pane

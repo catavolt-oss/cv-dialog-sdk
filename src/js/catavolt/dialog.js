@@ -2176,14 +2176,13 @@ var FormDef = (function (_super) {
      * @param _headerDef
      * @param _childrenDefs
      */
-    function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs, _printMarkupXML) {
+    function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs) {
         _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
         this._formLayout = _formLayout;
         this._formStyle = _formStyle;
         this._borderStyle = _borderStyle;
         this._headerDef = _headerDef;
         this._childrenDefs = _childrenDefs;
-        this._printMarkupXML = _printMarkupXML;
     }
     /**
      * @private
@@ -2341,13 +2340,6 @@ var FormDef = (function (_super) {
     Object.defineProperty(FormDef.prototype, "isTwoVerticalLayout", {
         get: function () {
             return this.formLayout && this.formLayout === 'H(2,V)';
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(FormDef.prototype, "printMarkupXML", {
-        get: function () {
-            return this._printMarkupXML;
         },
         enumerable: true,
         configurable: true
