@@ -80,6 +80,7 @@ var XMLHttpClient = (function () {
         util_1.Log.debug("XmlHttpClient: Calling: " + targetUrl);
         util_1.Log.debug("XmlHttpClient: body: " + body);
         xmlHttpRequest.open(method, targetUrl, true);
+        xmlHttpRequest.setRequestHeader("Accept", "gzip");
         if (timeoutMillis) {
             //check for timeout support on the xmlHttpRequest itself
             if (typeof xmlHttpRequest.ontimeout !== "undefined") {

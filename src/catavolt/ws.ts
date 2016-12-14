@@ -102,6 +102,7 @@ export class XMLHttpClient implements Client {
         Log.debug("XmlHttpClient: body: " + body);
 
         xmlHttpRequest.open(method, targetUrl, true);
+        xmlHttpRequest.setRequestHeader("Accept", "gzip");
         
         if (timeoutMillis) {
             //check for timeout support on the xmlHttpRequest itself
