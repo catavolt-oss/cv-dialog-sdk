@@ -9,7 +9,12 @@ var XMLHttpClient = (function () {
     XMLHttpClient.prototype.jsonGet = function (targetUrl, timeoutMillis) {
         var t = this.sendRequest(targetUrl, null, 'GET', timeoutMillis);
         return t.map(function (s) {
-            return JSON.parse(s);
+            try {
+                return JSON.parse(s);
+            }
+            catch (error) {
+                throw Error("XMLHttpClient::jsonCall: Failed to parse response: " + s);
+            }
         });
     };
     XMLHttpClient.prototype.stringGet = function (targetUrl, timeoutMillis) {
@@ -19,7 +24,12 @@ var XMLHttpClient = (function () {
         var body = jsonObj && JSON.stringify(jsonObj);
         var t = this.sendRequest(targetUrl, body, 'POST', timeoutMillis);
         return t.map(function (s) {
-            return JSON.parse(s);
+            try {
+                return JSON.parse(s);
+            }
+            catch (error) {
+                throw Error("XMLHttpClient::jsonCall: Failed to parse response: " + s);
+            }
         });
     };
     XMLHttpClient.prototype.sendRequest = function (targetUrl, body, method, timeoutMillis) {
@@ -31,13 +41,8 @@ var XMLHttpClient = (function () {
             return promise.future;
         }
         var successCallback = function (request) {
-            try {
-                util_1.Log.debug("XMLHttpClient: Got successful response: " + request.responseText);
-                promise.success(request.responseText);
-            }
-            catch (error) {
-                promise.failure("XMLHttpClient::jsonCall: Failed to parse response: " + request.responseText);
-            }
+            util_1.Log.debug("XMLHttpClient: Got successful response: " + request.responseText);
+            promise.success(request.responseText);
         };
         var errorCallback = function (request) {
             util_1.Log.error('XMLHttpClient::jsonCall: call failed with ' + request.status + ":" + request.statusText

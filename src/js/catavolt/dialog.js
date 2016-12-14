@@ -5529,10 +5529,11 @@ var FormContextBuilder = (function () {
         for (var _i = 0, _a = formXOpen.formModel.children; _i < _a.length; _i++) {
             var x = _a[_i];
             var url = ""; // x.redirection.dialogProperties["formsURL"];  // Prevent pre-ship of Print function
+            var f = null;
             if (url) {
                 url = "https://dl.dropboxusercontent.com/u/81169924/formR0.xml"; // Test form as others are zipped.
                 var wC = new ws_1.XMLHttpClient();
-                var f = wC.stringGet(url);
+                f = wC.stringGet(url);
             }
             else {
                 f = fp_1.Future.createSuccessfulFuture('fetchChildrenPrintMarkupXMLs/printMarkupXML', "");

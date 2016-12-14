@@ -5275,20 +5275,21 @@ export class FormContextBuilder {
         return Future.sequence(seqOfFutures);
     }
 
-    private fetchChildrenPrintMarkupXMLs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XPaneDef>>> {
+    private fetchChildrenPrintMarkupXMLs(formXOpen:XOpenEditorModelResult):Future<Array<Try<string>>> {
         var seqOfFutures:Array<Future<string>> = [];
         for (let x of formXOpen.formModel.children) {
             let url:string=""; // x.redirection.dialogProperties["formsURL"];  // Prevent pre-ship of Print function
+            let f:Future<string> = null;
             if (url) {
                 url="https://dl.dropboxusercontent.com/u/81169924/formR0.xml";   // Test form as others are zipped.
                 let wC=new XMLHttpClient();
-                var f=wC.stringGet(url);
+                f=wC.stringGet(url);
             } else {
                 f=Future.createSuccessfulFuture('fetchChildrenPrintMarkupXMLs/printMarkupXML', "");
             }
             seqOfFutures.push(f);
         }
-        return Future.sequence(seqOfFutures);
+        return Future.sequence<string>(seqOfFutures);
     }
 
     private fetchXFormDefWithXOpenResult(xformOpenResult:XOpenEditorModelResult):Future<XFormDef> {

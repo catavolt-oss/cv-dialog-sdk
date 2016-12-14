@@ -15,7 +15,6 @@ import {Try} from "./fp";
 export interface Client {
     jsonGet(targetUrl:string, timeoutMillis?:number):Future<StringDictionary>;
     jsonPost(targetUrl:string, jsonObj?:StringDictionary, timeoutMillis?:number):Future<StringDictionary>;
-    // jsonCall(targetUrl:string, jsonObj?:StringDictionary, method?:string, timeoutMillis?:number):Future<StringDictionary>;
     stringGet(targetUrl:string, timeoutMillis?:number):Future<string>;
 }
 
@@ -24,7 +23,11 @@ export class XMLHttpClient implements Client {
     jsonGet(targetUrl:string, timeoutMillis?:number):Future<StringDictionary> {
         let t:Future<string>=this.sendRequest(targetUrl, null, 'GET', timeoutMillis);
         return t.map((s:string)=>{
-           return JSON.parse(s);
+            try {
+                return JSON.parse(s);
+            } catch (error) {
+                throw Error("XMLHttpClient::jsonCall: Failed to parse response: " + s);
+            }
         });
     }
 
@@ -36,7 +39,11 @@ export class XMLHttpClient implements Client {
         let body:string = jsonObj && JSON.stringify(jsonObj);
         let t:Future<string>=this.sendRequest(targetUrl, body, 'POST', timeoutMillis);
         return t.map((s:string)=>{
-            return JSON.parse(s);
+            try {
+                return JSON.parse(s);
+            } catch (error) {
+                throw Error("XMLHttpClient::jsonCall: Failed to parse response: " + s);
+            }
         });
     }
 
@@ -51,12 +58,8 @@ export class XMLHttpClient implements Client {
         }
 
         var successCallback = (request:XMLHttpRequest) => {
-            try {
                 Log.debug("XMLHttpClient: Got successful response: " + request.responseText);
                 promise.success(request.responseText);
-            } catch (error) {
-                promise.failure("XMLHttpClient::jsonCall: Failed to parse response: " + request.responseText);
-            }
         };
 
         var errorCallback = (request:XMLHttpRequest) => {
