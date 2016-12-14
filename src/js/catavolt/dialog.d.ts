@@ -2061,9 +2061,10 @@ export declare class MenuDef {
     private _label;
     private _iconName;
     private _directive;
+    private _showOnMenu;
     private _menuDefs;
     static findSubMenuDef(md: MenuDef, matcher: (menuDef: MenuDef) => boolean): MenuDef;
-    constructor(_name: string, _type: string, _actionId: string, _mode: string, _label: string, _iconName: string, _directive: string, _menuDefs: Array<MenuDef>);
+    constructor(_name: string, _type: string, _actionId: string, _mode: string, _label: string, _iconName: string, _directive: string, _showOnMenu: boolean, _menuDefs: Array<MenuDef>);
     actionId: string;
     directive: string;
     findAtId(actionId: string): MenuDef;
@@ -2081,6 +2082,7 @@ export declare class MenuDef {
     menuDefs: Array<MenuDef>;
     mode: string;
     name: string;
+    showOnMenu: boolean;
     type: string;
 }
 /**

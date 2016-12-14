@@ -5747,7 +5747,7 @@ exports.GraphDataPointDef = GraphDataPointDef;
  * *********************************
  */
 var MenuDef = (function () {
-    function MenuDef(_name, _type, _actionId, _mode, _label, _iconName, _directive, _menuDefs) {
+    function MenuDef(_name, _type, _actionId, _mode, _label, _iconName, _directive, _showOnMenu, _menuDefs) {
         this._name = _name;
         this._type = _type;
         this._actionId = _actionId;
@@ -5755,6 +5755,7 @@ var MenuDef = (function () {
         this._label = _label;
         this._iconName = _iconName;
         this._directive = _directive;
+        this._showOnMenu = _showOnMenu;
         this._menuDefs = _menuDefs;
     }
     MenuDef.findSubMenuDef = function (md, matcher) {
@@ -5863,6 +5864,18 @@ var MenuDef = (function () {
     Object.defineProperty(MenuDef.prototype, "name", {
         get: function () {
             return this._name;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MenuDef.prototype, "showOnMenu", {
+        get: function () {
+            if (this._showOnMenu == null) {
+                return true;
+            }
+            else {
+                return this._showOnMenu;
+            }
         },
         enumerable: true,
         configurable: true
