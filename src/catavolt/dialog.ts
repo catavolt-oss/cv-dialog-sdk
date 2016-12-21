@@ -10,10 +10,10 @@ import {
     ObjUtil,
     StringUtil,
     ArrayUtil,
-    DataUrl
+    DataUrl, Base64
 } from "./util";
 import {Try, Either, Future, Success, Failure, TryClosure, MapFn} from "./fp";
-import {SessionContext, SystemContext, Call, Get, XMLHttpClient} from "./ws";
+import {SessionContext, SystemContext, Call, Get, XMLHttpClient, ClientFactory} from "./ws";
 import * as moment from 'moment';
 
 /*
@@ -171,6 +171,16 @@ export class TabCellValueDef extends CellValueDef {
     }
 
 }
+/**
+ * *********************************
+ */
+
+export class Attachment {
+
+    constructor(public name:string, public attachmentData:any) {};
+    
+}
+
 /**
  * *********************************
  */
@@ -482,6 +492,21 @@ export class PaneContext {
             })
         );
     }
+    
+    writeAttachment(attachment:Attachment):Future<void> {
+        return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.sessionContext);
+    }
+    
+    writeAttachments(entityRec:EntityRec):Future<Array<Try<void>>> {
+        return Future.sequence<void>(
+            entityRec.props.filter((prop:Prop)=> {
+                return prop.value instanceof Attachment;
+            }).map((prop:Prop) => {
+                const attachment:Attachment = prop.value as Attachment;
+                return this.writeAttachment(attachment);
+            })
+        );
+    }
 
     /**
      * Write all Binary values in this {@link EntityRecord} back to the server
@@ -560,7 +585,7 @@ export class EditorContext extends PaneContext {
         }
         return this._buffer;
     }
-
+    
     /**
      * Toggle the current mode of this Editor
      * @param paneMode
@@ -815,40 +840,45 @@ export class EditorContext extends PaneContext {
      */
     write():Future<Either<NavRequest,EntityRec>> {
 
-        const deltaRec:EntityRec = this.buffer.afterEffects();
+        let deltaRec:EntityRec = this.buffer.afterEffects();
+        /* Write the 'special' props first */
         return this.writeBinaries(deltaRec).bind((binResult) => {
-            var result:Future<Either<NavRequest, EntityRec>> = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
-                this.sessionContext).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
-                if (either.isLeft) {
-                    var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
-                    return NavRequestUtil.fromRedirection(either.left, ca, this.sessionContext).map((navRequest:NavRequest)=> {
-                        return Either.left<NavRequest,EntityRec>(navRequest);
-                    });
-                } else {
-                    var writeResult:XWriteResult = either.right;
-                    this.putSettings(writeResult.dialogProps);
-                    this.entityRecDef = writeResult.entityRecDef;
-                    return Future.createSuccessfulFuture<Either<NavRequest, EntityRec>>('EditorContext::write', Either.right(writeResult.entityRec));
-                }
-            });
-
-            return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
-                var now = new Date();
-                AppContext.singleton.lastMaintenanceTime = now;
-                this.lastRefreshTime = now;
-                if (successfulWrite.isLeft) {
-                    this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
-                } else {
-                    this.initBuffer(successfulWrite.right);
-                }
-                if (this.isDestroyedSetting) {
-                    this._editorState = EditorState.DESTROYED;
-                } else {
-                    if (this.isReadModeSetting) {
-                        this._editorState = EditorState.READ;
+            return this.writeAttachments(deltaRec).bind((atResult) => {
+                /* Remove special property types before writing the actual record */
+                deltaRec = this.removeSpecialProps(deltaRec);
+                var result:Future<Either<NavRequest, EntityRec>> = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
+                    this.sessionContext).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
+                    if (either.isLeft) {
+                        var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
+                        return NavRequestUtil.fromRedirection(either.left, ca, this.sessionContext).map((navRequest:NavRequest)=> {
+                            return Either.left<NavRequest,EntityRec>(navRequest);
+                        });
+                    } else {
+                        var writeResult:XWriteResult = either.right;
+                        this.putSettings(writeResult.dialogProps);
+                        this.entityRecDef = writeResult.entityRecDef;
+                        return Future.createSuccessfulFuture<Either<NavRequest, EntityRec>>('EditorContext::write', Either.right(writeResult.entityRec));
                     }
-                }
-                return successfulWrite;
+                });
+
+                return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
+                    var now = new Date();
+                    AppContext.singleton.lastMaintenanceTime = now;
+                    this.lastRefreshTime = now;
+                    if (successfulWrite.isLeft) {
+                        this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
+                    } else {
+                        this.initBuffer(successfulWrite.right);
+                    }
+                    if (this.isDestroyedSetting) {
+                        this._editorState = EditorState.DESTROYED;
+                    } else {
+                        if (this.isReadModeSetting) {
+                            this._editorState = EditorState.READ;
+                        }
+                    }
+                    return successfulWrite;
+                });
             });
         });
 
@@ -892,6 +922,25 @@ export class EditorContext extends PaneContext {
     }
 
     //Private methods
+    
+    private removeSpecialProps(entityRec:EntityRec):EntityRec {
+        entityRec.props = entityRec.props.filter((prop:Prop)=>{
+            /* Remove the Binary(s) as they have been written seperately */
+            return !(prop.value instanceof EncodedBinary);
+        }).map((prop:Prop)=>{
+            /*
+             Remove the Attachment(s) (as they have been written seperately) but replace
+             the property value with the file name of the attachment prior to writing
+             */
+            if(prop.value instanceof Attachment) {
+               const attachment = prop.value as Attachment;
+               return new Prop(prop.name, attachment.name, prop.annos); 
+            } else {
+               return prop;
+            }
+        });
+        return entityRec;
+    }
 
     private initBuffer(entityRec:EntityRec) {
         this._buffer = entityRec ? new EntityBuffer(entityRec) : new EntityBuffer(NullEntityRec.singleton);
@@ -4453,6 +4502,23 @@ export class DialogService {
     private static EDITOR_SERVICE_PATH:string = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
     private static QUERY_SERVICE_NAME:string = 'QueryService';
     private static QUERY_SERVICE_PATH:string = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
+    private static ATTACHMENT_PATH:string = 'upload/path';
+
+    static addAttachment(dialogHandle:DialogHandle, attachment:Attachment,
+                          sessionContext:SessionContext):Future<void> {
+        
+        const formData = new FormData();
+        formData.append('sessionHandle', sessionContext.sessionHandle);
+        formData.append('dialogHandle', String(dialogHandle.handleValue));
+        formData.append('encodedFilename', Base64.encode(attachment.name));
+        formData.append('Filedata', attachment.attachmentData, attachment.name);
+        let pathPrefix = sessionContext.systemContext.urlString;
+        if (pathPrefix && pathPrefix.charAt(pathPrefix.length - 1) !== '/') {
+            pathPrefix += '/';
+        }
+        const url = pathPrefix += DialogService.ATTACHMENT_PATH;
+        return ClientFactory.getClient().postMultipart(url, formData);
+    }
 
     static changePaneMode(dialogHandle:DialogHandle, paneMode:PaneMode,
                           sessionContext:SessionContext):Future<XChangePaneModeResult> {
@@ -4617,6 +4683,12 @@ export class DialogService {
         var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
             var redirectionTry = DialogTriple.extractRedirection(result, 'WSPerformActionResult');
+            /* If an attachment action is performed, the result will have a 'value' with URL instead of a WebRedirection */
+            if(redirectionTry.isSuccess && redirectionTry.success instanceof NullRedirection) {
+                if(result['value']) {
+                    redirectionTry = new Success(new WebRedirection(result['value'], true, {}, {}));
+                }
+            }
             if (redirectionTry.isSuccess) {
                 var r = redirectionTry.success;
                 r.fromDialogProperties = result['dialogProperties'];
@@ -5282,7 +5354,7 @@ export class FormContextBuilder {
             let f:Future<string> = null;
             if (url) {
                 url="https://dl.dropboxusercontent.com/u/81169924/formR0.xml";   // Test form as others are zipped.
-                let wC=new XMLHttpClient();
+                let wC = ClientFactory.getClient();
                 f=wC.stringGet(url);
             } else {
                 f=Future.createSuccessfulFuture('fetchChildrenPrintMarkupXMLs/printMarkupXML', "");
@@ -5775,6 +5847,11 @@ export class PropDef {
 
     get isEmailType():boolean {
         return this.type && this.type === 'DATA_EMAIL';
+    }
+
+    get isFileAttachment():boolean {
+        return this.dataDictionaryKey &&
+            this.dataDictionaryKey === 'DATA_UPLOAD_FILE';
     }
 
     get isGeoFixType():boolean {

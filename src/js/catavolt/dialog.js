@@ -212,6 +212,18 @@ exports.TabCellValueDef = TabCellValueDef;
 /**
  * *********************************
  */
+var Attachment = (function () {
+    function Attachment(name, attachmentData) {
+        this.name = name;
+        this.attachmentData = attachmentData;
+    }
+    ;
+    return Attachment;
+}());
+exports.Attachment = Attachment;
+/**
+ * *********************************
+ */
 /**
  * Top-level class, representing a Catavolt 'Pane' definition.
  * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
@@ -541,6 +553,18 @@ var PaneContext = (function () {
             return _this.readBinary(propDef.name, entityRec);
         }));
     };
+    PaneContext.prototype.writeAttachment = function (attachment) {
+        return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.sessionContext);
+    };
+    PaneContext.prototype.writeAttachments = function (entityRec) {
+        var _this = this;
+        return fp_1.Future.sequence(entityRec.props.filter(function (prop) {
+            return prop.value instanceof Attachment;
+        }).map(function (prop) {
+            var attachment = prop.value;
+            return _this.writeAttachment(attachment);
+        }));
+    };
     /**
      * Write all Binary values in this {@link EntityRecord} back to the server
      * @param entityRec
@@ -865,40 +889,45 @@ var EditorContext = (function (_super) {
     EditorContext.prototype.write = function () {
         var _this = this;
         var deltaRec = this.buffer.afterEffects();
+        /* Write the 'special' props first */
         return this.writeBinaries(deltaRec).bind(function (binResult) {
-            var result = DialogService.writeEditorModel(_this.paneDef.dialogRedirection.dialogHandle, deltaRec, _this.sessionContext).bind(function (either) {
-                if (either.isLeft) {
-                    var ca = new ContextAction('#write', _this.parentContext.dialogRedirection.objectId, _this.actionSource);
-                    return NavRequestUtil.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
-                        return fp_1.Either.left(navRequest);
-                    });
-                }
-                else {
-                    var writeResult = either.right;
-                    _this.putSettings(writeResult.dialogProps);
-                    _this.entityRecDef = writeResult.entityRecDef;
-                    return fp_1.Future.createSuccessfulFuture('EditorContext::write', fp_1.Either.right(writeResult.entityRec));
-                }
-            });
-            return result.map(function (successfulWrite) {
-                var now = new Date();
-                AppContext.singleton.lastMaintenanceTime = now;
-                _this.lastRefreshTime = now;
-                if (successfulWrite.isLeft) {
-                    _this._settings = PaneContext.resolveSettingsFromNavRequest(_this._settings, successfulWrite.left);
-                }
-                else {
-                    _this.initBuffer(successfulWrite.right);
-                }
-                if (_this.isDestroyedSetting) {
-                    _this._editorState = EditorState.DESTROYED;
-                }
-                else {
-                    if (_this.isReadModeSetting) {
-                        _this._editorState = EditorState.READ;
+            return _this.writeAttachments(deltaRec).bind(function (atResult) {
+                /* Remove special property types before writing the actual record */
+                deltaRec = _this.removeSpecialProps(deltaRec);
+                var result = DialogService.writeEditorModel(_this.paneDef.dialogRedirection.dialogHandle, deltaRec, _this.sessionContext).bind(function (either) {
+                    if (either.isLeft) {
+                        var ca = new ContextAction('#write', _this.parentContext.dialogRedirection.objectId, _this.actionSource);
+                        return NavRequestUtil.fromRedirection(either.left, ca, _this.sessionContext).map(function (navRequest) {
+                            return fp_1.Either.left(navRequest);
+                        });
                     }
-                }
-                return successfulWrite;
+                    else {
+                        var writeResult = either.right;
+                        _this.putSettings(writeResult.dialogProps);
+                        _this.entityRecDef = writeResult.entityRecDef;
+                        return fp_1.Future.createSuccessfulFuture('EditorContext::write', fp_1.Either.right(writeResult.entityRec));
+                    }
+                });
+                return result.map(function (successfulWrite) {
+                    var now = new Date();
+                    AppContext.singleton.lastMaintenanceTime = now;
+                    _this.lastRefreshTime = now;
+                    if (successfulWrite.isLeft) {
+                        _this._settings = PaneContext.resolveSettingsFromNavRequest(_this._settings, successfulWrite.left);
+                    }
+                    else {
+                        _this.initBuffer(successfulWrite.right);
+                    }
+                    if (_this.isDestroyedSetting) {
+                        _this._editorState = EditorState.DESTROYED;
+                    }
+                    else {
+                        if (_this.isReadModeSetting) {
+                            _this._editorState = EditorState.READ;
+                        }
+                    }
+                    return successfulWrite;
+                });
             });
         });
     };
@@ -939,6 +968,25 @@ var EditorContext = (function (_super) {
         return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle, propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
     };
     //Private methods
+    EditorContext.prototype.removeSpecialProps = function (entityRec) {
+        entityRec.props = entityRec.props.filter(function (prop) {
+            /* Remove the Binary(s) as they have been written seperately */
+            return !(prop.value instanceof EncodedBinary);
+        }).map(function (prop) {
+            /*
+             Remove the Attachment(s) (as they have been written seperately) but replace
+             the property value with the file name of the attachment prior to writing
+             */
+            if (prop.value instanceof Attachment) {
+                var attachment = prop.value;
+                return new Prop(prop.name, attachment.name, prop.annos);
+            }
+            else {
+                return prop;
+            }
+        });
+        return entityRec;
+    };
     EditorContext.prototype.initBuffer = function (entityRec) {
         this._buffer = entityRec ? new EntityBuffer(entityRec) : new EntityBuffer(NullEntityRec.singleton);
     };
@@ -4807,6 +4855,19 @@ exports.DialogHandle = DialogHandle;
 var DialogService = (function () {
     function DialogService() {
     }
+    DialogService.addAttachment = function (dialogHandle, attachment, sessionContext) {
+        var formData = new FormData();
+        formData.append('sessionHandle', sessionContext.sessionHandle);
+        formData.append('dialogHandle', String(dialogHandle.handleValue));
+        formData.append('encodedFilename', util_1.Base64.encode(attachment.name));
+        formData.append('Filedata', attachment.attachmentData, attachment.name);
+        var pathPrefix = sessionContext.systemContext.urlString;
+        if (pathPrefix && pathPrefix.charAt(pathPrefix.length - 1) !== '/') {
+            pathPrefix += '/';
+        }
+        var url = pathPrefix += DialogService.ATTACHMENT_PATH;
+        return ws_1.ClientFactory.getClient().postMultipart(url, formData);
+    };
     DialogService.changePaneMode = function (dialogHandle, paneMode, sessionContext) {
         var method = 'changePaneMode';
         var params = {
@@ -4926,6 +4987,12 @@ var DialogService = (function () {
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
             var redirectionTry = DialogTriple.extractRedirection(result, 'WSPerformActionResult');
+            /* If an attachment action is performed, the result will have a 'value' with URL instead of a WebRedirection */
+            if (redirectionTry.isSuccess && redirectionTry.success instanceof NullRedirection) {
+                if (result['value']) {
+                    redirectionTry = new fp_1.Success(new WebRedirection(result['value'], true, {}, {}));
+                }
+            }
             if (redirectionTry.isSuccess) {
                 var r = redirectionTry.success;
                 r.fromDialogProperties = result['dialogProperties'];
@@ -5035,6 +5102,7 @@ var DialogService = (function () {
     DialogService.EDITOR_SERVICE_PATH = 'soi-json-v02/' + DialogService.EDITOR_SERVICE_NAME;
     DialogService.QUERY_SERVICE_NAME = 'QueryService';
     DialogService.QUERY_SERVICE_PATH = 'soi-json-v02/' + DialogService.QUERY_SERVICE_NAME;
+    DialogService.ATTACHMENT_PATH = 'upload/path';
     return DialogService;
 }());
 exports.DialogService = DialogService;
@@ -5532,7 +5600,7 @@ var FormContextBuilder = (function () {
             var f = null;
             if (url) {
                 url = "https://dl.dropboxusercontent.com/u/81169924/formR0.xml"; // Test form as others are zipped.
-                var wC = new ws_1.XMLHttpClient();
+                var wC = ws_1.ClientFactory.getClient();
                 f = wC.stringGet(url);
             }
             else {
@@ -6080,6 +6148,14 @@ var PropDef = (function () {
     Object.defineProperty(PropDef.prototype, "isEmailType", {
         get: function () {
             return this.type && this.type === 'DATA_EMAIL';
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PropDef.prototype, "isFileAttachment", {
+        get: function () {
+            return this.dataDictionaryKey &&
+                this.dataDictionaryKey === 'DATA_UPLOAD_FILE';
         },
         enumerable: true,
         configurable: true

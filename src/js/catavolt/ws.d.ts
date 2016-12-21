@@ -7,11 +7,16 @@ export interface Client {
     jsonGet(targetUrl: string, timeoutMillis?: number): Future<StringDictionary>;
     jsonPost(targetUrl: string, jsonObj?: StringDictionary, timeoutMillis?: number): Future<StringDictionary>;
     stringGet(targetUrl: string, timeoutMillis?: number): Future<string>;
+    postMultipart(targetUrl: string, formData: FormData): Future<void>;
+}
+export declare class ClientFactory {
+    static getClient(): Client;
 }
 export declare class XMLHttpClient implements Client {
     jsonGet(targetUrl: string, timeoutMillis?: number): Future<StringDictionary>;
     stringGet(targetUrl: string, timeoutMillis?: number): Future<string>;
     jsonPost(targetUrl: string, jsonObj?: StringDictionary, timeoutMillis?: number): Future<StringDictionary>;
+    postMultipart(targetUrl: string, formData: FormData): Future<void>;
     private sendRequest(targetUrl, body, method, timeoutMillis?);
 }
 export interface Request {

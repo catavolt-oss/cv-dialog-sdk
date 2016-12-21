@@ -11,11 +11,18 @@ import {Try} from "./fp";
  */
 
 
-    //We'll abstract the client as we may later want to use a json-p client or websocket or other
+/* We'll abstract the client as we may later want to use a json-p client or websocket or other */
 export interface Client {
     jsonGet(targetUrl:string, timeoutMillis?:number):Future<StringDictionary>;
     jsonPost(targetUrl:string, jsonObj?:StringDictionary, timeoutMillis?:number):Future<StringDictionary>;
     stringGet(targetUrl:string, timeoutMillis?:number):Future<string>;
+    postMultipart(targetUrl:string, formData:FormData):Future<void>;
+}
+
+export class ClientFactory {
+    static getClient():Client {
+        return new XMLHttpClient();
+    }
 }
 
 export class XMLHttpClient implements Client {
@@ -32,6 +39,7 @@ export class XMLHttpClient implements Client {
     }
 
     stringGet(targetUrl:string, timeoutMillis?:number):Future<string> {
+        var f:FormData;
         return this.sendRequest(targetUrl, null, 'GET', timeoutMillis);
     }
 
@@ -45,6 +53,36 @@ export class XMLHttpClient implements Client {
                 throw Error("XMLHttpClient::jsonCall: Failed to parse response: " + s);
             }
         });
+    }
+
+    /*
+     this method is intended to support both react and react-native.
+     http://doochik.com/2015/11/27/FormData-in-React-Native.html
+     https://github.com/facebook/react-native/blob/56fef9b6225ffc1ba87f784660eebe842866c57d/Libraries/Network/FormData.js#L34:
+     */
+    postMultipart(targetUrl:string, formData:FormData):Future<void> {
+        
+        var promise = new Promise<void>("XMLHttpClient::postMultipart" + targetUrl);
+        var xmlHttpRequest = new XMLHttpRequest();
+        
+        xmlHttpRequest.onreadystatechange = () => {
+            if (xmlHttpRequest.readyState === 4) {
+                if ((xmlHttpRequest.status !== 200) && (xmlHttpRequest.status !== 304)) {
+                    Log.error('XMLHttpClient::postObject call failed with ' + xmlHttpRequest.status + ":" + xmlHttpRequest.statusText + ".  targetURL: " + targetUrl);
+                    promise.failure('XMLHttpClient::jsonCall: call failed with ' + xmlHttpRequest.status + ":" + xmlHttpRequest.statusText + ".  targetURL: " + targetUrl);
+                } else {
+                    Log.debug("XMLHttpClient::postObject: Got successful response: " + xmlHttpRequest.responseText);
+                    promise.success(null);
+                }
+            }
+        };
+
+        Log.debug("XmlHttpClient:postMultipart: " + targetUrl);
+        Log.debug("XmlHttpClient:postMultipart: " + formData);
+        xmlHttpRequest.open('POST', targetUrl, true);
+        xmlHttpRequest.send(formData);
+        return promise.future;
+
     }
 
     private sendRequest(targetUrl:string, body:string, method:string, timeoutMillis = 30000):Future<string> {
@@ -70,10 +108,10 @@ export class XMLHttpClient implements Client {
 
         var timeoutCallback = () => {
             if (promise.isComplete()) {
-                Log.error('XMLHttpClient::jsonCall: Timeoutreceived but Promise was already complete.'
+                Log.error('XMLHttpClient::jsonCall: Timeout received but Promise was already complete.'
                     + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
             } else {
-                Log.error('XMLHttpClient::jsonCall: Timeoutreceived.'
+                Log.error('XMLHttpClient::jsonCall: Timeout received.'
                     + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
                 promise.failure('XMLHttpClient::jsonCall: Call timed out');
             }
@@ -88,15 +126,12 @@ export class XMLHttpClient implements Client {
                     clearTimeout(wRequestTimer);
                 }
                 if ((xmlHttpRequest.status !== 200) && (xmlHttpRequest.status !== 304)) {
-                    if (errorCallback) {
-                        errorCallback(xmlHttpRequest);
-                    }
+                    errorCallback(xmlHttpRequest);
                 } else {
                     successCallback(xmlHttpRequest);
                 }
             }
         };
-
 
         Log.debug("XmlHttpClient: Calling: " + targetUrl);
         Log.debug("XmlHttpClient: body: " + body);
@@ -124,6 +159,8 @@ export class XMLHttpClient implements Client {
     }
 }
 
+
+
 export interface Request {
 }
 
@@ -142,7 +179,7 @@ export class Call implements Request {
     private _service:string;
     private _sessionContext:SessionContext;
     private _systemContext:SystemContext;
-    private _client:Client = new XMLHttpClient();
+    private _client:Client = ClientFactory.getClient();
 
     timeoutMillis:number;
 
@@ -222,7 +259,7 @@ export class Get implements Request {
     private _performed:boolean;
     private _promise:Promise<StringDictionary>;
     private _url:string;
-    private _client:Client = new XMLHttpClient();
+    private _client:Client = ClientFactory.getClient();
 
     timeoutMillis:number;
 

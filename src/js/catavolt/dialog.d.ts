@@ -68,6 +68,14 @@ export declare class TabCellValueDef extends CellValueDef {
 /**
  * *********************************
  */
+export declare class Attachment {
+    name: string;
+    attachmentData: any;
+    constructor(name: string, attachmentData: any);
+}
+/**
+ * *********************************
+ */
 /**
  * Top-level class, representing a Catavolt 'Pane' definition.
  * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
@@ -229,6 +237,8 @@ export declare class PaneContext {
      * @returns {Future<Array<Try<Binary>>>}
      */
     readBinaries(entityRec: EntityRec): Future<Array<Try<Binary>>>;
+    writeAttachment(attachment: Attachment): Future<void>;
+    writeAttachments(entityRec: EntityRec): Future<Array<Try<void>>>;
     /**
      * Write all Binary values in this {@link EntityRecord} back to the server
      * @param entityRec
@@ -391,6 +401,7 @@ export declare class EditorContext extends PaneContext {
      */
     settings: StringDictionary;
     protected readBinary(propName: string, entityRec: EntityRec): Future<Binary>;
+    private removeSpecialProps(entityRec);
     private initBuffer(entityRec);
     private isDestroyedSetting;
     private isGlobalRefreshSetting;
@@ -1906,6 +1917,8 @@ export declare class DialogService {
     private static EDITOR_SERVICE_PATH;
     private static QUERY_SERVICE_NAME;
     private static QUERY_SERVICE_PATH;
+    private static ATTACHMENT_PATH;
+    static addAttachment(dialogHandle: DialogHandle, attachment: Attachment, sessionContext: SessionContext): Future<void>;
     static changePaneMode(dialogHandle: DialogHandle, paneMode: PaneMode, sessionContext: SessionContext): Future<XChangePaneModeResult>;
     static closeEditorModel(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<VoidResult>;
     static getAvailableValues(dialogHandle: DialogHandle, propertyName: string, pendingWrites: EntityRec, sessionContext: SessionContext): Future<XGetAvailableValuesResult>;
@@ -2156,6 +2169,7 @@ export declare class PropDef {
     isDecimalType: boolean;
     isDoubleType: boolean;
     isEmailType: boolean;
+    isFileAttachment: boolean;
     isGeoFixType: boolean;
     isGeoLocationType: boolean;
     isHTMLType: boolean;

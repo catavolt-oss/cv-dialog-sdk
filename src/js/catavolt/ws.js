@@ -3,6 +3,15 @@ var fp_1 = require("./fp");
 var util_1 = require("./util");
 var fp_2 = require("./fp");
 var fp_3 = require("./fp");
+var ClientFactory = (function () {
+    function ClientFactory() {
+    }
+    ClientFactory.getClient = function () {
+        return new XMLHttpClient();
+    };
+    return ClientFactory;
+}());
+exports.ClientFactory = ClientFactory;
 var XMLHttpClient = (function () {
     function XMLHttpClient() {
     }
@@ -18,6 +27,7 @@ var XMLHttpClient = (function () {
         });
     };
     XMLHttpClient.prototype.stringGet = function (targetUrl, timeoutMillis) {
+        var f;
         return this.sendRequest(targetUrl, null, 'GET', timeoutMillis);
     };
     XMLHttpClient.prototype.jsonPost = function (targetUrl, jsonObj, timeoutMillis) {
@@ -31,6 +41,32 @@ var XMLHttpClient = (function () {
                 throw Error("XMLHttpClient::jsonCall: Failed to parse response: " + s);
             }
         });
+    };
+    /*
+     this method is intended to support both react and react-native.
+     http://doochik.com/2015/11/27/FormData-in-React-Native.html
+     https://github.com/facebook/react-native/blob/56fef9b6225ffc1ba87f784660eebe842866c57d/Libraries/Network/FormData.js#L34:
+     */
+    XMLHttpClient.prototype.postMultipart = function (targetUrl, formData) {
+        var promise = new fp_2.Promise("XMLHttpClient::postMultipart" + targetUrl);
+        var xmlHttpRequest = new XMLHttpRequest();
+        xmlHttpRequest.onreadystatechange = function () {
+            if (xmlHttpRequest.readyState === 4) {
+                if ((xmlHttpRequest.status !== 200) && (xmlHttpRequest.status !== 304)) {
+                    util_1.Log.error('XMLHttpClient::postObject call failed with ' + xmlHttpRequest.status + ":" + xmlHttpRequest.statusText + ".  targetURL: " + targetUrl);
+                    promise.failure('XMLHttpClient::jsonCall: call failed with ' + xmlHttpRequest.status + ":" + xmlHttpRequest.statusText + ".  targetURL: " + targetUrl);
+                }
+                else {
+                    util_1.Log.debug("XMLHttpClient::postObject: Got successful response: " + xmlHttpRequest.responseText);
+                    promise.success(null);
+                }
+            }
+        };
+        util_1.Log.debug("XmlHttpClient:postMultipart: " + targetUrl);
+        util_1.Log.debug("XmlHttpClient:postMultipart: " + formData);
+        xmlHttpRequest.open('POST', targetUrl, true);
+        xmlHttpRequest.send(formData);
+        return promise.future;
     };
     XMLHttpClient.prototype.sendRequest = function (targetUrl, body, method, timeoutMillis) {
         if (timeoutMillis === void 0) { timeoutMillis = 30000; }
@@ -51,11 +87,11 @@ var XMLHttpClient = (function () {
         };
         var timeoutCallback = function () {
             if (promise.isComplete()) {
-                util_1.Log.error('XMLHttpClient::jsonCall: Timeoutreceived but Promise was already complete.'
+                util_1.Log.error('XMLHttpClient::jsonCall: Timeout received but Promise was already complete.'
                     + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
             }
             else {
-                util_1.Log.error('XMLHttpClient::jsonCall: Timeoutreceived.'
+                util_1.Log.error('XMLHttpClient::jsonCall: Timeout received.'
                     + ".  targetURL: " + targetUrl + "  method: " + method + "  body: " + body);
                 promise.failure('XMLHttpClient::jsonCall: Call timed out');
             }
@@ -68,9 +104,7 @@ var XMLHttpClient = (function () {
                     clearTimeout(wRequestTimer);
                 }
                 if ((xmlHttpRequest.status !== 200) && (xmlHttpRequest.status !== 304)) {
-                    if (errorCallback) {
-                        errorCallback(xmlHttpRequest);
-                    }
+                    errorCallback(xmlHttpRequest);
                 }
                 else {
                     successCallback(xmlHttpRequest);
@@ -105,7 +139,7 @@ var XMLHttpClient = (function () {
 exports.XMLHttpClient = XMLHttpClient;
 var Call = (function () {
     function Call(service, method, params, systemContext, sessionContext) {
-        this._client = new XMLHttpClient();
+        this._client = ClientFactory.getClient();
         this._performed = false;
         this._cancelled = false;
         this._systemContext = systemContext;
@@ -158,7 +192,7 @@ var Call = (function () {
 exports.Call = Call;
 var Get = (function () {
     function Get(url) {
-        this._client = new XMLHttpClient();
+        this._client = ClientFactory.getClient();
         this._url = url;
         this._performed = false;
         this._promise = new fp_2.Promise("catavolt.ws.Get");
