@@ -167,6 +167,7 @@ export interface Request {
 export class Call implements Request {
 
     private static _lastCallId:number = 0;
+    private static _lastSuccessfulActivityTime:Date = new Date();
 
     private _callId:number;
     private _cancelled:boolean;
@@ -200,7 +201,10 @@ export class Call implements Request {
                                     systemContext:SystemContext):Call {
         return new Call(service, method, params, systemContext, null);
     }
-
+    
+    static get lastSuccessfulActivityTime():Date{
+       return Call._lastSuccessfulActivityTime; 
+    }
 
     constructor(service:string,
                 method:string,
@@ -249,7 +253,10 @@ export class Call implements Request {
             }
         }
         var servicePath = pathPrefix + (this._service || "");
-        return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
+        return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis).map((result:StringDictionary)=>{
+            Call._lastSuccessfulActivityTime = new Date();
+            return result;
+        });
     }
 
 }

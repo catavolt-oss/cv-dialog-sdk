@@ -4082,7 +4082,7 @@ var AppContext = (function () {
     }
     Object.defineProperty(AppContext, "defaultTTLInMillis", {
         get: function () {
-            return AppContext.ONE_DAY_IN_MILLIS;
+            return AppContext.ONE_HOUR_IN_MILLIS;
         },
         enumerable: true,
         configurable: true
@@ -4130,6 +4130,46 @@ var AppContext = (function () {
          */
         get: function () {
             return this._appContextState === AppContextState.LOGGED_IN;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AppContext.prototype, "clientTimeoutMillis", {
+        /**
+         * Get the number of millis that the client will remain active between calls
+         * to the server.
+         * @returns {number}
+         */
+        get: function () {
+            if (this.tenantSettingsTry.isSuccess) {
+                var mins = this.tenantSettingsTry.success['clientTimeoutMinutes'];
+                return mins ? (Number(mins) * 60 * 1000) : AppContext.defaultTTLInMillis;
+            }
+            else {
+                return AppContext.defaultTTLInMillis;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AppContext.prototype, "remainingSessionTime", {
+        /**
+         * Time remaining before this session is expired by the server
+         * @returns {number}
+         */
+        get: function () {
+            return this.clientTimeoutMillis - ((new Date()).getTime() - ws_1.Call.lastSuccessfulActivityTime.getTime());
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AppContext.prototype, "sessionHasExpired", {
+        /**
+         * Return whether or not the session has expired
+         * @returns {boolean}
+         */
+        get: function () {
+            return this.remainingSessionTime < 0;
         },
         enumerable: true,
         configurable: true
@@ -4338,7 +4378,7 @@ var AppContext = (function () {
         this._sessionContextTry = new fp_1.Failure('Not loggged in');
         this._appContextState = AppContextState.LOGGED_OUT;
     };
-    AppContext.ONE_DAY_IN_MILLIS = 60 * 60 * 24 * 1000;
+    AppContext.ONE_HOUR_IN_MILLIS = 60 * 60 * 1000;
     return AppContext;
 }());
 exports.AppContext = AppContext;

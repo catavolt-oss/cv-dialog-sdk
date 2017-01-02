@@ -23,6 +23,7 @@ export interface Request {
 }
 export declare class Call implements Request {
     private static _lastCallId;
+    private static _lastSuccessfulActivityTime;
     private _callId;
     private _cancelled;
     private _loggingOption;
@@ -39,6 +40,7 @@ export declare class Call implements Request {
     static nextCallId(): number;
     static createCall(service: string, method: string, params: StringDictionary, sessionContext: SessionContext): Call;
     static createCallWithoutSession(service: string, method: string, params: StringDictionary, systemContext: SystemContext): Call;
+    static lastSuccessfulActivityTime: Date;
     constructor(service: string, method: string, params: StringDictionary, systemContext: SystemContext, sessionContext: SessionContext);
     cancel(): void;
     perform(): Future<StringDictionary>;

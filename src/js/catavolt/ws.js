@@ -160,6 +160,13 @@ var Call = (function () {
     Call.createCallWithoutSession = function (service, method, params, systemContext) {
         return new Call(service, method, params, systemContext, null);
     };
+    Object.defineProperty(Call, "lastSuccessfulActivityTime", {
+        get: function () {
+            return Call._lastSuccessfulActivityTime;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Call.prototype.cancel = function () {
         util_1.Log.error("Needs implementation", "Call", "cancel");
     };
@@ -184,9 +191,13 @@ var Call = (function () {
             }
         }
         var servicePath = pathPrefix + (this._service || "");
-        return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis);
+        return this._client.jsonPost(servicePath, jsonObj, this.timeoutMillis).map(function (result) {
+            Call._lastSuccessfulActivityTime = new Date();
+            return result;
+        });
     };
     Call._lastCallId = 0;
+    Call._lastSuccessfulActivityTime = new Date();
     return Call;
 }());
 exports.Call = Call;

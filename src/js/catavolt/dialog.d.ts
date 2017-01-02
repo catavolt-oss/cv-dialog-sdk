@@ -1593,7 +1593,7 @@ export interface ActionSource {
  */
 export declare class AppContext {
     private static _singleton;
-    private static ONE_DAY_IN_MILLIS;
+    private static ONE_HOUR_IN_MILLIS;
     lastMaintenanceTime: Date;
     private _appContextState;
     private _appWinDefTry;
@@ -1627,6 +1627,22 @@ export declare class AppContext {
      * @returns {boolean}
      */
     isLoggedIn: boolean;
+    /**
+     * Get the number of millis that the client will remain active between calls
+     * to the server.
+     * @returns {number}
+     */
+    clientTimeoutMillis: number;
+    /**
+     * Time remaining before this session is expired by the server
+     * @returns {number}
+     */
+    remainingSessionTime: number;
+    /**
+     * Return whether or not the session has expired
+     * @returns {boolean}
+     */
+    sessionHasExpired: boolean;
     /**
      * Open a {@link WorkbenchLaunchAction} expecting a Redirection
      * @param launchAction

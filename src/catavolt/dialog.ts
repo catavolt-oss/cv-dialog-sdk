@@ -3710,7 +3710,7 @@ export class AppContext {
 
     private static _singleton:AppContext;
 
-    private static ONE_DAY_IN_MILLIS:number = 60 * 60 * 24 * 1000;
+    private static ONE_HOUR_IN_MILLIS:number = 60 * 60 * 1000;
 
     public lastMaintenanceTime:Date;
     private _appContextState:AppContextState;
@@ -3720,7 +3720,7 @@ export class AppContext {
     private _tenantSettingsTry:Try<StringDictionary>;
 
     public static get defaultTTLInMillis():number {
-        return AppContext.ONE_DAY_IN_MILLIS;
+        return AppContext.ONE_HOUR_IN_MILLIS;
     }
 
     /**
@@ -3770,6 +3770,36 @@ export class AppContext {
      */
     get isLoggedIn() {
         return this._appContextState === AppContextState.LOGGED_IN;
+    }
+
+    /**
+     * Get the number of millis that the client will remain active between calls
+     * to the server.
+     * @returns {number}
+     */
+    get clientTimeoutMillis():number {
+        if(this.tenantSettingsTry.isSuccess) {
+            const mins = this.tenantSettingsTry.success['clientTimeoutMinutes'];
+            return mins ? (Number(mins) * 60 * 1000) : AppContext.defaultTTLInMillis;
+        } else {
+            return AppContext.defaultTTLInMillis; 
+        }
+    }
+
+    /**
+     * Time remaining before this session is expired by the server
+     * @returns {number}
+     */
+    get remainingSessionTime():number {
+       return this.clientTimeoutMillis - ((new Date()).getTime() - Call.lastSuccessfulActivityTime.getTime());
+    }
+
+    /**
+     * Return whether or not the session has expired
+     * @returns {boolean}
+     */
+    get sessionHasExpired():boolean {
+        return this.remainingSessionTime < 0;
     }
     
     /**
