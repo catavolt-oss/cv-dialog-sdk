@@ -764,6 +764,7 @@ export declare class PaneDef {
     private _label;
     private _title;
     private _menuDefs;
+    private _viewDescs;
     private _entityRecDef;
     private _dialogRedirection;
     private _settings;
@@ -777,7 +778,7 @@ export declare class PaneDef {
      * @param childMenuDefs
      * @returns {any}
      */
-    static fromOpenPaneResult(childXOpenResult: XOpenDialogModelResult, childXComp: XFormModelComp, childXPaneDefRef: XPaneDefRef, childXPaneDef: XPaneDef, childXActiveColDefs: XGetActiveColumnDefsResult, childMenuDefs: Array<MenuDef>, printMarkupXML: string): Try<PaneDef>;
+    static fromOpenPaneResult(childXOpenResult: XOpenDialogModelResult, childXComp: XFormModelComp, childXPaneDefRef: XPaneDefRef, childXPaneDef: XPaneDef, childXActiveColDefs: XGetActiveColumnDefsResult, childMenuDefs: Array<MenuDef>, childViewDesc: XGetAvailableViewDescsResult, printMarkupXML: string): Try<PaneDef>;
     /**
      * @private
      * @param _paneId
@@ -785,11 +786,12 @@ export declare class PaneDef {
      * @param _label
      * @param _title
      * @param _menuDefs
+     * @param _viewDescs
      * @param _entityRecDef
      * @param _dialogRedirection
      * @param _settings
      */
-    constructor(_paneId: string, _name: string, _label: string, _title: string, _menuDefs: Array<MenuDef>, _entityRecDef: EntityRecDef, _dialogRedirection: DialogRedirection, _settings: StringDictionary);
+    constructor(_paneId: string, _name: string, _label: string, _title: string, _menuDefs: Array<MenuDef>, _viewDescs: Array<ViewDesc>, _entityRecDef: EntityRecDef, _dialogRedirection: DialogRedirection, _settings: StringDictionary);
     /**
      * Get the {@link DialogHandle} associated with this PaneDef
      * @returns {DialogHandle}
@@ -824,6 +826,7 @@ export declare class PaneDef {
     paneId: string;
     settings: StringDictionary;
     title: string;
+    viewDescs: Array<ViewDesc>;
 }
 /**
  * PaneDef Subtype that describes a Barcode Pane
@@ -836,11 +839,12 @@ export declare class BarcodeScanDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
 }
 /**
  * PaneDef Subtype that describes a Calendar Pane
@@ -862,6 +866,7 @@ export declare class CalendarDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -875,7 +880,7 @@ export declare class CalendarDef extends PaneDef {
      * @param _occurTimePropName
      * @param _defaultActionId
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _descriptionPropName: string, _initialStyle: string, _startDatePropName: string, _startTimePropName: string, _endDatePropName: string, _endTimePropName: string, _occurDatePropName: string, _occurTimePropName: string, _defaultActionId: string);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _descriptionPropName: string, _initialStyle: string, _startDatePropName: string, _startTimePropName: string, _endDatePropName: string, _endTimePropName: string, _occurDatePropName: string, _occurTimePropName: string, _defaultActionId: string);
     descriptionPropName: string;
     initialStyle: string;
     startDatePropName: string;
@@ -903,6 +908,7 @@ export declare class DetailsDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -913,7 +919,7 @@ export declare class DetailsDef extends PaneDef {
      * @param _graphicalMarkup
      * @param _rows
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _cancelButtonText: string, _commitButtonText: string, _editable: boolean, _focusPropName: string, _graphicalMarkup: string, _rows: Array<Array<CellDef>>);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _cancelButtonText: string, _commitButtonText: string, _editable: boolean, _focusPropName: string, _graphicalMarkup: string, _rows: Array<Array<CellDef>>);
     cancelButtonText: string;
     commitButtonText: string;
     editable: boolean;
@@ -927,15 +933,10 @@ export declare class DetailsDef extends PaneDef {
 export declare class ErrorDef extends PaneDef {
     exception: DialogException;
     /**
-     * @private
-     * @param paneId
-     * @param name
-     * @param label
-     * @param title
-     * @param menuDefs
-     * @param entityRecDef
+     *
      * @param dialogRedirection
      * @param settings
+     * @param exception
      */
     constructor(dialogRedirection: DialogRedirection, settings: StringDictionary, exception: DialogException);
 }
@@ -959,7 +960,7 @@ export declare class FormDef extends PaneDef {
      * @param childrenMenuDefs
      * @returns {any}
      */
-    static fromOpenFormResult(formXOpenResult: XOpenEditorModelResult, formXFormDef: XFormDef, formMenuDefs: Array<MenuDef>, childrenXOpens: Array<XOpenDialogModelResult>, childrenXPaneDefs: Array<XPaneDef>, childrenXActiveColDefs: Array<XGetActiveColumnDefsResult>, childrenMenuDefs: Array<Array<MenuDef>>, childrenPrintMarkupXML: Array<string>): Try<FormDef>;
+    static fromOpenFormResult(formXOpenResult: XOpenEditorModelResult, formXFormDef: XFormDef, formMenuDefs: Array<MenuDef>, formViewDesc: XGetAvailableViewDescsResult, childrenXOpens: Array<XOpenDialogModelResult>, childrenXPaneDefs: Array<XPaneDef>, childrenXActiveColDefs: Array<XGetActiveColumnDefsResult>, childrenMenuDefs: Array<Array<MenuDef>>, childrenViewDescs: Array<XGetAvailableViewDescsResult>, childrenPrintMarkupXML: Array<string>): Try<FormDef>;
     /**
      * @private
      * @param paneId
@@ -967,6 +968,7 @@ export declare class FormDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -976,7 +978,7 @@ export declare class FormDef extends PaneDef {
      * @param _headerDef
      * @param _childrenDefs
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _formLayout: string, _formStyle: string, _borderStyle: string, _headerDef: DetailsDef, _childrenDefs: Array<PaneDef>);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _formLayout: string, _formStyle: string, _borderStyle: string, _headerDef: DetailsDef, _childrenDefs: Array<PaneDef>);
     borderStyle: string;
     childrenDefs: Array<PaneDef>;
     formLayout: string;
@@ -1007,11 +1009,12 @@ export declare class GeoFixDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
 }
 /**
  * *********************************
@@ -1027,11 +1030,12 @@ export declare class GeoLocationDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary);
 }
 /**
  * PaneDef Subtype that describes a Graph Pane
@@ -1065,6 +1069,7 @@ export declare class GraphDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -1083,7 +1088,7 @@ export declare class GraphDef extends PaneDef {
      * @param _yAxisRangeFrom
      * @param _yAxisRangeTo
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _defaultActionId: string, _graphType: string, _displayQuadrantLines: boolean, _identityDataPointDef: GraphDataPointDef, _groupingDataPointDef: GraphDataPointDef, _dataPointDefs: Array<GraphDataPointDef>, _filterDataPointDefs: Array<GraphDataPointDef>, _sampleModel: string, _xAxisLabel: string, _xAxisRangeFrom: number, _xAxisRangeTo: number, _yAxisLabel: string, _yAxisRangeFrom: number, _yAxisRangeTo: number);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _defaultActionId: string, _graphType: string, _displayQuadrantLines: boolean, _identityDataPointDef: GraphDataPointDef, _groupingDataPointDef: GraphDataPointDef, _dataPointDefs: Array<GraphDataPointDef>, _filterDataPointDefs: Array<GraphDataPointDef>, _sampleModel: string, _xAxisLabel: string, _xAxisRangeFrom: number, _xAxisRangeTo: number, _yAxisLabel: string, _yAxisRangeFrom: number, _yAxisRangeTo: number);
     dataPointDefs: Array<GraphDataPointDef>;
     defaultActionId: string;
     displayQuadrantLines: boolean;
@@ -1112,13 +1117,14 @@ export declare class ImagePickerDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
      * @param _URLPropName
      * @param _defaultActionId
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _URLPropName: string, _defaultActionId: string);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _URLPropName: string, _defaultActionId: string);
     defaultActionId: string;
     URLPropName: string;
 }
@@ -1139,6 +1145,7 @@ export declare class ListDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -1149,7 +1156,7 @@ export declare class ListDef extends PaneDef {
      * @param _defaultActionId
      * @param _graphicalMarkup
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _style: string, _initialColumns: number, _activeColumnDefs: Array<ColumnDef>, _columnsStyle: string, _defaultActionId: string, _graphicalMarkup: string);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _style: string, _initialColumns: number, _activeColumnDefs: Array<ColumnDef>, _columnsStyle: string, _defaultActionId: string, _graphicalMarkup: string);
     activeColumnDefs: Array<ColumnDef>;
     columnsStyle: string;
     defaultActionId: string;
@@ -1179,6 +1186,7 @@ export declare class MapDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -1190,7 +1198,7 @@ export declare class MapDef extends PaneDef {
      * @param _latitudePropName
      * @param _longitudePropName
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _descriptionPropName: string, _streetPropName: string, _cityPropName: string, _statePropName: string, _postalCodePropName: string, _latitudePropName: string, _longitudePropName: string);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _descriptionPropName: string, _streetPropName: string, _cityPropName: string, _statePropName: string, _postalCodePropName: string, _latitudePropName: string, _longitudePropName: string);
     cityPropName: string;
     descriptionPropName: string;
     latitudePropName: string;
@@ -1219,6 +1227,7 @@ export declare class PrintMarkupDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -1229,7 +1238,7 @@ export declare class PrintMarkupDef extends PaneDef {
      * @param _printMarkup
      * @param _rows
      */
-    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _cancelButtonText: string, _commitButtonText: string, _editable: boolean, _focusPropName: string, _printMarkupXML: string, _rows: Array<Array<CellDef>>);
+    constructor(paneId: string, name: string, label: string, title: string, menuDefs: Array<MenuDef>, viewDescs: Array<ViewDesc>, entityRecDef: EntityRecDef, dialogRedirection: DialogRedirection, settings: StringDictionary, _cancelButtonText: string, _commitButtonText: string, _editable: boolean, _focusPropName: string, _printMarkupXML: string, _rows: Array<Array<CellDef>>);
     cancelButtonText: string;
     commitButtonText: string;
     editable: boolean;
@@ -1939,9 +1948,13 @@ export declare class DialogService {
     static closeEditorModel(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<VoidResult>;
     static getAvailableValues(dialogHandle: DialogHandle, propertyName: string, pendingWrites: EntityRec, sessionContext: SessionContext): Future<XGetAvailableValuesResult>;
     static getActiveColumnDefs(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<XGetActiveColumnDefsResult>;
+    static getAvailableEditorViewDescs(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<XGetAvailableViewDescsResult>;
+    static getAvailableQueryViewDescs(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<XGetAvailableViewDescsResult>;
     static getEditorModelMenuDefs(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<Array<MenuDef>>;
     static getEditorModelPaneDef(dialogHandle: DialogHandle, paneId: string, sessionContext: SessionContext): Future<XPaneDef>;
     static getQueryModelMenuDefs(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<Array<MenuDef>>;
+    static getSelectedEditorViewId(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<ViewId>;
+    static getSelectedQueryViewId(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<ViewId>;
     static openEditorModelFromRedir(redirection: DialogRedirection, sessionContext: SessionContext): Future<XOpenEditorModelResult>;
     static openQueryModelFromRedir(redirection: DialogRedirection, sessionContext: SessionContext): Future<XOpenQueryModelResult>;
     static performEditorAction(dialogHandle: DialogHandle, actionId: string, pendingWrites: EntityRec, sessionContext: SessionContext): Future<Redirection>;
@@ -1951,6 +1964,8 @@ export declare class DialogService {
     static readEditorModel(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<XReadResult>;
     static readEditorProperty(dialogHandle: DialogHandle, propertyName: string, readSeq: number, readLength: number, sessionContext: SessionContext): Future<XReadPropertyResult>;
     static readQueryProperty(dialogHandle: DialogHandle, propertyName: string, objectId: string, readSeq: number, readLength: number, sessionContext: SessionContext): Future<XReadPropertyResult>;
+    static setSelectedEditorViewId(dialogHandle: DialogHandle, viewId: string, sessionContext: SessionContext): Future<XSetSelectedViewIdEditorModelResult>;
+    static setSelectedQueryViewId(dialogHandle: DialogHandle, viewId: string, sessionContext: SessionContext): Future<XSetSelectedViewIdQueryModelResult>;
     static writeEditorModel(dialogHandle: DialogHandle, entityRec: EntityRec, sessionContext: SessionContext): Future<Either<Redirection, XWriteResult>>;
     static writeProperty(dialogHandle: DialogHandle, propertyName: string, data: string, append: boolean, sessionContext: SessionContext): Future<XWritePropertyResult>;
 }
@@ -2018,6 +2033,7 @@ export declare class FormContextBuilder {
     private createChildrenContexts(formDef);
     private fetchChildrenActiveColDefs(formXOpen);
     private fetchChildrenMenuDefs(formXOpen);
+    private fetchChildrenViewDescs(formXOpen);
     private fetchChildrenXPaneDefs(formXOpen, xFormDef);
     private fetchChildrenPrintMarkupXMLs(formXOpen);
     private fetchXFormDefWithXOpenResult(xformOpenResult);
@@ -2485,6 +2501,20 @@ export declare class SystemContextImpl implements SystemContext {
 /**
  * *********************************
  */
+export interface ViewId {
+}
+/**
+ * *********************************
+ */
+export declare class ViewDesc {
+    name: string;
+    description: string;
+    viewId: string;
+    constructor(name: string, description: string, viewId: string);
+}
+/**
+ * *********************************
+ */
 export interface VoidResult {
 }
 /**
@@ -2681,6 +2711,33 @@ export declare class XGetActiveColumnDefsResult {
     columns: Array<ColumnDef>;
     constructor(columnsStyle: string, columns: Array<ColumnDef>);
     columnDefs: Array<ColumnDef>;
+}
+/**
+ * *********************************
+ */
+/**
+ * @private
+ */
+export declare class XGetAvailableViewDescsResult {
+    private _list;
+    constructor(_list: Array<ViewDesc>);
+    values: Array<ViewDesc>;
+}
+/**
+ * *********************************
+ */
+/**
+ * @private
+ */
+export declare class XSetSelectedViewIdEditorModelResult {
+}
+/**
+ * *********************************
+ */
+/**
+ * @private
+ */
+export declare class XSetSelectedViewIdQueryModelResult {
 }
 /**
  * *********************************

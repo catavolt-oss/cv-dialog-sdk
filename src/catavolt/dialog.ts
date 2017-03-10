@@ -1643,6 +1643,7 @@ export class PaneDef {
                               childXPaneDef:XPaneDef,
                               childXActiveColDefs:XGetActiveColumnDefsResult,
                               childMenuDefs:Array<MenuDef>,
+                              childViewDesc:XGetAvailableViewDescsResult,
                               printMarkupXML:string):Try<PaneDef> {
 
         var settings:StringDictionary = {};
@@ -1656,32 +1657,32 @@ export class PaneDef {
         } else if (childXPaneDef instanceof XListDef) {
             var xListDef:XListDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
-            newPaneDef = new ListDef(xListDef.paneId, xListDef.name, childXComp.label, xListDef.title, childMenuDefs,
+            newPaneDef = new ListDef(xListDef.paneId, xListDef.name, childXComp.label, xListDef.title, childMenuDefs, childViewDesc.values,
                 xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xListDef.style, xListDef.initialColumns,
                 childXActiveColDefs.columnDefs, xListDef.columnsStyle, xOpenQueryModelResult.defaultActionId, xListDef.graphicalMarkup);
         } else if (childXPaneDef instanceof XDetailsDef) {
             var xDetailsDef:XDetailsDef = childXPaneDef;
             var xOpenEditorModelResult:XOpenEditorModelResult = <XOpenEditorModelResult>childXOpenResult;
             if (printMarkupXML) {
-                newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs,
+                newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, childViewDesc.values,
                     xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText,
                     xDetailsDef.editable, xDetailsDef.focusPropertyName, printMarkupXML, xDetailsDef.rows);
             } else {
-                newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs,
+                newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, childViewDesc.values,
                     xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText,
                     xDetailsDef.editable, xDetailsDef.focusPropertyName, xDetailsDef.graphicalMarkup, xDetailsDef.rows);
             }
         } else if (childXPaneDef instanceof XMapDef) {
             var xMapDef:XMapDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
-            newPaneDef = new MapDef(xMapDef.paneId, xMapDef.name, childXComp.label, xMapDef.title, childMenuDefs,
+            newPaneDef = new MapDef(xMapDef.paneId, xMapDef.name, childXComp.label, xMapDef.title, childMenuDefs, childViewDesc.values,
                 xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xMapDef.descriptionProperty,
                 xMapDef.streetProperty, xMapDef.cityProperty, xMapDef.stateProperty, xMapDef.postalCodeProperty,
                 xMapDef.latitudeProperty, xMapDef.longitudeProperty);
         } else if (childXPaneDef instanceof XGraphDef) {
             var xGraphDef:XGraphDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
-            newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs,
+            newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs, childViewDesc.values,
                 xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xOpenQueryModelResult.defaultActionId,
                 xGraphDef.graphType, xGraphDef.displayQuadrantLines, xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint,
                 xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel, xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom,
@@ -1690,22 +1691,22 @@ export class PaneDef {
             var xBarcodeScanDef:XBarcodeScanDef = childXPaneDef;
             var xOpenEditorModelResult:XOpenEditorModelResult = <XOpenEditorModelResult>childXOpenResult;
             newPaneDef = new BarcodeScanDef(xBarcodeScanDef.paneId, xBarcodeScanDef.name, childXComp.label, xBarcodeScanDef.title,
-                childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
+                childMenuDefs, childViewDesc.values, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
         } else if (childXPaneDef instanceof XGeoFixDef) {
             var xGeoFixDef:XGeoFixDef = childXPaneDef;
             var xOpenEditorModelResult:XOpenEditorModelResult = <XOpenEditorModelResult>childXOpenResult;
             newPaneDef = new GeoFixDef(xGeoFixDef.paneId, xGeoFixDef.name, childXComp.label, xGeoFixDef.title,
-                childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
+                childMenuDefs, childViewDesc.values, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
         } else if (childXPaneDef instanceof XGeoLocationDef) {
             var xGeoLocationDef:XGeoLocationDef = childXPaneDef;
             var xOpenEditorModelResult:XOpenEditorModelResult = <XOpenEditorModelResult>childXOpenResult;
             newPaneDef = new GeoLocationDef(xGeoLocationDef.paneId, xGeoLocationDef.name, childXComp.label, xGeoLocationDef.title,
-                childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
+                childMenuDefs, childViewDesc.values, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
         } else if (childXPaneDef instanceof XCalendarDef) {
             var xCalendarDef:XCalendarDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
             newPaneDef = new CalendarDef(xCalendarDef.paneId, xCalendarDef.name, childXComp.label, xCalendarDef.title,
-                childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xCalendarDef.descriptionProperty,
+                childMenuDefs, childViewDesc.values, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xCalendarDef.descriptionProperty,
                 xCalendarDef.initialStyle, xCalendarDef.startDateProperty, xCalendarDef.startTimeProperty, xCalendarDef.endDateProperty,
                 xCalendarDef.endTimeProperty, xCalendarDef.occurDateProperty, xCalendarDef.occurTimeProperty,
                 xOpenQueryModelResult.defaultActionId);
@@ -1713,7 +1714,7 @@ export class PaneDef {
             var xImagePickerDef:XImagePickerDef = childXPaneDef;
             var xOpenQueryModelResult:XOpenQueryModelResult = <XOpenQueryModelResult>childXOpenResult;
             newPaneDef = new ImagePickerDef(xImagePickerDef.paneId, xImagePickerDef.name, childXComp.label, xImagePickerDef.title,
-                childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xImagePickerDef.URLProperty,
+                childMenuDefs, childViewDesc.values, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xImagePickerDef.URLProperty,
                 xImagePickerDef.defaultActionId);
         } else {
             return new Failure<PaneDef>('PaneDef::fromOpenPaneResult needs impl for: ' + ObjUtil.formatRecAttr(childXPaneDef));
@@ -1730,6 +1731,7 @@ export class PaneDef {
      * @param _label
      * @param _title
      * @param _menuDefs
+     * @param _viewDescs
      * @param _entityRecDef
      * @param _dialogRedirection
      * @param _settings
@@ -1739,6 +1741,7 @@ export class PaneDef {
                 private _label:string,
                 private _title:string,
                 private _menuDefs:Array<MenuDef>,
+                private _viewDescs:Array<ViewDesc>,
                 private _entityRecDef:EntityRecDef,
                 private _dialogRedirection:DialogRedirection,
                 private _settings:StringDictionary) {
@@ -1813,6 +1816,10 @@ export class PaneDef {
     get title():string {
         return this._title;
     }
+    
+    get viewDescs():Array<ViewDesc> {
+        return this._viewDescs;
+    }
 }
 
 /**
@@ -1827,6 +1834,7 @@ export class BarcodeScanDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -1836,11 +1844,12 @@ export class BarcodeScanDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary) {
 
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
 
     }
 }
@@ -1857,6 +1866,7 @@ export class CalendarDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -1875,6 +1885,7 @@ export class CalendarDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
@@ -1888,7 +1899,7 @@ export class CalendarDef extends PaneDef {
                 private _occurTimePropName:string,
                 private _defaultActionId:string) {
 
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
 
     }
 
@@ -1941,6 +1952,7 @@ export class DetailsDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -1956,6 +1968,7 @@ export class DetailsDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
@@ -1965,7 +1978,7 @@ export class DetailsDef extends PaneDef {
                 private _focusPropName:string,
                 private _graphicalMarkup:string,
                 private _rows:Array<Array<CellDef>>) {
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
     }
 
     get cancelButtonText():string {
@@ -2001,19 +2014,14 @@ export class DetailsDef extends PaneDef {
 export class ErrorDef extends PaneDef {
 
     /**
-     * @private
-     * @param paneId
-     * @param name
-     * @param label
-     * @param title
-     * @param menuDefs
-     * @param entityRecDef
+     * 
      * @param dialogRedirection
      * @param settings
+     * @param exception
      */
     constructor(dialogRedirection:DialogRedirection, settings:StringDictionary, public exception:DialogException) {
 
-        super(null, null, null, null, null, null, dialogRedirection, settings);
+        super(null, null, null, null, null, null, null, dialogRedirection, settings);
 
     }
 }
@@ -2037,10 +2045,12 @@ export class FormDef extends PaneDef {
     static fromOpenFormResult(formXOpenResult:XOpenEditorModelResult,
                               formXFormDef:XFormDef,
                               formMenuDefs:Array<MenuDef>,
+                              formViewDesc:XGetAvailableViewDescsResult,
                               childrenXOpens:Array<XOpenDialogModelResult>,
                               childrenXPaneDefs:Array<XPaneDef>,
                               childrenXActiveColDefs:Array<XGetActiveColumnDefsResult>,
                               childrenMenuDefs:Array<Array<MenuDef>>,
+                              childrenViewDescs:Array<XGetAvailableViewDescsResult>,
                               childrenPrintMarkupXML:Array<string>):Try<FormDef> {
 
         var settings:StringDictionary = {'open': true};
@@ -2052,11 +2062,12 @@ export class FormDef extends PaneDef {
             var childXPaneDef = childrenXPaneDefs[i];
             var childXActiveColDefs = childrenXActiveColDefs[i];
             var childMenuDefs = childrenMenuDefs[i];
+            var childViewDesc = childrenViewDescs[i];
             var childXComp = formXOpenResult.formModel.children[i];
             var childXPaneDefRef = formXFormDef.paneDefRefs[i];
             var childPrintMarkupXML = childrenPrintMarkupXML[i];
             var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef,
-                childXActiveColDefs, childMenuDefs, childPrintMarkupXML);
+                childXActiveColDefs, childMenuDefs, childViewDesc, childPrintMarkupXML);
             if (paneDefTry.isFailure) {
                 return new Failure<FormDef>(paneDefTry.failure);
             } else {
@@ -2065,7 +2076,7 @@ export class FormDef extends PaneDef {
         }
 
         return new Success(new FormDef(formXFormDef.paneId, formXFormDef.name, formXOpenResult.formModel.form.label,
-            formXFormDef.title, formMenuDefs, formXOpenResult.entityRecDef, formXOpenResult.formRedirection,
+            formXFormDef.title, formMenuDefs, formViewDesc.values, formXOpenResult.entityRecDef, formXOpenResult.formRedirection,
             settings, formXFormDef.formLayout, formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childrenDefs));
 
     }
@@ -2077,6 +2088,7 @@ export class FormDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2091,6 +2103,7 @@ export class FormDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
@@ -2100,7 +2113,7 @@ export class FormDef extends PaneDef {
                 private _headerDef:DetailsDef,
                 private _childrenDefs:Array<PaneDef>) {
 
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
 
     }
 
@@ -2190,6 +2203,7 @@ export class GeoFixDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2199,11 +2213,12 @@ export class GeoFixDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary) {
 
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
 
     }
 }
@@ -2222,6 +2237,7 @@ export class GeoLocationDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2231,11 +2247,12 @@ export class GeoLocationDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary) {
 
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
 
     }
 }
@@ -2261,6 +2278,7 @@ export class GraphDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2284,6 +2302,7 @@ export class GraphDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
@@ -2302,7 +2321,7 @@ export class GraphDef extends PaneDef {
                 private _yAxisRangeFrom:number,
                 private _yAxisRangeTo:number) {
 
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
 
     }
 
@@ -2376,6 +2395,7 @@ export class ImagePickerDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2387,13 +2407,14 @@ export class ImagePickerDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
                 private _URLPropName:string,
                 private _defaultActionId:string) {
 
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
 
     }
 
@@ -2418,6 +2439,7 @@ export class ListDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2433,6 +2455,7 @@ export class ListDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
@@ -2442,7 +2465,7 @@ export class ListDef extends PaneDef {
                 private _columnsStyle:string,
                 private _defaultActionId:string,
                 private _graphicalMarkup:string) {
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
     }
 
     get activeColumnDefs():Array<ColumnDef> {
@@ -2500,6 +2523,7 @@ export class MapDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2516,6 +2540,7 @@ export class MapDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
@@ -2527,7 +2552,7 @@ export class MapDef extends PaneDef {
                 private _latitudePropName:string,
                 private _longitudePropName:string) {
 
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
 
     }
 
@@ -2577,6 +2602,7 @@ export class PrintMarkupDef extends PaneDef {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2592,6 +2618,7 @@ export class PrintMarkupDef extends PaneDef {
                 label:string,
                 title:string,
                 menuDefs:Array<MenuDef>,
+                viewDescs:Array<ViewDesc>,
                 entityRecDef:EntityRecDef,
                 dialogRedirection:DialogRedirection,
                 settings:StringDictionary,
@@ -2601,7 +2628,7 @@ export class PrintMarkupDef extends PaneDef {
                 private _focusPropName:string,
                 private _printMarkupXML:string,
                 private _rows:Array<Array<CellDef>>) {
-        super(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+        super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
     }
 
     get cancelButtonText():string {
@@ -4605,6 +4632,30 @@ export class DialogService {
         });
     }
 
+    static getAvailableEditorViewDescs(dialogHandle:DialogHandle,
+                                 sessionContext:SessionContext):Future<XGetAvailableViewDescsResult> {
+        var method = 'getAvailableViewDescs';
+        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            const viewDescTry = DialogTriple.fromWSDialogObject<XGetAvailableViewDescsResult>(result, 'WSGetAvailableViewDescsResult', OType.factoryFn);
+            const viewDesc = viewDescTry.isFailure ? new XGetAvailableViewDescsResult([]) : viewDescTry.success;
+            return Future.createSuccessfulFuture('getAvailableEditorViewDescs', viewDesc);
+        });
+    }
+
+    static getAvailableQueryViewDescs(dialogHandle:DialogHandle,
+                                       sessionContext:SessionContext):Future<XGetAvailableViewDescsResult> {
+        var method = 'getAvailableViewDescs';
+        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+        var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            const viewDescTry = DialogTriple.fromWSDialogObject<XGetAvailableViewDescsResult>(result, 'WSGetAvailableViewDescsResult', OType.factoryFn);
+            const viewDesc = viewDescTry.isFailure ? new XGetAvailableViewDescsResult([]) : viewDescTry.success;
+            return Future.createSuccessfulFuture('getAvailableEditorViewDescs', viewDesc);
+        });
+    }
+
     static getEditorModelMenuDefs(dialogHandle:DialogHandle,
                                   sessionContext:SessionContext):Future<Array<MenuDef>> {
 
@@ -4641,6 +4692,30 @@ export class DialogService {
             return Future.createCompletedFuture('getQueryModelMenuDefs',
                 DialogTriple.fromWSDialogObjectsResult<MenuDef>(result, 'WSGetMenuDefsResult', 'WSMenuDef',
                     'menuDefs', OType.factoryFn));
+        });
+    }
+    
+    static getSelectedEditorViewId(dialogHandle:DialogHandle,
+                                   sessionContext:SessionContext):Future<ViewId> {
+        var method = 'getSelectedViewId';
+        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('getSelectedEditorViewId',
+                DialogTriple.fromWSDialogObject<ViewId>(result, 'WSViewId',
+                    OType.factoryFn));
+        });
+    }
+    
+    static getSelectedQueryViewId(dialogHandle:DialogHandle,
+                                  sessionContext:SessionContext):Future<ViewId> {
+        var method = 'getSelectedViewId';
+        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle')};
+        var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('getSelectedQueryViewId',
+                DialogTriple.fromWSDialogObject<ViewId>(result, 'WSViewId',
+                    OType.factoryFn));
         });
     }
 
@@ -4815,6 +4890,30 @@ export class DialogService {
         return call.perform().bind((result:StringDictionary)=> {
             return Future.createCompletedFuture('readProperty',
                 DialogTriple.fromWSDialogObject<XReadPropertyResult>(result, 'WSReadPropertyResult', OType.factoryFn));
+        });
+    }
+    
+    static setSelectedEditorViewId(dialogHandle:DialogHandle, viewId:string,
+                                   sessionContext:SessionContext):Future<XSetSelectedViewIdEditorModelResult> {
+        var method = 'setSelectedViewId';
+        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'), viewId: viewId};
+        var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('setSelectedEditorViewId',
+                DialogTriple.fromWSDialogObject<XSetSelectedViewIdEditorModelResult>(result, 'WSSetSelectedViewIdEditorModelResult',
+                    OType.factoryFn));
+        });
+    }
+
+    static setSelectedQueryViewId(dialogHandle:DialogHandle, viewId:string,
+                                  sessionContext:SessionContext):Future<XSetSelectedViewIdQueryModelResult> {
+        var method = 'setSelectedViewId';
+        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'), viewId: viewId};
+        var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind((result:StringDictionary)=> {
+            return Future.createCompletedFuture('setSelectedQueryViewId',
+                DialogTriple.fromWSDialogObject<XSetSelectedViewIdQueryModelResult>(result, 'WSSetSelectedViewIdQueryModelResult',
+                    OType.factoryFn));
         });
     }
 
@@ -5196,6 +5295,7 @@ export class FormContextBuilder {
             var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
             var formXFormDefFr = this._initialXFormDefFr ? this._initialXFormDefFr : this.fetchXFormDefWithXOpenResult(formXOpen);
             var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
+            var formViewDescsFr = DialogService.getAvailableEditorViewDescs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
             //expect a sequence of child def components or a sequence of FormContexts (nested forms)
             var formChildrenFr:Future<Array<Try<any>>> = formXFormDefFr.bind((xFormDef:XFormDef)=> {
                 if (!this.containsNestedForms(formXOpen, xFormDef)) {
@@ -5203,14 +5303,15 @@ export class FormContextBuilder {
                     var childrenXPaneDefsFr = this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
                     var childrenActiveColDefsFr = this.fetchChildrenActiveColDefs(formXOpen);
                     var childrenMenuDefsFr = this.fetchChildrenMenuDefs(formXOpen);
+                    var childrenViewDescsFr = this.fetchChildrenViewDescs(formXOpen);
                     var childrenPrintMarkupXMLFr = this.fetchChildrenPrintMarkupXMLs(formXOpen);
-                    return Future.sequence<any>([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr, childrenPrintMarkupXMLFr]);
+                    return Future.sequence<any>([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr, childrenViewDescsFr, childrenPrintMarkupXMLFr]);
                 } else {
                     //added to support nested forms
                     return Future.sequence<any>(this.loadNestedForms(formXOpen, xFormDef));
                 }
             });
-            return Future.sequence<any>([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
+            return Future.sequence<any>([formXOpenFr, formXFormDefFr, formMenuDefsFr, formViewDescsFr, formChildrenFr]);
         });
 
         return openAllFr.bind((value:Array<Try<any>>)=> {
@@ -5270,12 +5371,13 @@ export class FormContextBuilder {
 
     private completeOpenPromise(flattened:Array<any>):Try<FormDef> {
 
-        if (flattened.length != 4) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 4 elements');
+        if (flattened.length != 5) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 5 elements');
 
         var formXOpen:XOpenEditorModelResult = flattened[0];
         var formXFormDef:XFormDef = flattened[1];
         var formMenuDefs:Array<MenuDef> = flattened[2];
-        var formChildren:Array<any> = flattened[3];
+        var formViewDesc:XGetAvailableViewDescsResult = flattened[3];
+        var formChildren:Array<any> = flattened[4];
 
         if (formChildren.length === 0) return new Failure<FormDef>('FormContextBuilder::build: Form has no children');
 
@@ -5289,20 +5391,21 @@ export class FormContextBuilder {
             var headerDef:DetailsDef = null;
 
             return new Success(new FormDef(formXOpen.formPaneId, formXFormDef.name, formXOpen.formModel.form.label, formXFormDef.title,
-                formMenuDefs, formXOpen.entityRecDef, formXOpen.formRedirection, settings, formXFormDef.formLayout,
+                formMenuDefs, formViewDesc.values, formXOpen.entityRecDef, formXOpen.formRedirection, settings, formXFormDef.formLayout,
                 formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childPaneDefs));
         } else {
             //build the form with child components
-            if (formChildren.length != 5) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 5 elements for children panes');
+            if (formChildren.length != 6) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 6 elements for children panes');
 
             var childrenXOpens:Array<XOpenDialogModelResult> = formChildren[0];
             var childrenXPaneDefs:Array<XPaneDef> = formChildren[1];
             var childrenXActiveColDefs:Array<XGetActiveColumnDefsResult> = formChildren[2];
             var childrenMenuDefs:Array<Array<MenuDef>> = formChildren[3];
-            var childrenPrintMarkupXML:Array<string> = formChildren[4];
+            var childrenViewDescs:Array<XGetAvailableViewDescsResult> = formChildren[4];
+            var childrenPrintMarkupXML:Array<string> = formChildren[5];
 
-            return FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens,
-                childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenPrintMarkupXML);
+            return FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, formViewDesc, childrenXOpens,
+                childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenViewDescs, childrenPrintMarkupXML);
         }
 
     }
@@ -5362,6 +5465,18 @@ export class FormContextBuilder {
                 return DialogService.getEditorModelMenuDefs(xComp.redirection.dialogHandle, this.sessionContext);
             } else {
                 return DialogService.getQueryModelMenuDefs(xComp.redirection.dialogHandle, this.sessionContext);
+            }
+        });
+        return Future.sequence(seqOfFutures);
+    }
+
+    private fetchChildrenViewDescs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XGetAvailableViewDescsResult>>> {
+        var xComps = formXOpen.formModel.children;
+        var seqOfFutures = xComps.map((xComp:XFormModelComp)=> {
+            if (xComp.redirection.isEditor) {
+                return DialogService.getAvailableEditorViewDescs(xComp.redirection.dialogHandle, this.sessionContext);
+            } else {
+                return DialogService.getAvailableQueryViewDescs(xComp.redirection.dialogHandle, this.sessionContext);
             }
         });
         return Future.sequence(seqOfFutures);
@@ -6964,6 +7079,22 @@ export class SystemContextImpl implements SystemContext {
  * *********************************
  */
 
+export interface ViewId {
+}
+
+/**
+ * *********************************
+ */
+
+export class ViewDesc {
+
+    constructor(public name:string, public description:string, public viewId:string){}
+    
+}
+/**
+ * *********************************
+ */
+
 
 export interface VoidResult {
 }
@@ -7364,6 +7495,39 @@ export class XGetActiveColumnDefsResult {
  * *********************************
  */
 
+/**
+ * @private
+ */
+export class XGetAvailableViewDescsResult {
+
+    constructor(private _list:Array<ViewDesc>) {
+    }
+
+    get values():Array<ViewDesc> {
+        return this._list;
+    }
+}
+/**
+ * *********************************
+ */
+
+/**
+ * @private
+ */
+export class XSetSelectedViewIdEditorModelResult{
+}
+/**
+ * *********************************
+ */
+
+/**
+ * @private
+ */
+export class XSetSelectedViewIdQueryModelResult{
+}
+/**
+ * *********************************
+ */
 
 /**
  * @private
@@ -7843,6 +8007,8 @@ export class OType {
         'WSGeoLocationDef': XGeoLocationDef,
         'WSGetActiveColumnDefsResult': XGetActiveColumnDefsResult,
         'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
+        'WSGetAvailableViewDescsResult': XGetAvailableViewDescsResult,
+        'WSViewDesc': ViewDesc,
         'WSGraphDataPointDef': GraphDataPointDef,
         'WSGraphDef': XGraphDef,
         'WSHandlePropertyChangeResult': XPropertyChangeResult,

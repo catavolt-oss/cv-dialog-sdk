@@ -1793,16 +1793,18 @@ var PaneDef = (function () {
      * @param _label
      * @param _title
      * @param _menuDefs
+     * @param _viewDescs
      * @param _entityRecDef
      * @param _dialogRedirection
      * @param _settings
      */
-    function PaneDef(_paneId, _name, _label, _title, _menuDefs, _entityRecDef, _dialogRedirection, _settings) {
+    function PaneDef(_paneId, _name, _label, _title, _menuDefs, _viewDescs, _entityRecDef, _dialogRedirection, _settings) {
         this._paneId = _paneId;
         this._name = _name;
         this._label = _label;
         this._title = _title;
         this._menuDefs = _menuDefs;
+        this._viewDescs = _viewDescs;
         this._entityRecDef = _entityRecDef;
         this._dialogRedirection = _dialogRedirection;
         this._settings = _settings;
@@ -1817,7 +1819,7 @@ var PaneDef = (function () {
      * @param childMenuDefs
      * @returns {any}
      */
-    PaneDef.fromOpenPaneResult = function (childXOpenResult, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs, printMarkupXML) {
+    PaneDef.fromOpenPaneResult = function (childXOpenResult, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs, childViewDesc, printMarkupXML) {
         var settings = {};
         util_1.ObjUtil.addAllProps(childXComp.redirection.dialogProperties, settings);
         var newPaneDef;
@@ -1828,52 +1830,52 @@ var PaneDef = (function () {
         else if (childXPaneDef instanceof XListDef) {
             var xListDef = childXPaneDef;
             var xOpenQueryModelResult = childXOpenResult;
-            newPaneDef = new ListDef(xListDef.paneId, xListDef.name, childXComp.label, xListDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xListDef.style, xListDef.initialColumns, childXActiveColDefs.columnDefs, xListDef.columnsStyle, xOpenQueryModelResult.defaultActionId, xListDef.graphicalMarkup);
+            newPaneDef = new ListDef(xListDef.paneId, xListDef.name, childXComp.label, xListDef.title, childMenuDefs, childViewDesc.values, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xListDef.style, xListDef.initialColumns, childXActiveColDefs.columnDefs, xListDef.columnsStyle, xOpenQueryModelResult.defaultActionId, xListDef.graphicalMarkup);
         }
         else if (childXPaneDef instanceof XDetailsDef) {
             var xDetailsDef = childXPaneDef;
             var xOpenEditorModelResult = childXOpenResult;
             if (printMarkupXML) {
-                newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, printMarkupXML, xDetailsDef.rows);
+                newPaneDef = new PrintMarkupDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, childViewDesc.values, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, printMarkupXML, xDetailsDef.rows);
             }
             else {
-                newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, xDetailsDef.graphicalMarkup, xDetailsDef.rows);
+                newPaneDef = new DetailsDef(xDetailsDef.paneId, xDetailsDef.name, childXComp.label, xDetailsDef.title, childMenuDefs, childViewDesc.values, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings, xDetailsDef.cancelButtonText, xDetailsDef.commitButtonText, xDetailsDef.editable, xDetailsDef.focusPropertyName, xDetailsDef.graphicalMarkup, xDetailsDef.rows);
             }
         }
         else if (childXPaneDef instanceof XMapDef) {
             var xMapDef = childXPaneDef;
             var xOpenQueryModelResult = childXOpenResult;
-            newPaneDef = new MapDef(xMapDef.paneId, xMapDef.name, childXComp.label, xMapDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xMapDef.descriptionProperty, xMapDef.streetProperty, xMapDef.cityProperty, xMapDef.stateProperty, xMapDef.postalCodeProperty, xMapDef.latitudeProperty, xMapDef.longitudeProperty);
+            newPaneDef = new MapDef(xMapDef.paneId, xMapDef.name, childXComp.label, xMapDef.title, childMenuDefs, childViewDesc.values, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xMapDef.descriptionProperty, xMapDef.streetProperty, xMapDef.cityProperty, xMapDef.stateProperty, xMapDef.postalCodeProperty, xMapDef.latitudeProperty, xMapDef.longitudeProperty);
         }
         else if (childXPaneDef instanceof XGraphDef) {
             var xGraphDef = childXPaneDef;
             var xOpenQueryModelResult = childXOpenResult;
-            newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xOpenQueryModelResult.defaultActionId, xGraphDef.graphType, xGraphDef.displayQuadrantLines, xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel, xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom, xGraphDef.xAxisRangeTo, xGraphDef.yAxisLabel, xGraphDef.yAxisRangeFrom, xGraphDef.yAxisRangeTo);
+            newPaneDef = new GraphDef(xGraphDef.paneId, xGraphDef.name, childXComp.label, xGraphDef.title, childMenuDefs, childViewDesc.values, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xOpenQueryModelResult.defaultActionId, xGraphDef.graphType, xGraphDef.displayQuadrantLines, xGraphDef.identityDataPoint, xGraphDef.groupingDataPoint, xGraphDef.dataPoints, xGraphDef.filterDataPoints, xGraphDef.sampleModel, xGraphDef.xAxisLabel, xGraphDef.xAxisRangeFrom, xGraphDef.xAxisRangeTo, xGraphDef.yAxisLabel, xGraphDef.yAxisRangeFrom, xGraphDef.yAxisRangeTo);
         }
         else if (childXPaneDef instanceof XBarcodeScanDef) {
             var xBarcodeScanDef = childXPaneDef;
             var xOpenEditorModelResult = childXOpenResult;
-            newPaneDef = new BarcodeScanDef(xBarcodeScanDef.paneId, xBarcodeScanDef.name, childXComp.label, xBarcodeScanDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
+            newPaneDef = new BarcodeScanDef(xBarcodeScanDef.paneId, xBarcodeScanDef.name, childXComp.label, xBarcodeScanDef.title, childMenuDefs, childViewDesc.values, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
         }
         else if (childXPaneDef instanceof XGeoFixDef) {
             var xGeoFixDef = childXPaneDef;
             var xOpenEditorModelResult = childXOpenResult;
-            newPaneDef = new GeoFixDef(xGeoFixDef.paneId, xGeoFixDef.name, childXComp.label, xGeoFixDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
+            newPaneDef = new GeoFixDef(xGeoFixDef.paneId, xGeoFixDef.name, childXComp.label, xGeoFixDef.title, childMenuDefs, childViewDesc.values, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
         }
         else if (childXPaneDef instanceof XGeoLocationDef) {
             var xGeoLocationDef = childXPaneDef;
             var xOpenEditorModelResult = childXOpenResult;
-            newPaneDef = new GeoLocationDef(xGeoLocationDef.paneId, xGeoLocationDef.name, childXComp.label, xGeoLocationDef.title, childMenuDefs, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
+            newPaneDef = new GeoLocationDef(xGeoLocationDef.paneId, xGeoLocationDef.name, childXComp.label, xGeoLocationDef.title, childMenuDefs, childViewDesc.values, xOpenEditorModelResult.entityRecDef, childXComp.redirection, settings);
         }
         else if (childXPaneDef instanceof XCalendarDef) {
             var xCalendarDef = childXPaneDef;
             var xOpenQueryModelResult = childXOpenResult;
-            newPaneDef = new CalendarDef(xCalendarDef.paneId, xCalendarDef.name, childXComp.label, xCalendarDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xCalendarDef.descriptionProperty, xCalendarDef.initialStyle, xCalendarDef.startDateProperty, xCalendarDef.startTimeProperty, xCalendarDef.endDateProperty, xCalendarDef.endTimeProperty, xCalendarDef.occurDateProperty, xCalendarDef.occurTimeProperty, xOpenQueryModelResult.defaultActionId);
+            newPaneDef = new CalendarDef(xCalendarDef.paneId, xCalendarDef.name, childXComp.label, xCalendarDef.title, childMenuDefs, childViewDesc.values, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xCalendarDef.descriptionProperty, xCalendarDef.initialStyle, xCalendarDef.startDateProperty, xCalendarDef.startTimeProperty, xCalendarDef.endDateProperty, xCalendarDef.endTimeProperty, xCalendarDef.occurDateProperty, xCalendarDef.occurTimeProperty, xOpenQueryModelResult.defaultActionId);
         }
         else if (childXPaneDef instanceof XImagePickerDef) {
             var xImagePickerDef = childXPaneDef;
             var xOpenQueryModelResult = childXOpenResult;
-            newPaneDef = new ImagePickerDef(xImagePickerDef.paneId, xImagePickerDef.name, childXComp.label, xImagePickerDef.title, childMenuDefs, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xImagePickerDef.URLProperty, xImagePickerDef.defaultActionId);
+            newPaneDef = new ImagePickerDef(xImagePickerDef.paneId, xImagePickerDef.name, childXComp.label, xImagePickerDef.title, childMenuDefs, childViewDesc.values, xOpenQueryModelResult.entityRecDef, childXComp.redirection, settings, xImagePickerDef.URLProperty, xImagePickerDef.defaultActionId);
         }
         else {
             return new fp_1.Failure('PaneDef::fromOpenPaneResult needs impl for: ' + util_1.ObjUtil.formatRecAttr(childXPaneDef));
@@ -1976,6 +1978,13 @@ var PaneDef = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(PaneDef.prototype, "viewDescs", {
+        get: function () {
+            return this._viewDescs;
+        },
+        enumerable: true,
+        configurable: true
+    });
     return PaneDef;
 }());
 exports.PaneDef = PaneDef;
@@ -1991,12 +2000,13 @@ var BarcodeScanDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
      */
-    function BarcodeScanDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function BarcodeScanDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
     }
     return BarcodeScanDef;
 }(PaneDef));
@@ -2013,6 +2023,7 @@ var CalendarDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2026,8 +2037,8 @@ var CalendarDef = (function (_super) {
      * @param _occurTimePropName
      * @param _defaultActionId
      */
-    function CalendarDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _descriptionPropName, _initialStyle, _startDatePropName, _startTimePropName, _endDatePropName, _endTimePropName, _occurDatePropName, _occurTimePropName, _defaultActionId) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function CalendarDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings, _descriptionPropName, _initialStyle, _startDatePropName, _startTimePropName, _endDatePropName, _endTimePropName, _occurDatePropName, _occurTimePropName, _defaultActionId) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
         this._descriptionPropName = _descriptionPropName;
         this._initialStyle = _initialStyle;
         this._startDatePropName = _startDatePropName;
@@ -2116,6 +2127,7 @@ var DetailsDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2126,8 +2138,8 @@ var DetailsDef = (function (_super) {
      * @param _graphicalMarkup
      * @param _rows
      */
-    function DetailsDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _cancelButtonText, _commitButtonText, _editable, _focusPropName, _graphicalMarkup, _rows) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function DetailsDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings, _cancelButtonText, _commitButtonText, _editable, _focusPropName, _graphicalMarkup, _rows) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
         this._cancelButtonText = _cancelButtonText;
         this._commitButtonText = _commitButtonText;
         this._editable = _editable;
@@ -2186,18 +2198,13 @@ exports.DetailsDef = DetailsDef;
 var ErrorDef = (function (_super) {
     __extends(ErrorDef, _super);
     /**
-     * @private
-     * @param paneId
-     * @param name
-     * @param label
-     * @param title
-     * @param menuDefs
-     * @param entityRecDef
+     *
      * @param dialogRedirection
      * @param settings
+     * @param exception
      */
     function ErrorDef(dialogRedirection, settings, exception) {
-        _super.call(this, null, null, null, null, null, null, dialogRedirection, settings);
+        _super.call(this, null, null, null, null, null, null, null, dialogRedirection, settings);
         this.exception = exception;
     }
     return ErrorDef;
@@ -2215,6 +2222,7 @@ var FormDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2224,8 +2232,8 @@ var FormDef = (function (_super) {
      * @param _headerDef
      * @param _childrenDefs
      */
-    function FormDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function FormDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings, _formLayout, _formStyle, _borderStyle, _headerDef, _childrenDefs) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
         this._formLayout = _formLayout;
         this._formStyle = _formStyle;
         this._borderStyle = _borderStyle;
@@ -2243,7 +2251,7 @@ var FormDef = (function (_super) {
      * @param childrenMenuDefs
      * @returns {any}
      */
-    FormDef.fromOpenFormResult = function (formXOpenResult, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenPrintMarkupXML) {
+    FormDef.fromOpenFormResult = function (formXOpenResult, formXFormDef, formMenuDefs, formViewDesc, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenViewDescs, childrenPrintMarkupXML) {
         var settings = { 'open': true };
         util_1.ObjUtil.addAllProps(formXOpenResult.formRedirection.dialogProperties, settings);
         var headerDef = null;
@@ -2253,10 +2261,11 @@ var FormDef = (function (_super) {
             var childXPaneDef = childrenXPaneDefs[i];
             var childXActiveColDefs = childrenXActiveColDefs[i];
             var childMenuDefs = childrenMenuDefs[i];
+            var childViewDesc = childrenViewDescs[i];
             var childXComp = formXOpenResult.formModel.children[i];
             var childXPaneDefRef = formXFormDef.paneDefRefs[i];
             var childPrintMarkupXML = childrenPrintMarkupXML[i];
-            var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs, childPrintMarkupXML);
+            var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef, childXActiveColDefs, childMenuDefs, childViewDesc, childPrintMarkupXML);
             if (paneDefTry.isFailure) {
                 return new fp_1.Failure(paneDefTry.failure);
             }
@@ -2264,7 +2273,7 @@ var FormDef = (function (_super) {
                 childrenDefs.push(paneDefTry.success);
             }
         }
-        return new fp_1.Success(new FormDef(formXFormDef.paneId, formXFormDef.name, formXOpenResult.formModel.form.label, formXFormDef.title, formMenuDefs, formXOpenResult.entityRecDef, formXOpenResult.formRedirection, settings, formXFormDef.formLayout, formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childrenDefs));
+        return new fp_1.Success(new FormDef(formXFormDef.paneId, formXFormDef.name, formXOpenResult.formModel.form.label, formXFormDef.title, formMenuDefs, formViewDesc.values, formXOpenResult.entityRecDef, formXOpenResult.formRedirection, settings, formXFormDef.formLayout, formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childrenDefs));
     };
     Object.defineProperty(FormDef.prototype, "borderStyle", {
         get: function () {
@@ -2407,12 +2416,13 @@ var GeoFixDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
      */
-    function GeoFixDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function GeoFixDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
     }
     return GeoFixDef;
 }(PaneDef));
@@ -2432,12 +2442,13 @@ var GeoLocationDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
      */
-    function GeoLocationDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function GeoLocationDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
     }
     return GeoLocationDef;
 }(PaneDef));
@@ -2454,6 +2465,7 @@ var GraphDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2472,8 +2484,8 @@ var GraphDef = (function (_super) {
      * @param _yAxisRangeFrom
      * @param _yAxisRangeTo
      */
-    function GraphDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _defaultActionId, _graphType, _displayQuadrantLines, _identityDataPointDef, _groupingDataPointDef, _dataPointDefs, _filterDataPointDefs, _sampleModel, _xAxisLabel, _xAxisRangeFrom, _xAxisRangeTo, _yAxisLabel, _yAxisRangeFrom, _yAxisRangeTo) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function GraphDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings, _defaultActionId, _graphType, _displayQuadrantLines, _identityDataPointDef, _groupingDataPointDef, _dataPointDefs, _filterDataPointDefs, _sampleModel, _xAxisLabel, _xAxisRangeFrom, _xAxisRangeTo, _yAxisLabel, _yAxisRangeFrom, _yAxisRangeTo) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
         this._defaultActionId = _defaultActionId;
         this._graphType = _graphType;
         this._displayQuadrantLines = _displayQuadrantLines;
@@ -2609,14 +2621,15 @@ var ImagePickerDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
      * @param _URLPropName
      * @param _defaultActionId
      */
-    function ImagePickerDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _URLPropName, _defaultActionId) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function ImagePickerDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings, _URLPropName, _defaultActionId) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
         this._URLPropName = _URLPropName;
         this._defaultActionId = _defaultActionId;
     }
@@ -2649,6 +2662,7 @@ var ListDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2659,8 +2673,8 @@ var ListDef = (function (_super) {
      * @param _defaultActionId
      * @param _graphicalMarkup
      */
-    function ListDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _style, _initialColumns, _activeColumnDefs, _columnsStyle, _defaultActionId, _graphicalMarkup) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function ListDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings, _style, _initialColumns, _activeColumnDefs, _columnsStyle, _defaultActionId, _graphicalMarkup) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
         this._style = _style;
         this._initialColumns = _initialColumns;
         this._activeColumnDefs = _activeColumnDefs;
@@ -2753,6 +2767,7 @@ var MapDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2764,8 +2779,8 @@ var MapDef = (function (_super) {
      * @param _latitudePropName
      * @param _longitudePropName
      */
-    function MapDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _descriptionPropName, _streetPropName, _cityPropName, _statePropName, _postalCodePropName, _latitudePropName, _longitudePropName) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function MapDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings, _descriptionPropName, _streetPropName, _cityPropName, _statePropName, _postalCodePropName, _latitudePropName, _longitudePropName) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
         this._descriptionPropName = _descriptionPropName;
         this._streetPropName = _streetPropName;
         this._cityPropName = _cityPropName;
@@ -2841,6 +2856,7 @@ var PrintMarkupDef = (function (_super) {
      * @param label
      * @param title
      * @param menuDefs
+     * @param viewDescs
      * @param entityRecDef
      * @param dialogRedirection
      * @param settings
@@ -2851,8 +2867,8 @@ var PrintMarkupDef = (function (_super) {
      * @param _printMarkup
      * @param _rows
      */
-    function PrintMarkupDef(paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings, _cancelButtonText, _commitButtonText, _editable, _focusPropName, _printMarkupXML, _rows) {
-        _super.call(this, paneId, name, label, title, menuDefs, entityRecDef, dialogRedirection, settings);
+    function PrintMarkupDef(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings, _cancelButtonText, _commitButtonText, _editable, _focusPropName, _printMarkupXML, _rows) {
+        _super.call(this, paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
         this._cancelButtonText = _cancelButtonText;
         this._commitButtonText = _commitButtonText;
         this._editable = _editable;
@@ -4948,6 +4964,26 @@ var DialogService = (function () {
             return fp_1.Future.createCompletedFuture('getActiveColumnDefs', DialogTriple.fromWSDialogObject(result, 'WSGetActiveColumnDefsResult', OType.factoryFn));
         });
     };
+    DialogService.getAvailableEditorViewDescs = function (dialogHandle, sessionContext) {
+        var method = 'getAvailableViewDescs';
+        var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+        var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            var viewDescTry = DialogTriple.fromWSDialogObject(result, 'WSGetAvailableViewDescsResult', OType.factoryFn);
+            var viewDesc = viewDescTry.isFailure ? new XGetAvailableViewDescsResult([]) : viewDescTry.success;
+            return fp_1.Future.createSuccessfulFuture('getAvailableEditorViewDescs', viewDesc);
+        });
+    };
+    DialogService.getAvailableQueryViewDescs = function (dialogHandle, sessionContext) {
+        var method = 'getAvailableViewDescs';
+        var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+        var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            var viewDescTry = DialogTriple.fromWSDialogObject(result, 'WSGetAvailableViewDescsResult', OType.factoryFn);
+            var viewDesc = viewDescTry.isFailure ? new XGetAvailableViewDescsResult([]) : viewDescTry.success;
+            return fp_1.Future.createSuccessfulFuture('getAvailableEditorViewDescs', viewDesc);
+        });
+    };
     DialogService.getEditorModelMenuDefs = function (dialogHandle, sessionContext) {
         var method = 'getMenuDefs';
         var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
@@ -4971,6 +5007,22 @@ var DialogService = (function () {
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
             return fp_1.Future.createCompletedFuture('getQueryModelMenuDefs', DialogTriple.fromWSDialogObjectsResult(result, 'WSGetMenuDefsResult', 'WSMenuDef', 'menuDefs', OType.factoryFn));
+        });
+    };
+    DialogService.getSelectedEditorViewId = function (dialogHandle, sessionContext) {
+        var method = 'getSelectedViewId';
+        var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+        var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            return fp_1.Future.createCompletedFuture('getSelectedEditorViewId', DialogTriple.fromWSDialogObject(result, 'WSViewId', OType.factoryFn));
+        });
+    };
+    DialogService.getSelectedQueryViewId = function (dialogHandle, sessionContext) {
+        var method = 'getSelectedViewId';
+        var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle') };
+        var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            return fp_1.Future.createCompletedFuture('getSelectedQueryViewId', DialogTriple.fromWSDialogObject(result, 'WSViewId', OType.factoryFn));
         });
     };
     DialogService.openEditorModelFromRedir = function (redirection, sessionContext) {
@@ -5104,6 +5156,22 @@ var DialogService = (function () {
         var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind(function (result) {
             return fp_1.Future.createCompletedFuture('readProperty', DialogTriple.fromWSDialogObject(result, 'WSReadPropertyResult', OType.factoryFn));
+        });
+    };
+    DialogService.setSelectedEditorViewId = function (dialogHandle, viewId, sessionContext) {
+        var method = 'setSelectedViewId';
+        var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'), viewId: viewId };
+        var call = ws_1.Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            return fp_1.Future.createCompletedFuture('setSelectedEditorViewId', DialogTriple.fromWSDialogObject(result, 'WSSetSelectedViewIdEditorModelResult', OType.factoryFn));
+        });
+    };
+    DialogService.setSelectedQueryViewId = function (dialogHandle, viewId, sessionContext) {
+        var method = 'setSelectedViewId';
+        var params = { 'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'), viewId: viewId };
+        var call = ws_1.Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
+        return call.perform().bind(function (result) {
+            return fp_1.Future.createCompletedFuture('setSelectedQueryViewId', DialogTriple.fromWSDialogObject(result, 'WSSetSelectedViewIdQueryModelResult', OType.factoryFn));
         });
     };
     DialogService.writeEditorModel = function (dialogHandle, entityRec, sessionContext) {
@@ -5453,6 +5521,7 @@ var FormContextBuilder = (function () {
             var formXOpenFr = fp_1.Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
             var formXFormDefFr = _this._initialXFormDefFr ? _this._initialXFormDefFr : _this.fetchXFormDefWithXOpenResult(formXOpen);
             var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, _this.sessionContext);
+            var formViewDescsFr = DialogService.getAvailableEditorViewDescs(formXOpen.formRedirection.dialogHandle, _this.sessionContext);
             //expect a sequence of child def components or a sequence of FormContexts (nested forms)
             var formChildrenFr = formXFormDefFr.bind(function (xFormDef) {
                 if (!_this.containsNestedForms(formXOpen, xFormDef)) {
@@ -5460,15 +5529,16 @@ var FormContextBuilder = (function () {
                     var childrenXPaneDefsFr = _this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
                     var childrenActiveColDefsFr = _this.fetchChildrenActiveColDefs(formXOpen);
                     var childrenMenuDefsFr = _this.fetchChildrenMenuDefs(formXOpen);
+                    var childrenViewDescsFr = _this.fetchChildrenViewDescs(formXOpen);
                     var childrenPrintMarkupXMLFr = _this.fetchChildrenPrintMarkupXMLs(formXOpen);
-                    return fp_1.Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr, childrenPrintMarkupXMLFr]);
+                    return fp_1.Future.sequence([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr, childrenViewDescsFr, childrenPrintMarkupXMLFr]);
                 }
                 else {
                     //added to support nested forms
                     return fp_1.Future.sequence(_this.loadNestedForms(formXOpen, xFormDef));
                 }
             });
-            return fp_1.Future.sequence([formXOpenFr, formXFormDefFr, formMenuDefsFr, formChildrenFr]);
+            return fp_1.Future.sequence([formXOpenFr, formXFormDefFr, formMenuDefsFr, formViewDescsFr, formChildrenFr]);
         });
         return openAllFr.bind(function (value) {
             var flattenedTry = _this.getFlattenedResults(value);
@@ -5523,12 +5593,13 @@ var FormContextBuilder = (function () {
         return formModel;
     };
     FormContextBuilder.prototype.completeOpenPromise = function (flattened) {
-        if (flattened.length != 4)
-            return new fp_1.Failure('FormContextBuilder::build: Open form should have resulted in 4 elements');
+        if (flattened.length != 5)
+            return new fp_1.Failure('FormContextBuilder::build: Open form should have resulted in 5 elements');
         var formXOpen = flattened[0];
         var formXFormDef = flattened[1];
         var formMenuDefs = flattened[2];
-        var formChildren = flattened[3];
+        var formViewDesc = flattened[3];
+        var formChildren = flattened[4];
         if (formChildren.length === 0)
             return new fp_1.Failure('FormContextBuilder::build: Form has no children');
         if (formChildren[0] instanceof FormContext) {
@@ -5539,18 +5610,19 @@ var FormContextBuilder = (function () {
             var settings = { 'open': true };
             util_1.ObjUtil.addAllProps(formXOpen.formRedirection.dialogProperties, settings);
             var headerDef = null;
-            return new fp_1.Success(new FormDef(formXOpen.formPaneId, formXFormDef.name, formXOpen.formModel.form.label, formXFormDef.title, formMenuDefs, formXOpen.entityRecDef, formXOpen.formRedirection, settings, formXFormDef.formLayout, formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childPaneDefs));
+            return new fp_1.Success(new FormDef(formXOpen.formPaneId, formXFormDef.name, formXOpen.formModel.form.label, formXFormDef.title, formMenuDefs, formViewDesc.values, formXOpen.entityRecDef, formXOpen.formRedirection, settings, formXFormDef.formLayout, formXFormDef.formStyle, formXFormDef.borderStyle, headerDef, childPaneDefs));
         }
         else {
             //build the form with child components
-            if (formChildren.length != 5)
-                return new fp_1.Failure('FormContextBuilder::build: Open form should have resulted in 5 elements for children panes');
+            if (formChildren.length != 6)
+                return new fp_1.Failure('FormContextBuilder::build: Open form should have resulted in 6 elements for children panes');
             var childrenXOpens = formChildren[0];
             var childrenXPaneDefs = formChildren[1];
             var childrenXActiveColDefs = formChildren[2];
             var childrenMenuDefs = formChildren[3];
-            var childrenPrintMarkupXML = formChildren[4];
-            return FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenPrintMarkupXML);
+            var childrenViewDescs = formChildren[4];
+            var childrenPrintMarkupXML = formChildren[5];
+            return FormDef.fromOpenFormResult(formXOpen, formXFormDef, formMenuDefs, formViewDesc, childrenXOpens, childrenXPaneDefs, childrenXActiveColDefs, childrenMenuDefs, childrenViewDescs, childrenPrintMarkupXML);
         }
     };
     FormContextBuilder.prototype.containsNestedForms = function (formXOpen, xFormDef) {
@@ -5619,6 +5691,19 @@ var FormContextBuilder = (function () {
             }
             else {
                 return DialogService.getQueryModelMenuDefs(xComp.redirection.dialogHandle, _this.sessionContext);
+            }
+        });
+        return fp_1.Future.sequence(seqOfFutures);
+    };
+    FormContextBuilder.prototype.fetchChildrenViewDescs = function (formXOpen) {
+        var _this = this;
+        var xComps = formXOpen.formModel.children;
+        var seqOfFutures = xComps.map(function (xComp) {
+            if (xComp.redirection.isEditor) {
+                return DialogService.getAvailableEditorViewDescs(xComp.redirection.dialogHandle, _this.sessionContext);
+            }
+            else {
+                return DialogService.getAvailableQueryViewDescs(xComp.redirection.dialogHandle, _this.sessionContext);
             }
         });
         return fp_1.Future.sequence(seqOfFutures);
@@ -7405,6 +7490,18 @@ exports.SystemContextImpl = SystemContextImpl;
 /**
  * *********************************
  */
+var ViewDesc = (function () {
+    function ViewDesc(name, description, viewId) {
+        this.name = name;
+        this.description = description;
+        this.viewId = viewId;
+    }
+    return ViewDesc;
+}());
+exports.ViewDesc = ViewDesc;
+/**
+ * *********************************
+ */
 var WorkbenchLaunchAction = (function () {
     function WorkbenchLaunchAction(id, workbenchId, name, alias, iconBase) {
         this.id = id;
@@ -7807,6 +7904,50 @@ var XGetActiveColumnDefsResult = (function () {
     return XGetActiveColumnDefsResult;
 }());
 exports.XGetActiveColumnDefsResult = XGetActiveColumnDefsResult;
+/**
+ * *********************************
+ */
+/**
+ * @private
+ */
+var XGetAvailableViewDescsResult = (function () {
+    function XGetAvailableViewDescsResult(_list) {
+        this._list = _list;
+    }
+    Object.defineProperty(XGetAvailableViewDescsResult.prototype, "values", {
+        get: function () {
+            return this._list;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return XGetAvailableViewDescsResult;
+}());
+exports.XGetAvailableViewDescsResult = XGetAvailableViewDescsResult;
+/**
+ * *********************************
+ */
+/**
+ * @private
+ */
+var XSetSelectedViewIdEditorModelResult = (function () {
+    function XSetSelectedViewIdEditorModelResult() {
+    }
+    return XSetSelectedViewIdEditorModelResult;
+}());
+exports.XSetSelectedViewIdEditorModelResult = XSetSelectedViewIdEditorModelResult;
+/**
+ * *********************************
+ */
+/**
+ * @private
+ */
+var XSetSelectedViewIdQueryModelResult = (function () {
+    function XSetSelectedViewIdQueryModelResult() {
+    }
+    return XSetSelectedViewIdQueryModelResult;
+}());
+exports.XSetSelectedViewIdQueryModelResult = XSetSelectedViewIdQueryModelResult;
 /**
  * *********************************
  */
@@ -8422,6 +8563,8 @@ var OType = (function () {
         'WSGeoLocationDef': XGeoLocationDef,
         'WSGetActiveColumnDefsResult': XGetActiveColumnDefsResult,
         'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
+        'WSGetAvailableViewDescsResult': XGetAvailableViewDescsResult,
+        'WSViewDesc': ViewDesc,
         'WSGraphDataPointDef': GraphDataPointDef,
         'WSGraphDef': XGraphDef,
         'WSHandlePropertyChangeResult': XPropertyChangeResult,

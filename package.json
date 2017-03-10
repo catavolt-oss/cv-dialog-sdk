@@ -31,6 +31,6 @@
     "webpack": "^1.12.13"
   },
   "scripts": {
-    "build-test": "watchify -v -t [ babelify --presets [ es2015 react ] ] test/*.Test.js -o test/bundle.js"
+    "build-test": "watchify -v -t [ babelify --presets [ es2015 react ] ] test/api.Test.js -o test/bundle.js"
   }
 }
