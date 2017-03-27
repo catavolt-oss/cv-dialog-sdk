@@ -128,6 +128,11 @@ export declare class PaneContext {
      */
     dialogAlias: string;
     /**
+     * Get the {@link DialogRedirection} with which this Pane was constructed
+     * @returns {DialogRedirection}
+     */
+    dialogRedirection: DialogRedirection;
+    /**
      * Find a menu def on this Pane with the given actionId
      * @param actionId
      * @returns {MenuDef}
@@ -221,30 +226,32 @@ export declare class PaneContext {
      */
     propDefAtName(propName: string): PropDef;
     /**
-     * Get the session information
-     * @returns {SessionContext}
-     */
-    sessionContext: SessionContext;
-    /**
-     * Get the {@link DialogRedirection} with which this Pane was constructed
-     * @returns {DialogRedirection}
-     */
-    dialogRedirection: DialogRedirection;
-    initialize(): void;
-    /**
      * Read all the Binary values in this {@link EntityRec}
      * @param entityRec
      * @returns {Future<Array<Try<Binary>>>}
      */
     readBinaries(entityRec: EntityRec): Future<Array<Try<Binary>>>;
+    /**
+     * Get the session information
+     * @returns {SessionContext}
+     */
+    sessionContext: SessionContext;
     writeAttachment(attachment: Attachment): Future<void>;
     writeAttachments(entityRec: EntityRec): Future<Array<Try<void>>>;
+    /**
+     * Get the all {@link ViewDesc}'s associated with this Pane
+     * @returns {Array<ViewDesc>}
+     */
+    viewDescs: Array<ViewDesc>;
     /**
      * Write all Binary values in this {@link EntityRecord} back to the server
      * @param entityRec
      * @returns {Future<Array<Try<XWritePropertyResult>>>}
      */
     writeBinaries(entityRec: EntityRec): Future<Array<Try<XWritePropertyResult>>>;
+    getSelectedViewId(): Future<ViewId>;
+    openView(targetViewDesc: ViewDesc): Future<Either<PaneContext, NavRequest>>;
+    protected initialize(): void;
     protected readBinary(propName: string, entityRec: EntityRec): Future<Binary>;
 }
 /**
@@ -328,6 +335,7 @@ export declare class EditorContext extends PaneContext {
      * @returns {boolean}
      */
     isWriteMode: boolean;
+    openView(targetViewDesc: ViewDesc): Future<Either<PaneContext, NavRequest>>;
     /**
      * Perform the action associated with the given MenuDef on this EditorPane.
      * Given that the Editor could possibly be destroyed as a result of this action,
@@ -363,6 +371,7 @@ export declare class EditorContext extends PaneContext {
      * @returns {Number}
      */
     requestedTimeoutSeconds(): number;
+    getSelectedViewId(): Future<ViewId>;
     /**
      * Set the value of a property in this {@link EntityRecord}.
      * Values may be already constructed target types (CodeRef, TimeValue, Date, etc.)
@@ -411,6 +420,7 @@ export declare class EditorContext extends PaneContext {
     private paneModeSetting;
     private putSetting(key, value);
     private putSettings(settings);
+    private updatePaneDef(xOpenResult);
 }
 /**
  * *********************************
@@ -478,6 +488,7 @@ export declare class FormContext extends PaneContext {
      * @private
      */
     headerContext: PaneContext;
+    openView(targetViewDesc: ViewDesc): Future<Either<PaneContext, NavRequest>>;
     /**
      * Perform the action associated with the given MenuDef on this Form
      * @param menuDef
@@ -495,7 +506,7 @@ export declare class FormContext extends PaneContext {
      */
     offlineCapable: boolean;
     /**
-     * Get the all {@link MenuDef}'s associated with this Pane
+     * Get the all {@link MenuDef}'s associated with this Form
      * @returns {Array<MenuDef>}
      */
     menuDefs: Array<MenuDef>;
@@ -514,6 +525,11 @@ export declare class FormContext extends PaneContext {
      * @returns {SessionContext}
      */
     sessionContext: SessionContext;
+    /**
+     * Get the all {@link ViewDesc}'s associated with this Form
+     * @returns {Array<ViewDesc>}
+     */
+    viewDescs: Array<ViewDesc>;
     /** --------------------- MODULE ------------------------------*/
     /**
      * @private
@@ -525,6 +541,7 @@ export declare class FormContext extends PaneContext {
      * @param navRequest
      */
     processNavRequestForDestroyed(navRequest: NavRequest): void;
+    getSelectedViewId(): Future<ViewId>;
 }
 /**
  * Enum specifying query direction
@@ -579,6 +596,7 @@ export declare class QueryContext extends PaneContext {
      * @returns {Array<EntityRec>}
      */
     offlineRecs: Array<EntityRec>;
+    openView(targetViewDesc: ViewDesc): Future<Either<PaneContext, NavRequest>>;
     /**
      * Get the pane mode
      * @returns {string}
@@ -612,6 +630,7 @@ export declare class QueryContext extends PaneContext {
      * @returns {QueryScroller}
      */
     scroller: QueryScroller;
+    getSelectedViewId(): Future<ViewId>;
     /**
      * Creates a new QueryScroller with the given values
      * @param pageSize
@@ -635,6 +654,7 @@ export declare class QueryContext extends PaneContext {
     private isGlobalRefreshSetting;
     private isLocalRefreshSetting;
     private isRefreshSetting;
+    private updatePaneDef(xOpenResult);
 }
 /**
  * EditorContext Subtype that represents a 'BarcodeScan Pane'.
@@ -772,13 +792,12 @@ export declare class PaneDef {
      * @private
      * @param childXOpenResult
      * @param childXComp
-     * @param childXPaneDefRef
      * @param childXPaneDef
      * @param childXActiveColDefs
      * @param childMenuDefs
      * @returns {any}
      */
-    static fromOpenPaneResult(childXOpenResult: XOpenDialogModelResult, childXComp: XFormModelComp, childXPaneDefRef: XPaneDefRef, childXPaneDef: XPaneDef, childXActiveColDefs: XGetActiveColumnDefsResult, childMenuDefs: Array<MenuDef>, childViewDesc: XGetAvailableViewDescsResult, printMarkupXML: string): Try<PaneDef>;
+    static fromOpenPaneResult(childXOpenResult: XOpenDialogModelResult, childXComp: XFormModelComp, childXPaneDef: XPaneDef, childXActiveColDefs: XGetActiveColumnDefsResult, childMenuDefs: Array<MenuDef>, childViewDesc: XGetAvailableViewDescsResult, printMarkupXML: string): Try<PaneDef>;
     /**
      * @private
      * @param _paneId
@@ -1964,8 +1983,8 @@ export declare class DialogService {
     static readEditorModel(dialogHandle: DialogHandle, sessionContext: SessionContext): Future<XReadResult>;
     static readEditorProperty(dialogHandle: DialogHandle, propertyName: string, readSeq: number, readLength: number, sessionContext: SessionContext): Future<XReadPropertyResult>;
     static readQueryProperty(dialogHandle: DialogHandle, propertyName: string, objectId: string, readSeq: number, readLength: number, sessionContext: SessionContext): Future<XReadPropertyResult>;
-    static setSelectedEditorViewId(dialogHandle: DialogHandle, viewId: string, sessionContext: SessionContext): Future<XSetSelectedViewIdEditorModelResult>;
-    static setSelectedQueryViewId(dialogHandle: DialogHandle, viewId: string, sessionContext: SessionContext): Future<XSetSelectedViewIdQueryModelResult>;
+    static setSelectedEditorViewId(dialogHandle: DialogHandle, viewId: ViewId, sessionContext: SessionContext): Future<XOpenEditorModelResult>;
+    static setSelectedQueryViewId(dialogHandle: DialogHandle, viewId: ViewId, sessionContext: SessionContext): Future<XOpenQueryModelResult>;
     static writeEditorModel(dialogHandle: DialogHandle, entityRec: EntityRec, sessionContext: SessionContext): Future<Either<Redirection, XWriteResult>>;
     static writeProperty(dialogHandle: DialogHandle, propertyName: string, data: string, append: boolean, sessionContext: SessionContext): Future<XWritePropertyResult>;
 }
@@ -2014,6 +2033,12 @@ export declare class FormContextBuilder {
     private _initialXFormDefFr;
     static createWithRedirection(dialogRedirection: DialogRedirection, actionSource: ActionSource, sessionContext: SessionContext): FormContextBuilder;
     static createWithInitialForm(initialFormXOpenFr: Future<XOpenEditorModelResult>, initialXFormDefFr: Future<XFormDef>, dialogRedirection: DialogRedirection, actionSource: ActionSource, sessionContext: SessionContext): FormContextBuilder;
+    static fetchChildActiveColDefs(redirection: DialogRedirection, sessionContext: SessionContext): Future<XGetActiveColumnDefsResult>;
+    static fetchChildMenuDefs(redirection: DialogRedirection, sessionContext: SessionContext): Future<Array<MenuDef>>;
+    static fetchChildViewDescs(redirection: DialogRedirection, sessionContext: SessionContext): Future<XGetAvailableViewDescsResult>;
+    static fetchChildXPaneDef(dialogHandle: DialogHandle, paneId: string, sessionContext: SessionContext): Future<XPaneDef>;
+    static fetchChildPrintMarkupXML(): Future<string>;
+    static getFlattenedResults(arrayOfTries: Array<Try<any>>): Try<Array<any>>;
     constructor();
     /**
      * Get the action source for this Pane
@@ -2021,6 +2046,7 @@ export declare class FormContextBuilder {
      */
     actionSource: ActionSource;
     build(): Future<FormContext>;
+    buildFromOpenForm(formXOpen: XOpenEditorModelResult): Future<FormContext>;
     /**
      * Get the {@link DialogRedirection} with which this Form was constructed
      * @returns {DialogRedirection}
@@ -2038,7 +2064,6 @@ export declare class FormContextBuilder {
     private fetchChildrenPrintMarkupXMLs(formXOpen);
     private fetchXFormDefWithXOpenResult(xformOpenResult);
     private fetchXFormDef(dialogHandle, formPaneId);
-    private getFlattenedResults(openAllResults);
     private loadNestedForms(formXOpen, xFormDef);
     private openChildren(formXOpen);
     private retrieveChildFormContexts(flattened);
@@ -2501,7 +2526,9 @@ export declare class SystemContextImpl implements SystemContext {
 /**
  * *********************************
  */
-export interface ViewId {
+export declare class ViewId {
+    value: string;
+    constructor(value: string);
 }
 /**
  * *********************************
@@ -2722,22 +2749,6 @@ export declare class XGetAvailableViewDescsResult {
     private _list;
     constructor(_list: Array<ViewDesc>);
     values: Array<ViewDesc>;
-}
-/**
- * *********************************
- */
-/**
- * @private
- */
-export declare class XSetSelectedViewIdEditorModelResult {
-}
-/**
- * *********************************
- */
-/**
- * @private
- */
-export declare class XSetSelectedViewIdQueryModelResult {
 }
 /**
  * *********************************

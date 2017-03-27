@@ -288,6 +288,14 @@ export class PaneContext {
     get dialogAlias():string {
         return this.dialogRedirection.dialogProperties['dialogAlias'];
     }
+    
+    /**
+     * Get the {@link DialogRedirection} with which this Pane was constructed
+     * @returns {DialogRedirection}
+     */
+    get dialogRedirection():DialogRedirection {
+        return this.paneDef.dialogRedirection;
+    }
 
     /**
      * Find a menu def on this Pane with the given actionId
@@ -404,7 +412,7 @@ export class PaneContext {
             return this.formDef.childrenDefs[this.paneRef];
         }
     }
-
+    
     /**
      * Get the numeric value, representing this Pane's place in the parent {@link FormContext}'s list of child panes.
      * See {@link FormContext.childrenContexts}
@@ -433,6 +441,11 @@ export class PaneContext {
     get parentContext():FormContext {
         return this._parentContext;
     }
+    
+    set parentContext(parentContext:FormContext) {
+        this._parentContext = parentContext;
+        this.initialize();
+    }
 
     /**
      * Parses a value to prepare for 'writing' back to the server
@@ -452,32 +465,7 @@ export class PaneContext {
     propDefAtName(propName:string):PropDef {
         return this.entityRecDef.propDefAtName(propName);
     }
-
-    /**
-     * Get the session information
-     * @returns {SessionContext}
-     */
-    get sessionContext():SessionContext {
-        return this.parentContext.sessionContext;
-    }
-
-    /**
-     * Get the {@link DialogRedirection} with which this Pane was constructed
-     * @returns {DialogRedirection}
-     */
-    get dialogRedirection():DialogRedirection {
-        return this.paneDef.dialogRedirection;
-    }
-
-    //abstract
-    initialize() {
-    }
-
-    set parentContext(parentContext:FormContext) {
-        this._parentContext = parentContext;
-        this.initialize();
-    }
-
+    
     /**
      * Read all the Binary values in this {@link EntityRec}
      * @param entityRec
@@ -492,7 +480,15 @@ export class PaneContext {
             })
         );
     }
-    
+
+    /**
+     * Get the session information
+     * @returns {SessionContext}
+     */
+    get sessionContext():SessionContext {
+        return this.parentContext.sessionContext;
+    }
+
     writeAttachment(attachment:Attachment):Future<void> {
         return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.sessionContext);
     }
@@ -506,6 +502,14 @@ export class PaneContext {
                 return this.writeAttachment(attachment);
             })
         );
+    }
+    
+    /**
+     * Get the all {@link ViewDesc}'s associated with this Pane
+     * @returns {Array<ViewDesc>}
+     */
+    get viewDescs():Array<ViewDesc> {
+        return this.paneDef.viewDescs;
     }
 
     /**
@@ -540,9 +544,14 @@ export class PaneContext {
     //protected
 
     //abstract
-    protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
-        return null;
-    }
+   
+    getSelectedViewId():Future<ViewId> { return null; }
+
+    openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>>{ return null; }
+    
+    protected initialize() {}
+
+    protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> { return null; }
 
 }
 
@@ -697,6 +706,13 @@ export class EditorContext extends PaneContext {
     get isWriteMode():boolean {
         return this._editorState === EditorState.WRITE;
     }
+    
+    openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>> {
+        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+            .bind((setViewResult:XOpenDialogModelResult)=>{
+                return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this) });
+            });
+    }
 
     /**
      * Perform the action associated with the given MenuDef on this EditorPane.
@@ -789,6 +805,10 @@ export class EditorContext extends PaneContext {
     requestedTimeoutSeconds():number {
         var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
         return timeoutStr ? Number(timeoutStr) : 30;
+    }
+    
+    getSelectedViewId():Future<ViewId> {
+        return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
     }
 
     /**
@@ -893,6 +913,7 @@ export class EditorContext extends PaneContext {
         this._entityRecDef = this.paneDef.entityRecDef;
         this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
         this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
+        this._buffer = null;
     }
 
     /**
@@ -980,6 +1001,35 @@ export class EditorContext extends PaneContext {
 
     private putSettings(settings:StringDictionary) {
         ObjUtil.addAllProps(settings, this._settings);
+    }
+
+    private updatePaneDef(xOpenResult:XOpenDialogModelResult):Future<PaneDef> {
+
+        const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
+        const menuDefsFr:Future<Array<MenuDef>> = FormContextBuilder.fetchChildMenuDefs(this.dialogRedirection, this.sessionContext);
+
+        return Future.sequence<any>([activeColDefsFr, menuDefsFr])
+            .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
+                var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
+                if (flattenedTry.failure) {
+                    return Future.createCompletedFuture<PaneDef>('FormContextBuilder::buildPaneDefFromDialogModel',
+                        new Failure<PaneDef>(flattenedTry.failure));
+                }
+                const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
+                const menuDefs:Array<MenuDef> = flattenedTry.success[1];
+                const paneDef = this.paneDef;
+
+                if(xOpenResult instanceof XOpenEditorModelResult) {
+                    const editorModelResult:XOpenEditorModelResult = xOpenResult;
+                    paneDef.entityRecDef = editorModelResult.editorRecordDef;
+                    paneDef.menuDefs = menuDefs;
+                    this.initialize();
+                }
+
+                return Future.createSuccessfulFuture('EditorContext::updatePaneDef', paneDef);
+
+            });
+
     }
 
 }
@@ -1076,6 +1126,20 @@ export class FormContext extends PaneContext {
     get headerContext():PaneContext {
         throw new Error('FormContext::headerContext: Needs Impl');
     }
+    
+    openView(targetViewDesc:ViewDesc):Future<Either<PaneContext, NavRequest>> {
+        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+            .bind((setViewResult:XOpenDialogModelResult)=>{
+                const xOpenEditorResult:XOpenEditorModelResult = setViewResult as XOpenEditorModelResult;
+                var ca = new ContextAction('#viewChange', xOpenEditorResult.formRedirection.objectId, this.actionSource);
+                return FormContextBuilder.createWithRedirection(xOpenEditorResult.formModel.form.redirection, ca, this.sessionContext)
+                    .buildFromOpenForm(xOpenEditorResult)
+                    .map((formContext:FormContext)=>{ 
+                        this._destroyed = true;
+                        return Either.right<PaneContext, NavRequest>(formContext as NavRequest)
+                    });
+            });
+    }
 
     /**
      * Perform the action associated with the given MenuDef on this Form
@@ -1112,7 +1176,7 @@ export class FormContext extends PaneContext {
     }
 
     /**
-     * Get the all {@link MenuDef}'s associated with this Pane
+     * Get the all {@link MenuDef}'s associated with this Form
      * @returns {Array<MenuDef>}
      */
     get menuDefs():Array<MenuDef> {
@@ -1141,6 +1205,14 @@ export class FormContext extends PaneContext {
      */
     get sessionContext():SessionContext {
         return this._sessionContext;
+    }
+    
+    /**
+     * Get the all {@link ViewDesc}'s associated with this Form
+     * @returns {Array<ViewDesc>}
+     */
+    get viewDescs():Array<ViewDesc> {
+        return this.formDef.viewDescs;
     }
 
 
@@ -1181,6 +1253,10 @@ export class FormContext extends PaneContext {
             this._destroyed = true;
         }
     }
+    
+    getSelectedViewId():Future<ViewId> {
+        return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
+    }
 }
 /**
  * *********************************
@@ -1218,7 +1294,7 @@ export class QueryContext extends PaneContext {
     constructor(paneRef:number, private _offlineRecs:Array<EntityRec> = [], private _settings:StringDictionary = {}) {
         super(paneRef);
     }
-
+    
     /**
      * Get the entity record definition
      * @returns {EntityRecDef}
@@ -1263,6 +1339,14 @@ export class QueryContext extends PaneContext {
 
     set offlineRecs(offlineRecs:Array<EntityRec>) {
         this._offlineRecs = offlineRecs;
+    }
+    
+    openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>>{
+        return DialogService.setSelectedQueryViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+            .bind((setViewResult:XOpenDialogModelResult)=>{
+                return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this); });
+            });
+
     }
 
     /**
@@ -1333,6 +1417,10 @@ export class QueryContext extends PaneContext {
         }
         return this._scroller;
     }
+    
+    getSelectedViewId():Future<ViewId> {
+       return DialogService.getSelectedQueryViewId(this.paneDef.dialogHandle, this.sessionContext);
+    }
 
     /**
      * Creates a new QueryScroller with the given values
@@ -1398,6 +1486,43 @@ export class QueryContext extends PaneContext {
 
     private get isRefreshSetting():boolean {
         return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
+    }
+    
+    private updatePaneDef(xOpenResult:XOpenDialogModelResult):Future<PaneDef> {
+
+        const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
+        const menuDefsFr:Future<Array<MenuDef>> = FormContextBuilder.fetchChildMenuDefs(this.dialogRedirection, this.sessionContext);
+
+        return Future.sequence<any>([activeColDefsFr, menuDefsFr])
+            .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
+                var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
+                if (flattenedTry.failure) {
+                    return Future.createCompletedFuture<PaneDef>('FormContextBuilder::buildPaneDefFromDialogModel',
+                        new Failure<PaneDef>(flattenedTry.failure));
+                }
+                const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
+                const menuDefs:Array<MenuDef> = flattenedTry.success[1];
+
+                const paneDef = this.paneDef;
+                if(xOpenResult instanceof  XOpenQueryModelResult) {
+                    const queryModelResult:XOpenQueryModelResult = xOpenResult;
+                    paneDef.entityRecDef = queryModelResult.entityRecDef;
+                    if(paneDef instanceof ListDef) {
+                        const listDef:ListDef = paneDef;
+                        listDef.defaultActionId = queryModelResult.defaultActionId;
+                        listDef.menuDefs = menuDefs;
+                        listDef.activeColumnDefs = activeColDefs.columnDefs;
+                        //reset the scroller (and clear the buffer)
+                        this.newScroller();
+                    }
+                } else {
+                    return Future.createFailedFuture<PaneDef>('QueryContext:updatePaneDef', 'Query Views are only support on ListDefs at the moment...')
+                }
+
+                return Future.createSuccessfulFuture('QueryContext::updatePaneDef', paneDef);
+
+            });
+
     }
 
 }
@@ -1631,7 +1756,6 @@ export class PaneDef {
      * @private
      * @param childXOpenResult
      * @param childXComp
-     * @param childXPaneDefRef
      * @param childXPaneDef
      * @param childXActiveColDefs
      * @param childMenuDefs
@@ -1639,7 +1763,6 @@ export class PaneDef {
      */
     static fromOpenPaneResult(childXOpenResult:XOpenDialogModelResult,
                               childXComp:XFormModelComp,
-                              childXPaneDefRef:XPaneDefRef,
                               childXPaneDef:XPaneDef,
                               childXActiveColDefs:XGetActiveColumnDefsResult,
                               childMenuDefs:Array<MenuDef>,
@@ -1770,6 +1893,10 @@ export class PaneDef {
     get entityRecDef():EntityRecDef {
         return this._entityRecDef;
     }
+    
+    set entityRecDef(entityRecDef:EntityRecDef) {
+        this._entityRecDef = entityRecDef;
+    }
 
     /**
      * Find the title for this Pane
@@ -1800,7 +1927,11 @@ export class PaneDef {
     get menuDefs():Array<MenuDef> {
         return this._menuDefs;
     }
-
+    
+    set menuDefs(menuDefs:Array<MenuDef>) {
+        this._menuDefs = menuDefs;
+    }
+    
     get name():string {
         return this._name;
     }
@@ -2064,9 +2195,8 @@ export class FormDef extends PaneDef {
             var childMenuDefs = childrenMenuDefs[i];
             var childViewDesc = childrenViewDescs[i];
             var childXComp = formXOpenResult.formModel.children[i];
-            var childXPaneDefRef = formXFormDef.paneDefRefs[i];
             var childPrintMarkupXML = childrenPrintMarkupXML[i];
-            var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDefRef, childXPaneDef,
+            var paneDefTry = PaneDef.fromOpenPaneResult(childXOpen, childXComp, childXPaneDef,
                 childXActiveColDefs, childMenuDefs, childViewDesc, childPrintMarkupXML);
             if (paneDefTry.isFailure) {
                 return new Failure<FormDef>(paneDefTry.failure);
@@ -2471,6 +2601,10 @@ export class ListDef extends PaneDef {
     get activeColumnDefs():Array<ColumnDef> {
         return this._activeColumnDefs;
     }
+    
+    set activeColumnDefs(activeColumnDefs:Array<ColumnDef>) {
+        this._activeColumnDefs = activeColumnDefs;
+    }
 
     get columnsStyle():string {
         return this._columnsStyle;
@@ -2478,6 +2612,10 @@ export class ListDef extends PaneDef {
 
     get defaultActionId():string {
         return this._defaultActionId;
+    }
+    
+    set defaultActionId(defaultActionId:string) {
+        this._defaultActionId = defaultActionId;
     }
 
     get graphicalMarkup():string {
@@ -4702,8 +4840,7 @@ export class DialogService {
         var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
             return Future.createCompletedFuture('getSelectedEditorViewId',
-                DialogTriple.fromWSDialogObject<ViewId>(result, 'WSViewId',
-                    OType.factoryFn));
+                DialogTriple.fromWSDialogObjectResult<ViewId>(result, 'WSGetSelectedViewIdResult', 'WSViewId', 'viewId', OType.factoryFn));
         });
     }
     
@@ -4714,8 +4851,7 @@ export class DialogService {
         var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
             return Future.createCompletedFuture('getSelectedQueryViewId',
-                DialogTriple.fromWSDialogObject<ViewId>(result, 'WSViewId',
-                    OType.factoryFn));
+                DialogTriple.fromWSDialogObjectResult<ViewId>(result, 'WSGetSelectedViewIdResult', 'WSViewId', 'viewId', OType.factoryFn));
         });
     }
 
@@ -4840,7 +4976,6 @@ export class DialogService {
         Log.info('Running query');
         var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
-            var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
             return Future.createCompletedFuture('DialogService::queryQueryModel',
                 DialogTriple.fromWSDialogObject<XQueryResult>(result, 'WSQueryResult', OType.factoryFn));
         });
@@ -4893,26 +5028,26 @@ export class DialogService {
         });
     }
     
-    static setSelectedEditorViewId(dialogHandle:DialogHandle, viewId:string,
-                                   sessionContext:SessionContext):Future<XSetSelectedViewIdEditorModelResult> {
+    static setSelectedEditorViewId(dialogHandle:DialogHandle, viewId:ViewId,
+                                   sessionContext:SessionContext):Future<XOpenEditorModelResult> {
         var method = 'setSelectedViewId';
-        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'), viewId: viewId};
+        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'viewId': OType.serializeObject(viewId, 'WSViewId')};
         var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
             return Future.createCompletedFuture('setSelectedEditorViewId',
-                DialogTriple.fromWSDialogObject<XSetSelectedViewIdEditorModelResult>(result, 'WSSetSelectedViewIdEditorModelResult',
+                DialogTriple.fromWSDialogObject<XOpenEditorModelResult>(result, 'WSSetSelectedViewIdEditorModelResult',
                     OType.factoryFn));
         });
     }
 
-    static setSelectedQueryViewId(dialogHandle:DialogHandle, viewId:string,
-                                  sessionContext:SessionContext):Future<XSetSelectedViewIdQueryModelResult> {
+    static setSelectedQueryViewId(dialogHandle:DialogHandle, viewId:ViewId,
+                                  sessionContext:SessionContext):Future<XOpenQueryModelResult> {
         var method = 'setSelectedViewId';
-        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'), viewId: viewId};
+        var params:StringDictionary = {'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'), 'viewId': OType.serializeObject(viewId, 'WSViewId')};
         var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
             return Future.createCompletedFuture('setSelectedQueryViewId',
-                DialogTriple.fromWSDialogObject<XSetSelectedViewIdQueryModelResult>(result, 'WSSetSelectedViewIdQueryModelResult',
+                DialogTriple.fromWSDialogObject<XOpenQueryModelResult>(result, 'WSSetSelectedViewIdQueryModelResult',
                     OType.factoryFn));
         });
     }
@@ -5270,6 +5405,56 @@ export class FormContextBuilder {
         fb._sessionContext = sessionContext;
         return fb;
     }
+    
+    public static fetchChildActiveColDefs(redirection:DialogRedirection, sessionContext:SessionContext):Future<XGetActiveColumnDefsResult> {
+        if (redirection.isQuery) {
+            return DialogService.getActiveColumnDefs(redirection.dialogHandle, sessionContext);
+        } else {
+            return Future.createSuccessfulFuture('FormContextBuilder::fetchChilActiveColDefs', null);
+        }
+    }
+
+    public static fetchChildMenuDefs(redirection:DialogRedirection, sessionContext:SessionContext):Future<Array<MenuDef>> {
+        if (redirection.isEditor) {
+            return DialogService.getEditorModelMenuDefs(redirection.dialogHandle, sessionContext);
+        } else {
+            return DialogService.getQueryModelMenuDefs(redirection.dialogHandle, sessionContext);
+        }
+    }
+
+    public static fetchChildViewDescs(redirection:DialogRedirection, sessionContext:SessionContext):Future<XGetAvailableViewDescsResult> {
+        if (redirection.isEditor) {
+            return DialogService.getAvailableEditorViewDescs(redirection.dialogHandle, sessionContext);
+        } else {
+            return DialogService.getAvailableQueryViewDescs(redirection.dialogHandle, sessionContext);
+        }
+    }
+
+    public static fetchChildXPaneDef(dialogHandle:DialogHandle, paneId:string, sessionContext:SessionContext):Future<XPaneDef> {
+        return DialogService.getEditorModelPaneDef(dialogHandle, paneId, sessionContext);
+    }
+
+    public static fetchChildPrintMarkupXML():Future<string> {
+        let url:string=""; // x.redirection.dialogProperties["formsURL"];  // Prevent pre-ship of Print function
+        let f:Future<string> = null;
+        if (url) {
+            url="https://dl.dropboxusercontent.com/u/81169924/formR0.xml";   // Test form as others are zipped.
+            let wC = ClientFactory.getClient();
+            f=wC.stringGet(url);
+        } else {
+            f=Future.createSuccessfulFuture('fetchChildrenPrintMarkupXMLs/printMarkupXML', "");
+        }
+        return f;
+    }
+    
+    public static getFlattenedResults(arrayOfTries:Array<Try<any>>):Try<Array<any>> {
+
+        var flattenedTry:Try<Array<any>> = Try.flatten(arrayOfTries);
+        if (flattenedTry.isFailure) {
+            return new Failure<Array<any>>('FormContextBuilder::getFlattenedResults: ' + ObjUtil.formatRecAttr(flattenedTry.failure));
+        }
+        return flattenedTry;
+    }
 
 
     constructor() {
@@ -5282,41 +5467,48 @@ export class FormContextBuilder {
     get actionSource():ActionSource {
         return this._actionSource;
     }
-
+    
     build():Future<FormContext> {
-
+        
         if (this.dialogRedirection && !this.dialogRedirection.isEditor) {
             return Future.createFailedFuture<FormContext>('FormContextBuilder::build', 'Forms with a root query model are not supported');
         }
 
         var xOpenFr = this._initialFormXOpenFr ? this._initialFormXOpenFr :
             DialogService.openEditorModelFromRedir(this.dialogRedirection, this.sessionContext);
-        var openAllFr:Future<Array<Try<any>>> = xOpenFr.bind((formXOpen:XOpenEditorModelResult)=> {
-            var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
-            var formXFormDefFr = this._initialXFormDefFr ? this._initialXFormDefFr : this.fetchXFormDefWithXOpenResult(formXOpen);
-            var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
-            var formViewDescsFr = DialogService.getAvailableEditorViewDescs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
-            //expect a sequence of child def components or a sequence of FormContexts (nested forms)
-            var formChildrenFr:Future<Array<Try<any>>> = formXFormDefFr.bind((xFormDef:XFormDef)=> {
-                if (!this.containsNestedForms(formXOpen, xFormDef)) {
-                    var childrenXOpenFr = this.openChildren(formXOpen);
-                    var childrenXPaneDefsFr = this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
-                    var childrenActiveColDefsFr = this.fetchChildrenActiveColDefs(formXOpen);
-                    var childrenMenuDefsFr = this.fetchChildrenMenuDefs(formXOpen);
-                    var childrenViewDescsFr = this.fetchChildrenViewDescs(formXOpen);
-                    var childrenPrintMarkupXMLFr = this.fetchChildrenPrintMarkupXMLs(formXOpen);
-                    return Future.sequence<any>([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr, childrenViewDescsFr, childrenPrintMarkupXMLFr]);
-                } else {
-                    //added to support nested forms
-                    return Future.sequence<any>(this.loadNestedForms(formXOpen, xFormDef));
-                }
-            });
-            return Future.sequence<any>([formXOpenFr, formXFormDefFr, formMenuDefsFr, formViewDescsFr, formChildrenFr]);
+        
+        return xOpenFr.bind((formXOpen:XOpenEditorModelResult)=> {
+            return this.buildFromOpenForm(formXOpen);
         });
+
+    }
+
+    buildFromOpenForm(formXOpen:XOpenEditorModelResult):Future<FormContext> {
+
+        var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
+        var formXFormDefFr = this._initialXFormDefFr ? this._initialXFormDefFr : this.fetchXFormDefWithXOpenResult(formXOpen);
+        var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
+        var formViewDescsFr = DialogService.getAvailableEditorViewDescs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
+        //expect a sequence of child def components or a sequence of FormContexts (nested forms)
+        var formChildrenFr:Future<Array<Try<any>>> = formXFormDefFr.bind((xFormDef:XFormDef)=> {
+            if (!this.containsNestedForms(formXOpen, xFormDef)) {
+                var childrenXOpenFr = this.openChildren(formXOpen);
+                var childrenXPaneDefsFr = this.fetchChildrenXPaneDefs(formXOpen, xFormDef);
+                var childrenActiveColDefsFr = this.fetchChildrenActiveColDefs(formXOpen);
+                var childrenMenuDefsFr = this.fetchChildrenMenuDefs(formXOpen);
+                var childrenViewDescsFr = this.fetchChildrenViewDescs(formXOpen);
+                var childrenPrintMarkupXMLFr = this.fetchChildrenPrintMarkupXMLs(formXOpen);
+                return Future.sequence<any>([childrenXOpenFr, childrenXPaneDefsFr, childrenActiveColDefsFr, childrenMenuDefsFr, childrenViewDescsFr, childrenPrintMarkupXMLFr]);
+            } else {
+                //added to support nested forms
+                return Future.sequence<any>(this.loadNestedForms(formXOpen, xFormDef));
+            }
+        });
+        const openAllFr:Future<Array<Try<any>>> = Future.sequence<any>([formXOpenFr, formXFormDefFr, formMenuDefsFr, formViewDescsFr, formChildrenFr]);
 
         return openAllFr.bind((value:Array<Try<any>>)=> {
 
-            var flattenedTry:Try<Array<any>> = this.getFlattenedResults(value);
+            var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(value);
             if (flattenedTry.failure) {
                 return Future.createCompletedFuture<FormContext>('FormContextBuilder::build', new Failure<FormContext>(flattenedTry.failure));
             }
@@ -5449,66 +5641,45 @@ export class FormContextBuilder {
     private fetchChildrenActiveColDefs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XGetActiveColumnDefsResult>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures:Array<Future<XGetActiveColumnDefsResult>> = xComps.map((xComp:XFormModelComp)=> {
-            if (xComp.redirection.isQuery) {
-                return DialogService.getActiveColumnDefs(xComp.redirection.dialogHandle, this.sessionContext);
-            } else {
-                return Future.createSuccessfulFuture('FormContextBuilder::fetchChildrenActiveColDefs', null);
-            }
+            return FormContextBuilder.fetchChildActiveColDefs(xComp.redirection, this.sessionContext);
         });
         return Future.sequence(seqOfFutures);
     }
-
+    
     private fetchChildrenMenuDefs(formXOpen:XOpenEditorModelResult):Future<Array<Try<Array<MenuDef>>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures = xComps.map((xComp:XFormModelComp)=> {
-            if (xComp.redirection.isEditor) {
-                return DialogService.getEditorModelMenuDefs(xComp.redirection.dialogHandle, this.sessionContext);
-            } else {
-                return DialogService.getQueryModelMenuDefs(xComp.redirection.dialogHandle, this.sessionContext);
-            }
+            return FormContextBuilder.fetchChildMenuDefs(xComp.redirection, this.sessionContext);
         });
         return Future.sequence(seqOfFutures);
     }
-
+    
     private fetchChildrenViewDescs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XGetAvailableViewDescsResult>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures = xComps.map((xComp:XFormModelComp)=> {
-            if (xComp.redirection.isEditor) {
-                return DialogService.getAvailableEditorViewDescs(xComp.redirection.dialogHandle, this.sessionContext);
-            } else {
-                return DialogService.getAvailableQueryViewDescs(xComp.redirection.dialogHandle, this.sessionContext);
-            }
+            return FormContextBuilder.fetchChildViewDescs(xComp.redirection, this.sessionContext);
         });
         return Future.sequence(seqOfFutures);
     }
-
+    
     private fetchChildrenXPaneDefs(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):Future<Array<Try<XPaneDef>>> {
 
         var formHandle:DialogHandle = formXOpen.formModel.form.redirection.dialogHandle;
         var xRefs = xFormDef.paneDefRefs;
         var seqOfFutures:Array<Future<XPaneDef>> = xRefs.map((xRef:XPaneDefRef)=> {
-            return DialogService.getEditorModelPaneDef(formHandle, xRef.paneId, this.sessionContext);
+            return FormContextBuilder.fetchChildXPaneDef(formHandle, xRef.paneId, this.sessionContext);
         });
         return Future.sequence(seqOfFutures);
     }
-
+    
     private fetchChildrenPrintMarkupXMLs(formXOpen:XOpenEditorModelResult):Future<Array<Try<string>>> {
         var seqOfFutures:Array<Future<string>> = [];
         for (let x of formXOpen.formModel.children) {
-            let url:string=""; // x.redirection.dialogProperties["formsURL"];  // Prevent pre-ship of Print function
-            let f:Future<string> = null;
-            if (url) {
-                url="https://dl.dropboxusercontent.com/u/81169924/formR0.xml";   // Test form as others are zipped.
-                let wC = ClientFactory.getClient();
-                f=wC.stringGet(url);
-            } else {
-                f=Future.createSuccessfulFuture('fetchChildrenPrintMarkupXMLs/printMarkupXML', "");
-            }
-            seqOfFutures.push(f);
+            seqOfFutures.push(FormContextBuilder.fetchChildPrintMarkupXML());
         }
         return Future.sequence<string>(seqOfFutures);
     }
-
+    
     private fetchXFormDefWithXOpenResult(xformOpenResult:XOpenEditorModelResult):Future<XFormDef> {
         var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
         var formPaneId = xformOpenResult.formPaneId;
@@ -5525,15 +5696,6 @@ export class FormContextBuilder {
                     'Expected reponse to contain an XFormDef but got ' + ObjUtil.formatRecAttr(value));
             }
         });
-    }
-
-    private getFlattenedResults(openAllResults:Array<Try<any>>):Try<Array<any>> {
-
-        var flattenedTry:Try<Array<any>> = Try.flatten(openAllResults);
-        if (flattenedTry.isFailure) {
-            return new Failure<Array<any>>('FormContextBuilder::build: ' + ObjUtil.formatRecAttr(flattenedTry.failure));
-        }
-        return flattenedTry;
     }
 
     private loadNestedForms(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):Array<Future<FormContext>> {
@@ -7079,7 +7241,8 @@ export class SystemContextImpl implements SystemContext {
  * *********************************
  */
 
-export interface ViewId {
+export class ViewId {
+    constructor(public value:string){}
 }
 
 /**
@@ -7506,24 +7669,6 @@ export class XGetAvailableViewDescsResult {
     get values():Array<ViewDesc> {
         return this._list;
     }
-}
-/**
- * *********************************
- */
-
-/**
- * @private
- */
-export class XSetSelectedViewIdEditorModelResult{
-}
-/**
- * *********************************
- */
-
-/**
- * @private
- */
-export class XSetSelectedViewIdQueryModelResult{
 }
 /**
  * *********************************
@@ -8009,6 +8154,9 @@ export class OType {
         'WSGetSessionListPropertyResult': XGetSessionListPropertyResult,
         'WSGetAvailableViewDescsResult': XGetAvailableViewDescsResult,
         'WSViewDesc': ViewDesc,
+        'WSViewId': ViewId,
+        'WSSetSelectedViewIdEditorModelResult': XOpenEditorModelResult,
+        'WSSetSelectedViewIdQueryModelResult': XOpenQueryModelResult,
         'WSGraphDataPointDef': GraphDataPointDef,
         'WSGraphDef': XGraphDef,
         'WSHandlePropertyChangeResult': XPropertyChangeResult,
@@ -8045,6 +8193,7 @@ export class OType {
         'WSGetAvailableValuesResult': XGetAvailableValuesResult.fromWS,
         'WSPaneDef': XPaneDef.fromWS,
         'WSOpenQueryModelResult': XOpenQueryModelResult.fromWS,
+        'WSSetSelectedViewIdQueryModelResult': XOpenQueryModelResult.fromWS,
         'WSProp': Prop.fromWS,
         'WSQueryResult': XQueryResult.fromWS,
         'WSRedirection': Redirection.fromWS,
