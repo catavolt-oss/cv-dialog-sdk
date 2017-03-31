@@ -3868,6 +3868,54 @@ class AppContextValues {
     }
 }
 
+class AppVersion {
+   
+    public static getAppVersion(versionString:string):AppVersion {
+        const [major, minor, patch] = versionString.split('.');
+        return new AppVersion(Number(major || 0), Number(minor || 0), Number(patch || 0));
+    }
+    
+    constructor(public major:number, public minor:number, public patch:number){}
+
+    /**
+     * Is 'this' version less than or equal to the supplied version?
+     * @param anotherVersion - the version to compare to 'this' version
+     * @returns {boolean}
+     */
+    public isLessThanOrEqualTo(anotherVersion:AppVersion):boolean {
+        
+        if(anotherVersion.major > this.major) {
+            return true;
+        } else if(anotherVersion.major == this.major) {
+           if(anotherVersion.minor > this.minor) {
+               return true;
+           } else if(anotherVersion.minor == this.minor){
+               return anotherVersion.patch >= this.patch;
+           } else {
+               return false;
+           }
+        } else {
+            return false;
+        }
+        
+    }
+}
+
+/* Begin Feature Versioning */
+
+/**
+ * Available Features
+ */
+export type FeatureSet = "View_Support"
+
+/* Map features to minimum app versions */
+const FeatureVersionMap:{[featureSet:string]:AppVersion} = {
+    "View_Support": AppVersion.getAppVersion("1.3.447")
+};
+
+/* End Feature Versioning */
+
+
 /**
  * Top-level entry point into the Catavolt API
  */
@@ -3927,6 +3975,24 @@ export class AppContext {
      */
     get deviceProps():Array<string> {
         return this._deviceProps;
+    }
+
+    /**
+     * Check for the availability of the given featureSet
+     * @see FeatureSet
+     * @param featureSet
+     * @returns {any}
+     */
+    isFeatureSetAvailable(featureSet:FeatureSet):boolean {
+        try {
+            const currentVersion = AppVersion.getAppVersion(this.sessionContextTry.success.systemContext.appVersion);
+            const featureMinimumVersion = FeatureVersionMap[featureSet];
+            return featureMinimumVersion.isLessThanOrEqualTo(currentVersion);
+        } catch(error) {
+            Log.error('Failed to compare appVersions for feature ' + featureSet);
+            Log.error(error);
+            return false;
+        }
     }
 
     /**
@@ -4040,7 +4106,7 @@ export class AppContext {
             return Future.createFailedFuture<AppWinDef>("AppContext::loginDirectly", "User is already logged in");
         }
 
-        return this.loginFromSystemContext(new SystemContextImpl(url), tenantId, userId,
+        return this.loginFromSystemContext(new SystemContextImpl(url, '0.0.0'), tenantId, userId,
             password, this.deviceProps, clientType).bind(
             (appContextValues:AppContextValues)=> {
                 this.setAppContextStateToLoggedIn(appContextValues);
@@ -4099,7 +4165,7 @@ export class AppContext {
         var serviceEndpoint:Future<ServiceEndpoint> = GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
         return serviceEndpoint.map(
             (serviceEndpoint:ServiceEndpoint)=> {
-                return new SystemContextImpl(serviceEndpoint.serverAssignment);
+                return new SystemContextImpl(serviceEndpoint.serverAssignment, serviceEndpoint.appVersion);
             }
         );
     }
@@ -6982,6 +7048,7 @@ export interface ServiceEndpoint {
     tenantId:string;
     responseType:string;
     soiVersion:string;
+    appVersion:string;
 
 }
 /**
@@ -7189,7 +7256,11 @@ export class SortPropDef {
 
 export class SystemContextImpl implements SystemContext {
 
-    constructor(private _urlString:string) {
+    constructor(private _urlString:string, private _appVersion:string) {
+    }
+    
+    get appVersion():string {
+        return this._appVersion;
     }
 
     get urlString():string {

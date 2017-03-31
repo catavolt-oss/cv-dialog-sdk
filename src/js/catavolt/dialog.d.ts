@@ -1617,6 +1617,10 @@ export interface ActionSource {
     virtualPathSuffix: Array<string>;
 }
 /**
+ * Available Features
+ */
+export declare type FeatureSet = "View_Support";
+/**
  * Top-level entry point into the Catavolt API
  */
 export declare class AppContext {
@@ -1650,6 +1654,13 @@ export declare class AppContext {
      * @returns {Array<string>}
      */
     deviceProps: Array<string>;
+    /**
+     * Check for the availability of the given featureSet
+     * @see FeatureSet
+     * @param featureSet
+     * @returns {any}
+     */
+    isFeatureSetAvailable(featureSet: FeatureSet): boolean;
     /**
      * Checked logged in status
      * @returns {boolean}
@@ -2462,6 +2473,7 @@ export interface ServiceEndpoint {
     tenantId: string;
     responseType: string;
     soiVersion: string;
+    appVersion: string;
 }
 /**
  * *********************************
@@ -2520,7 +2532,9 @@ export declare class SortPropDef {
  */
 export declare class SystemContextImpl implements SystemContext {
     private _urlString;
-    constructor(_urlString: string);
+    private _appVersion;
+    constructor(_urlString: string, _appVersion: string);
+    appVersion: string;
     urlString: string;
 }
 /**

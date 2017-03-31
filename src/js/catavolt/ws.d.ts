@@ -75,4 +75,5 @@ export interface SessionContext {
  */
 export interface SystemContext {
     urlString: string;
+    appVersion: string;
 }

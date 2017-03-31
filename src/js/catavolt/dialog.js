@@ -4200,6 +4200,47 @@ var AppContextValues = (function () {
     }
     return AppContextValues;
 }());
+var AppVersion = (function () {
+    function AppVersion(major, minor, patch) {
+        this.major = major;
+        this.minor = minor;
+        this.patch = patch;
+    }
+    AppVersion.getAppVersion = function (versionString) {
+        var _a = versionString.split('.'), major = _a[0], minor = _a[1], patch = _a[2];
+        return new AppVersion(Number(major || 0), Number(minor || 0), Number(patch || 0));
+    };
+    /**
+     * Is 'this' version less than or equal to the supplied version?
+     * @param anotherVersion - the version to compare to 'this' version
+     * @returns {boolean}
+     */
+    AppVersion.prototype.isLessThanOrEqualTo = function (anotherVersion) {
+        if (anotherVersion.major > this.major) {
+            return true;
+        }
+        else if (anotherVersion.major == this.major) {
+            if (anotherVersion.minor > this.minor) {
+                return true;
+            }
+            else if (anotherVersion.minor == this.minor) {
+                return anotherVersion.patch >= this.patch;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    };
+    return AppVersion;
+}());
+/* Map features to minimum app versions */
+var FeatureVersionMap = {
+    "View_Support": AppVersion.getAppVersion("1.3.447")
+};
+/* End Feature Versioning */
 /**
  * Top-level entry point into the Catavolt API
  */
@@ -4260,6 +4301,24 @@ var AppContext = (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Check for the availability of the given featureSet
+     * @see FeatureSet
+     * @param featureSet
+     * @returns {any}
+     */
+    AppContext.prototype.isFeatureSetAvailable = function (featureSet) {
+        try {
+            var currentVersion = AppVersion.getAppVersion(this.sessionContextTry.success.systemContext.appVersion);
+            var featureMinimumVersion = FeatureVersionMap[featureSet];
+            return featureMinimumVersion.isLessThanOrEqualTo(currentVersion);
+        }
+        catch (error) {
+            util_1.Log.error('Failed to compare appVersions for feature ' + featureSet);
+            util_1.Log.error(error);
+            return false;
+        }
+    };
     Object.defineProperty(AppContext.prototype, "isLoggedIn", {
         /**
          * Checked logged in status
@@ -4366,7 +4425,7 @@ var AppContext = (function () {
         if (this._appContextState === AppContextState.LOGGED_IN) {
             return fp_1.Future.createFailedFuture("AppContext::loginDirectly", "User is already logged in");
         }
-        return this.loginFromSystemContext(new SystemContextImpl(url), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
+        return this.loginFromSystemContext(new SystemContextImpl(url, '0.0.0'), tenantId, userId, password, this.deviceProps, clientType).bind(function (appContextValues) {
             _this.setAppContextStateToLoggedIn(appContextValues);
             return fp_1.Future.createSuccessfulFuture('AppContext::loginDirectly', appContextValues.appWinDef);
         });
@@ -4412,7 +4471,7 @@ var AppContext = (function () {
     AppContext.prototype.newSystemContext = function (gatewayHost, tenantId) {
         var serviceEndpoint = GatewayService.getServiceEndpoint(tenantId, 'soi-json', gatewayHost);
         return serviceEndpoint.map(function (serviceEndpoint) {
-            return new SystemContextImpl(serviceEndpoint.serverAssignment);
+            return new SystemContextImpl(serviceEndpoint.serverAssignment, serviceEndpoint.appVersion);
         });
     };
     /**
@@ -7613,9 +7672,17 @@ exports.SortPropDef = SortPropDef;
  * *********************************
  */
 var SystemContextImpl = (function () {
-    function SystemContextImpl(_urlString) {
+    function SystemContextImpl(_urlString, _appVersion) {
         this._urlString = _urlString;
+        this._appVersion = _appVersion;
     }
+    Object.defineProperty(SystemContextImpl.prototype, "appVersion", {
+        get: function () {
+            return this._appVersion;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(SystemContextImpl.prototype, "urlString", {
         get: function () {
             return this._urlString;

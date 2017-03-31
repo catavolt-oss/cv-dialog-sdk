@@ -328,6 +328,7 @@ export interface SystemContext {
      port: number;
      scheme: string;
      toURLString():string;*/
-
+    
     urlString:string;
+    appVersion:string;
 }
