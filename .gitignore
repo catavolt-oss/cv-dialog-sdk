@@ -79,3 +79,6 @@ local.properties
 node_modules
 .nvm
 
+# Generated javascript and typescript definition files
+src/js/
+
