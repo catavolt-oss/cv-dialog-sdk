@@ -1375,6 +1375,9 @@ export class QueryContext extends PaneContext {
             if (this.isDestroyedSetting) {
                 this._queryState = QueryState.DESTROYED;
             }
+            if (this.isRefreshSetting) {
+                AppContext.singleton.lastMaintenanceTime = new Date();
+            }
             return navRequest;
         });
     }
@@ -3925,7 +3928,7 @@ export class AppContext {
 
     private static ONE_HOUR_IN_MILLIS:number = 60 * 60 * 1000;
 
-    public lastMaintenanceTime:Date;
+    public lastMaintenanceTime:Date = new Date(0);
     private _appContextState:AppContextState;
     private _appWinDefTry:Try<AppWinDef>;
     private _deviceProps:Array<string>;
