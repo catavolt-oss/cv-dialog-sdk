@@ -254,9 +254,6 @@ export class Log {
     public static info:(message, method?:string, clz?:string)=>void;
     public static warn:(message, method?:string, clz?:string)=>void;
 
-    //set default log level here
-    static init = Log.logLevel(LogLevel.INFO);
-
     static logLevel(level:LogLevel) {
 
         if (level >= LogLevel.DEBUG) {
@@ -300,6 +297,9 @@ export class Log {
             };
         }
     }
+
+    //set default log level here
+    static init = Log.logLevel(LogLevel.INFO);
 
     private static log(logger, message, method?:string, clz?:string) {
 
