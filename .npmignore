@@ -1,0 +1,80 @@
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+
+#projects
+*.sublime-project
+*.sublime-workspace
+
+# Eclipse
+.project
+.classpath
+.buildpath
+bin/
+.settings/
+
+# Intellij
+#out/
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Mac
+# Xcode
+!**/*.xcodeproj
+!**/*.pbxproj
+!**/*.xcworkspacedata
+!**/*.xcsettings
+!**/*.xcscheme
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+project.xcworkspace
+
+# Android/IJ
+.idea
+.gradle
+local.properties
+*.iml
+
+# Node
+node_modules
+.nvm
