@@ -2,6 +2,7 @@
  * Created by rburson on 3/27/15.
  */
 import {
+    Dictionary,
     StringDictionary,
     TimeValue,
     DateValue,
@@ -15,6 +16,7 @@ import {
 import {Try, Either, Future, Success, Failure, TryClosure, MapFn} from "./fp";
 import {SessionContext, SystemContext, Call, Get, XMLHttpClient, ClientFactory} from "./ws";
 import * as moment from 'moment';
+import {Form} from "./print";
 
 /*
  IMPORTANT!
@@ -178,7 +180,7 @@ export class TabCellValueDef extends CellValueDef {
 export class Attachment {
 
     constructor(public name:string, public attachmentData:any) {};
-    
+
 }
 
 /**
@@ -288,7 +290,7 @@ export class PaneContext {
     get dialogAlias():string {
         return this.dialogRedirection.dialogProperties['dialogAlias'];
     }
-    
+
     /**
      * Get the {@link DialogRedirection} with which this Pane was constructed
      * @returns {DialogRedirection}
@@ -412,7 +414,7 @@ export class PaneContext {
             return this.formDef.childrenDefs[this.paneRef];
         }
     }
-    
+
     /**
      * Get the numeric value, representing this Pane's place in the parent {@link FormContext}'s list of child panes.
      * See {@link FormContext.childrenContexts}
@@ -441,7 +443,7 @@ export class PaneContext {
     get parentContext():FormContext {
         return this._parentContext;
     }
-    
+
     set parentContext(parentContext:FormContext) {
         this._parentContext = parentContext;
         this.initialize();
@@ -465,7 +467,7 @@ export class PaneContext {
     propDefAtName(propName:string):PropDef {
         return this.entityRecDef.propDefAtName(propName);
     }
-    
+
     /**
      * Read all the Binary values in this {@link EntityRec}
      * @param entityRec
@@ -492,7 +494,7 @@ export class PaneContext {
     writeAttachment(attachment:Attachment):Future<void> {
         return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.sessionContext);
     }
-    
+
     writeAttachments(entityRec:EntityRec):Future<Array<Try<void>>> {
         return Future.sequence<void>(
             entityRec.props.filter((prop:Prop)=> {
@@ -503,7 +505,7 @@ export class PaneContext {
             })
         );
     }
-    
+
     /**
      * Get the all {@link ViewDesc}'s associated with this Pane
      * @returns {Array<ViewDesc>}
@@ -544,11 +546,11 @@ export class PaneContext {
     //protected
 
     //abstract
-   
+
     getSelectedViewId():Future<ViewId> { return null; }
 
     openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>>{ return null; }
-    
+
     protected initialize() {}
 
     protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> { return null; }
@@ -594,7 +596,7 @@ export class EditorContext extends PaneContext {
         }
         return this._buffer;
     }
-    
+
     /**
      * Toggle the current mode of this Editor
      * @param paneMode
@@ -706,7 +708,7 @@ export class EditorContext extends PaneContext {
     get isWriteMode():boolean {
         return this._editorState === EditorState.WRITE;
     }
-    
+
     openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>> {
         return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
             .bind((setViewResult:XOpenDialogModelResult)=>{
@@ -806,7 +808,7 @@ export class EditorContext extends PaneContext {
         var timeoutStr = this.paneDef.settings[EditorContext.GPS_SECONDS];
         return timeoutStr ? Number(timeoutStr) : 30;
     }
-    
+
     getSelectedViewId():Future<ViewId> {
         return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
     }
@@ -943,7 +945,7 @@ export class EditorContext extends PaneContext {
     }
 
     //Private methods
-    
+
     private removeSpecialProps(entityRec:EntityRec):EntityRec {
         entityRec.props = entityRec.props.filter((prop:Prop)=>{
             /* Remove the Binary(s) as they have been written seperately */
@@ -955,7 +957,7 @@ export class EditorContext extends PaneContext {
              */
             if(prop.value instanceof Attachment) {
                const attachment = prop.value as Attachment;
-               return new Prop(prop.name, attachment.name, prop.annos); 
+               return new Prop(prop.name, attachment.name, prop.annos);
             } else {
                return prop;
             }
@@ -1126,7 +1128,7 @@ export class FormContext extends PaneContext {
     get headerContext():PaneContext {
         throw new Error('FormContext::headerContext: Needs Impl');
     }
-    
+
     openView(targetViewDesc:ViewDesc):Future<Either<PaneContext, NavRequest>> {
         return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
             .bind((setViewResult:XOpenDialogModelResult)=>{
@@ -1134,7 +1136,7 @@ export class FormContext extends PaneContext {
                 var ca = new ContextAction('#viewChange', xOpenEditorResult.formRedirection.objectId, this.actionSource);
                 return FormContextBuilder.createWithRedirection(xOpenEditorResult.formModel.form.redirection, ca, this.sessionContext)
                     .buildFromOpenForm(xOpenEditorResult)
-                    .map((formContext:FormContext)=>{ 
+                    .map((formContext:FormContext)=>{
                         this._destroyed = true;
                         return Either.right<PaneContext, NavRequest>(formContext as NavRequest)
                     });
@@ -1206,7 +1208,7 @@ export class FormContext extends PaneContext {
     get sessionContext():SessionContext {
         return this._sessionContext;
     }
-    
+
     /**
      * Get the all {@link ViewDesc}'s associated with this Form
      * @returns {Array<ViewDesc>}
@@ -1253,7 +1255,7 @@ export class FormContext extends PaneContext {
             this._destroyed = true;
         }
     }
-    
+
     getSelectedViewId():Future<ViewId> {
         return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
     }
@@ -1294,7 +1296,7 @@ export class QueryContext extends PaneContext {
     constructor(paneRef:number, private _offlineRecs:Array<EntityRec> = [], private _settings:StringDictionary = {}) {
         super(paneRef);
     }
-    
+
     /**
      * Get the entity record definition
      * @returns {EntityRecDef}
@@ -1340,7 +1342,7 @@ export class QueryContext extends PaneContext {
     set offlineRecs(offlineRecs:Array<EntityRec>) {
         this._offlineRecs = offlineRecs;
     }
-    
+
     openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>>{
         return DialogService.setSelectedQueryViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
             .bind((setViewResult:XOpenDialogModelResult)=>{
@@ -1420,7 +1422,7 @@ export class QueryContext extends PaneContext {
         }
         return this._scroller;
     }
-    
+
     getSelectedViewId():Future<ViewId> {
        return DialogService.getSelectedQueryViewId(this.paneDef.dialogHandle, this.sessionContext);
     }
@@ -1490,7 +1492,7 @@ export class QueryContext extends PaneContext {
     private get isRefreshSetting():boolean {
         return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
     }
-    
+
     private updatePaneDef(xOpenResult:XOpenDialogModelResult):Future<PaneDef> {
 
         const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
@@ -1567,11 +1569,6 @@ export class DetailsContext extends EditorContext {
     get detailsDef():DetailsDef {
         return <DetailsDef>this.paneDef;
     }
-
-    get printMarkupURL():string {
-        return this.paneDef.dialogRedirection.dialogProperties['formsURL'];
-    }
-
 }
 
 /**
@@ -1738,11 +1735,6 @@ export class PrintMarkupContext extends EditorContext {
     get printMarkupDef():PrintMarkupDef {
         return <PrintMarkupDef>this.paneDef;
     }
-
-    // get printMarkupURL():string {     NOTE: Access this property on the PrintMarkupDef
-    //     return this.paneDef.dialogRedirection.dialogProperties['formsURL'];
-    // }
-
 }
 
 
@@ -1896,7 +1888,7 @@ export class PaneDef {
     get entityRecDef():EntityRecDef {
         return this._entityRecDef;
     }
-    
+
     set entityRecDef(entityRecDef:EntityRecDef) {
         this._entityRecDef = entityRecDef;
     }
@@ -1930,11 +1922,11 @@ export class PaneDef {
     get menuDefs():Array<MenuDef> {
         return this._menuDefs;
     }
-    
+
     set menuDefs(menuDefs:Array<MenuDef>) {
         this._menuDefs = menuDefs;
     }
-    
+
     get name():string {
         return this._name;
     }
@@ -1950,7 +1942,7 @@ export class PaneDef {
     get title():string {
         return this._title;
     }
-    
+
     get viewDescs():Array<ViewDesc> {
         return this._viewDescs;
     }
@@ -2148,7 +2140,7 @@ export class DetailsDef extends PaneDef {
 export class ErrorDef extends PaneDef {
 
     /**
-     * 
+     *
      * @param dialogRedirection
      * @param settings
      * @param exception
@@ -2604,7 +2596,7 @@ export class ListDef extends PaneDef {
     get activeColumnDefs():Array<ColumnDef> {
         return this._activeColumnDefs;
     }
-    
+
     set activeColumnDefs(activeColumnDefs:Array<ColumnDef>) {
         this._activeColumnDefs = activeColumnDefs;
     }
@@ -2616,7 +2608,7 @@ export class ListDef extends PaneDef {
     get defaultActionId():string {
         return this._defaultActionId;
     }
-    
+
     set defaultActionId(defaultActionId:string) {
         this._defaultActionId = defaultActionId;
     }
@@ -2735,7 +2727,8 @@ export class MapDef extends PaneDef {
  * PaneDef Subtype that describes a Details Pane to be displayed as form
  */
 export class PrintMarkupDef extends PaneDef {
-
+    private _orderedCellValueDefs:Dictionary<AttributeCellValueDef>;
+    private _printMarkupModel:Form;
     /**
      * @private
      * @param paneId
@@ -2770,28 +2763,46 @@ export class PrintMarkupDef extends PaneDef {
                 private _printMarkupXML:string,
                 private _rows:Array<Array<CellDef>>) {
         super(paneId, name, label, title, menuDefs, viewDescs, entityRecDef, dialogRedirection, settings);
+        this._orderedCellValueDefs = null;
     }
-
+    get orderedCellValueDefs():StringDictionary {
+        if (!this._orderedCellValueDefs) {
+            this._orderedCellValueDefs = {};
+            this._rows.forEach((cellDefRow:Array<CellDef>, index)=> {
+                cellDefRow.length;
+                cellDefRow.forEach((cd:CellDef) => {
+                    cd.values.forEach((cvd:CellValueDef) => {
+                        if (cvd instanceof AttributeCellValueDef) {
+                            let acd = cvd as AttributeCellValueDef;
+                            this._orderedCellValueDefs[acd.propertyName] = acd;
+                        }
+                    });
+                });
+            });
+        };
+        return this._orderedCellValueDefs;
+    }
     get cancelButtonText():string {
         return this._cancelButtonText;
     }
-
     get commitButtonText():string {
         return this._commitButtonText;
     }
-
     get editable():boolean {
         return this._editable;
     }
-
     get focusPropName():string {
         return this._focusPropName;
     }
-
+    get printMarkupModel():Form {
+        if (!this._printMarkupModel) {
+            this._printMarkupModel=Form.fromXMLString(this.printMarkupXML);
+        }
+        return this._printMarkupModel;
+    }
     get printMarkupXML():string {
         return this._printMarkupXML;
     }
-
     get rows():Array<Array<CellDef>> {
         return this._rows;
     }
@@ -4016,7 +4027,7 @@ export class AppContext {
             const mins = this.tenantSettingsTry.success['clientTimeoutMinutes'];
             return mins ? (Number(mins) * 60 * 1000) : AppContext.defaultTTLInMillis;
         } else {
-            return AppContext.defaultTTLInMillis; 
+            return AppContext.defaultTTLInMillis;
         }
     }
 
@@ -4035,7 +4046,7 @@ export class AppContext {
     get sessionHasExpired():boolean {
         return this.remainingSessionTime < 0;
     }
-    
+
     /**
      * Open a {@link WorkbenchLaunchAction} expecting a Redirection
      * @param launchAction
@@ -4770,7 +4781,7 @@ export class DialogService {
 
     static addAttachment(dialogHandle:DialogHandle, attachment:Attachment,
                           sessionContext:SessionContext):Future<void> {
-        
+
         const formData = new FormData();
         formData.append('sessionHandle', sessionContext.sessionHandle);
         formData.append('dialogHandle', String(dialogHandle.handleValue));
@@ -4901,7 +4912,7 @@ export class DialogService {
                     'menuDefs', OType.factoryFn));
         });
     }
-    
+
     static getSelectedEditorViewId(dialogHandle:DialogHandle,
                                    sessionContext:SessionContext):Future<ViewId> {
         var method = 'getSelectedViewId';
@@ -4912,7 +4923,7 @@ export class DialogService {
                 DialogTriple.fromWSDialogObjectResult<ViewId>(result, 'WSGetSelectedViewIdResult', 'WSViewId', 'viewId', OType.factoryFn));
         });
     }
-    
+
     static getSelectedQueryViewId(dialogHandle:DialogHandle,
                                   sessionContext:SessionContext):Future<ViewId> {
         var method = 'getSelectedViewId';
@@ -5096,7 +5107,7 @@ export class DialogService {
                 DialogTriple.fromWSDialogObject<XReadPropertyResult>(result, 'WSReadPropertyResult', OType.factoryFn));
         });
     }
-    
+
     static setSelectedEditorViewId(dialogHandle:DialogHandle, viewId:ViewId,
                                    sessionContext:SessionContext):Future<XOpenEditorModelResult> {
         var method = 'setSelectedViewId';
@@ -5474,7 +5485,7 @@ export class FormContextBuilder {
         fb._sessionContext = sessionContext;
         return fb;
     }
-    
+
     public static fetchChildActiveColDefs(redirection:DialogRedirection, sessionContext:SessionContext):Future<XGetActiveColumnDefsResult> {
         if (redirection.isQuery) {
             return DialogService.getActiveColumnDefs(redirection.dialogHandle, sessionContext);
@@ -5503,19 +5514,18 @@ export class FormContextBuilder {
         return DialogService.getEditorModelPaneDef(dialogHandle, paneId, sessionContext);
     }
 
-    public static fetchChildPrintMarkupXML():Future<string> {
-        let url:string=""; // x.redirection.dialogProperties["formsURL"];  // Prevent pre-ship of Print function
+    public static fetchChildPrintMarkupXML(child:XFormModelComp):Future<string> {
+        let url:string=child.redirection.dialogProperties["formsURL"];  // Prevent pre-ship of Print function
         let f:Future<string> = null;
         if (url) {
-            url="https://dl.dropboxusercontent.com/u/81169924/formR0.xml";   // Test form as others are zipped.
-            let wC = ClientFactory.getClient();
+            let wC=new XMLHttpClient();
             f=wC.stringGet(url);
         } else {
             f=Future.createSuccessfulFuture('fetchChildrenPrintMarkupXMLs/printMarkupXML', "");
         }
         return f;
     }
-    
+
     public static getFlattenedResults(arrayOfTries:Array<Try<any>>):Try<Array<any>> {
 
         var flattenedTry:Try<Array<any>> = Try.flatten(arrayOfTries);
@@ -5536,16 +5546,16 @@ export class FormContextBuilder {
     get actionSource():ActionSource {
         return this._actionSource;
     }
-    
+
     build():Future<FormContext> {
-        
+
         if (this.dialogRedirection && !this.dialogRedirection.isEditor) {
             return Future.createFailedFuture<FormContext>('FormContextBuilder::build', 'Forms with a root query model are not supported');
         }
 
         var xOpenFr = this._initialFormXOpenFr ? this._initialFormXOpenFr :
             DialogService.openEditorModelFromRedir(this.dialogRedirection, this.sessionContext);
-        
+
         return xOpenFr.bind((formXOpen:XOpenEditorModelResult)=> {
             return this.buildFromOpenForm(formXOpen);
         });
@@ -5714,7 +5724,7 @@ export class FormContextBuilder {
         });
         return Future.sequence(seqOfFutures);
     }
-    
+
     private fetchChildrenMenuDefs(formXOpen:XOpenEditorModelResult):Future<Array<Try<Array<MenuDef>>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures = xComps.map((xComp:XFormModelComp)=> {
@@ -5722,7 +5732,7 @@ export class FormContextBuilder {
         });
         return Future.sequence(seqOfFutures);
     }
-    
+
     private fetchChildrenViewDescs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XGetAvailableViewDescsResult>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures = xComps.map((xComp:XFormModelComp)=> {
@@ -5730,7 +5740,7 @@ export class FormContextBuilder {
         });
         return Future.sequence(seqOfFutures);
     }
-    
+
     private fetchChildrenXPaneDefs(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):Future<Array<Try<XPaneDef>>> {
 
         var formHandle:DialogHandle = formXOpen.formModel.form.redirection.dialogHandle;
@@ -5740,15 +5750,15 @@ export class FormContextBuilder {
         });
         return Future.sequence(seqOfFutures);
     }
-    
+
     private fetchChildrenPrintMarkupXMLs(formXOpen:XOpenEditorModelResult):Future<Array<Try<string>>> {
         var seqOfFutures:Array<Future<string>> = [];
-        for (let x of formXOpen.formModel.children) {
-            seqOfFutures.push(FormContextBuilder.fetchChildPrintMarkupXML());
+        for (let child of formXOpen.formModel.children) {
+            seqOfFutures.push(FormContextBuilder.fetchChildPrintMarkupXML(child));
         }
         return Future.sequence<string>(seqOfFutures);
     }
-    
+
     private fetchXFormDefWithXOpenResult(xformOpenResult:XOpenEditorModelResult):Future<XFormDef> {
         var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
         var formPaneId = xformOpenResult.formPaneId;
@@ -7326,7 +7336,7 @@ export class ViewId {
 export class ViewDesc {
 
     constructor(public name:string, public description:string, public viewId:string){}
-    
+
 }
 /**
  * *********************************

@@ -61,10 +61,10 @@ export class XMLHttpClient implements Client {
      https://github.com/facebook/react-native/blob/56fef9b6225ffc1ba87f784660eebe842866c57d/Libraries/Network/FormData.js#L34:
      */
     postMultipart(targetUrl:string, formData:FormData):Future<void> {
-        
+
         var promise = new Promise<void>("XMLHttpClient::postMultipart" + targetUrl);
         var xmlHttpRequest = new XMLHttpRequest();
-        
+
         xmlHttpRequest.onreadystatechange = () => {
             if (xmlHttpRequest.readyState === 4) {
                 if ((xmlHttpRequest.status !== 200) && (xmlHttpRequest.status !== 304)) {
@@ -138,7 +138,7 @@ export class XMLHttpClient implements Client {
 
         xmlHttpRequest.open(method, targetUrl, true);
         xmlHttpRequest.setRequestHeader("Accept", "gzip");
-        
+
         if (timeoutMillis) {
             //check for timeout support on the xmlHttpRequest itself
             if (typeof xmlHttpRequest.ontimeout !== "undefined") {
@@ -201,9 +201,9 @@ export class Call implements Request {
                                     systemContext:SystemContext):Call {
         return new Call(service, method, params, systemContext, null);
     }
-    
+
     static get lastSuccessfulActivityTime():Date{
-       return Call._lastSuccessfulActivityTime; 
+       return Call._lastSuccessfulActivityTime;
     }
 
     constructor(service:string,
