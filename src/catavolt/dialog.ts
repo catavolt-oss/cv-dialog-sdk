@@ -522,21 +522,28 @@ export class PaneContext {
     writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
         return Future.sequence<XWritePropertyResult>(
             entityRec.props.filter((prop:Prop)=> {
-                return prop.value instanceof EncodedBinary;
+                return this.propDefAtName(prop.name).isBinaryType;
             }).map((prop:Prop) => {
-                let ptr:number = 0;
-                const encBin:EncodedBinary = prop.value as EncodedBinary;
-                const data = encBin.data;
-                let writeFuture:Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
-                while (ptr < data.length) {
-                    const boundPtr = (ptr:number) => {
-                        writeFuture = writeFuture.bind((prevResult)=> {
-                            const encSegment:string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
-                            return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.sessionContext);
-                        });
+                let writeFuture: Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
+                if (prop.value) {
+                    let ptr: number = 0;
+                    const encBin: EncodedBinary = prop.value as EncodedBinary;
+                    const data = encBin.data;
+                    while (ptr < data.length) {
+                        const boundPtr = (ptr: number) => {
+                            writeFuture = writeFuture.bind((prevResult)=> {
+                                const encSegment: string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
+                                return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.sessionContext);
+                            });
+                        }
+                        boundPtr(ptr);
+                        ptr += PaneContext.CHAR_CHUNK_SIZE;
                     }
-                    boundPtr(ptr);
-                    ptr += PaneContext.CHAR_CHUNK_SIZE;
+                } else {
+                    // This is a delete
+                    writeFuture = writeFuture.bind((prevResult)=> {
+                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
+                    });
                 }
                 return writeFuture;
             })
@@ -576,6 +583,7 @@ export class EditorContext extends PaneContext {
     private _buffer:EntityBuffer;
     private _editorState:EditorState;
     private _entityRecDef:EntityRecDef;
+    private _isFirstReadComplete:boolean;
     private _settings:StringDictionary;
 
     /**
@@ -681,6 +689,14 @@ export class EditorContext extends PaneContext {
     }
 
     /**
+     * Returns whether or not the buffers contain valid data via a successful read operation.
+     * @returns {boolean}
+     */
+    get isFirstReadComplete():boolean {
+        return this._isFirstReadComplete;
+    }
+
+    /**
      * Returns whether or not this Editor is in 'read' mode
      * @returns {boolean}
      */
@@ -783,6 +799,7 @@ export class EditorContext extends PaneContext {
         return DialogService.readEditorModel(this.paneDef.dialogHandle,
             this.sessionContext).map((readResult:XReadResult)=> {
             this.entityRecDef = readResult.entityRecDef;
+            this._isFirstReadComplete = true;
             return readResult.entityRec;
         }).map((entityRec:EntityRec)=> {
             this.initBuffer(entityRec);
@@ -838,8 +855,12 @@ export class EditorContext extends PaneContext {
      * @param dataUrl
      */
     setBinaryPropWithDataUrl(name:string, dataUrl:string) {
-        const urlObj:DataUrl = new DataUrl(dataUrl);
-        this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
+        if (dataUrl) {
+            const urlObj: DataUrl = new DataUrl(dataUrl);
+            this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
+        } else {
+            this.setPropValue(name, null);  // Property is being deleted/cleared
+        }
     }
 
     /**
@@ -949,7 +970,7 @@ export class EditorContext extends PaneContext {
     private removeSpecialProps(entityRec:EntityRec):EntityRec {
         entityRec.props = entityRec.props.filter((prop:Prop)=>{
             /* Remove the Binary(s) as they have been written seperately */
-            return !(prop.value instanceof EncodedBinary);
+            return !this.propDefAtName(prop.name).isBinaryType;
         }).map((prop:Prop)=>{
             /*
              Remove the Attachment(s) (as they have been written seperately) but replace
@@ -5161,7 +5182,7 @@ export class DialogService {
         var params:StringDictionary = {
             'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
             'propertyName': propertyName,
-            'data': data,
+            'data': data == null ? "" : data,
             'append': append
         };
 
