@@ -102,6 +102,10 @@ export class AttributeCellValueDef extends CellValueDef {
         return this.entryMethod && this.entryMethod === 'ENTRY_METHOD_DROP_DOWN';
     }
 
+    get isIconEntryMethod():boolean {
+        return this.entryMethod && this.entryMethod === 'ENTRY_METHOD_ICON_CHOOSER';
+    }
+
     get isTextFieldEntryMethod():boolean {
         return !this.entryMethod || this.entryMethod === 'ENTRY_METHOD_TEXT_FIELD';
     }
