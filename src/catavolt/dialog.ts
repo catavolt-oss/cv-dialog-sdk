@@ -1422,9 +1422,7 @@ export class QueryContext extends PaneContext {
         return DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows,
             fromObjectId, this.sessionContext).bind((value:XQueryResult)=> {
             var result = new QueryResult(value.entityRecs, value.hasMore);
-            if (this.lastRefreshTime === new Date(0)) {
-                this.lastRefreshTime = new Date();
-            }
+            this.lastRefreshTime = new Date();
             return Future.createSuccessfulFuture('QueryContext::query', result);
         });
     }
@@ -7044,7 +7042,6 @@ export class QueryScroller {
             if(entityRecList.length > 0) {
                 this._firstResultOid = entityRecList[0].objectId;
             }
-            this.context.lastRefreshTime = new Date();
             return entityRecList;
         });
     }
