@@ -1160,7 +1160,7 @@ export class FormContext extends PaneContext {
                 const xOpenEditorResult:XOpenEditorModelResult = setViewResult as XOpenEditorModelResult;
                 var ca = new ContextAction('#viewChange', xOpenEditorResult.formRedirection.objectId, this.actionSource);
                 return FormContextBuilder.createWithRedirection(xOpenEditorResult.formModel.form.redirection, ca, this.sessionContext)
-                    .buildFromOpenForm(xOpenEditorResult)
+                    .buildFromOpenForm(xOpenEditorResult, xOpenEditorResult.formModel.form.redirection.isEditor)
                     .map((formContext:FormContext)=>{
                         this._destroyed = true;
                         return Either.right<PaneContext, NavRequest>(formContext as NavRequest)
@@ -2191,7 +2191,7 @@ export class FormDef extends PaneDef {
      * @param childrenMenuDefs
      * @returns {any}
      */
-    static fromOpenFormResult(formXOpenResult:XOpenEditorModelResult,
+    static fromOpenFormResult(formXOpenResult:XOpenDialogModelResult,
                               formXFormDef:XFormDef,
                               formMenuDefs:Array<MenuDef>,
                               formViewDesc:XGetAvailableViewDescsResult,
@@ -4980,8 +4980,11 @@ export class DialogService {
                                    sessionContext:SessionContext):Future<XOpenQueryModelResult> {
 
         if (!redirection.isQuery) return Future.createFailedFuture<XOpenQueryModelResult>('DialogService::openQueryModelFromRedir', 'Redirection must be a query');
-        var method = 'open';
-        var params:StringDictionary = {'dialogHandle': OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle')};
+        var method = 'reopen';
+        var params:StringDictionary = {
+            'dialogHandle': OType.serializeObject(redirection.dialogHandle, 'WSDialogHandle'),
+            'queryMode' : redirection.dialogMode
+        };
 
         var call = Call.createCall(DialogService.QUERY_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
@@ -5482,7 +5485,7 @@ export class FormContextBuilder {
     private _dialogRedirection:DialogRedirection;
     private _actionSource:ActionSource;
     private _sessionContext:SessionContext;
-    private _initialFormXOpenFr:Future<XOpenEditorModelResult>;
+    private _initialFormXOpenFr:Future<XOpenDialogModelResult>;
     private _initialXFormDefFr:Future<XFormDef>;
 
     public static createWithRedirection(dialogRedirection:DialogRedirection,
@@ -5495,7 +5498,7 @@ export class FormContextBuilder {
         return fb;
     }
 
-    public static createWithInitialForm(initialFormXOpenFr:Future<XOpenEditorModelResult>,
+    public static createWithInitialForm(initialFormXOpenFr:Future<XOpenDialogModelResult>,
                                         initialXFormDefFr:Future<XFormDef>,
                                         dialogRedirection:DialogRedirection,
                                         actionSource:ActionSource,
@@ -5572,25 +5575,33 @@ export class FormContextBuilder {
 
     build():Future<FormContext> {
 
-        if (this.dialogRedirection && !this.dialogRedirection.isEditor) {
-            return Future.createFailedFuture<FormContext>('FormContextBuilder::build', 'Forms with a root query model are not supported');
+        if (this.dialogRedirection) {
+            if(this.dialogRedirection.isEditor) {
+                const xOpenFr = this._initialFormXOpenFr ? this._initialFormXOpenFr :
+                    DialogService.openEditorModelFromRedir(this.dialogRedirection, this.sessionContext);
+                return xOpenFr.bind((formXOpen:XOpenEditorModelResult)=> {
+                    return this.buildFromOpenForm(formXOpen, true);
+                });
+            } else {
+               const xOpenFr = DialogService.openQueryModelFromRedir(this.dialogRedirection, this.sessionContext);
+               return xOpenFr.bind((formXOpen:XOpenQueryModelResult)=>{
+                   return this.buildFromOpenForm(formXOpen, false);
+               });
+            }
+        } else {
+            return Future.createFailedFuture<FormContext>('FormContextBuilder::build', 'redirection is null');
         }
-
-        var xOpenFr = this._initialFormXOpenFr ? this._initialFormXOpenFr :
-            DialogService.openEditorModelFromRedir(this.dialogRedirection, this.sessionContext);
-
-        return xOpenFr.bind((formXOpen:XOpenEditorModelResult)=> {
-            return this.buildFromOpenForm(formXOpen);
-        });
 
     }
 
-    buildFromOpenForm(formXOpen:XOpenEditorModelResult):Future<FormContext> {
+    buildFromOpenForm(formXOpen:XOpenDialogModelResult, isEditor:boolean):Future<FormContext> {
 
         var formXOpenFr = Future.createSuccessfulFuture('FormContext/open/openForm', formXOpen);
         var formXFormDefFr = this._initialXFormDefFr ? this._initialXFormDefFr : this.fetchXFormDefWithXOpenResult(formXOpen);
-        var formMenuDefsFr = DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
-        var formViewDescsFr = DialogService.getAvailableEditorViewDescs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
+        var formMenuDefsFr = isEditor ? DialogService.getEditorModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext) :
+                            DialogService.getQueryModelMenuDefs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
+        var formViewDescsFr = isEditor ? DialogService.getAvailableEditorViewDescs(formXOpen.formRedirection.dialogHandle, this.sessionContext) :
+                            DialogService.getAvailableQueryViewDescs(formXOpen.formRedirection.dialogHandle, this.sessionContext);
         //expect a sequence of child def components or a sequence of FormContexts (nested forms)
         var formChildrenFr:Future<Array<Try<any>>> = formXFormDefFr.bind((xFormDef:XFormDef)=> {
             if (!this.containsNestedForms(formXOpen, xFormDef)) {
@@ -5655,7 +5666,7 @@ export class FormContextBuilder {
     }
 
     //added to support nested forms
-    private buildFormModelForNestedForm(topFormXOpen:XOpenEditorModelResult,
+    private buildFormModelForNestedForm(topFormXOpen:XOpenDialogModelResult,
                                         formModelComp:XFormModelComp,
                                         childFormModelComps:Array<XFormModelComp>):XFormModel {
         const formModel = new XFormModel(formModelComp, topFormXOpen.formModel.header, childFormModelComps,
@@ -5667,7 +5678,7 @@ export class FormContextBuilder {
 
         if (flattened.length != 5) return new Failure<FormDef>('FormContextBuilder::build: Open form should have resulted in 5 elements');
 
-        var formXOpen:XOpenEditorModelResult = flattened[0];
+        var formXOpen:XOpenDialogModelResult = flattened[0];
         var formXFormDef:XFormDef = flattened[1];
         var formMenuDefs:Array<MenuDef> = flattened[2];
         var formViewDesc:XGetAvailableViewDescsResult = flattened[3];
@@ -5704,7 +5715,7 @@ export class FormContextBuilder {
 
     }
 
-    private containsNestedForms(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):boolean {
+    private containsNestedForms(formXOpen:XOpenDialogModelResult, xFormDef:XFormDef):boolean {
         return xFormDef.paneDefRefs.some((paneDefRef:XPaneDefRef)=> {
             return paneDefRef.type === XPaneDefRef.FORM_TYPE
         });
@@ -5740,7 +5751,7 @@ export class FormContextBuilder {
         return result;
     }
 
-    private fetchChildrenActiveColDefs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XGetActiveColumnDefsResult>>> {
+    private fetchChildrenActiveColDefs(formXOpen:XOpenDialogModelResult):Future<Array<Try<XGetActiveColumnDefsResult>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures:Array<Future<XGetActiveColumnDefsResult>> = xComps.map((xComp:XFormModelComp)=> {
             return FormContextBuilder.fetchChildActiveColDefs(xComp.redirection, this.sessionContext);
@@ -5748,7 +5759,7 @@ export class FormContextBuilder {
         return Future.sequence(seqOfFutures);
     }
 
-    private fetchChildrenMenuDefs(formXOpen:XOpenEditorModelResult):Future<Array<Try<Array<MenuDef>>>> {
+    private fetchChildrenMenuDefs(formXOpen:XOpenDialogModelResult):Future<Array<Try<Array<MenuDef>>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures = xComps.map((xComp:XFormModelComp)=> {
             return FormContextBuilder.fetchChildMenuDefs(xComp.redirection, this.sessionContext);
@@ -5756,7 +5767,7 @@ export class FormContextBuilder {
         return Future.sequence(seqOfFutures);
     }
 
-    private fetchChildrenViewDescs(formXOpen:XOpenEditorModelResult):Future<Array<Try<XGetAvailableViewDescsResult>>> {
+    private fetchChildrenViewDescs(formXOpen:XOpenDialogModelResult):Future<Array<Try<XGetAvailableViewDescsResult>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures = xComps.map((xComp:XFormModelComp)=> {
             return FormContextBuilder.fetchChildViewDescs(xComp.redirection, this.sessionContext);
@@ -5764,7 +5775,7 @@ export class FormContextBuilder {
         return Future.sequence(seqOfFutures);
     }
 
-    private fetchChildrenXPaneDefs(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):Future<Array<Try<XPaneDef>>> {
+    private fetchChildrenXPaneDefs(formXOpen:XOpenDialogModelResult, xFormDef:XFormDef):Future<Array<Try<XPaneDef>>> {
 
         var formHandle:DialogHandle = formXOpen.formModel.form.redirection.dialogHandle;
         var xRefs = xFormDef.paneDefRefs;
@@ -5774,7 +5785,7 @@ export class FormContextBuilder {
         return Future.sequence(seqOfFutures);
     }
 
-    private fetchChildrenPrintMarkupXMLs(formXOpen:XOpenEditorModelResult):Future<Array<Try<string>>> {
+    private fetchChildrenPrintMarkupXMLs(formXOpen:XOpenDialogModelResult):Future<Array<Try<string>>> {
         var seqOfFutures:Array<Future<string>> = [];
         for (let child of formXOpen.formModel.children) {
             seqOfFutures.push(FormContextBuilder.fetchChildPrintMarkupXML(child));
@@ -5782,7 +5793,7 @@ export class FormContextBuilder {
         return Future.sequence<string>(seqOfFutures);
     }
 
-    private fetchXFormDefWithXOpenResult(xformOpenResult:XOpenEditorModelResult):Future<XFormDef> {
+    private fetchXFormDefWithXOpenResult(xformOpenResult:XOpenDialogModelResult):Future<XFormDef> {
         var dialogHandle = xformOpenResult.formRedirection.dialogHandle;
         var formPaneId = xformOpenResult.formPaneId;
         return this.fetchXFormDef(dialogHandle, formPaneId);
@@ -5800,7 +5811,7 @@ export class FormContextBuilder {
         });
     }
 
-    private loadNestedForms(formXOpen:XOpenEditorModelResult, xFormDef:XFormDef):Array<Future<FormContext>> {
+    private loadNestedForms(formXOpen:XOpenDialogModelResult, xFormDef:XFormDef):Array<Future<FormContext>> {
 
         const seqOfFutures:Array<Future<FormContext>> = xFormDef.paneDefRefs.filter((paneDefRef:XPaneDefRef)=> {
             return paneDefRef.type === XPaneDefRef.FORM_TYPE;
@@ -5819,9 +5830,16 @@ export class FormContextBuilder {
                         });
                     });
                     const xFormModel:XFormModel = this.buildFormModelForNestedForm(formXOpen, xChildFormCompForPaneDefRef, childFormModelComps);
-                    const xOpenEditorModelResult:XOpenEditorModelResult = new XOpenEditorModelResult(formXOpen.editorRecordDef, xFormModel);
+                    let xOpenDialogModelResult:XOpenDialogModelResult = null;
+                    if(formXOpen instanceof XOpenEditorModelResult){
+                        xOpenDialogModelResult = new XOpenEditorModelResult(formXOpen.editorRecordDef, xFormModel)
+                    } else {
+                        xOpenDialogModelResult = new XOpenQueryModelResult(formXOpen.entityRecDef,
+                            (formXOpen as XOpenQueryModelResult).sortPropertyDef,
+                            (formXOpen as XOpenQueryModelResult).defaultActionId, xFormModel);
+                    }
                     const formContextFr:Future<FormContext> = FormContextBuilder.createWithInitialForm(
-                        Future.createSuccessfulFuture('FormContextBuilder::loadNestedForms', xOpenEditorModelResult),
+                        Future.createSuccessfulFuture('FormContextBuilder::loadNestedForms', xOpenDialogModelResult),
                         Future.createSuccessfulFuture('FormContextBuilder::loadNestedForms', childXFormDef),
                         xChildFormCompForPaneDefRef.redirection,
                         this.actionSource,
@@ -5834,7 +5852,7 @@ export class FormContextBuilder {
         return seqOfFutures;
     }
 
-    private openChildren(formXOpen:XOpenEditorModelResult):Future<Array<Try<XOpenDialogModelResult>>> {
+    private openChildren(formXOpen:XOpenDialogModelResult):Future<Array<Try<XOpenDialogModelResult>>> {
         var xComps = formXOpen.formModel.children;
         var seqOfFutures:Array<Future<XOpenDialogModelResult>> = [];
         xComps.forEach((nextXComp:XFormModelComp)=> {
@@ -7951,6 +7969,9 @@ export class XMapDef extends XPaneDef {
 export interface XOpenDialogModelResult {
 
     entityRecDef:EntityRecDef;
+    formPaneId:string;
+    formRedirection:DialogRedirection;
+    formModel:XFormModel;
 
 }
 /**
@@ -7992,20 +8013,37 @@ export class XOpenQueryModelResult implements XOpenDialogModelResult {
 
         var queryRecDefJson = jsonObj['queryRecordDef'];
         var defaultActionId = queryRecDefJson['defaultActionId'];
+        var formModel = jsonObj['formModel'];
 
         return DialogTriple.fromListOfWSDialogObject<PropDef>(queryRecDefJson['propertyDefs']
             , 'WSPropertyDef', OType.factoryFn).bind((propDefs:Array<PropDef>)=> {
             var entityRecDef = new EntityRecDef(propDefs);
             return DialogTriple.fromListOfWSDialogObject<SortPropDef>(queryRecDefJson['sortPropertyDefs'],
                 'WSSortPropertyDef', OType.factoryFn).bind((sortPropDefs:Array<SortPropDef>)=> {
-                return new Success(new XOpenQueryModelResult(entityRecDef, sortPropDefs, defaultActionId));
+                if(formModel) {
+                    return DialogTriple.fromWSDialogObject(formModel, 'WSFormModel', OType.factoryFn)
+                        .bind((xFormModel:XFormModel)=>{
+                            return new Success(new XOpenQueryModelResult(entityRecDef, sortPropDefs, defaultActionId, xFormModel));
+                    });
+                } else {
+                    return new Success(new XOpenQueryModelResult(entityRecDef, sortPropDefs, defaultActionId, null));
+                }
             });
         });
     }
 
     constructor(public entityRecDef:EntityRecDef,
                 public sortPropertyDef:Array<SortPropDef>,
-                public defaultActionId:string) {
+                public defaultActionId:string,
+                public formModel:XFormModel) {
+    }
+
+    get formPaneId():string {
+        return this.formModel.form.paneId;
+    }
+
+    get formRedirection():DialogRedirection {
+        return this.formModel.form.redirection;
     }
 }
 
@@ -8019,7 +8057,10 @@ export class XOpenQueryModelResult implements XOpenDialogModelResult {
 export class XOpenDialogModelErrorResult implements XOpenDialogModelResult {
     
     public entityRecDef:EntityRecDef = null;
-    
+    formPaneId:string = null;
+    formRedirection:DialogRedirection = null;
+    formModel:XFormModel = null;
+
     constructor(public exception:DialogException){}
     
     
