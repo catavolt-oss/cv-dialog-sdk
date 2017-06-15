@@ -17,6 +17,7 @@ import {Try, Either, Future, Success, Failure, TryClosure, MapFn} from "./fp";
 import {SessionContext, SystemContext, Call, Get, XMLHttpClient, ClientFactory} from "./ws";
 import * as moment from 'moment';
 import {Form} from "./print";
+import {CATAVOLT_SDK_VERSION} from "./version"
 
 /*
  IMPORTANT!

@@ -30,7 +30,12 @@
     "phantomjs": "^1.9.19",
     "webpack": "^1.12.13"
   },
+  "bin": {
+    "cv-gen-version-code": "bin/gen-version-code.js"
+  },
   "scripts": {
-    "build-test": "watchify -v -t [ babelify --presets [ es2015 react ] ] test/api.Test.js -o test/bundle.js"
+    "prepublishOnly": "cv-gen-version-code && tsc",
+    "build-test": "watchify -v -t [ babelify --presets [ es2015 react ] ] test/api.Test.js -o test/bundle.js",
+    "gen-version-code": "cv-gen-version-code"
   }
 }
