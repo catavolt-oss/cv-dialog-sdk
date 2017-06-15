@@ -1,2 +1,2 @@
 
-export const CATAVOLT_SDK_VERSION:string = '1.1.19';
+export const CATAVOLT_SDK_VERSION:string = '1.1.20';
