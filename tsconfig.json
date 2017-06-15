@@ -5,8 +5,9 @@
 	    "module": "commonjs",
         "moduleResolution": "node",
         "sourceMap": false,
-        "rootDir": "./src",
-        "outDir": "./src/js",
+        "rootDir": "src",
+        "outDir": "src/js",
+        "declarationDir": "src/tsd",
         "declaration": true
     },
     "files":[

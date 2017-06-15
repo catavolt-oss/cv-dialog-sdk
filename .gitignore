@@ -81,4 +81,5 @@ node_modules
 
 # Generated javascript and typescript definition files
 src/js/
+src/tsd/
 
