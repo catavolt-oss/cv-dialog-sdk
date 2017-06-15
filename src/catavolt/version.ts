@@ -1,2 +1,7 @@
+import {AppContext} from "./dialog"
 
-export const CATAVOLT_SDK_VERSION:string = '1.1.20';
+export const CATAVOLT_SDK_VERSION:string = '1.1.21';
+
+(()=>{
+    AppContext.singleton.deviceProps.push('catavoltSdkVersion:' + CATAVOLT_SDK_VERSION);
+})();

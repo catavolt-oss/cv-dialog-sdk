@@ -1,6 +1,6 @@
 {
   "name": "catavolt-sdk",
-  "version": "1.1.20",
+  "version": "1.1.21",
   "description": "Core Catavolt Javascript API",
   "main": "./src/js/catavolt.js",
   "typings": "./src/js/catavolt.d.ts",
@@ -30,12 +30,9 @@
     "phantomjs": "^1.9.19",
     "webpack": "^1.12.13"
   },
-  "bin": {
-    "cv-gen-version-code": "bin/gen-version-code.js"
-  },
   "scripts": {
-    "prepublishOnly": "cv-gen-version-code && tsc",
+    "prepublishOnly": "bin/gen-version-code.js && tsc",
     "build-test": "watchify -v -t [ babelify --presets [ es2015 react ] ] test/api.Test.js -o test/bundle.js",
-    "gen-version-code": "cv-gen-version-code"
+    "gen-version-code": "bin/gen-version-code.js"
   }
 }
