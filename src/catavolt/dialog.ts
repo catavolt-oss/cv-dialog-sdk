@@ -6245,7 +6245,7 @@ export class PropDef {
     }
 
     get isBinaryType():boolean {
-        return this.isLargeBinaryType;
+        return this.isLargeBinaryType || this.isSignatureType;
     }
 
     get isBooleanType():boolean {
@@ -6341,6 +6341,13 @@ export class PropDef {
         return this.isNumericType &&
             this.dataDictionaryKey &&
             this.dataDictionaryKey === 'DATA_PERCENT';
+    }
+
+    get isSignatureType():boolean {
+        return this.type &&
+            this.type === 'com.dgoi.core.domain.BinaryRef' &&
+            this.dataDictionaryKey &&
+            this.dataDictionaryKey === 'DATA_LARGEBINARY_SIGNATURE';
     }
 
     get isStringType():boolean {

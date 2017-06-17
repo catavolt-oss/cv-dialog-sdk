@@ -396,6 +396,8 @@ export class Checkbox extends Component {
 }
 
 export class Color extends Spec {
+    public static WHITE():Color {let c:Color = new Color(null); c._red = 255; c._green = 255; c._blue = 255; c._alpha = 255; return c; }
+    public static BLACK():Color {let c:Color = new Color(null); c._red = 0; c._green = 0; c._blue = 0; c._alpha = 255; return c; }
     private _red:number; _green:number; _blue:number; _alpha:number;
     constructor(node:Node) {
         super(node);
