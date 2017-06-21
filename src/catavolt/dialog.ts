@@ -6579,6 +6579,42 @@ export class PropFormatter {
 export class Prop {
 
     /**
+     * Produce an unique string that can be used for comparison purposes
+     * Props considered 'equal' should produce the same identity string
+     *
+     * @param o
+     * @param propDef
+     * @returns {any}
+     */
+    static identity(o:any, propDef:PropDef):string {
+        if (typeof o === 'number') {
+                return String(o);
+        } else if (typeof o === 'object') {
+            if (o instanceof Date) {
+                return String(o.getTime());
+            } else if (o instanceof DateValue) {
+                return String((o as DateValue).dateObj.getTime());
+            } else if (o instanceof DateTimeValue) {
+                return String ((o as DateTimeValue).dateObj.getTime());
+            } else if (o instanceof TimeValue) {
+                return o.toString();
+            } else if (o instanceof CodeRef) {
+                return (o as CodeRef).code;
+            } else if (o instanceof ObjectRef) {
+                return (o as ObjectRef).objectId;
+            } else if (o instanceof GeoFix) {
+                return o.toString();
+            } else if (o instanceof GeoLocation) {
+                return o.toString();
+            } else {
+                return String(o);
+            }
+        } else {
+            return String(o);
+        }
+    }
+
+    /**
      * @private
      * @param values
      * @returns {Success}
@@ -6658,7 +6694,12 @@ export class Prop {
                 } else if (PType === 'ObjectRef') {
                     propValue = ObjectRef.fromFormattedValue(strVal);
                 } else if (PType === 'CodeRef') {
-                    propValue = CodeRef.fromFormattedValue(strVal);
+                    const codeRef:CodeRef = value;
+                    if(codeRef.code && codeRef.description) {
+                        propValue = new CodeRef(codeRef.code, codeRef.description);
+                    } else {
+                        propValue = CodeRef.fromFormattedValue(strVal);
+                    }
                 } else if (PType === 'GeoFix') {
                     propValue = GeoFix.fromFormattedValue(strVal);
                 } else if (PType === 'GeoLocation') {
@@ -6715,9 +6756,11 @@ export class Prop {
             } else if (o instanceof TimeValue) {
                 return {'WS_PTYPE': 'Time', 'value': o.toString()};
             } else if (o instanceof CodeRef) {
-                return {'WS_PTYPE': 'CodeRef', 'value': o.toString()};
+                const codeRef:CodeRef = o;
+                return {'WS_PTYPE': 'CodeRef', 'value': codeRef.toString(), 'description': codeRef.description, 'code': codeRef.code};
             } else if (o instanceof ObjectRef) {
-                return {'WS_PTYPE': 'ObjectRef', 'value': o.toString()};
+                const objectRef:ObjectRef = o;
+                return {'WS_PTYPE': 'ObjectRef', 'value': objectRef.toString(), 'description': objectRef.description, 'objectId': objectRef.objectId};
             } else if (o instanceof GeoFix) {
                 return {'WS_PTYPE': 'GeoFix', 'value': o.toString()};
             } else if (o instanceof GeoLocation) {
