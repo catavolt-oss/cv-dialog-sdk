@@ -6447,8 +6447,7 @@ export class PropFormatter {
      * @returns {string}
      */
     static formatForRead(prop:Prop, propDef:PropDef):string {
-        if (prop === null || prop === undefined
-            || prop.value === null || prop.value === undefined){
+        if (prop === null || prop === undefined){
             return '';
         } else {
             return PropFormatter.formatValueForRead(prop.value, propDef);
@@ -6456,14 +6455,30 @@ export class PropFormatter {
     }
     
     static formatValueForRead(value: any, propDef:PropDef) {
-        if ((propDef && propDef.isCodeRefType) || value instanceof CodeRef) {
+        if(value === null || value === undefined) {
+            return '';
+        } else if ((propDef && propDef.isCodeRefType) || value instanceof CodeRef) {
             return (value as CodeRef).description;
         } else if ((propDef && propDef.isObjRefType) || value instanceof ObjectRef) {
             return (value as ObjectRef).description;
+        }else if ((propDef && propDef.isDateTimeType)) {
+                return (value as Date).toString();
+        } else if ((propDef && propDef.isDateType) || value instanceof Date) {
+            return (value as Date).toLocaleDateString();
+        } else if ((propDef && propDef.isTimeType) || value instanceof TimeValue) {
+            const timeValue:TimeValue = value as TimeValue;
+            return moment(timeValue).format("LT");
+        } else if ((propDef && propDef.isPasswordType)) {
+            return (value as string).replace(/./g, "*");
+        } else if ((propDef && propDef.isPercentType)) {
+            return (Number(value) * 100).toLocaleString();
+        } else if ((propDef && propDef.isListType) || Array.isArray(value)) {
+            return value.reduce((prev, current)=> {
+                return ((prev ? prev + ', ' : '') + PropFormatter.formatValueForRead(current, null));
+            }, '');
         } else {
            return PropFormatter.toString(value, propDef); 
         }
-        
     }
 
     /**
