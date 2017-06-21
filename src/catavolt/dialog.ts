@@ -3965,7 +3965,8 @@ export class AppContext {
     public lastMaintenanceTime:Date = new Date(0);
     private _appContextState:AppContextState;
     private _appWinDefTry:Try<AppWinDef>;
-    private _deviceProps:Array<string>;
+    private _devicePropsDynamic:Array<()=>void>;
+    private _devicePropsStatic:Array<string>;
     private _sessionContextTry:Try<SessionContext>;
     private _tenantSettingsTry:Try<StringDictionary>;
 
@@ -3993,9 +3994,19 @@ export class AppContext {
         if (AppContext._singleton) {
             throw new Error("Singleton instance already created");
         }
-        this._deviceProps = [];
+        this._devicePropsStatic = [];
+        this._devicePropsDynamic = [];
         this.setAppContextStateToLoggedOut();
         AppContext._singleton = this;
+    }
+
+
+    addDynamicDeviceProp(prop:()=>string):void {
+        this._devicePropsDynamic.push(prop);
+    }
+
+    addStaticDeviceProp(prop:string):void {
+        this._devicePropsStatic.push(prop);
     }
 
     /**
@@ -4011,7 +4022,11 @@ export class AppContext {
      * @returns {Array<string>}
      */
     get deviceProps():Array<string> {
-        return this._deviceProps;
+        let dp:string[] = this._devicePropsStatic.map((w):string=>{ return w});
+        this._devicePropsDynamic.forEach((w:()=>string)=> {
+            dp.push(w())
+        });
+        return dp;
     }
 
     /**
