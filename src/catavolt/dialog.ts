@@ -3966,7 +3966,7 @@ export class AppContext {
     public lastMaintenanceTime:Date = new Date(0);
     private _appContextState:AppContextState;
     private _appWinDefTry:Try<AppWinDef>;
-    private _devicePropsDynamic:Array<()=>void>;
+    private _devicePropsDynamic:Array<()=>string>;
     private _devicePropsStatic:Array<string>;
     private _sessionContextTry:Try<SessionContext>;
     private _tenantSettingsTry:Try<StringDictionary>;
@@ -4023,7 +4023,7 @@ export class AppContext {
      * @returns {Array<string>}
      */
     get deviceProps():Array<string> {
-        let dp:string[] = this._devicePropsStatic.map((w):string=>{ return w});
+        let dp:string[] = this._devicePropsStatic.map((w:string)=>{return w});
         this._devicePropsDynamic.forEach((w:()=>string)=> {
             dp.push(w())
         });
@@ -8413,7 +8413,7 @@ export class OType {
         'WSUserMessage': UserMessage
     };
 
-    private static typeFns:{[index:string]:<A>(string, any)=>Try<A>} = {
+    private static typeFns:{[index:string]:(s:string, a:any)=>Try<any>} = {
         'WSCellValueDef': CellValueDef.fromWS,
         'WSDataAnnotation': DataAnno.fromWS,
         'WSEditorRecord': EntityRecUtil.fromWSEditorRecord,
