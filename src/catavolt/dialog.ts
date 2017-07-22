@@ -632,6 +632,10 @@ export class EditorContext extends PaneContext {
         });
     }
 
+    destroy():void {
+        this._editorState = EditorState.DESTROYED;
+    }
+
     /**
      * Get the associated entity record
      * @returns {EntityRec}
@@ -690,6 +694,15 @@ export class EditorContext extends PaneContext {
      */
     get isDestroyed():boolean {
         return this._editorState === EditorState.DESTROYED;
+    }
+
+    /**
+     * Returns whether or not this Editor Pane is requested to be destroyed.  This may be set
+     * on a presave action assoicted with an action.
+     * @returns {boolean}
+     */
+    get isDestroyRequested():boolean {
+        return this.isDestroyedRequestedSetting;
     }
 
     /**
@@ -885,7 +898,7 @@ export class EditorContext extends PaneContext {
      * Write this record (i.e. {@link EntityRec}} back to the server
      * @returns {Future<Either<NavRequest, EntityRec>>}
      */
-    write():Future<Either<NavRequest,EntityRec>> {
+    write(settings?:StringDictionary):Future<Either<NavRequest,EntityRec>> {
 
         let deltaRec:EntityRec = this.buffer.afterEffects();
         /* Write the 'special' props first */
@@ -894,7 +907,7 @@ export class EditorContext extends PaneContext {
                 /* Remove special property types before writing the actual record */
                 deltaRec = this.removeSpecialProps(deltaRec);
                 var result:Future<Either<NavRequest, EntityRec>> = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
-                    this.sessionContext).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
+                    this.sessionContext, settings).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
                     if (either.isLeft) {
                         var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
                         return NavRequestUtil.fromRedirection(either.left, ca, this.sessionContext).map((navRequest:NavRequest)=> {
@@ -996,6 +1009,11 @@ export class EditorContext extends PaneContext {
 
     private get isDestroyedSetting():boolean {
         var str = this._settings['destroyed'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    private get isDestroyedRequestedSetting():boolean {
+        var str = this._settings['requestDestroy'];
         return str && str.toLowerCase() === 'true';
     }
 
@@ -1338,6 +1356,10 @@ export class QueryContext extends PaneContext {
     isBinary(columnDef:ColumnDef):boolean {
         var propDef = this.propDefAtName(columnDef.name);
         return propDef && (propDef.isBinaryType || (propDef.isURLType && columnDef.isInlineMediaStyle));
+    }
+
+    destroy():void {
+        this._queryState = QueryState.DESTROYED;
     }
 
     /**
@@ -5175,12 +5197,13 @@ export class DialogService {
     }
 
     static writeEditorModel(dialogHandle:DialogHandle, entityRec:EntityRec,
-                            sessionContext:SessionContext):Future<Either<Redirection,XWriteResult>> {
-        var method = 'write';
+                            sessionContext:SessionContext, settings?:StringDictionary):Future<Either<Redirection,XWriteResult>> {
+        var method = settings ? 'write2' : 'write';
         var params:StringDictionary = {
             'dialogHandle': OType.serializeObject(dialogHandle, 'WSDialogHandle'),
             'editorRecord': entityRec.toWSEditorRecord()
         };
+        settings ? params['settings'] = LType.toListOfStringString(settings) : null;
 
         var call = Call.createCall(DialogService.EDITOR_SERVICE_PATH, method, params, sessionContext);
         return call.perform().bind((result:StringDictionary)=> {
@@ -8348,6 +8371,27 @@ export class XReadPropertyResult {
     }
 }
 
+
+/*
+ Utility function
+ */
+/**
+ * @private
+ */
+export class LType {
+    static toListOfStringString(inMap:StringDictionary):StringDictionary {
+        var result:StringDictionary = {'WS_LTYPE': 'String,String'};
+        var keys = [];
+        var values = [];
+        for (var key in inMap) {
+            keys.push(key);
+            values.push(inMap[key]);
+        };
+        result['keys'] = keys;
+        result['values'] = values;
+        return result;
+    }
+}
 
 /*
  OType must be last as it references almost all other classes in the module
