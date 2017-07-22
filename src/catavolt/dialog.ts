@@ -536,7 +536,7 @@ export class PaneContext {
                     while (ptr < data.length) {
                         const boundPtr = (ptr: number) => {
                             writeFuture = writeFuture.bind((prevResult)=> {
-                                const encSegment: string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substring(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
+                                const encSegment: string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substr(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
                                 return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.sessionContext);
                             });
                         }
@@ -968,14 +968,21 @@ export class EditorContext extends PaneContext {
 
     protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
         let seq:number = 0;
-        let buffer:string = '';
+        let encodedResult:string = '';
+        let inProgress:string = '';
         let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
-            buffer += result.data;
             if (result.hasMore) {
+                inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
                 return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
                     propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
             } else {
-                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(buffer));
+                if (inProgress) {
+                    inProgress += atob(result.data);
+                    encodedResult = btoa(inProgress);
+                } else {
+                    encodedResult = result.data;
+                }
+                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(encodedResult));
             }
         }
         return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
@@ -1504,14 +1511,21 @@ export class QueryContext extends PaneContext {
 
     protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> {
         let seq:number = 0;
-        let buffer:string = '';
+        let encodedResult:string = '';
+        let inProgress:string = '';
         let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
-            buffer += result.data;
             if (result.hasMore) {
+                inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
                 return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
                     propName, entityRec.objectId, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
             } else {
-                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(buffer));
+                if (inProgress) {
+                    inProgress += atob(result.data);
+                    encodedResult = btoa(inProgress);
+                } else {
+                    encodedResult = result.data;
+                }
+                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(encodedResult));
             }
         }
         return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
