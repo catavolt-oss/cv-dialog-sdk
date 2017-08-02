@@ -17,6 +17,7 @@ import {Try, Either, Future, Success, Failure, TryClosure, MapFn} from "./fp";
 import {SessionContext, SystemContext, Call, Get, XMLHttpClient, ClientFactory} from "./ws";
 import * as moment from 'moment';
 import {Form} from "./print";
+import * as numeral from "numeral";
 
 /*
  IMPORTANT!
@@ -4107,6 +4108,15 @@ export class AppContext {
     }
 
     /**
+     * Get the currency symbol override if defined from the server.
+     * @returns {string}
+     */
+    get currencySymbol():string {
+        const cs = this.tenantSettingsTry.isSuccess ? this.tenantSettingsTry.success['currencySymbol'] : null;
+        return typeof cs === 'string' && cs.length == 0 ? null : cs;
+    }
+
+    /**
      * Time remaining before this session is expired by the server
      * @returns {number}
      */
@@ -6476,7 +6486,27 @@ export class PropDef {
  * Helper for transforming values to and from formats suitable for reading and writing to the server
  * (i.e. object to string and string to object)
  */
+class PrivatePropFormats {
+    static decimalFormat: string[] = ["0,0", "0,0.0", "0,0.00", "0,0.000", "0,0.0000", "0,0.00000", "0,0.000000", "0,0.0000000", "0,0.00000000", "0,0.000000000", "0,0.0000000000"];
+    static decimalFormatGeneric:string = "0,0.[0000000000000000000000000]";
+    static moneyFormat: string[] = ["$0,0", "$0,0.0", "$0,0.00", "$0,0.000", "$0,0.0000", "$0,0.00000", "$0,0.000000", "$0,0.0000000", "$0,0.00000000", "$0,0.000000000", "$0,0.0000000000"];
+    static moneyFormatGeneric:string = "$0,0.[0000000000000000000000000]";
+    static percentFormat: string[] = ["0,0%", "0,0%", "0,0%", "0,0.0%", "0,0.00%", "0,0.000%", "0,0.0000%", "0,0.00000%", "0,0.000000%", "0,0.0000000%", "0,0.00000000%"];
+    static percentFormatGeneric:string = "0,0.[0000000000000000000000000]%";
+    static wholeFormat:string = "0,0";
+}
+
 export class PropFormatter {
+    // For numeral format options, see: http://numeraljs.com/
+
+    // Default format for money at varying decimal lengths.
+    static decimalFormat: string[] = PrivatePropFormats.decimalFormat.slice(0);
+    static decimalFormatGeneric:string = PrivatePropFormats.decimalFormatGeneric;
+    static moneyFormat: string[] = PrivatePropFormats.moneyFormat.slice(0);
+    static moneyFormatGeneric:string = PrivatePropFormats.moneyFormatGeneric;
+    static percentFormat: string[] = PrivatePropFormats.percentFormat.slice(0);
+    static percentFormatGeneric:string = PrivatePropFormats.decimalFormatGeneric;
+    static wholeFormat:string = PrivatePropFormats.wholeFormat;
 
     /**
      * Get a string representation of this property suitable for 'reading'
@@ -6491,7 +6521,7 @@ export class PropFormatter {
             return PropFormatter.formatValueForRead(prop.value, propDef);
         }
     }
-    
+
     static formatValueForRead(value: any, propDef:PropDef) {
         if(value === null || value === undefined) {
             return '';
@@ -6508,14 +6538,12 @@ export class PropFormatter {
             return moment(timeValue).format("LT");
         } else if ((propDef && propDef.isPasswordType)) {
             return (value as string).replace(/./g, "*");
-        } else if ((propDef && propDef.isPercentType)) {
-            return (Number(value) * 100).toLocaleString();
         } else if ((propDef && propDef.isListType) || Array.isArray(value)) {
             return value.reduce((prev, current)=> {
                 return ((prev ? prev + ', ' : '') + PropFormatter.formatValueForRead(current, null));
             }, '');
         } else {
-           return PropFormatter.toString(value, propDef); 
+           return PropFormatter.toString(value, propDef);
         }
     }
 
@@ -6534,12 +6562,12 @@ export class PropFormatter {
         } else if ((propDef && propDef.isObjRefType) || prop.value instanceof ObjectRef) {
             return (prop.value as ObjectRef).description;
         } else {
-            return PropFormatter.toString(prop.value, propDef);
+            return PropFormatter.toStringWrite(prop.value, propDef);
         }
     }
 
     /**
-     * Attempt to construct (or preserve) the appropriate data type given primitive (or already constructed) value. 
+     * Attempt to construct (or preserve) the appropriate data type given primitive (or already constructed) value.
      * @param value
      * @param propDef
      * @returns {any}
@@ -6557,7 +6585,7 @@ export class PropFormatter {
             } else {
                 propValue = !!value;
             }
-            
+
         } else if (propDef.isDateType) {
             //this could be a DateValue, a Date, or a string    
             if(value instanceof DateValue) {
@@ -6592,21 +6620,49 @@ export class PropFormatter {
         return propValue;
     }
 
+    static resetFormats():void {
+        PropFormatter.decimalFormat = PrivatePropFormats.decimalFormat.slice(0);
+        PropFormatter.decimalFormatGeneric = PrivatePropFormats.decimalFormatGeneric;
+        PropFormatter.moneyFormat = PrivatePropFormats.moneyFormat.slice(0);
+        PropFormatter.moneyFormatGeneric = PrivatePropFormats.moneyFormatGeneric;
+        PropFormatter.percentFormat = PrivatePropFormats.percentFormat.slice(0);
+        PropFormatter.percentFormatGeneric = PrivatePropFormats.decimalFormatGeneric;
+        PropFormatter.wholeFormat = PrivatePropFormats.wholeFormat;
+    }
+
+    static toString(o: any, propDef: PropDef): string {
+        return PropFormatter.toStringRead(o, propDef);
+    }
+
     /**
      * Render this value as a string
      * @param o
      * @param propDef
      * @returns {any}
      */
-    static toString(o:any, propDef:PropDef):string {
+    static toStringRead(o: any, propDef: PropDef): string {
         if (typeof o === 'number') {
-            if(propDef) {
+            if (propDef && propDef.dataDictionaryKey !== "DATA_UNFORMATTED_NUMBER") {
                 if (propDef.isMoneyType) {
-                    return o.toFixed(2);
+                    let f = propDef.presScale < this.moneyFormat.length ? this.moneyFormat[propDef.presScale] : this.moneyFormatGeneric;
+                    // If there is a currency symbol, remove it noting it's position pre/post
+                    // Necesary because numeral will replace $ with the symbol based on the locale of the browser.
+                    // This may be desired down the road, but for now, the server provides the symbol to use.
+                    let atStart:boolean = f.length > 0 && f[0] === '$';
+                    let atEnd:boolean = f.length > 0 && f[f.length-1] === '$';
+                    f = f.replace("$", "");
+                    let formatted = numeral(o).format(f);
+                    if (atStart) formatted = AppContext.singleton.currencySymbol + formatted;
+                    if (atEnd) formatted = formatted + AppContext.singleton.currencySymbol;
+                    return formatted;
+                } else if (propDef.isPercentType) {
+                    let f = propDef.presScale < this.percentFormat.length ? this.percentFormat[propDef.presScale] : this.percentFormatGeneric;
+                    return numeral(o).format(f);  // numeral accomplishs * 100, relevant if we use some other symbol
                 } else if (propDef.isIntType || propDef.isLongType) {
-                    return o.toFixed(0);
+                    return numeral(o).format(this.wholeFormat);
                 } else if (propDef.isDecimalType || propDef.isDoubleType) {
-                    return o.toFixed(Math.max(2, (o.toString().split('.')[1] || []).length));
+                    let f = propDef.presScale < this.decimalFormat.length ? this.decimalFormat[propDef.presScale] : this.decimalFormatGeneric;
+                    return numeral(o).format(f);
                 }
             } else {
                 return String(o);
@@ -6635,6 +6691,22 @@ export class PropFormatter {
             return String(o);
         }
     }
+
+    static toStringWrite(o: any, propDef: PropDef): string {
+        if (typeof o === 'number' && propDef) {
+            let s = numeral(100);
+            if (propDef.isMoneyType) {
+                return o.toFixed(2);
+            } else if (propDef.isIntType || propDef.isLongType) {
+                return o.toFixed(0);
+            } else if (propDef.isDecimalType || propDef.isDoubleType) {
+                return o.toFixed(Math.max(2, (o.toString().split('.')[1] || []).length));
+            }
+        } else {
+            return PropFormatter.toStringRead(o, propDef);
+        }
+    }
+
 }
 
 
