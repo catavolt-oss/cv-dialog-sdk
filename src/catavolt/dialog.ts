@@ -4094,6 +4094,20 @@ export class AppContext {
     }
 
     /**
+     * Get the json representation of this client's locale.  The server pulls this value from the agent string
+     * and returns it to the client.
+     * @returns {string}
+     */
+    get browserLocaleJson():string {
+        if(this.tenantSettingsTry.isSuccess) {
+            // Added in server version 1.3.462
+            return this.tenantSettingsTry.success['browserLocale'];
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Get the number of millis that the client will remain active between calls
      * to the server.
      * @returns {number}
