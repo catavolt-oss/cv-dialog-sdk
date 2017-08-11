@@ -2370,7 +2370,7 @@ export class FormDef extends PaneDef {
     }
 
     get isTwoVerticalLayout():boolean {
-        return this.formLayout && this.formLayout === 'H(2,V)';
+        return this.formLayout && this.formLayout.indexOf('H(2,V') > -1;
     }
 
 }
