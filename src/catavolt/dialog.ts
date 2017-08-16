@@ -234,6 +234,8 @@ export class PaneContext {
             ObjUtil.addAllProps(navRequest.offlineProps, result);
         } else if (navRequest instanceof NullNavRequest) {
             ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
+        } else if (navRequest instanceof WebRedirection) {
+            ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
         }
         var destroyed = result['fromDialogDestroyed'];
         if (destroyed) result['destroyed'] = true;
@@ -910,6 +912,7 @@ export class EditorContext extends PaneContext {
                 var result:Future<Either<NavRequest, EntityRec>> = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
                     this.sessionContext, settings).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
                     if (either.isLeft) {
+                        this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, either.left);
                         var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
                         return NavRequestUtil.fromRedirection(either.left, ca, this.sessionContext).map((navRequest:NavRequest)=> {
                             return Either.left<NavRequest,EntityRec>(navRequest);
