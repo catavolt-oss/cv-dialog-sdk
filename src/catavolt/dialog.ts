@@ -3988,7 +3988,7 @@ export type FeatureSet = "View_Support"
 /* Map features to minimum app versions */
 const FeatureVersionMap:{[featureSet:string]:AppVersion} = {
     "View_Support": AppVersion.getAppVersion("1.3.447"),
-    "Unified_Search": AppVersion.getAppVersion("1.3.455")
+    "Unified_Search": AppVersion.getAppVersion("1.3.463")
 };
 
 /* End Feature Versioning */
