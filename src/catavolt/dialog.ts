@@ -2338,7 +2338,8 @@ export class FormDef extends PaneDef {
     }
 
     get isFourBoxSquareLayout():boolean {
-        return this.formLayout && this.formLayout === 'FOUR_BOX_SQUARE';
+        return (this.formLayout && this.formLayout === 'FOUR_BOX_SQUARE') ||
+            (this.formLayout && this.formLayout === 'H(2,2)');
     }
 
     get isHorizontalLayout():boolean {
