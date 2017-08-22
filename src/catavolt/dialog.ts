@@ -6668,10 +6668,14 @@ export class PropFormatter {
                     // This may be desired down the road, but for now, the server provides the symbol to use.
                     let atStart:boolean = f.length > 0 && f[0] === '$';
                     let atEnd:boolean = f.length > 0 && f[f.length-1] === '$';
-                    f = f.replace("$", "");
-                    let formatted = numeral(o).format(f);
-                    if (atStart) formatted = AppContext.singleton.currencySymbol + formatted;
-                    if (atEnd) formatted = formatted + AppContext.singleton.currencySymbol;
+                    if (AppContext.singleton.currencySymbol) {
+                        f = f.replace("$", "");               // Format this as a number, and slam in Extender currency symbol
+                        var formatted = numeral(o).format(f);
+                        if (atStart) formatted = AppContext.singleton.currencySymbol + formatted;
+                        if (atEnd) formatted = formatted + AppContext.singleton.currencySymbol;
+                    } else {
+                        formatted = numeral(o).format(f);  // Should substitute browsers locale currency symbol
+                    }
                     return formatted;
                 } else if (propDef.isPercentType) {
                     let f = propDef.presScale < this.percentFormat.length ? this.percentFormat[propDef.presScale] : this.percentFormatGeneric;
