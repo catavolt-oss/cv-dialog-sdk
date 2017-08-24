@@ -1206,7 +1206,7 @@ export class FormContext extends PaneContext {
 
         return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
             NullEntityRec.singleton, this.sessionContext).bind((value:Redirection)=> {
-            var destroyedStr:string = value.fromDialogProperties['destroyed'];
+            var destroyedStr:string = value.fromDialogProperties && value.fromDialogProperties['destroyed'];
             if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
                 this._destroyed = true;
             }
