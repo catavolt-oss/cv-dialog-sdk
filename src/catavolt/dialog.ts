@@ -738,6 +738,16 @@ export class EditorContext extends PaneContext {
     }
 
     /**
+     * Returns whether or not this cell definition contains a binary value that should be treated as a signature control
+     * @param cellValueDef
+     * @returns {PropDef|boolean}
+     */
+    isSignature(cellValueDef:AttributeCellValueDef):boolean {
+        var propDef = this.propDefAtName(cellValueDef.propertyName);
+        return this.isBinary(cellValueDef) && propDef.isSignatureType;
+    }
+
+    /**
      * Returns whether or not this property is 'writable'
      * @returns {boolean}
      */
