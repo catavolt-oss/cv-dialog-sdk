@@ -8,8 +8,7 @@
         "rootDir": "src",
         "outDir": "src/js",
         "declarationDir": "src/tsd",
-        "declaration": true,
-        "lib": ["es2017", "dom"]
+        "declaration": true
     },
     "files":[
       "./src/catavolt.ts"
