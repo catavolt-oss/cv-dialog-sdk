@@ -51,6 +51,22 @@ export class CellValueDef {
     constructor(private _style:string) {
     }
 
+    get isHeading1Style():boolean {
+        return this.style && (this.style === PropDef.STYLE_HEADING1);
+    }
+
+    get isHeading2Style():boolean {
+        return this.style && (this.style === PropDef.STYLE_HEADING2);
+    }
+
+    get isHeading3Style():boolean {
+        return this.style && (this.style === PropDef.STYLE_HEADING3);
+    }
+
+    get isHeading4Style():boolean {
+        return this.style && (this.style === PropDef.STYLE_HEADING4);
+    }
+
     get isInlineMediaStyle():boolean {
         return this.style && (this.style === PropDef.STYLE_INLINE_MEDIA || this.style === PropDef.STYLE_INLINE_MEDIA2);
     }
@@ -6297,6 +6313,10 @@ export class PropDef {
 
     static STYLE_INLINE_MEDIA = "inlineMedia";
     static STYLE_INLINE_MEDIA2 = "Image/Video";
+    static STYLE_HEADING1 = "textHeading1";
+    static STYLE_HEADING2 = "textHeading2";
+    static STYLE_HEADING3 = "textHeading3";
+    static STYLE_HEADING4 = "textHeading4";
 
     constructor(private _name:string,
                 private _type:string,
