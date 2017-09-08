@@ -4200,6 +4200,49 @@ export class AppContext {
     }
 
     /**
+     * Change password, log in and retrieve the AppWinDef
+     * @param gatewayHost
+     * @param tenantId
+     * @param clientType
+     * @param userId
+     * @param existingPassword
+     * @param newPassword
+     * @returns {Future<AppWinDef>}
+     */
+    changePasswordAndLogin(gatewayHost:string,
+                           tenantId:string,
+                           clientType:string,
+                           userId:string,
+                           existingPassword:string,
+                           newPassword:string):Future<AppWinDef> {
+
+        if (this._appContextState === AppContextState.LOGGED_IN) {
+            return Future.createFailedFuture<AppWinDef>("AppContext::login", "User is already logged in");
+        }
+
+        let systemContextFr = this.newSystemContext(gatewayHost, tenantId);
+        let appContextValuesFr =  systemContextFr.bind(
+            (sc:SystemContext)=> {
+                let sessionContextFuture = SessionService.changePasswordAndCreateSession(tenantId, userId,
+                    existingPassword, newPassword, clientType, sc);
+                return sessionContextFuture.bind(
+                    (sessionContext:SessionContext)=> {
+                        return this.finalizeContext(sessionContext, this.deviceProps);
+                    }
+                );
+
+            }
+        );
+        return appContextValuesFr.bind(
+            (appContextValues:AppContextValues)=> {
+                this.setAppContextStateToLoggedIn(appContextValues);
+                return Future.createSuccessfulFuture('AppContext::changePasswordAndLogin', appContextValues.appWinDef);
+            }
+        );
+
+    }
+
+    /**
      * Log in and retrieve the AppWinDef
      * @param gatewayHost
      * @param tenantId
@@ -4218,7 +4261,6 @@ export class AppContext {
             return Future.createFailedFuture<AppWinDef>("AppContext::login", "User is already logged in");
         }
 
-        var answer;
         var appContextValuesFr = this.loginOnline(gatewayHost, tenantId, clientType, userId, password, this.deviceProps);
         return appContextValuesFr.bind(
             (appContextValues:AppContextValues)=> {
@@ -4264,7 +4306,7 @@ export class AppContext {
      */
     logout():Future<VoidResult> {
         if (this._appContextState === AppContextState.LOGGED_OUT) {
-            return Future.createFailedFuture<AppWinDef>("AppContext::loginDirectly", "User is already logged out");
+            return Future.createFailedFuture<AppWinDef>("AppContext::logout", "User is already logged out");
         }
         var result:Future<VoidResult> = SessionService.deleteSession(this.sessionContextTry.success);
         result.onComplete(deleteSessionTry => {
@@ -7452,6 +7494,33 @@ export class SessionService {
 
     private static SERVICE_NAME = "SessionService";
     private static SERVICE_PATH = "soi-json-v02/" + SessionService.SERVICE_NAME;
+
+    static changePasswordAndCreateSession(tenantId:string,
+                         userId:string,
+                         existingPassword:string,
+                         newPassword:string,
+                         clientType:string,
+                         systemContext:SystemContext):Future<SessionContext> {
+
+        var method = "changePasswordAndCreateSessionDirectly";
+
+        var params:StringDictionary = {
+            'tenantId': tenantId,
+            'userId': userId,
+            'existingPassword': existingPassword,
+            'newPassword': newPassword,
+            'clientType': clientType
+        };
+        var call = Call.createCallWithoutSession(SessionService.SERVICE_PATH, method, params, systemContext);
+
+        return call.perform().bind(
+            (result:StringDictionary)=> {
+                return Future.createCompletedFuture("changePasswordAndCreateSession/extractSessionContextFromResponse",
+                    SessionContextImpl.fromWSCreateSessionResult(result, systemContext, tenantId));
+            }
+        );
+
+    }
 
     static createSession(tenantId:string,
                          userId:string,
