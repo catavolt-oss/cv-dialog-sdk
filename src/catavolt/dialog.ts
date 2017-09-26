@@ -4606,7 +4606,7 @@ export class CodeRef {
     }
 
     toString():string {
-        return this.code + ":" + this.description;
+        return (this.code == null ? "" : this.code) + ":" + this.description;
     }
 
 }

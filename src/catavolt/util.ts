@@ -376,10 +376,10 @@ export class StringUtil {
 
     static splitSimpleKeyValuePair(pairString:string):Array<string> {
         var index = pairString.indexOf(':');
-        let code = ''
+        let code = null
         let desc = ''
         if(index > -1) {
-            code = pairString.substr(0, index)
+            if (index > 0) code = pairString.substr(0, index)
             desc = pairString.length > index ? pairString.substr(index + 1) : ''
         } else {
             code = pairString;
