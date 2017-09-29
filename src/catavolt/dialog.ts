@@ -298,6 +298,8 @@ export class PaneContext {
                 }
             } else if (typeof prop.value === 'string') {
                 return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
+            } else if (prop.value instanceof EncodedBinary) {
+                return Future.createSuccessfulFuture('binaryAt', prop.value);
             } else {
                 return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
             }
