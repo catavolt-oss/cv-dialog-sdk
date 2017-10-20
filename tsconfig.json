@@ -1,7 +1,7 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
 	    "module": "commonjs",
         "moduleResolution": "node",
         "sourceMap": false,
@@ -11,6 +11,7 @@
         "declaration": true
     },
     "files":[
-      "./src/catavolt.ts"
+      "./src/catavolt.ts",
+      "./src/test/catavolt-test.ts"
     ]
 }

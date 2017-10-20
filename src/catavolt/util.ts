@@ -1,5 +1,5 @@
 /**
- * Created by rburson on 3/6/15.
+ * Created by rburson on 8/28/17.
  */
 
 export class ArrayUtil {
@@ -194,9 +194,9 @@ export class TimeValue {
         /* expecting hh:mm:ss.lll */
         const [hours = '0', minutes = '0', secondsPart = '0.0'] = timeString.split(':');
         const [seconds = '0', millis = '0'] = secondsPart.split('.');
-        
+
         return new TimeValue(Number(hours), Number(minutes), Number(seconds), Number(millis));
-        
+
     }
 
     public static fromDateValue(dateValue:Date) {
@@ -204,7 +204,7 @@ export class TimeValue {
     }
 
     constructor(public hours:number, public minutes:number, public seconds:number, public millis:number) {}
-    
+
     public toString():string {
         return `${this.pad(this.hours.toString())}:${this.pad(this.minutes.toString())}:${this.pad(this.seconds.toString())}.${this.pad(this.millis.toString(), "000")}`;
     }
@@ -216,9 +216,9 @@ export class TimeValue {
     }
 
     private pad(s:string, pad:string="00") {
-       return (pad + s).substring(s.length);
+        return (pad + s).substring(s.length);
     }
-    
+
 }
 
 /**
@@ -226,15 +226,15 @@ export class TimeValue {
  */
 
 export class DateValue {
-    
+
     constructor(public dateObj:Date) {}
-    
+
 }
 
 /**
  * *****************************************************
  */
-    
+
 export class DateTimeValue {
     constructor(public dateObj:Date) {}
 }
@@ -253,6 +253,8 @@ export class Log {
     public static error:(message, method?:string, clz?:string)=>void;
     public static info:(message, method?:string, clz?:string)=>void;
     public static warn:(message, method?:string, clz?:string)=>void;
+
+    private static _logLevel:LogLevel;
 
     static logLevel(level:LogLevel) {
 
@@ -296,6 +298,12 @@ export class Log {
             Log.warn = (message, clz?:string, method?:string)=> {
             };
         }
+
+        Log._logLevel = level;
+    }
+
+    static isEnabled(level:LogLevel):boolean {
+       return Log._logLevel >= level;
     }
 
     //set default log level here
@@ -386,7 +394,7 @@ export class StringUtil {
         }
         return [code, desc];
     }
-    
+
     static hashCode(s:string) {
         var hash = 0, i, chr, len;
         if (s.length === 0) return hash;
@@ -397,7 +405,7 @@ export class StringUtil {
         }
         return hash;
     }
-    
+
     static endsWith(subjectString:string, searchString:string, position?:number):boolean {
         if (typeof position !== 'number' || !isFinite(position) ||
             Math.floor(position) !== position || position > subjectString.length) {

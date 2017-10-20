@@ -33,11 +33,13 @@
     "browserify": "^14.4.0",
     "faucet": "0.0.1",
     "tape": "^4.8.0",
-    "typescript": "2.3.1"
+    "typescript": "2.3.1",
+    "watchify": "^3.9.0"
   },
   "scripts": {
     "prepublishOnly": "bin/gen-version-code.js && tsc",
     "gen-version-code": "bin/gen-version-code.js",
-    "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/test/ws/ws.test.js | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet"
+    "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/dialog/dialog.test.js | ./node_modules/.bin/browser-run -b electron | ./node_modules/.bin/faucet",
+    "test-browser": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/dialog/dialog.test.js | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet"
   }
 }
