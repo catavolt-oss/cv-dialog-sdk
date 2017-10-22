@@ -3,15 +3,15 @@
  */
 
 import {Client, ClientMode, JsonClientResponse} from "../client";
-import {DataUrl, DateTimeValue, DateValue, Log, ObjUtil, TimeValue} from "../util";
+import {DataUrl, DateTimeValue, DateValue, Log, ObjUtil, StringDictionary, TimeValue} from "../util";
 import {
     ClientType, Dialog, DialogMessage, DialogRedirection, FormViewType, Login, Menu, PropertyDef, Property, Redirection,
     Session, Tenant,
     WebRedirection,
     Workbench,
-    WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef, GeoFix, GeoLocation, NavRequest
+    WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef, GeoFix, GeoLocation, NavRequest, NullNavRequest,
+    RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage, DialogException, ViewDesc, Record
 } from "../models";
-import {FormContext} from "../dialog";
 import {FetchClient} from "../ws";
 import {OfflineClient} from "../offline";
 import * as moment from 'moment';
@@ -370,16 +370,16 @@ export class AppContext {
 
     private fromRedirection(redirection:Redirection):Promise<NavRequest> {
 
-        if(redirection.redirectionType === 'hxgn.api.dialog.DialogRedirection') {
+        if(redirection.type === 'hxgn.api.dialog.DialogRedirection') {
            this.dialogApi.getDialog(this.session.tenantId, this.session.id, (<DialogRedirection>redirection).dialogId)
                .then((dialog:Dialog)=>{
                   if(dialog.view.viewType === FormViewType) {
                     //return new FormContext(dialog);
                   }
                });
-        } else if(redirection.redirectionType === 'hxgn.api.dialog.WebRedirection') {
+        } else if(redirection.type === 'hxgn.api.dialog.WebRedirection') {
             return Promise.resolve(<WebRedirection>redirection);
-        } else if(redirection.redirectionType === 'hxgn.api.dialog.WorkbenchRedirection') {
+        } else if(redirection.type === 'hxgn.api.dialog.WorkbenchRedirection') {
             return this.getWorkbench((<WorkbenchRedirection>redirection).workbenchId);
         } else {
             return Promise.reject(new Error(`Unrecognized type of Redirection ${ObjUtil.formatRecAttr(redirection)}`));
@@ -738,6 +738,9 @@ export class ContextAction implements ActionSource {
     }
 }
 
+export interface VoidResult {
+}
+
 
 /**
  * ************* Binary Support ********************
@@ -806,6 +809,13 @@ export class UrlBinary implements Binary {
     toUrl():string {
         return this.url;
     }
+}
+
+
+export class Attachment {
+
+    constructor(public name:string, public attachmentData:any) {};
+
 }
 
 /**
@@ -1048,387 +1058,456 @@ export class PropFormatter {
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-// export class FormContext extends PaneContext {
-//
-//     constructor FormContext(){}
-//
-// }
-//
-// /**
-//  * Top-level class, representing a Catavolt 'Pane' definition.
-//  * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
-//  * or a list of records.  See {@EntityRecord}
-//  * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
-//  * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
-//  */
-// export class PaneContext {
-//
-//     private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
-//     static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
-//
-//     entityRecDef:RecordDef;
-//
-//     private _binaryCache:{ [index:string]:Array<Binary> }
-//     private _lastRefreshTime:Date = new Date(0);
-//     private _parentContext:FormContext = null;
-//     private _paneRef:number = null;
-//
-//     /**
-//      * Has this 'Pane' been destroyed?
-//      */
-//     public isDestroyed:boolean;
-//
-//     /**
-//      * Updates a settings object with the new settings from a 'Navigation'
-//      * @param initialSettings
-//      * @param navRequest
-//      * @returns {StringDictionary}
-//      */
-//     /*
-//     static resolveSettingsFromNavRequest(initialSettings:StringDictionary,
-//                                          navRequest:NavRequest):StringDictionary {
-//
-//         var result:StringDictionary = ObjUtil.addAllProps(initialSettings, {});
-//         if (navRequest instanceof FormContext) {
-//             ObjUtil.addAllProps(navRequest.dialogRedirection.fromDialogProperties, result);
-//             ObjUtil.addAllProps(navRequest.offlineProps, result);
-//         } else if (navRequest instanceof NullNavRequest) {
-//             ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
-//         } else if (navRequest instanceof WebRedirection) {
-//             ObjUtil.addAllProps(navRequest.fromDialogProperties, result);
-//         }
-//         var destroyed = result['fromDialogDestroyed'];
-//         if (destroyed) result['destroyed'] = true;
-//         return result;
-//
-//     }*/
-//
-//     /**
-//      *
-//      * @param paneRef
-//      * @private
-//      */
-//     constructor(paneRef:number) {
-//         this._paneRef = paneRef;
-//         this._binaryCache = {};
-//     }
-//
-//     /**
-//      * Get the action source for this Pane
-//      * @returns {ActionSource}
-//      */
-//     get actionSource():ActionSource {
-//         return this.parentContext ? this.parentContext.actionSource : null;
-//     }
-//
-//     /**
-//      * Load a Binary property from a record
-//      * @param propName
-//      * @param entityRec
-//      * @returns {any}
-//      */
-//     /*
-//     binaryAt(propName:string, entityRec:EntityRec):Future<Binary> {
-//         const prop:Prop = entityRec.propAtName(propName)
-//         if (prop) {
-//             if (prop.value instanceof InlineBinaryRef) {
-//                 const binRef = prop.value as InlineBinaryRef;
-//                 return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
-//             } else if (prop.value instanceof ObjectBinaryRef) {
-//                 const binRef = prop.value as ObjectBinaryRef;
-//                 if (binRef.settings['webURL']) {
-//                     return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
-//                 } else {
-//                     return this.readBinary(propName, entityRec);
-//                 }
-//             } else if (typeof prop.value === 'string') {
-//                 return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
-//             } else {
-//                 return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
-//             }
-//         } else {
-//             return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
-//         }
-//     }*/
-//
-//     /**
-//      * Get the dialog alias
-//      * @returns {any}
-//      */
-//     get dialogAlias():string {
-//         return this.dialogRedirection.dialogProperties['dialogAlias'];
-//     }
-//
-//     /**
-//      * Get the {@link DialogRedirection} with which this Pane was constructed
-//      * @returns {DialogRedirection}
-//      */
-//     get dialogRedirection():DialogRedirection {
-//         return this.paneDef.dialogRedirection;
-//     }
-//
-//     /**
-//      * Find a menu def on this Pane with the given actionId
-//      * @param actionId
-//      * @returns {MenuDef}
-//      */
-//     findMenuDefAt(actionId:string) {
-//         var result:MenuDef = null;
-//         if (this.menuDefs) {
-//             this.menuDefs.some((md:MenuDef)=> {
-//                 result = md.findAtId(actionId);
-//                 return result != null;
-//             });
-//         }
-//         return result;
-//     }
-//
-//     /**
-//      * Get a string representation of this property suitable for 'reading'
-//      * @param propValue
-//      * @param propName
-//      * @returns {string}
-//      */
-//     formatForRead(prop:Prop, propName:string):string {
-//         return PropFormatter.formatForRead(prop, this.propDefAtName(propName));
-//     }
-//
-//     /**
-//      * Get a string representation of this property suitable for 'writing'
-//      * @param propValue
-//      * @param propName
-//      * @returns {string}
-//      */
-//     formatForWrite(prop:Prop, propName:string):string {
-//         return PropFormatter.formatForWrite(prop, this.propDefAtName(propName));
-//     }
-//
-//     /**
-//      * Get the underlying form definition {@link FormDef} for this Pane.
-//      * If this is not a {@link FormContext} this will be the {@link FormDef} of the owning/parent Form
-//      * @returns {FormDef}
-//      */
-//     get formDef():FormDef {
-//         return this.parentContext.formDef;
-//     }
-//
-//     /**
-//      * Returns whether or not this pane loaded properly
-//      * @returns {boolean}
-//      */
-//     get hasError():boolean {
-//         return this.paneDef instanceof ErrorDef;
-//     }
-//
-//     /**
-//      * Return the error associated with this pane, if any
-//      * @returns {any}
-//      */
-//     get error():DialogException {
-//         if(this.hasError) {
-//             return (this.paneDef as ErrorDef).exception;
-//         } else {
-//             return null;
-//         }
-//     }
-//
-//     /**
-//      * Returns whether or not the data in this pane is out of date
-//      * @returns {boolean}
-//      */
-//     get isRefreshNeeded():boolean {
-//         return this._lastRefreshTime.getTime() < AppContext.singleton.lastMaintenanceTime.getTime();
-//     }
-//
-//     /**
-//      * Get the last time this pane's data was refreshed
-//      * @returns {Date}
-//      */
-//     get lastRefreshTime():Date {
-//         return this._lastRefreshTime;
-//     }
-//
-//     /**
-//      * @param time
-//      */
-//     set lastRefreshTime(time:Date) {
-//         this._lastRefreshTime = time;
-//     }
-//
-//     /**
-//      * Get the all {@link MenuDef}'s associated with this Pane
-//      * @returns {Array<MenuDef>}
-//      */
-//     get menuDefs():Array<MenuDef> {
-//         return this.paneDef.menuDefs;
-//     }
-//
-//     /**
-//      * @private
-//      * @returns {FormContext|boolean}
-//      */
-//     get offlineCapable():boolean {
-//         return this._parentContext && this._parentContext.offlineCapable;
-//     }
-//
-//     /**
-//      * Get the underlying @{link PaneDef} associated with this Context
-//      * @returns {PaneDef}
-//      */
-//     get paneDef():PaneDef {
-//         if (this.paneRef == null) {
-//             return this.formDef.headerDef;
-//         } else {
-//             return this.formDef.childrenDefs[this.paneRef];
-//         }
-//     }
-//
-//     /**
-//      * Get the numeric value, representing this Pane's place in the parent {@link FormContext}'s list of child panes.
-//      * See {@link FormContext.childrenContexts}
-//      * @returns {number}
-//      */
-//     get paneRef():number {
-//         return this._paneRef;
-//     }
-//
-//     set paneRef(paneRef:number) {
-//         this._paneRef = paneRef;
-//     }
-//
-//     /**
-//      * Get the title of this Pane
-//      * @returns {string}
-//      */
-//     get paneTitle():string {
-//         return this.paneDef.findTitle();
-//     }
-//
-//     /**
-//      * Get the parent {@link FormContext}
-//      * @returns {FormContext}
-//      */
-//     get parentContext():FormContext {
-//         return this._parentContext;
-//     }
-//
-//     set parentContext(parentContext:FormContext) {
-//         this._parentContext = parentContext;
-//         this.initialize();
-//     }
-//
-//     /**
-//      * Parses a value to prepare for 'writing' back to the server
-//      * @param formattedValue
-//      * @param propName
-//      * @returns {any}
-//      */
-//     parseValue(formattedValue:any, propName:string):any {
-//         return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
-//     }
-//
-//     /**
-//      * Get the propery definition for a property name
-//      * @param propName
-//      * @returns {PropDef}
-//      */
-//     propDefAtName(propName:string):PropDef {
-//         return this.entityRecDef.propDefAtName(propName);
-//     }
-//
-//     /**
-//      * Read all the Binary values in this {@link EntityRec}
-//      * @param entityRec
-//      * @returns {Future<Array<Try<Binary>>>}
-//      */
-//     readBinaries(entityRec:EntityRec):Future<Array<Try<Binary>>> {
-//         return Future.sequence<Binary>(
-//             this.entityRecDef.propDefs.filter((propDef:PropDef)=> {
-//                 return propDef.isBinaryType
-//             }).map((propDef:PropDef)=> {
-//                 return this.readBinary(propDef.name, entityRec);
-//             })
-//         );
-//     }
-//
-//     /**
-//      * Get the session information
-//      * @returns {SessionContext}
-//      */
-//     get sessionContext():SessionContext {
-//         return this.parentContext.sessionContext;
-//     }
-//
-//     writeAttachment(attachment:Attachment):Future<void> {
-//         return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.sessionContext);
-//     }
-//
-//     writeAttachments(entityRec:EntityRec):Future<Array<Try<void>>> {
-//         return Future.sequence<void>(
-//             entityRec.props.filter((prop:Prop)=> {
-//                 return prop.value instanceof Attachment;
-//             }).map((prop:Prop) => {
-//                 const attachment:Attachment = prop.value as Attachment;
-//                 return this.writeAttachment(attachment);
-//             })
-//         );
-//     }
-//
-//     /**
-//      * Get the all {@link ViewDesc}'s associated with this Pane
-//      * @returns {Array<ViewDesc>}
-//      */
-//     get viewDescs():Array<ViewDesc> {
-//         return this.paneDef.viewDescs;
-//     }
-//
-//     /**
-//      * Write all Binary values in this {@link EntityRecord} back to the server
-//      * @param entityRec
-//      * @returns {Future<Array<Try<XWritePropertyResult>>>}
-//      */
-//     writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
-//         return Future.sequence<XWritePropertyResult>(
-//             entityRec.props.filter((prop:Prop)=> {
-//                 return this.propDefAtName(prop.name).isBinaryType;
-//             }).map((prop:Prop) => {
-//                 let writeFuture: Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
-//                 if (prop.value) {
-//                     let ptr: number = 0;
-//                     const encBin: EncodedBinary = prop.value as EncodedBinary;
-//                     const data = encBin.data;
-//                     while (ptr < data.length) {
-//                         const boundPtr = (ptr: number) => {
-//                             writeFuture = writeFuture.bind((prevResult)=> {
-//                                 const encSegment: string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substr(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
-//                                 return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.sessionContext);
-//                             });
-//                         }
-//                         boundPtr(ptr);
-//                         ptr += PaneContext.CHAR_CHUNK_SIZE;
-//                     }
-//                 } else {
-//                     // This is a delete
-//                     writeFuture = writeFuture.bind((prevResult)=> {
-//                         return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
-//                     });
-//                 }
-//                 return writeFuture;
-//             })
-//         );
-//     }
-//
-//     //protected
-//
-//     //abstract
-//
-//     getSelectedViewId():Future<ViewId> { return null; }
-//
-//     openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>>{ return null; }
-//
-//     protected initialize() {}
-//
-//     protected readBinary(propName:string, entityRec:EntityRec):Future<Binary> { return null; }
-//
-// }
+/**
+ * Top-level class, representing a Catavolt 'Pane' definition.
+ * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
+ * or a list of records.  See {@EntityRecord}
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export abstract class PaneContext implements Dialog{
+
+    //statics
+    private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
+    static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
+
+    //private/protected
+    private _binaryCache:{ [index:string]:Array<Binary> } = {};
+    private _lastRefreshTime:Date = new Date(0);
+    protected _destroyed:boolean = false;
+
+    //public
+    readonly childrenContexts:Array<PaneContext> = [];
+
+    constructor(readonly businessClassName:string,
+                readonly children: Array<Dialog>,
+                readonly dialogClassName:string,
+                readonly dialogMode:DialogMode,
+                readonly dialogType:string,
+                readonly id:string,
+                readonly recordDef: RecordDef,
+                readonly sessionId:string,
+                readonly tenantId: string,
+                readonly view: View,
+                readonly viewMode: ViewMode,
+                readonly dialogRedirection:DialogRedirection,
+                readonly paneRef:number,
+                readonly parentContext:FormContext
+    ) {
+        this.initialize(children);
+    }
+
+    /**
+     * Updates a settings object with the new settings from a 'Navigation'
+     * @param initialSettings
+     * @param navRequest
+     * @returns {StringDictionary}
+     */
+    static resolveSettingsFromRedirection(initialSettings:StringDictionary,
+                                         redirection:Redirection):StringDictionary {
+
+        var result:StringDictionary = ObjUtil.addAllProps(initialSettings, {});
+        ObjUtil.addAllProps(redirection.referringDialogProperties, result);
+        var destroyed = result['fromDialogDestroyed'];
+        if (destroyed) result['destroyed'] = true;
+        return result;
+
+    }
+
+    /**
+     * Load a Binary property from a record
+     * @param propName
+     * @param entityRec
+     * @returns {any}
+     */
+    /* @TODO */
+    /*
+    binaryAt(propName:string, entityRec:EntityRec):Future<Binary> {
+        const prop:Prop = entityRec.propAtName(propName)
+        if (prop) {
+            if (prop.value instanceof InlineBinaryRef) {
+                const binRef = prop.value as InlineBinaryRef;
+                return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+            } else if (prop.value instanceof ObjectBinaryRef) {
+                const binRef = prop.value as ObjectBinaryRef;
+                if (binRef.settings['webURL']) {
+                    return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+                } else {
+                    return this.readBinary(propName, entityRec);
+                }
+            } else if (typeof prop.value === 'string') {
+                return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
+            } else {
+                return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
+            }
+        } else {
+            return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
+        }
+    }*/
+
+    /**
+     * Get the dialog alias
+     * @returns {any}
+     */
+    get dialogAlias():string {
+        return this.dialogRedirection.dialogProperties['dialogAlias'];
+    }
+
+    /**
+     * Return the error associated with this pane, if any
+     * @returns {any}
+     */
+    get error():DialogException {
+        if(this.hasError) {
+            return (this.view as ErrorMessage).exception;
+        } else {
+            return null;
+        }
+    }
+
+
+    /**
+     * Find a menu def on this Pane with the given actionId
+     * @param actionId
+     * @returns {MenuDef}
+     */
+    findMenuDefAt(actionId:string) {
+        return this.view.findMenuDefAt(actionId);
+    }
+
+    /**
+     * Get a string representation of this property suitable for 'reading'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
+    formatForRead(prop:Property, propName:string):string {
+        return PropFormatter.formatForRead(prop, this.propDefAtName(propName));
+    }
+
+    /**
+     * Get a string representation of this property suitable for 'writing'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
+    formatForWrite(prop:Property, propName:string):string {
+        return PropFormatter.formatForWrite(prop, this.propDefAtName(propName));
+    }
+
+    /**
+     * Get the underlying form definition {@link FormDef} for this Pane.
+     * If this is not a {@link FormContext} this will be the {@link FormDef} of the owning/parent Form
+     * @returns {FormDef}
+     */
+    get formDef():Form {
+        return this.parentContext.formDef;
+    }
+
+    /**
+     * Returns whether or not this pane loaded properly
+     * @returns {boolean}
+     */
+    get hasError():boolean {
+        return this.view instanceof ErrorMessage;
+    }
+
+    /**
+     * Returns whether or not this Form is destroyed
+     * @returns {boolean}
+     */
+    get isDestroyed():boolean {
+        return this._destroyed || this.isAnyChildDestroyed;
+    }
+
+    /**
+     * Returns whether or not the data in this pane is out of date
+     * @returns {boolean}
+     */
+    get isRefreshNeeded():boolean {
+        return this._lastRefreshTime.getTime() < AppContext.singleton.lastMaintenanceTime.getTime();
+    }
+
+    /**
+     * Get the last time this pane's data was refreshed
+     * @returns {Date}
+     */
+    get lastRefreshTime():Date {
+        return this._lastRefreshTime;
+    }
+
+    /**
+     * @param time
+     */
+    set lastRefreshTime(time:Date) {
+        this._lastRefreshTime = time;
+    }
+
+    /**
+     * Get the all {@link MenuDef}'s associated with this Pane
+     * @returns {Array<MenuDef>}
+     */
+    get menu():Menu {
+        return this.view.menu;
+    }
+
+    /**
+     * Get the title of this Pane
+     * @returns {string}
+     */
+    get paneTitle():string {
+        return this.view.findTitle();
+    }
+
+    /**
+     * Parses a value to prepare for 'writing' back to the server
+     * @param formattedValue
+     * @param propName
+     * @returns {any}
+     */
+    parseValue(formattedValue:any, propName:string):any {
+        return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
+    }
+
+    /**
+     * Get the propery definition for a property name
+     * @param propName
+     * @returns {PropDef}
+     */
+    propDefAtName(propName:string):PropertyDef {
+        return this.recordDef.propDefAtName(propName);
+    }
+
+    /**
+     * Read all the Binary values in this {@link EntityRec}
+     * @param entityRec
+     * @returns {Future<Array<Try<Binary>>>}
+     */
+    /* @TODO */
+    /*readBinaries(record:Record):Future<Array<Try<Binary>>> {
+        return Future.sequence<Binary>(
+            this.recordDef.filter((propDef:PropertyDef)=> {
+                return propDef.isBinaryType
+            }).map((propDef:PropertyDef)=> {
+                return this.readBinary(propDef.name, entityRec);
+            })
+        );
+    }*/
+
+    /**
+     * Get the session information
+     * @returns {SessionContext}
+     */
+    get sessionContext():Session {
+        return this.parentContext.sessionContext;
+    }
+
+    /**
+     * Get the all {@link ViewDesc}'s associated with this Form
+     * @returns {Array<ViewDesc>}
+     */
+    /* @TODO */
+    get viewDescs():Array<ViewDesc> {
+        /* @TODO */
+        //return this.form.viewDescs;
+        return [];
+    }
+
+    /* @TODO */
+    /*
+    writeAttachment(attachment:Attachment):Future<void> {
+        return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.sessionContext);
+    }
+
+    writeAttachments(entityRec:EntityRec):Future<Array<Try<void>>> {
+        return Future.sequence<void>(
+            entityRec.props.filter((prop:Prop)=> {
+                return prop.value instanceof Attachment;
+            }).map((prop:Prop) => {
+                const attachment:Attachment = prop.value as Attachment;
+                return this.writeAttachment(attachment);
+            })
+        );
+    }
+    */
+
+
+    /**
+     * Write all Binary values in this {@link EntityRecord} back to the server
+     * @param entityRec
+     * @returns {Future<Array<Try<XWritePropertyResult>>>}
+     */
+    /* @TODO */
+    /*
+    writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
+        return Future.sequence<XWritePropertyResult>(
+            entityRec.props.filter((prop:Prop)=> {
+                return this.propDefAtName(prop.name).isBinaryType;
+            }).map((prop:Prop) => {
+                let writeFuture: Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
+                if (prop.value) {
+                    let ptr: number = 0;
+                    const encBin: EncodedBinary = prop.value as EncodedBinary;
+                    const data = encBin.data;
+                    while (ptr < data.length) {
+                        const boundPtr = (ptr: number) => {
+                            writeFuture = writeFuture.bind((prevResult)=> {
+                                const encSegment: string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substr(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
+                                return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.sessionContext);
+                            });
+                        }
+                        boundPtr(ptr);
+                        ptr += PaneContext.CHAR_CHUNK_SIZE;
+                    }
+                } else {
+                    // This is a delete
+                    writeFuture = writeFuture.bind((prevResult)=> {
+                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
+                    });
+                }
+                return writeFuture;
+            })
+        );
+    }*/
+
+
+
+    //protected  abstract getSelectedViewId():Future<ViewId> { return null; }
+
+    /* @TODO */
+    //openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>>{ return null; }
+
+    protected initialize(children:Array<Dialog>) {
+        /* @TODO */
+        //create Child contexts here
+    }
+
+    /**
+     * @private
+     * @param navRequest
+     */
+    protected processNavRequestForDestroyed(referringDialogProperties:StringDictionary) {
+
+        var destroyedStr:string = referringDialogProperties['destroyed'];
+        if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
+            this._destroyed = true;
+        }
+        var fromDialogDestroyed = referringDialogProperties['fromDialogDestroyed'];
+        if (fromDialogDestroyed) {
+            this._destroyed = true;
+        }
+    }
+
+    /* @TODO */
+    //protected abstract readBinary(propName:string, record:Record):Promise<Binary>;
+
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    private get isAnyChildDestroyed():boolean {
+        return this.childrenContexts.some((paneContext:PaneContext)=> {
+            return paneContext.isDestroyed;
+        });
+    }
+
+
+}
+
+/**
+ * PaneContext Subtype that represents a Catavolt Form Definition
+ * A form is a 'container' composed of child panes of various concrete types.
+ * A FormContext parallels this design, and contains a list of 'child' contexts
+ * See also {@link FormDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export class FormContext extends PaneContext implements Dialog {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: Form,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:FormContext,
+                readonly actionSource:ActionSource,
+                readonly sessionContext:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext);
+
+    }
+
+    /**
+     * Close this form
+     * @returns {Future<VoidResult>}
+     */
+    /* @TODO */
+    /*
+    close():Promise<VoidResult> {
+        return DialogService.closeEditorModel(this.dialogRedirection.dialogHandle, this.sessionContext);
+    }*/
+
+    /**
+     * Get the underlying Form definition for this FormContext
+     * @returns {FormDef}
+     */
+    get form():Form {
+        return this.view as Form;
+    }
+
+    /* @TODO */
+    /*
+    openView(targetViewDesc:ViewDesc):Future<Either<PaneContext, NavRequest>> {
+        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+            .bind((setViewResult:XOpenDialogModelResult)=>{
+                const xOpenEditorResult:XOpenEditorModelResult = setViewResult as XOpenEditorModelResult;
+                var ca = new ContextAction('#viewChange', xOpenEditorResult.formRedirection.objectId, this.actionSource);
+                return FormContextBuilder.createWithRedirection(xOpenEditorResult.formModel.form.redirection, ca, this.sessionContext)
+                    .buildFromOpenForm(xOpenEditorResult, xOpenEditorResult.formModel.form.redirection.isEditor)
+                    .map((formContext:FormContext)=>{
+                        this._destroyed = true;
+                        return Either.right<PaneContext, NavRequest>(formContext as NavRequest)
+                    });
+            });
+    }
+    */
+
+    /**
+     * Perform the action associated with the given MenuDef on this Form
+     * @param menuDef
+     * @returns {Future<NavRequest>}
+     */
+    /* @TODO */
+    /*
+    performMenuAction(menu:Menu):Promise<NavRequest> {
+
+        return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
+            NullEntityRec.singleton, this.sessionContext).bind((value:Redirection)=> {
+            var destroyedStr:string = value.fromDialogProperties && value.fromDialogProperties['destroyed'];
+            if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
+                this._destroyed = true;
+            }
+            var ca:ContextAction = new ContextAction(menuDef.actionId, this.dialogRedirection.objectId, this.actionSource);
+            return NavRequestUtil.fromRedirection(value, ca, this.sessionContext);
+        });
+    }
+    */
+
+    getSelectedViewId():Promise<string> {
+        /* @TODO */
+        //return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
+        return null;
+    }
+}
+
 

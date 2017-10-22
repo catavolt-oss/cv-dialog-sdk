@@ -4,7 +4,7 @@
 
 import * as test from "tape";
 
-import {AppContext, Redirection, Session, Workbench, WorkbenchAction, Log} from "../catavolt-test";
+import {AppContext, Redirection, DialogRedirectionType, Session, Workbench, WorkbenchAction, Log} from "../catavolt-test";
 
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
     ['***REMOVED***', 'glenn', 'glenn5288', null, 'AAABACffAAAAF91p', 'AAABACfaAAAAAa5z'];
@@ -53,7 +53,7 @@ test("Launch Workbench Test", (t) => {
     AppContext.singleton.performLaunchActionForId(workbenchId, workbenchLaunchId)
         .then((successOrRedir:{actionId:string} | Redirection)=>{
             t.ok(successOrRedir);
-            if((successOrRedir as Redirection).redirectionType) {
+            if((successOrRedir as Redirection).type === DialogRedirectionType) {
                 Log.debug(successOrRedir);
                 redirection = successOrRedir as Redirection;
             } else {
