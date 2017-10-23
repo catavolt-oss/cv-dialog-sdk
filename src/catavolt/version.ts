@@ -1,4 +1,4 @@
-import {AppContext} from "./dialog/dialog"
+import {AppContext} from "./dialog"
 import * as moment from 'moment-timezone';
 
 export const CATAVOLT_SDK_VERSION:string = '1.1.35';

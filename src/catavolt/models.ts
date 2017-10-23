@@ -13,6 +13,16 @@ import {StringDictionary, Log, ObjUtil, StringUtil, ArrayUtil, DateValue, DateTi
 
 /** ************** Base classes have to be defined first i.e. Order matters ********************/
 
+export abstract class CellValue {
+
+    constructor(readonly style:string) {}
+
+    get isInlineMediaStyle():boolean {
+        return this.style && (this.style === PropertyDef.STYLE_INLINE_MEDIA || this.style === PropertyDef.STYLE_INLINE_MEDIA2);
+    }
+
+}
+
 /**
  * A View represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
  * that is responsible for displaying a data record or records. The Pane describes 'how' and 'where' the data will be
@@ -95,15 +105,36 @@ export interface AppWindow {
 /**
  * Defines how to present a business-value in a UI component
  */
-export interface AttributeCellValue extends CellValue {
+export class AttributeCellValue extends CellValue {
 
-    readonly propertyName: string;
-    readonly entryMethod: AttributeCellValueEntryMethod;
-    readonly hint: string;
-    readonly tooltip: string;
-    readonly mask: string;
-    readonly autoFillCapable: boolean;
-    readonly actions: Array<Menu>;
+    constructor(readonly propertyName: string,
+                readonly entryMethod: AttributeCellValueEntryMethod,
+                readonly hint: string,
+                readonly tooltip: string,
+                readonly mask: string,
+                readonly autoFillCapable: boolean,
+                readonly actions: Array<Menu>,
+                style:string) {
+
+        super(style);
+
+    }
+
+    get isComboBoxEntryMethod():boolean {
+        return this.entryMethod && this.entryMethod === 'COMBO_BOX';
+    }
+
+    get isDropDownEntryMethod():boolean {
+        return this.entryMethod && this.entryMethod === 'DROP_DOWN';
+    }
+
+    get isIconEntryMethod():boolean {
+        return this.entryMethod && this.entryMethod === 'ICON_CHOOSER';
+    }
+
+    get isTextFieldEntryMethod():boolean {
+        return !this.entryMethod || this.entryMethod === 'TEXT_FIELD';
+    }
 
 }
 
@@ -132,13 +163,6 @@ export class Calendar extends View {
 }
 
 export interface Cell extends Array<CellValue> {}
-
-export interface CellValue {
-    /**
-     * A schema reference for the view definition meta-data
-     */
-    readonly cellValueType: string;
-}
 
 export type ClientType = 'DESKTOP' | 'MOBILE';
 
@@ -451,9 +475,24 @@ export class List extends View {
     readonly columns: Array<Column>;
     readonly filter: Array<Filter>;
     readonly sort: Array<Sort>;
-
     //@TODO leftover from ListDef
-    //private defaultActionId:string,
+    readonly defaultActionId:string;
+
+    get isDefaultStyle():boolean {
+        return this.style && this.style === 'DEFAULT';
+    }
+
+    get isDetailsFormStyle():boolean {
+        return this.style && this.style === 'DETAILS_FORM';
+    }
+
+    get isFormStyle():boolean {
+        return this.style && this.style === 'FORM';
+    }
+
+    get isTabularStyle():boolean {
+        return this.style && this.style === 'TABULAR';
+    }
 }
 
 
@@ -935,6 +974,8 @@ export class PropertyDef {
                  * Scale of a decimal type
                  */
                 readonly scale: number,
+
+                readonly style: string,
                 /**
                  * Whereas 'type' and 'format' define the physical meaning of a property, the 'semanticType' adds meaningful
                  * insight into the usage of the property. For example, a 'decimal' type may be further defined semantically as a 'money' type.
@@ -1003,6 +1044,11 @@ export class PropertyDef {
 
     get isHTMLType(): boolean {
         return this.propertyType && this.propertyType === 'DATA_HTML';
+    }
+
+    get isInlineMediaStyle():boolean {
+        return this.style &&
+            (this.style === PropertyDef.STYLE_INLINE_MEDIA || this.style === PropertyDef.STYLE_INLINE_MEDIA2);
     }
 
     get isListType(): boolean {
@@ -1499,7 +1545,6 @@ export class UserMessage {
 
 
 ///////////////////////////////////////////////////////////
-
 
 /**
  * Represents a 'Record' or set of {@link Prop} (names and values).
