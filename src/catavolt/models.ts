@@ -13,6 +13,30 @@ import {StringDictionary, Log, ObjUtil, StringUtil, ArrayUtil, DateValue, DateTi
 
 /** ************** Base classes have to be defined first i.e. Order matters ********************/
 
+export abstract class BinaryRef {
+
+    constructor(private _settings:StringDictionary) {
+    }
+
+    //@TODO
+    /*
+     static fromWSValue(encodedValue:string, settings:StringDictionary):Try<BinaryRef> {
+
+     if (encodedValue && encodedValue.length > 0) {
+     return new Success(new InlineBinaryRef(encodedValue, settings));
+     } else {
+     return new Success(new ObjectBinaryRef(settings));
+     }
+
+     }
+     */
+    get settings():StringDictionary {
+        return this._settings;
+    }
+
+}
+
+
 export abstract class CellValue {
 
     constructor(readonly style:string) {}
@@ -36,7 +60,7 @@ export abstract class View {
     readonly name:string;
     readonly menu:Menu;
     readonly title:string;
-    readonly viewType: ViewType;
+    readonly type: ViewType;
 
     /* @TODO Leftover from PaneDef */
     /*
@@ -80,14 +104,6 @@ export abstract class View {
 
 
 }
-
-
-export type ViewMode = "READ" | "WRITE";
-
-export type ViewType ='hxgn.api.dialog.BarcodeScan' | 'hxgn.api.dialog.Calendar' | 'hxgn.api.dialog.Details'
-    | 'hxgn.api.dialog.Form' | 'hxgn.api.dialog.GeoFix' | 'hxgn.api.dialog.GeoLocation'
-    | 'hxgn.api.dialog.Graph' | 'hxgn.api.dialog.List' | 'hxgn.api.dialog.Map' | 'hxgn.api.dialog.Stream';
-
 
 /** ************************** Subclasses *******************************************************/
 
@@ -138,15 +154,12 @@ export class AttributeCellValue extends CellValue {
 
 }
 
-export type AttributeCellValueEntryMethod = "COMBO_BOX" | "DROP_DOWN" | "TEXT_FIELD" | "ICON_CHOOSER";
-
 /**
  * A purely declarative type. This object has no additional properties.
  */
 export class BarcodeScan extends View {
 }
 
-export type BarcodeScanViewTypeEnum = "hxgn.api.dialog.BarcodeScan";
 /**
  * An abstract visual Calendar
  */
@@ -163,8 +176,6 @@ export class Calendar extends View {
 }
 
 export interface Cell extends Array<CellValue> {}
-
-export type ClientType = 'DESKTOP' | 'MOBILE';
 
 export interface Column {
 
@@ -263,11 +274,6 @@ export interface DialogMessage {
     readonly stackTrace: string;
 
 }
-
-export type DialogMessageType = "CONFIRM" | "ERROR" | "INFO" | "WARN";
-
-export type DialogMode = 'COPY' | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE';
-
 export interface DialogRedirection extends Redirection {
 
     readonly dialogId:string;
@@ -280,14 +286,822 @@ export interface DialogRedirection extends Redirection {
 
 }
 
-export type DialogType = 'hxgn.api.dialog.EditorDialog' | 'hxgn.api.dialog.QueryDialog'
+export class DialogException {
+
+    constructor(public iconName?:string,
+                public message?:string,
+                public name?:string,
+                public stackTrace?:string,
+                public title?:string,
+                public cause?:DialogException,
+                public userMessages?:Array<UserMessage>) {
+    }
+
+}
+
+export class DataAnno {
+
+    private static BOLD_TEXT = "BOLD_TEXT";
+    private static BACKGROUND_COLOR = "BGND_COLOR";
+    private static FOREGROUND_COLOR = "FGND_COLOR";
+    private static IMAGE_NAME = "IMAGE_NAME";
+    private static IMAGE_PLACEMENT = "IMAGE_PLACEMENT";
+    private static ITALIC_TEXT = "ITALIC_TEXT";
+    private static OVERRIDE_TEXT = "OVRD_TEXT";
+    private static TIP_TEXT = "TIP_TEXT";
+    private static UNDERLINE = "UNDERLINE";
+    private static TRUE_VALUE = "1";
+    private static PLACEMENT_CENTER = "CENTER";
+    private static PLACEMENT_LEFT = "LEFT";
+    private static PLACEMENT_RIGHT = "RIGHT";
+    private static PLACEMENT_UNDER = "UNDER";
+    private static PLACEMENT_STRETCH_UNDER = "STRETCH_UNDER";
+
+    /*
+     static annotatePropsUsingWSDataAnnotation(props:Array<Prop>, jsonObj:StringDictionary):Try<Array<Prop>> {
+     return DialogTriple.fromListOfWSDialogObject<Array<DataAnno>>(jsonObj, 'WSDataAnnotation', OType.factoryFn).bind(
+     (propAnnos:Array<Array<DataAnno>>) => {
+     var annotatedProps:Array<Prop> = [];
+     for (var i = 0; i < props.length; i++) {
+     var p = props[i];
+     var annos:Array<DataAnno> = propAnnos[i];
+     if (annos) {
+     annotatedProps.push(new Prop(p.name, p.value, annos));
+     } else {
+     annotatedProps.push(p);
+     }
+     }
+     return new Success(annotatedProps);
+     }
+     );
+     }
+     */
+
+    static backgroundColor(annos:Array<DataAnno>):string {
+        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+            return anno.isBackgroundColor;
+        });
+        return result ? result.backgroundColor : null;
+    }
+
+    static foregroundColor(annos:Array<DataAnno>):string {
+        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+            return anno.isForegroundColor;
+        });
+        return result ? result.foregroundColor : null;
+    }
+
+    /*
+     static fromWS(otype:string, jsonObj):Try<Array<DataAnno>> {
+     var stringObj = jsonObj['annotations'];
+     if (stringObj['WS_LTYPE'] !== 'String') {
+     return new Failure<Array<DataAnno>>('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
+     }
+     var annoStrings:Array<string> = stringObj['values'];
+     var annos:Array<DataAnno> = [];
+     for (var i = 0; i < annoStrings.length; i++) {
+     annos.push(DataAnno.parseString(annoStrings[i]));
+     }
+     return new Success<Array<DataAnno>>(annos);
+     }
+     */
+
+    static imageName(annos:Array<DataAnno>):string {
+        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+            return anno.isImageName;
+        });
+        return result ? result.value : null;
+    }
+
+    static imagePlacement(annos:Array<DataAnno>):string {
+        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+            return anno.isImagePlacement;
+        });
+        return result ? result.value : null;
+    }
+
+    static isBoldText(annos:Array<DataAnno>):boolean {
+        return annos.some((anno)=> {
+            return anno.isBoldText
+        });
+    }
+
+    static isItalicText(annos:Array<DataAnno>):boolean {
+        return annos.some((anno)=> {
+            return anno.isItalicText
+        });
+    }
+
+    static isPlacementCenter(annos:Array<DataAnno>):boolean {
+        return annos.some((anno)=> {
+            return anno.isPlacementCenter
+        });
+    }
+
+    static isPlacementLeft(annos:Array<DataAnno>):boolean {
+        return annos.some((anno)=> {
+            return anno.isPlacementLeft
+        });
+    }
+
+    static isPlacementRight(annos:Array<DataAnno>):boolean {
+        return annos.some((anno)=> {
+            return anno.isPlacementRight
+        });
+    }
+
+    static isPlacementStretchUnder(annos:Array<DataAnno>):boolean {
+        return annos.some((anno)=> {
+            return anno.isPlacementStretchUnder
+        });
+    }
+
+    static isPlacementUnder(annos:Array<DataAnno>):boolean {
+        return annos.some((anno)=> {
+            return anno.isPlacementUnder
+        });
+    }
+
+    static isUnderlineText(annos:Array<DataAnno>):boolean {
+        return annos.some((anno)=> {
+            return anno.isUnderlineText
+        });
+    }
+
+    static overrideText(annos:Array<DataAnno>):string {
+        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+            return anno.isOverrideText;
+        });
+        return result ? result.value : null;
+    }
+
+    static tipText(annos:Array<DataAnno>):string {
+        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+            return anno.isTipText;
+        });
+        return result ? result.value : null;
+    }
+
+
+    static toListOfWSDataAnno(annos:Array<DataAnno>):StringDictionary {
+        var result:StringDictionary = {'WS_LTYPE': 'WSDataAnno'};
+        var values = [];
+        annos.forEach((anno)=> {
+            values.push(anno.toWS())
+        });
+        result['values'] = values;
+        return result;
+    }
+
+    private static parseString(formatted:string):DataAnno {
+        var pair = StringUtil.splitSimpleKeyValuePair(formatted);
+        return new DataAnno(pair[0], pair[1]);
+    }
+
+
+    constructor(private _name:string, private _value:string) {
+    }
+
+    get backgroundColor():string {
+        return this.isBackgroundColor ? this.value : null;
+    }
+
+    get foregroundColor():string {
+        return this.isForegroundColor ? this.value : null;
+    }
+
+    equals(dataAnno:DataAnno):boolean {
+        return this.name === dataAnno.name;
+    }
+
+    get isBackgroundColor():boolean {
+        return this.name === DataAnno.BACKGROUND_COLOR;
+    }
+
+    get isBoldText():boolean {
+        return this.name === DataAnno.BOLD_TEXT && this.value === DataAnno.TRUE_VALUE;
+    }
+
+    get isForegroundColor():boolean {
+        return this.name === DataAnno.FOREGROUND_COLOR;
+    }
+
+    get isImageName():boolean {
+        return this.name === DataAnno.IMAGE_NAME;
+    }
+
+    get isImagePlacement():boolean {
+        return this.name === DataAnno.IMAGE_PLACEMENT;
+    }
+
+    get isItalicText():boolean {
+        return this.name === DataAnno.ITALIC_TEXT && this.value === DataAnno.TRUE_VALUE;
+    }
+
+    get isOverrideText():boolean {
+        return this.name === DataAnno.OVERRIDE_TEXT;
+    }
+
+    get isPlacementCenter():boolean {
+        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_CENTER;
+    }
+
+    get isPlacementLeft():boolean {
+        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_LEFT;
+    }
+
+    get isPlacementRight():boolean {
+        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_RIGHT;
+    }
+
+    get isPlacementStretchUnder():boolean {
+        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_STRETCH_UNDER;
+    }
+
+    get isPlacementUnder():boolean {
+        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_UNDER;
+    }
+
+    get isTipText():boolean {
+        return this.name === DataAnno.TIP_TEXT;
+    }
+
+    get isUnderlineText():boolean {
+        return this.name === DataAnno.UNDERLINE && this.value === DataAnno.TRUE_VALUE;
+    }
+
+    get name():string {
+        return this._name;
+    }
+
+    get value():string {
+        return this._value;
+    }
+
+    toWS():StringDictionary {
+        return {'WS_OTYPE': 'WSDataAnno', 'name': this.name, 'value': this.value};
+    }
+
+}
 
 export interface EditorDialog extends Dialog {
 
     readonly businessId: string;
-    readonly record: Record;
 
 }
+
+/**
+ * Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ */
+export interface EntityRec {
+
+    annos:Array<DataAnno>;
+
+    annosAtName(propName:string):Array<DataAnno>;
+
+    afterEffects(after:EntityRec):EntityRec;
+
+    backgroundColor:string;
+    backgroundColorFor(propName:string):string;
+
+    foregroundColor:string;
+    foregroundColorFor(propName:string):string;
+
+    imageName:string;
+    imageNameFor(propName:string):string;
+
+    imagePlacement:string;
+    imagePlacementFor(propName:string):string;
+
+    isBoldText:boolean;
+    isBoldTextFor(propName:string):boolean;
+
+    isItalicText:boolean;
+    isItalicTextFor(propName:string):boolean;
+
+    isPlacementCenter:boolean;
+    isPlacementCenterFor(propName:string):boolean;
+
+    isPlacementLeft:boolean;
+    isPlacementLeftFor(propName:string):boolean;
+
+    isPlacementRight:boolean;
+    isPlacementRightFor(propName:string):boolean;
+
+    isPlacementStretchUnder:boolean;
+    isPlacementStretchUnderFor(propName:string):boolean;
+
+    isPlacementUnder:boolean;
+    isPlacementUnderFor(propName:string):boolean;
+
+    isUnderline:boolean;
+    isUnderlineFor(propName:string):boolean;
+
+    objectId:string;
+
+    overrideText:string;
+    overrideTextFor(propName:string):string;
+
+    propAtIndex(index:number):Property;
+
+    propAtName(propName:string):Property;
+
+    propCount:number;
+
+    propNames:Array<string>;
+
+    propValues:Array<any>;
+
+    props:Array<Property>;
+
+    tipText:string;
+    tipTextFor(propName:string):string;
+
+    toEntityRec():EntityRec;
+
+    toWSEditorRecord():StringDictionary;
+
+    toWS():StringDictionary;
+
+    valueAtName(propName:string):any;
+}
+
+/**
+ * Utility for working with EntityRecs
+ */
+export class EntityRecUtil {
+
+    static newEntityRec(objectId:string, props:Array<Property>, annos?:Array<DataAnno>):EntityRec {
+        return annos ? new EntityRecImpl(objectId, ArrayUtil.copy(props), ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, ArrayUtil.copy(props));
+    }
+
+    /*
+     static union(l1:Array<Property>, l2:Array<Property>):Array<Property> {
+     var result:Array<Property> = ArrayUtil.copy(l1);
+     l2.forEach((p2:Property)=> {
+     if (!l1.some((p1:Property, i)=> {
+     if (p1.name === p2.name) {
+     result[i] = p2;
+     return true;
+     }
+     return false;
+     })) {
+     result.push(p2);
+     }
+     });
+     return result;
+     }*/
+}
+
+/**
+ * An {@link EntityRec} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
+ * An EntityRec Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ */
+export class EntityBuffer implements EntityRec {
+
+    static createEntityBuffer(objectId:string, before:Array<Property>, after:Array<Property>):EntityBuffer {
+        return new EntityBuffer(EntityRecUtil.newEntityRec(objectId, before), EntityRecUtil.newEntityRec(objectId, after));
+    }
+
+    constructor(private _before:EntityRec, private _after?:EntityRec) {
+        if (!_before) throw new Error('_before is null in EntityBuffer');
+        if (!_after) this._after = _before;
+    }
+
+    get after():EntityRec {
+        return this._after;
+    }
+
+    get annos():Array<DataAnno> {
+        return this._after.annos;
+    }
+
+    annosAtName(propName:string):Array<DataAnno> {
+        return this._after.annosAtName(propName);
+    }
+
+    afterEffects(afterAnother?:EntityRec):EntityRec {
+        if (afterAnother) {
+            return this._after.afterEffects(afterAnother);
+        } else {
+            return this._before.afterEffects(this._after);
+        }
+    }
+
+    get backgroundColor():string {
+        return this._after.backgroundColor;
+    }
+
+    backgroundColorFor(propName:string):string {
+        return this._after.backgroundColorFor(propName);
+    }
+
+    get before():EntityRec {
+        return this._before;
+    }
+
+    get foregroundColor():string {
+        return this._after.foregroundColor;
+    }
+
+    foregroundColorFor(propName:string):string {
+        return this._after.foregroundColorFor(propName);
+    }
+
+    get imageName():string {
+        return this._after.imageName;
+    }
+
+    imageNameFor(propName:string):string {
+        return this._after.imageNameFor(propName);
+    }
+
+    get imagePlacement():string {
+        return this._after.imagePlacement;
+    }
+
+    imagePlacementFor(propName:string):string {
+        return this._after.imagePlacement;
+    }
+
+    get isBoldText():boolean {
+        return this._after.isBoldText;
+    }
+
+    isBoldTextFor(propName:string):boolean {
+        return this._after.isBoldTextFor(propName);
+    }
+
+    isChanged(name:string):boolean {
+        var before = this._before.propAtName(name);
+        var after = this._after.propAtName(name);
+        return (before && after) ? !before.equals(after) : !(!before && !after);
+    }
+
+    get isItalicText():boolean {
+        return this._after.isItalicText;
+    }
+
+    isItalicTextFor(propName:string):boolean {
+        return this._after.isItalicTextFor(propName);
+    }
+
+    get isPlacementCenter():boolean {
+        return this._after.isPlacementCenter;
+    }
+
+    isPlacementCenterFor(propName:string):boolean {
+        return this._after.isPlacementCenterFor(propName);
+    }
+
+    get isPlacementLeft():boolean {
+        return this._after.isPlacementLeft;
+    }
+
+    isPlacementLeftFor(propName:string):boolean {
+        return this._after.isPlacementLeftFor(propName);
+    }
+
+    get isPlacementRight():boolean {
+        return this._after.isPlacementRight;
+    }
+
+    isPlacementRightFor(propName:string):boolean {
+        return this._after.isPlacementRightFor(propName);
+    }
+
+    get isPlacementStretchUnder():boolean {
+        return this._after.isPlacementStretchUnder;
+    }
+
+    isPlacementStretchUnderFor(propName:string):boolean {
+        return this._after.isPlacementStretchUnderFor(propName);
+    }
+
+    get isPlacementUnder():boolean {
+        return this._after.isPlacementUnder;
+    }
+
+    isPlacementUnderFor(propName:string):boolean {
+        return this._after.isPlacementUnderFor(propName);
+    }
+
+    get isUnderline():boolean {
+        return this._after.isUnderline;
+    }
+
+    isUnderlineFor(propName:string):boolean {
+        return this._after.isUnderlineFor(propName);
+    }
+
+    get objectId():string {
+        return this._after.objectId;
+    }
+
+    get overrideText():string {
+        return this._after.overrideText;
+    }
+
+    overrideTextFor(propName:string):string {
+        return this._after.overrideTextFor(propName);
+    }
+
+    propAtIndex(index:number):Property {
+        return this.props[index];
+    }
+
+    propAtName(propName:string):Property {
+        return this._after.propAtName(propName);
+    }
+
+    get propCount():number {
+        return this._after.propCount;
+    }
+
+    get propNames():Array<string> {
+        return this._after.propNames;
+    }
+
+    get props():Array<Property> {
+        return this._after.props;
+    }
+
+    get propValues():Array<any> {
+        return this._after.propValues;
+    }
+
+    setValue(name:string, value) {
+        const newProps = [];
+        let found = false;
+        this.props.forEach((prop:Property)=> {
+            if (prop.name === name) {
+                newProps.push(new Property(name, value));
+                found = true;
+            } else {
+                newProps.push(prop);
+            }
+        });
+        if (!found) {
+            newProps.push(new Property(name, value));
+        }
+        this._after = EntityRecUtil.newEntityRec(this.objectId, newProps, this.annos);
+    }
+
+    get tipText():string {
+        return this._after.tipText;
+    }
+
+    tipTextFor(propName:string):string {
+        return this._after.tipTextFor(propName);
+    }
+
+    toEntityRec():EntityRec {
+        return EntityRecUtil.newEntityRec(this.objectId, this.props);
+    }
+
+    toWSEditorRecord():StringDictionary {
+        return this.afterEffects().toWSEditorRecord();
+    }
+
+    toWS():StringDictionary {
+        return this.afterEffects().toWS();
+    }
+
+    valueAtName(propName:string):any {
+        return this._after.valueAtName(propName);
+    }
+
+}
+/**
+ * *********************************
+ */
+/**
+ * The implementation of {@link EntityRec}.
+ * Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ */
+export class EntityRecImpl implements EntityRec {
+
+    constructor(public objectId:string, public props:Array<Property> = [], public annos:Array<DataAnno> = []) {
+    }
+
+    annosAtName(propName:string):Array<DataAnno> {
+        var p = this.propAtName(propName);
+        return p ? p.annos : [];
+    }
+
+    afterEffects(after:EntityRec):EntityRec {
+        var effects = [];
+        after.props.forEach((afterProp)=> {
+            var beforeProp = this.propAtName(afterProp.name);
+            if (!afterProp.equals(beforeProp)) {
+                effects.push(afterProp);
+            }
+        });
+        return new EntityRecImpl(after.objectId, effects);
+    }
+
+    get backgroundColor():string {
+        return DataAnno.backgroundColor(this.annos);
+    }
+
+    backgroundColorFor(propName:string):string {
+        var p = this.propAtName(propName);
+        return p && p.backgroundColor ? p.backgroundColor : this.backgroundColor;
+    }
+
+    get foregroundColor():string {
+        return DataAnno.foregroundColor(this.annos);
+    }
+
+    foregroundColorFor(propName:string):string {
+        var p = this.propAtName(propName);
+        return p && p.foregroundColor ? p.foregroundColor : this.foregroundColor;
+    }
+
+    get imageName():string {
+        return DataAnno.imageName(this.annos);
+    }
+
+    imageNameFor(propName:string):string {
+        var p = this.propAtName(propName);
+        return p && p.imageName ? p.imageName : this.imageName;
+    }
+
+    get imagePlacement():string {
+        return DataAnno.imagePlacement(this.annos);
+    }
+
+    imagePlacementFor(propName:string):string {
+        var p = this.propAtName(propName);
+        return p && p.imagePlacement ? p.imagePlacement : this.imagePlacement;
+    }
+
+    get isBoldText():boolean {
+        return DataAnno.isBoldText(this.annos);
+    }
+
+    isBoldTextFor(propName:string):boolean {
+        var p = this.propAtName(propName);
+        return p && p.isBoldText ? p.isBoldText : this.isBoldText;
+    }
+
+    get isItalicText():boolean {
+        return DataAnno.isItalicText(this.annos);
+    }
+
+    isItalicTextFor(propName:string):boolean {
+        var p = this.propAtName(propName);
+        return p && p.isItalicText ? p.isItalicText : this.isItalicText;
+
+    }
+
+    get isPlacementCenter():boolean {
+        return DataAnno.isPlacementCenter(this.annos);
+    }
+
+    isPlacementCenterFor(propName:string):boolean {
+        var p = this.propAtName(propName);
+        return p && p.isPlacementCenter ? p.isPlacementCenter : this.isPlacementCenter;
+    }
+
+    get isPlacementLeft():boolean {
+        return DataAnno.isPlacementLeft(this.annos);
+    }
+
+    isPlacementLeftFor(propName:string):boolean {
+        var p = this.propAtName(propName);
+        return p && p.isPlacementLeft ? p.isPlacementLeft : this.isPlacementLeft;
+
+    }
+
+    get isPlacementRight():boolean {
+        return DataAnno.isPlacementRight(this.annos);
+    }
+
+    isPlacementRightFor(propName:string):boolean {
+        var p = this.propAtName(propName);
+        return p && p.isPlacementRight ? p.isPlacementRight : this.isPlacementRight;
+    }
+
+    get isPlacementStretchUnder():boolean {
+        return DataAnno.isPlacementStretchUnder(this.annos);
+    }
+
+    isPlacementStretchUnderFor(propName:string):boolean {
+        var p = this.propAtName(propName);
+        return p && p.isPlacementStretchUnder ? p.isPlacementStretchUnder : this.isPlacementStretchUnder;
+    }
+
+    get isPlacementUnder():boolean {
+        return DataAnno.isPlacementUnder(this.annos);
+    }
+
+    isPlacementUnderFor(propName:string):boolean {
+        var p = this.propAtName(propName);
+        return p && p.isPlacementUnder ? p.isPlacementUnder : this.isPlacementUnder;
+    }
+
+    get isUnderline():boolean {
+        return DataAnno.isUnderlineText(this.annos);
+    }
+
+    isUnderlineFor(propName:string):boolean {
+        var p = this.propAtName(propName);
+        return p && p.isUnderline ? p.isUnderline : this.isUnderline;
+
+    }
+
+    get overrideText():string {
+        return DataAnno.overrideText(this.annos);
+    }
+
+    overrideTextFor(propName:string):string {
+        var p = this.propAtName(propName);
+        return p && p.overrideText ? p.overrideText : this.overrideText;
+
+    }
+
+    propAtIndex(index:number):Property {
+        return this.props[index];
+    }
+
+    propAtName(propName:string):Property {
+        var prop:Property = null;
+        this.props.some((p)=> {
+            if (p.name === propName) {
+                prop = p;
+                return true;
+            }
+            return false;
+        });
+        return prop;
+    }
+
+    get propCount():number {
+        return this.props.length;
+    }
+
+    get propNames():Array<string> {
+        return this.props.map((p)=> {
+            return p.name;
+        });
+    }
+
+    get propValues():Array<any> {
+        return this.props.map((p)=> {
+            return p.value;
+        });
+    }
+
+    get tipText():string {
+        return DataAnno.tipText(this.annos);
+    }
+
+    tipTextFor(propName:string):string {
+        var p = this.propAtName(propName);
+        return p && p.tipText ? p.tipText : this.tipText;
+
+    }
+
+    toEntityRec():EntityRec {
+        return this;
+    }
+
+    toWSEditorRecord():StringDictionary {
+        var result:StringDictionary = {'WS_OTYPE': 'WSEditorRecord'};
+        if (this.objectId) result['objectId'] = this.objectId;
+        result['names'] = Property.toWSListOfString(this.propNames);
+        result['properties'] = Property.toWSListOfProperties(this.propValues);
+        return result;
+    }
+
+    toWS():StringDictionary {
+        var result:StringDictionary = {'WS_OTYPE': 'WSEntityRec'};
+        if (this.objectId) result['objectId'] = this.objectId;
+        result['props'] = Property.toListOfWSProp(this.props);
+        if (this.annos) result['annos'] = DataAnno.toListOfWSDataAnno(this.annos);
+        return result;
+    }
+
+    valueAtName(propName:string):any {
+        var value = null;
+        this.props.some((p)=> {
+            if (p.name === propName) {
+                value = p.value;
+                return true;
+            }
+            return false;
+        });
+        return value;
+    }
+
+}
+/**
+ * *********************************
+ */
 
 export class ErrorMessage extends View {
 
@@ -303,12 +1117,6 @@ export interface Filter {
     readonly operand2: any;
 
 }
-
-export type FilterOperator = "AND" | "CONTAINS" | "ENDS_WITH" | "EQUAL_TO" |
-    "GREATER_THAN" | "GREATER_THAN_OR_EQUAL_TO" | "LESS_THAN" | "LESS_THAN_OR_EQUAL_TO"
-    | "NOT_EQUAL_TO" | "OR" | "STARTS_WITH";
-
-
 
 /**
  * A purely declarative type. This object has no additional properties.
@@ -447,6 +1255,23 @@ export interface GraphDataPoint {
 
 }
 
+export class InlineBinaryRef extends BinaryRef {
+
+    constructor(private _inlineData:string, settings:StringDictionary) {
+        super(settings);
+    }
+
+    /* Base64 encoded data */
+    get inlineData():string {
+        return this._inlineData;
+    }
+
+    toString():string {
+        return this._inlineData;
+    }
+
+}
+
 /**
  * A text description typically preceeding a UI component as a prompt
  */
@@ -541,6 +1366,196 @@ export class Menu {
 
 export interface NavRequest {}
 
+/**
+ * An empty or uninitialized {@link EntityRec}.
+ * Represents a 'Record' or set of {@link Prop} (names and values).
+ * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ */
+export class NullEntityRec implements EntityRec {
+
+    static singleton:NullEntityRec = new NullEntityRec();
+
+    constructor() {
+    }
+
+    get annos():Array<DataAnno> {
+        return [];
+    }
+
+    annosAtName(propName:string):Array<DataAnno> {
+        return [];
+    }
+
+    afterEffects(after:EntityRec):EntityRec {
+        return after;
+    }
+
+    get backgroundColor():string {
+        return null;
+    }
+
+    backgroundColorFor(propName:string):string {
+        return null;
+    }
+
+    get foregroundColor():string {
+        return null;
+    }
+
+    foregroundColorFor(propName:string):string {
+        return null;
+    }
+
+    get imageName():string {
+        return null;
+    }
+
+    imageNameFor(propName:string):string {
+        return null;
+    }
+
+    get imagePlacement():string {
+        return null;
+    }
+
+    imagePlacementFor(propName:string):string {
+        return null;
+    }
+
+    get isBoldText():boolean {
+        return false;
+    }
+
+    isBoldTextFor(propName:string):boolean {
+        return false;
+    }
+
+    get isItalicText():boolean {
+        return false;
+    }
+
+    isItalicTextFor(propName:string):boolean {
+        return false;
+    }
+
+    get isPlacementCenter():boolean {
+        return false;
+    }
+
+    isPlacementCenterFor(propName:string):boolean {
+        return false;
+    }
+
+    get isPlacementLeft():boolean {
+        return false;
+    }
+
+    isPlacementLeftFor(propName:string):boolean {
+        return false;
+    }
+
+    get isPlacementRight():boolean {
+        return false;
+    }
+
+    isPlacementRightFor(propName:string):boolean {
+        return false;
+    }
+
+    get isPlacementStretchUnder():boolean {
+        return false;
+    }
+
+    isPlacementStretchUnderFor(propName:string):boolean {
+        return false;
+    }
+
+    get isPlacementUnder():boolean {
+        return false;
+    }
+
+    isPlacementUnderFor(propName:string):boolean {
+        return false;
+    }
+
+    get isUnderline():boolean {
+        return false;
+    }
+
+    isUnderlineFor(propName:string):boolean {
+        return false;
+    }
+
+    get objectId():string {
+        return null;
+    }
+
+    get overrideText():string {
+        return null;
+    }
+
+    overrideTextFor(propName:string):string {
+        return null;
+    }
+
+    propAtIndex(index:number):Property {
+        return null;
+    }
+
+    propAtName(propName:string):Property {
+        return null;
+    }
+
+    get propCount():number {
+        return 0;
+    }
+
+    get propNames():Array<string> {
+        return [];
+    }
+
+    get props():Array<Property> {
+        return [];
+    }
+
+    get propValues():Array<any> {
+        return [];
+    }
+
+    get tipText():string {
+        return null;
+    }
+
+    tipTextFor(propName:string):string {
+        return null;
+    }
+
+    toEntityRec():EntityRec {
+        return this;
+    }
+
+    toWSEditorRecord():StringDictionary {
+        var result:StringDictionary = {'WS_OTYPE': 'WSEditorRecord'};
+        if (this.objectId) result['objectId'] = this.objectId;
+        result['names'] = Property.toWSListOfString(this.propNames);
+        result['properties'] = Property.toWSListOfProperties(this.propValues);
+        return result;
+    }
+
+    toWS():StringDictionary {
+        var result:StringDictionary = {'WS_OTYPE': 'WSEntityRec'};
+        if (this.objectId) result['objectId'] = this.objectId;
+        result['props'] = Property.toListOfWSProp(this.props);
+        if (this.annos) result['annos'] = DataAnno.toListOfWSDataAnno(this.annos);
+        return result;
+    }
+
+    valueAtName(propName:string):any {
+        return null;
+    }
+
+}
+
 export class NullNavRequest implements NavRequest {
 
     referringDialogProperties:StringDictionary;
@@ -552,6 +1567,16 @@ export class NullNavRequest implements NavRequest {
 
 export interface NullRedirection extends Redirection {
 }
+
+export class ObjectBinaryRef extends BinaryRef {
+
+    constructor(settings:StringDictionary) {
+        super(settings);
+    }
+
+}
+
+
 
 export class ObjectRef {
 
@@ -1138,9 +2163,6 @@ export class PropertyDef {
  * Query dialog
  */
 export interface QueryDialog extends Dialog {
-
-    readonly records: Array<Record>;
-
 }
 
 export interface Record {
@@ -1156,15 +2178,17 @@ export interface Record {
  * In other words it describes the structure or makeup of a row or record, but does not contain the data values themselves.
  * The corresponding {@link Record} contains the actual values.
  */
-export class RecordDef extends Array<PropertyDef> {
+export class RecordDef {
+
+    readonly propertyDefs:Array<PropertyDef>;
 
     get propCount():number {
-        return this.length;
+        return this.propertyDefs.length;
     }
 
     propDefAtName(name:string):PropertyDef {
         var propDef:PropertyDef = null;
-        this.some((p)=> {
+        this.propertyDefs.some((p)=> {
             if (p.name === name) {
                 propDef = p;
                 return true;
@@ -1175,15 +2199,10 @@ export class RecordDef extends Array<PropertyDef> {
     }
 
     get propNames():Array<string> {
-        return this.map((p)=> {
+        return this.propertyDefs.map((p)=> {
             return p.name
         });
     }
-}
-
-export class EntityRecDef {
-
-
 }
 
 export interface Redirection {
@@ -1195,17 +2214,6 @@ export interface Redirection {
     readonly tenantId: string;
 
 }
-
-export type RedirectionType =
-    'hxgn.api.dialog.DialogRedirection' |
-    'hxgn.api.dialog.WebRedirection' |
-    'hxgn.api.dialog.WorkbenchRedirection' |
-    'hxgn.api.dialog.NullRedirection'
-
-export const DialogRedirectionType = 'hxgn.api.dialog.DialogRedirection';
-export const WebRedirectionType = 'hxgn.api.dialog.WebRedirection';
-export const WorkbenchRedirectionType = 'hxgn.api.dialog.WorkbenchRedirection';
-export const NullRedirectionType = 'hxgn.api.dialog.NullRedirection';
 
 export interface Session {
 
@@ -1236,6 +2244,9 @@ export interface Session {
      * tenant-specific values to the requesting client.
      */
     readonly tenantProperties:StringDictionary;
+
+    readonly type:string;
+
     readonly userId:string;
 
 }
@@ -1254,8 +2265,6 @@ export interface Sort {
     readonly direction: SortDirection;
 
 }
-
-export type SortDirection = "ASC" | "DESC";
 
 export class Stream extends View {
 
@@ -1288,6 +2297,17 @@ export interface Tenant {
 
 }
 
+export class UserMessage {
+
+    constructor(public message:string,
+                public messageType:string,
+                public explanation:string,
+                public propertyNames:Array<string>) {
+    }
+}
+
+
+
 export class ViewDesc {
 
     constructor(public name:string, public description:string, public viewId:string){}
@@ -1319,24 +2339,13 @@ export interface WorkbenchAction {
 export interface NullRedirection extends Redirection {
 }
 
-export const BarcodeScanViewType = 'hxgn.api.dialog.BarcodeScan';
-export const CalendarViewType = 'hxgn.api.dialog.Calendar';
-export const DetailsViewType = 'hxgn.api.dialog.Details';
-export const FormViewType = 'hxgn.api.dialog.Form';
-export const GeoFixViewType = 'hxgn.api.dialog.GeoFix';
-export const GeoLocationViewType = 'hxgn.api.dialog.GeoLocation';
-export const GraphViewType = 'hxgn.api.dialog.Graph';
-export const ListViewType = 'hxgn.api.dialog.List';
-export const MapViewType = 'hxgn.api.dialog.Map';
-export const StreamViewType = 'hxgn.api.dialog.Stream';
-
-export interface WebRedirection extends Redirection {
+export interface WebRedirection extends Redirection, NavRequest {
 
     readonly url:string;
 
 }
 
-export interface WorkbenchRedirection extends Redirection {
+export interface WorkbenchRedirection extends Redirection, NavRequest {
 
     readonly workbenchId:string;
 
@@ -1344,79 +2353,80 @@ export interface WorkbenchRedirection extends Redirection {
 
 
 
-/**
- * ************ Binary Models *********************
- */
 
-export class BinaryRef {
+/* Types */
 
-    constructor(private _settings:StringDictionary) {
-    }
+export type AttributeCellValueEntryMethod = "COMBO_BOX" | "DROP_DOWN" | "TEXT_FIELD" | "ICON_CHOOSER";
 
-    //@TODO
-    /*
-    static fromWSValue(encodedValue:string, settings:StringDictionary):Try<BinaryRef> {
+export type ClientType = 'DESKTOP' | 'MOBILE';
 
-        if (encodedValue && encodedValue.length > 0) {
-            return new Success(new InlineBinaryRef(encodedValue, settings));
-        } else {
-            return new Success(new ObjectBinaryRef(settings));
-        }
+export type DialogMessageType = "CONFIRM" | "ERROR" | "INFO" | "WARN";
 
-    }
-    */
+export type DialogMode = 'COPY' | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE';
 
-    get settings():StringDictionary {
-        return this._settings;
-    }
+export type DialogType = 'hxgn.api.dialog.EditorDialog' | 'hxgn.api.dialog.QueryDialog'
 
-}
+export type FilterOperator = "AND" | "CONTAINS" | "ENDS_WITH" | "EQUAL_TO" |
+    "GREATER_THAN" | "GREATER_THAN_OR_EQUAL_TO" | "LESS_THAN" | "LESS_THAN_OR_EQUAL_TO"
+    | "NOT_EQUAL_TO" | "OR" | "STARTS_WITH";
 
-export class InlineBinaryRef extends BinaryRef {
 
-    constructor(private _inlineData:string, settings:StringDictionary) {
-        super(settings);
-    }
+export type RedirectionType =
+    'hxgn.api.dialog.DialogRedirection' |
+    'hxgn.api.dialog.WebRedirection' |
+    'hxgn.api.dialog.WorkbenchRedirection' |
+    'hxgn.api.dialog.NullRedirection'
 
-    /* Base64 encoded data */
-    get inlineData():string {
-        return this._inlineData;
-    }
+export type SortDirection = "ASC" | "DESC";
 
-    toString():string {
-        return this._inlineData;
-    }
+export type ViewMode = "READ" | "WRITE";
 
-}
+export type ViewType ='hxgn.api.dialog.BarcodeScan' | 'hxgn.api.dialog.Calendar' | 'hxgn.api.dialog.Details'
+    | 'hxgn.api.dialog.Form' | 'hxgn.api.dialog.GeoFix' | 'hxgn.api.dialog.GeoLocation'
+    | 'hxgn.api.dialog.Graph' | 'hxgn.api.dialog.List' | 'hxgn.api.dialog.Map' | 'hxgn.api.dialog.Stream';
 
-export class ObjectBinaryRef extends BinaryRef {
 
-    constructor(settings:StringDictionary) {
-        super(settings);
-    }
 
-}
+
+/* Type descriminators */
+
+export const DialogRedirectionTypeName = 'hxgn.api.dialog.DialogRedirection';
+export const NullRedirectionTypeName = 'hxgn.api.dialog.NullRedirection';
+export const WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection';
+export const WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection';
+export const SessionTypeName = 'hxgn.api.dialog.Session';
 
 export class ModelUtil {
 
-    private static types = {
-       'hxgn.api.dialog.BarcodeScan': BarcodeScan,
-       'hxgn.api.dialog.Calendar': Calendar,
-       'hxgn.api.dialog.Details': Details,
-       'hxgn.api.dialog.Form': Form,
-       'hxgn.api.dialog.GeoFix': GeoFix,
-       'hxgn.api.dialog.GeoLocation': GeoLocation,
-       'hxgn.api.dialog.Graph': Graph,
-       'hxgn.api.dialog.List': List,
-       'hxgn.api.dialog.Map': Map,
-       'hxgn.api.dialog.Stream': Stream
+    private static classTypes = {
+        'hxgn.api.dialog.BarcodeScan': BarcodeScan,
+        'hxgn.api.dialog.Calendar': Calendar,
+        'hxgn.api.dialog.Details': Details,
+        'hxgn.api.dialog.Form': Form,
+        'hxgn.api.dialog.GeoFix': GeoFix,
+        'hxgn.api.dialog.GeoLocation': GeoLocation,
+        'hxgn.api.dialog.Graph': Graph,
+        'hxgn.api.dialog.List': List,
+        'hxgn.api.dialog.Map': Map,
+        'hxgn.api.dialog.Stream': Stream,
+        'hxgn.api.dialog.CodeRef': CodeRef,
+        'hxgn.api.dialog.Menu': Menu,
+        'hxgn.api.dialog.ObjectRef': ObjectRef,
+        'hxgn.api.dialog.Property': Property,
+        'hxgn.api.dialog.PropertyDef': PropertyDef,
+        'hxgn.api.dialog.RecordDef': RecordDef,
+        'hxgn.api.dialog.ViewDesc': ViewDesc,
+        'hxgn.api.dialog.InlineBinaryRef': InlineBinaryRef,
+        'hxgn.api.dialog.ObjectBinaryRef': ObjectBinaryRef,
+        'hxgn.api.dialog.DialogException': DialogException,
+        'hxgn.api.dialog.DataAnno': DataAnno
     };
 
     private static typeFns:{[index:string]:(s:string, a:any)=>Promise<any>} = {
     }
 
     private static typeInstance(name) {
-        const type = ModelUtil.types[name];
+        const type = ModelUtil.classTypes[name];
         return type && new type;
     }
 
@@ -1428,10 +2438,11 @@ export class ModelUtil {
         return null;
     }
 
-    static jsonToModel<A>(obj, factoryFn:(type:string, jsonObj?)=>any=ModelUtil.factoryFn):Promise<A | Array<A>> {
+    static jsonToModel<A>(obj, factoryFn:(type:string, jsonObj?)=>any=ModelUtil.factoryFn):Promise<A> {
 
         if (Array.isArray(obj)) {
-            return ModelUtil.deserializeArray<A>(obj);
+            Log.debug(`Deserializing Array....`);
+            return ModelUtil.deserializeArray(obj);
         } else {
             const objType = obj['type'];
             Log.debug(`Deserializing ${objType}`);
@@ -1444,34 +2455,31 @@ export class ModelUtil {
                 });
             } else {
                 return new Promise<A>((resolve, reject)=>{
-                    const newObj = ModelUtil.typeInstance(objType);
+                    let newObj = ModelUtil.typeInstance(objType);
                     if (!newObj) {
-                        const message = `ModelUtil::jsonToModel: no type constructor found for ${objType}`
+                        const message = `ModelUtil::jsonToModel: no type constructor found for ${objType}: assuming interface`
                         Log.debug(message);
-                        resolve(obj);  //assume it's an interface
-                    } else {
-                        Promise.all(Object.keys(obj).map(prop=>{
-                            const value = obj[prop];
-                            Log.debug(`prop: ${prop} is type ${typeof value}`);
-                            if (value && typeof value === 'object') {
-                                if(Array.isArray(value)) {
-                                    return ModelUtil.jsonToModel(value).then(model=>{ return Promise.resolve() });
-                                } else if ('type' in value) {
-                                    return ModelUtil.jsonToModel(value).then(model=>{
-                                        ModelUtil.assignPropIfDefined(prop, model, newObj, objType);
-                                    });
-                                } else {
-                                    ModelUtil.assignPropIfDefined(prop, value, newObj, objType);
-                                    return Promise.resolve();
-                                }
+                        newObj = {};  //assume it's an interface
+                    }
+                    Promise.all(Object.keys(obj).map(prop=>{
+                        const value = obj[prop];
+                        Log.debug(`prop: ${prop} is type ${typeof value}`);
+                        if (value && typeof value === 'object') {
+                            if(Array.isArray(value) || 'type' in value) {
+                                return ModelUtil.jsonToModel(value).then(model=>{
+                                    ModelUtil.assignProp(prop, model, newObj, objType);
+                                });
                             } else {
-                                ModelUtil.assignPropIfDefined(prop, value, newObj, objType)
+                                ModelUtil.assignProp(prop, value, newObj, objType);
                                 return Promise.resolve();
                             }
-                        })).then(result=>{
-                           resolve(newObj);
-                        }).catch(error=>reject(error));
-                    }
+                        } else {
+                            ModelUtil.assignProp(prop, value, newObj, objType)
+                            return Promise.resolve();
+                        }
+                    })).then(result=>{
+                       resolve(newObj);
+                    }).catch(error=>reject(error));
                 });
             }
         }
@@ -1483,7 +2491,7 @@ export class ModelUtil {
         });
     }
 
-    private static deserializeArray<A>(array:Array<any>):Promise<Array<A>> {
+    private static deserializeArray(array:Array<any>):Promise<any> {
 
        return Promise.all(array.map(value=>{
             if (value && typeof value === 'object') {
@@ -1495,7 +2503,7 @@ export class ModelUtil {
 
     }
 
-    private static assignPropIfDefined(prop, value, target, type) {
+    private static assignProp(prop, value, target, type) {
         try {
             if ('_' + prop in target) {
                 target['_' + prop] = value;
@@ -1503,14 +2511,14 @@ export class ModelUtil {
             } else {
                 //it may be public
                 if (prop in target) {
-                    target[prop] = value;
                     Log.info(`Assigning public prop ${prop} = ${value}`);
                 } else {
-                    Log.debug(`Didn't find target value for prop ${prop} on target for ${type}`);
+                    Log.debug(`Target doesn't exist for prop ${prop} on target for ${type}`);
                 }
+                target[prop] = value;
             }
         } catch (error) {
-            Log.error(`ModelUtil::assignPropIfDefined: Failed to set prop: ${prop} on target: ${error}`);
+            Log.error(`ModelUtil::assignProp: Failed to set prop: ${prop} on target: ${error}`);
         }
     }
 }
@@ -1519,1018 +2527,3 @@ export class ModelUtil {
  * *********************************
  */
 
-export class DialogException {
-
-    constructor(public iconName?:string,
-                public message?:string,
-                public name?:string,
-                public stackTrace?:string,
-                public title?:string,
-                public cause?:DialogException,
-                public userMessages?:Array<UserMessage>) {
-    }
-
-}
-
-export class UserMessage {
-
-    constructor(public message:string,
-                public messageType:string,
-                public explanation:string,
-                public propertyNames:Array<string>) {
-    }
-}
-
-
-
-
-///////////////////////////////////////////////////////////
-
-/**
- * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
- */
-export interface EntityRec {
-
-    annos:Array<DataAnno>;
-
-    annosAtName(propName:string):Array<DataAnno>;
-
-    afterEffects(after:EntityRec):EntityRec;
-
-    backgroundColor:string;
-    backgroundColorFor(propName:string):string;
-
-    foregroundColor:string;
-    foregroundColorFor(propName:string):string;
-
-    imageName:string;
-    imageNameFor(propName:string):string;
-
-    imagePlacement:string;
-    imagePlacementFor(propName:string):string;
-
-    isBoldText:boolean;
-    isBoldTextFor(propName:string):boolean;
-
-    isItalicText:boolean;
-    isItalicTextFor(propName:string):boolean;
-
-    isPlacementCenter:boolean;
-    isPlacementCenterFor(propName:string):boolean;
-
-    isPlacementLeft:boolean;
-    isPlacementLeftFor(propName:string):boolean;
-
-    isPlacementRight:boolean;
-    isPlacementRightFor(propName:string):boolean;
-
-    isPlacementStretchUnder:boolean;
-    isPlacementStretchUnderFor(propName:string):boolean;
-
-    isPlacementUnder:boolean;
-    isPlacementUnderFor(propName:string):boolean;
-
-    isUnderline:boolean;
-    isUnderlineFor(propName:string):boolean;
-
-    objectId:string;
-
-    overrideText:string;
-    overrideTextFor(propName:string):string;
-
-    propAtIndex(index:number):Property;
-
-    propAtName(propName:string):Property;
-
-    propCount:number;
-
-    propNames:Array<string>;
-
-    propValues:Array<any>;
-
-    props:Array<Property>;
-
-    tipText:string;
-    tipTextFor(propName:string):string;
-
-    toEntityRec():EntityRec;
-
-    toWSEditorRecord():StringDictionary;
-
-    toWS():StringDictionary;
-
-    valueAtName(propName:string):any;
-}
-
-/**
- * Utility for working with EntityRecs
- */
-export class EntityRecUtil {
-
-    static newEntityRec(objectId:string, props:Array<Property>, annos?:Array<DataAnno>):EntityRec {
-        return annos ? new EntityRecImpl(objectId, ArrayUtil.copy(props), ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, ArrayUtil.copy(props));
-    }
-
-    /*
-    static union(l1:Array<Property>, l2:Array<Property>):Array<Property> {
-        var result:Array<Property> = ArrayUtil.copy(l1);
-        l2.forEach((p2:Property)=> {
-            if (!l1.some((p1:Property, i)=> {
-                    if (p1.name === p2.name) {
-                        result[i] = p2;
-                        return true;
-                    }
-                    return false;
-                })) {
-                result.push(p2);
-            }
-        });
-        return result;
-    }*/
-}
-
-/**
- * An {@link EntityRec} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
- * An EntityRec Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
- */
-export class EntityBuffer implements EntityRec {
-
-    static createEntityBuffer(objectId:string, before:Array<Property>, after:Array<Property>):EntityBuffer {
-        return new EntityBuffer(EntityRecUtil.newEntityRec(objectId, before), EntityRecUtil.newEntityRec(objectId, after));
-    }
-
-    constructor(private _before:EntityRec, private _after?:EntityRec) {
-        if (!_before) throw new Error('_before is null in EntityBuffer');
-        if (!_after) this._after = _before;
-    }
-
-    get after():EntityRec {
-        return this._after;
-    }
-
-    get annos():Array<DataAnno> {
-        return this._after.annos;
-    }
-
-    annosAtName(propName:string):Array<DataAnno> {
-        return this._after.annosAtName(propName);
-    }
-
-    afterEffects(afterAnother?:EntityRec):EntityRec {
-        if (afterAnother) {
-            return this._after.afterEffects(afterAnother);
-        } else {
-            return this._before.afterEffects(this._after);
-        }
-    }
-
-    get backgroundColor():string {
-        return this._after.backgroundColor;
-    }
-
-    backgroundColorFor(propName:string):string {
-        return this._after.backgroundColorFor(propName);
-    }
-
-    get before():EntityRec {
-        return this._before;
-    }
-
-    get foregroundColor():string {
-        return this._after.foregroundColor;
-    }
-
-    foregroundColorFor(propName:string):string {
-        return this._after.foregroundColorFor(propName);
-    }
-
-    get imageName():string {
-        return this._after.imageName;
-    }
-
-    imageNameFor(propName:string):string {
-        return this._after.imageNameFor(propName);
-    }
-
-    get imagePlacement():string {
-        return this._after.imagePlacement;
-    }
-
-    imagePlacementFor(propName:string):string {
-        return this._after.imagePlacement;
-    }
-
-    get isBoldText():boolean {
-        return this._after.isBoldText;
-    }
-
-    isBoldTextFor(propName:string):boolean {
-        return this._after.isBoldTextFor(propName);
-    }
-
-    isChanged(name:string):boolean {
-        var before = this._before.propAtName(name);
-        var after = this._after.propAtName(name);
-        return (before && after) ? !before.equals(after) : !(!before && !after);
-    }
-
-    get isItalicText():boolean {
-        return this._after.isItalicText;
-    }
-
-    isItalicTextFor(propName:string):boolean {
-        return this._after.isItalicTextFor(propName);
-    }
-
-    get isPlacementCenter():boolean {
-        return this._after.isPlacementCenter;
-    }
-
-    isPlacementCenterFor(propName:string):boolean {
-        return this._after.isPlacementCenterFor(propName);
-    }
-
-    get isPlacementLeft():boolean {
-        return this._after.isPlacementLeft;
-    }
-
-    isPlacementLeftFor(propName:string):boolean {
-        return this._after.isPlacementLeftFor(propName);
-    }
-
-    get isPlacementRight():boolean {
-        return this._after.isPlacementRight;
-    }
-
-    isPlacementRightFor(propName:string):boolean {
-        return this._after.isPlacementRightFor(propName);
-    }
-
-    get isPlacementStretchUnder():boolean {
-        return this._after.isPlacementStretchUnder;
-    }
-
-    isPlacementStretchUnderFor(propName:string):boolean {
-        return this._after.isPlacementStretchUnderFor(propName);
-    }
-
-    get isPlacementUnder():boolean {
-        return this._after.isPlacementUnder;
-    }
-
-    isPlacementUnderFor(propName:string):boolean {
-        return this._after.isPlacementUnderFor(propName);
-    }
-
-    get isUnderline():boolean {
-        return this._after.isUnderline;
-    }
-
-    isUnderlineFor(propName:string):boolean {
-        return this._after.isUnderlineFor(propName);
-    }
-
-    get objectId():string {
-        return this._after.objectId;
-    }
-
-    get overrideText():string {
-        return this._after.overrideText;
-    }
-
-    overrideTextFor(propName:string):string {
-        return this._after.overrideTextFor(propName);
-    }
-
-    propAtIndex(index:number):Property {
-        return this.props[index];
-    }
-
-    propAtName(propName:string):Property {
-        return this._after.propAtName(propName);
-    }
-
-    get propCount():number {
-        return this._after.propCount;
-    }
-
-    get propNames():Array<string> {
-        return this._after.propNames;
-    }
-
-    get props():Array<Property> {
-        return this._after.props;
-    }
-
-    get propValues():Array<any> {
-        return this._after.propValues;
-    }
-
-    setValue(name:string, value) {
-        const newProps = [];
-        let found = false;
-        this.props.forEach((prop:Property)=> {
-            if (prop.name === name) {
-                newProps.push(new Property(name, value));
-                found = true;
-            } else {
-                newProps.push(prop);
-            }
-        });
-        if (!found) {
-            newProps.push(new Property(name, value));
-        }
-        this._after = EntityRecUtil.newEntityRec(this.objectId, newProps, this.annos);
-    }
-
-    get tipText():string {
-        return this._after.tipText;
-    }
-
-    tipTextFor(propName:string):string {
-        return this._after.tipTextFor(propName);
-    }
-
-    toEntityRec():EntityRec {
-        return EntityRecUtil.newEntityRec(this.objectId, this.props);
-    }
-
-    toWSEditorRecord():StringDictionary {
-        return this.afterEffects().toWSEditorRecord();
-    }
-
-    toWS():StringDictionary {
-        return this.afterEffects().toWS();
-    }
-
-    valueAtName(propName:string):any {
-        return this._after.valueAtName(propName);
-    }
-
-}
-/**
- * *********************************
- */
-/**
- * The implementation of {@link EntityRec}.
- * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
- */
-export class EntityRecImpl implements EntityRec {
-
-    constructor(public objectId:string, public props:Array<Property> = [], public annos:Array<DataAnno> = []) {
-    }
-
-    annosAtName(propName:string):Array<DataAnno> {
-        var p = this.propAtName(propName);
-        return p ? p.annos : [];
-    }
-
-    afterEffects(after:EntityRec):EntityRec {
-        var effects = [];
-        after.props.forEach((afterProp)=> {
-            var beforeProp = this.propAtName(afterProp.name);
-            if (!afterProp.equals(beforeProp)) {
-                effects.push(afterProp);
-            }
-        });
-        return new EntityRecImpl(after.objectId, effects);
-    }
-
-    get backgroundColor():string {
-        return DataAnno.backgroundColor(this.annos);
-    }
-
-    backgroundColorFor(propName:string):string {
-        var p = this.propAtName(propName);
-        return p && p.backgroundColor ? p.backgroundColor : this.backgroundColor;
-    }
-
-    get foregroundColor():string {
-        return DataAnno.foregroundColor(this.annos);
-    }
-
-    foregroundColorFor(propName:string):string {
-        var p = this.propAtName(propName);
-        return p && p.foregroundColor ? p.foregroundColor : this.foregroundColor;
-    }
-
-    get imageName():string {
-        return DataAnno.imageName(this.annos);
-    }
-
-    imageNameFor(propName:string):string {
-        var p = this.propAtName(propName);
-        return p && p.imageName ? p.imageName : this.imageName;
-    }
-
-    get imagePlacement():string {
-        return DataAnno.imagePlacement(this.annos);
-    }
-
-    imagePlacementFor(propName:string):string {
-        var p = this.propAtName(propName);
-        return p && p.imagePlacement ? p.imagePlacement : this.imagePlacement;
-    }
-
-    get isBoldText():boolean {
-        return DataAnno.isBoldText(this.annos);
-    }
-
-    isBoldTextFor(propName:string):boolean {
-        var p = this.propAtName(propName);
-        return p && p.isBoldText ? p.isBoldText : this.isBoldText;
-    }
-
-    get isItalicText():boolean {
-        return DataAnno.isItalicText(this.annos);
-    }
-
-    isItalicTextFor(propName:string):boolean {
-        var p = this.propAtName(propName);
-        return p && p.isItalicText ? p.isItalicText : this.isItalicText;
-
-    }
-
-    get isPlacementCenter():boolean {
-        return DataAnno.isPlacementCenter(this.annos);
-    }
-
-    isPlacementCenterFor(propName:string):boolean {
-        var p = this.propAtName(propName);
-        return p && p.isPlacementCenter ? p.isPlacementCenter : this.isPlacementCenter;
-    }
-
-    get isPlacementLeft():boolean {
-        return DataAnno.isPlacementLeft(this.annos);
-    }
-
-    isPlacementLeftFor(propName:string):boolean {
-        var p = this.propAtName(propName);
-        return p && p.isPlacementLeft ? p.isPlacementLeft : this.isPlacementLeft;
-
-    }
-
-    get isPlacementRight():boolean {
-        return DataAnno.isPlacementRight(this.annos);
-    }
-
-    isPlacementRightFor(propName:string):boolean {
-        var p = this.propAtName(propName);
-        return p && p.isPlacementRight ? p.isPlacementRight : this.isPlacementRight;
-    }
-
-    get isPlacementStretchUnder():boolean {
-        return DataAnno.isPlacementStretchUnder(this.annos);
-    }
-
-    isPlacementStretchUnderFor(propName:string):boolean {
-        var p = this.propAtName(propName);
-        return p && p.isPlacementStretchUnder ? p.isPlacementStretchUnder : this.isPlacementStretchUnder;
-    }
-
-    get isPlacementUnder():boolean {
-        return DataAnno.isPlacementUnder(this.annos);
-    }
-
-    isPlacementUnderFor(propName:string):boolean {
-        var p = this.propAtName(propName);
-        return p && p.isPlacementUnder ? p.isPlacementUnder : this.isPlacementUnder;
-    }
-
-    get isUnderline():boolean {
-        return DataAnno.isUnderlineText(this.annos);
-    }
-
-    isUnderlineFor(propName:string):boolean {
-        var p = this.propAtName(propName);
-        return p && p.isUnderline ? p.isUnderline : this.isUnderline;
-
-    }
-
-    get overrideText():string {
-        return DataAnno.overrideText(this.annos);
-    }
-
-    overrideTextFor(propName:string):string {
-        var p = this.propAtName(propName);
-        return p && p.overrideText ? p.overrideText : this.overrideText;
-
-    }
-
-    propAtIndex(index:number):Property {
-        return this.props[index];
-    }
-
-    propAtName(propName:string):Property {
-        var prop:Property = null;
-        this.props.some((p)=> {
-            if (p.name === propName) {
-                prop = p;
-                return true;
-            }
-            return false;
-        });
-        return prop;
-    }
-
-    get propCount():number {
-        return this.props.length;
-    }
-
-    get propNames():Array<string> {
-        return this.props.map((p)=> {
-            return p.name;
-        });
-    }
-
-    get propValues():Array<any> {
-        return this.props.map((p)=> {
-            return p.value;
-        });
-    }
-
-    get tipText():string {
-        return DataAnno.tipText(this.annos);
-    }
-
-    tipTextFor(propName:string):string {
-        var p = this.propAtName(propName);
-        return p && p.tipText ? p.tipText : this.tipText;
-
-    }
-
-    toEntityRec():EntityRec {
-        return this;
-    }
-
-    toWSEditorRecord():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSEditorRecord'};
-        if (this.objectId) result['objectId'] = this.objectId;
-        result['names'] = Property.toWSListOfString(this.propNames);
-        result['properties'] = Property.toWSListOfProperties(this.propValues);
-        return result;
-    }
-
-    toWS():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSEntityRec'};
-        if (this.objectId) result['objectId'] = this.objectId;
-        result['props'] = Property.toListOfWSProp(this.props);
-        if (this.annos) result['annos'] = DataAnno.toListOfWSDataAnno(this.annos);
-        return result;
-    }
-
-    valueAtName(propName:string):any {
-        var value = null;
-        this.props.some((p)=> {
-            if (p.name === propName) {
-                value = p.value;
-                return true;
-            }
-            return false;
-        });
-        return value;
-    }
-
-}
-/**
- * *********************************
- */
-
-
-/**
- * An empty or uninitialized {@link EntityRec}.
- * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
- */
-export class NullEntityRec implements EntityRec {
-
-    static singleton:NullEntityRec = new NullEntityRec();
-
-    constructor() {
-    }
-
-    get annos():Array<DataAnno> {
-        return [];
-    }
-
-    annosAtName(propName:string):Array<DataAnno> {
-        return [];
-    }
-
-    afterEffects(after:EntityRec):EntityRec {
-        return after;
-    }
-
-    get backgroundColor():string {
-        return null;
-    }
-
-    backgroundColorFor(propName:string):string {
-        return null;
-    }
-
-    get foregroundColor():string {
-        return null;
-    }
-
-    foregroundColorFor(propName:string):string {
-        return null;
-    }
-
-    get imageName():string {
-        return null;
-    }
-
-    imageNameFor(propName:string):string {
-        return null;
-    }
-
-    get imagePlacement():string {
-        return null;
-    }
-
-    imagePlacementFor(propName:string):string {
-        return null;
-    }
-
-    get isBoldText():boolean {
-        return false;
-    }
-
-    isBoldTextFor(propName:string):boolean {
-        return false;
-    }
-
-    get isItalicText():boolean {
-        return false;
-    }
-
-    isItalicTextFor(propName:string):boolean {
-        return false;
-    }
-
-    get isPlacementCenter():boolean {
-        return false;
-    }
-
-    isPlacementCenterFor(propName:string):boolean {
-        return false;
-    }
-
-    get isPlacementLeft():boolean {
-        return false;
-    }
-
-    isPlacementLeftFor(propName:string):boolean {
-        return false;
-    }
-
-    get isPlacementRight():boolean {
-        return false;
-    }
-
-    isPlacementRightFor(propName:string):boolean {
-        return false;
-    }
-
-    get isPlacementStretchUnder():boolean {
-        return false;
-    }
-
-    isPlacementStretchUnderFor(propName:string):boolean {
-        return false;
-    }
-
-    get isPlacementUnder():boolean {
-        return false;
-    }
-
-    isPlacementUnderFor(propName:string):boolean {
-        return false;
-    }
-
-    get isUnderline():boolean {
-        return false;
-    }
-
-    isUnderlineFor(propName:string):boolean {
-        return false;
-    }
-
-    get objectId():string {
-        return null;
-    }
-
-    get overrideText():string {
-        return null;
-    }
-
-    overrideTextFor(propName:string):string {
-        return null;
-    }
-
-    propAtIndex(index:number):Property {
-        return null;
-    }
-
-    propAtName(propName:string):Property {
-        return null;
-    }
-
-    get propCount():number {
-        return 0;
-    }
-
-    get propNames():Array<string> {
-        return [];
-    }
-
-    get props():Array<Property> {
-        return [];
-    }
-
-    get propValues():Array<any> {
-        return [];
-    }
-
-    get tipText():string {
-        return null;
-    }
-
-    tipTextFor(propName:string):string {
-        return null;
-    }
-
-    toEntityRec():EntityRec {
-        return this;
-    }
-
-    toWSEditorRecord():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSEditorRecord'};
-        if (this.objectId) result['objectId'] = this.objectId;
-        result['names'] = Property.toWSListOfString(this.propNames);
-        result['properties'] = Property.toWSListOfProperties(this.propValues);
-        return result;
-    }
-
-    toWS():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSEntityRec'};
-        if (this.objectId) result['objectId'] = this.objectId;
-        result['props'] = Property.toListOfWSProp(this.props);
-        if (this.annos) result['annos'] = DataAnno.toListOfWSDataAnno(this.annos);
-        return result;
-    }
-
-    valueAtName(propName:string):any {
-        return null;
-    }
-
-}
-
-export class DataAnno {
-
-    private static BOLD_TEXT = "BOLD_TEXT";
-    private static BACKGROUND_COLOR = "BGND_COLOR";
-    private static FOREGROUND_COLOR = "FGND_COLOR";
-    private static IMAGE_NAME = "IMAGE_NAME";
-    private static IMAGE_PLACEMENT = "IMAGE_PLACEMENT";
-    private static ITALIC_TEXT = "ITALIC_TEXT";
-    private static OVERRIDE_TEXT = "OVRD_TEXT";
-    private static TIP_TEXT = "TIP_TEXT";
-    private static UNDERLINE = "UNDERLINE";
-    private static TRUE_VALUE = "1";
-    private static PLACEMENT_CENTER = "CENTER";
-    private static PLACEMENT_LEFT = "LEFT";
-    private static PLACEMENT_RIGHT = "RIGHT";
-    private static PLACEMENT_UNDER = "UNDER";
-    private static PLACEMENT_STRETCH_UNDER = "STRETCH_UNDER";
-
-    /*
-    static annotatePropsUsingWSDataAnnotation(props:Array<Prop>, jsonObj:StringDictionary):Try<Array<Prop>> {
-        return DialogTriple.fromListOfWSDialogObject<Array<DataAnno>>(jsonObj, 'WSDataAnnotation', OType.factoryFn).bind(
-            (propAnnos:Array<Array<DataAnno>>) => {
-                var annotatedProps:Array<Prop> = [];
-                for (var i = 0; i < props.length; i++) {
-                    var p = props[i];
-                    var annos:Array<DataAnno> = propAnnos[i];
-                    if (annos) {
-                        annotatedProps.push(new Prop(p.name, p.value, annos));
-                    } else {
-                        annotatedProps.push(p);
-                    }
-                }
-                return new Success(annotatedProps);
-            }
-        );
-    }
-    */
-
-    static backgroundColor(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
-            return anno.isBackgroundColor;
-        });
-        return result ? result.backgroundColor : null;
-    }
-
-    static foregroundColor(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
-            return anno.isForegroundColor;
-        });
-        return result ? result.foregroundColor : null;
-    }
-
-    /*
-    static fromWS(otype:string, jsonObj):Try<Array<DataAnno>> {
-        var stringObj = jsonObj['annotations'];
-        if (stringObj['WS_LTYPE'] !== 'String') {
-            return new Failure<Array<DataAnno>>('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
-        }
-        var annoStrings:Array<string> = stringObj['values'];
-        var annos:Array<DataAnno> = [];
-        for (var i = 0; i < annoStrings.length; i++) {
-            annos.push(DataAnno.parseString(annoStrings[i]));
-        }
-        return new Success<Array<DataAnno>>(annos);
-    }
-    */
-
-    static imageName(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
-            return anno.isImageName;
-        });
-        return result ? result.value : null;
-    }
-
-    static imagePlacement(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
-            return anno.isImagePlacement;
-        });
-        return result ? result.value : null;
-    }
-
-    static isBoldText(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
-            return anno.isBoldText
-        });
-    }
-
-    static isItalicText(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
-            return anno.isItalicText
-        });
-    }
-
-    static isPlacementCenter(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
-            return anno.isPlacementCenter
-        });
-    }
-
-    static isPlacementLeft(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
-            return anno.isPlacementLeft
-        });
-    }
-
-    static isPlacementRight(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
-            return anno.isPlacementRight
-        });
-    }
-
-    static isPlacementStretchUnder(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
-            return anno.isPlacementStretchUnder
-        });
-    }
-
-    static isPlacementUnder(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
-            return anno.isPlacementUnder
-        });
-    }
-
-    static isUnderlineText(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
-            return anno.isUnderlineText
-        });
-    }
-
-    static overrideText(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
-            return anno.isOverrideText;
-        });
-        return result ? result.value : null;
-    }
-
-    static tipText(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
-            return anno.isTipText;
-        });
-        return result ? result.value : null;
-    }
-
-
-    static toListOfWSDataAnno(annos:Array<DataAnno>):StringDictionary {
-        var result:StringDictionary = {'WS_LTYPE': 'WSDataAnno'};
-        var values = [];
-        annos.forEach((anno)=> {
-            values.push(anno.toWS())
-        });
-        result['values'] = values;
-        return result;
-    }
-
-    private static parseString(formatted:string):DataAnno {
-        var pair = StringUtil.splitSimpleKeyValuePair(formatted);
-        return new DataAnno(pair[0], pair[1]);
-    }
-
-
-    constructor(private _name:string, private _value:string) {
-    }
-
-    get backgroundColor():string {
-        return this.isBackgroundColor ? this.value : null;
-    }
-
-    get foregroundColor():string {
-        return this.isForegroundColor ? this.value : null;
-    }
-
-    equals(dataAnno:DataAnno):boolean {
-        return this.name === dataAnno.name;
-    }
-
-    get isBackgroundColor():boolean {
-        return this.name === DataAnno.BACKGROUND_COLOR;
-    }
-
-    get isBoldText():boolean {
-        return this.name === DataAnno.BOLD_TEXT && this.value === DataAnno.TRUE_VALUE;
-    }
-
-    get isForegroundColor():boolean {
-        return this.name === DataAnno.FOREGROUND_COLOR;
-    }
-
-    get isImageName():boolean {
-        return this.name === DataAnno.IMAGE_NAME;
-    }
-
-    get isImagePlacement():boolean {
-        return this.name === DataAnno.IMAGE_PLACEMENT;
-    }
-
-    get isItalicText():boolean {
-        return this.name === DataAnno.ITALIC_TEXT && this.value === DataAnno.TRUE_VALUE;
-    }
-
-    get isOverrideText():boolean {
-        return this.name === DataAnno.OVERRIDE_TEXT;
-    }
-
-    get isPlacementCenter():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_CENTER;
-    }
-
-    get isPlacementLeft():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_LEFT;
-    }
-
-    get isPlacementRight():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_RIGHT;
-    }
-
-    get isPlacementStretchUnder():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_STRETCH_UNDER;
-    }
-
-    get isPlacementUnder():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_UNDER;
-    }
-
-    get isTipText():boolean {
-        return this.name === DataAnno.TIP_TEXT;
-    }
-
-    get isUnderlineText():boolean {
-        return this.name === DataAnno.UNDERLINE && this.value === DataAnno.TRUE_VALUE;
-    }
-
-    get name():string {
-        return this._name;
-    }
-
-    get value():string {
-        return this._value;
-    }
-
-    toWS():StringDictionary {
-        return {'WS_OTYPE': 'WSDataAnno', 'name': this.name, 'value': this.value};
-    }
-
-}

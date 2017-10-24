@@ -5,13 +5,11 @@
 import {Client, ClientMode, JsonClientResponse} from "./client";
 import {ArrayUtil, DataUrl, DateTimeValue, DateValue, Log, ObjUtil, StringDictionary, TimeValue} from "./util";
 import {
-    ClientType, Dialog, DialogMessage, DialogRedirection, FormViewType, Login, Menu, PropertyDef, Property, Redirection,
-    Session, Tenant,
-    WebRedirection,
-    Workbench,
-    WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef, GeoFix, GeoLocation, NavRequest, NullNavRequest,
-    RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage, DialogException, ViewDesc, Record, EntityBuffer,
-    EntityRecDef, NullEntityRec, EntityRec, AttributeCellValue, Column, Details, List, Map
+    ClientType, Dialog, DialogMessage, DialogRedirection, Login, Menu, PropertyDef, Property, Redirection,
+    Session, Tenant, WebRedirection, Workbench, WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef,
+    GeoFix, GeoLocation, NavRequest, NullNavRequest, RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage,
+    DialogException, ViewDesc, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column, Details,
+    List, Map, SessionTypeName, ModelUtil, WebRedirectionTypeName, WorkbenchRedirectionTypeName
 } from "./models";
 import {FetchClient} from "./ws";
 import {OfflineClient} from "./offline";
@@ -262,11 +260,10 @@ export class AppContext {
         };
 
         return this.dialogApi.createSession(tenantId, login).then((result:Session | Redirection)=>{
-            if(result.hasOwnProperty('redirectionType')) {
-                //it's a Redirection
+            if(result.type === SessionTypeName) {
+                this._session = <Session>result;
                 return result;
             } else {
-                this._session = <Session>result;
                 return result;
             }
         });
@@ -369,23 +366,27 @@ export class AppContext {
        Private Ops
      ******************* */
 
+    //@TODO - add action source to FormContext constructor - it is currently null
     private fromRedirection(redirection:Redirection):Promise<NavRequest> {
 
         if(redirection.type === 'hxgn.api.dialog.DialogRedirection') {
-           this.dialogApi.getDialog(this.session.tenantId, this.session.id, (<DialogRedirection>redirection).dialogId)
+           return this.dialogApi.getDialog(this.session.tenantId, this.session.id, (<DialogRedirection>redirection).dialogId)
                .then((dialog:Dialog)=>{
-                  if(dialog.view.viewType === FormViewType) {
-                    //return new FormContext(dialog);
+                  if(dialog.view instanceof Form) {
+                      return new FormContext(dialog.businessClassName, dialog.children, dialog.dialogClassName,
+                          dialog.dialogMode, dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId,
+                          <Form>dialog.view, dialog.viewMode, <DialogRedirection>redirection, null, null, this.session, null);
+                  } else {
+                      throw new Error(`Unexpected top-level dialog view type: ${dialog.view.type}`);
                   }
                });
-        } else if(redirection.type === 'hxgn.api.dialog.WebRedirection') {
+        } else if(redirection.type === WebRedirectionTypeName) {
             return Promise.resolve(<WebRedirection>redirection);
-        } else if(redirection.type === 'hxgn.api.dialog.WorkbenchRedirection') {
+        } else if(redirection.type === WorkbenchRedirectionTypeName) {
             return this.getWorkbench((<WorkbenchRedirection>redirection).workbenchId);
         } else {
             return Promise.reject(new Error(`Unrecognized type of Redirection ${ObjUtil.formatRecAttr(redirection)}`));
         }
-
     }
 
     private getClient(clientType:ClientMode):Client {
@@ -398,6 +399,1728 @@ export class AppContext {
 
 }
 
+/////////////////Begin Dialog Context Classes //////////////////////////////////////////////////////////
+
+/**
+ * Top-level class, representing a Catavolt 'Pane' definition.
+ * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
+ * or a list of records.  See {@EntityRecord}
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export abstract class PaneContext implements Dialog{
+
+    //statics
+    private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
+    static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
+
+    //private/protected
+    private _binaryCache:{ [index:string]:Array<Binary> } = {};
+    private _lastRefreshTime:Date = new Date(0);
+    protected _settings:StringDictionary = {};
+    protected _destroyed:boolean = false;
+    private _childrenContexts:Array<PaneContext>;
+
+    constructor(readonly businessClassName:string,
+                readonly children: Array<Dialog>,
+                readonly dialogClassName:string,
+                readonly dialogMode:DialogMode,
+                readonly dialogType:string,
+                readonly id:string,
+                readonly recordDef: RecordDef,
+                readonly sessionId:string,
+                readonly tenantId: string,
+                readonly view: View,
+                readonly viewMode: ViewMode,
+                readonly dialogRedirection:DialogRedirection,
+                readonly paneRef:number,
+                readonly parentContext:PaneContext,
+                readonly session:Session
+    ) {
+        this._childrenContexts = this.createChildContexts(children, dialogRedirection);
+        this.initialize();
+    }
+
+    /**
+     * Updates a settings object with the new settings from a 'Navigation'
+     * @param initialSettings
+     * @param navRequest
+     * @returns {StringDictionary}
+     */
+    static resolveSettingsFromRedirection(initialSettings:StringDictionary,
+                                          redirection:Redirection):StringDictionary {
+
+        var result:StringDictionary = ObjUtil.addAllProps(initialSettings, {});
+        ObjUtil.addAllProps(redirection.referringDialogProperties, result);
+        var destroyed = result['fromDialogDestroyed'];
+        if (destroyed) result['destroyed'] = true;
+        return result;
+
+    }
+
+    /**
+     * Load a Binary property from a record
+     * @param propName
+     * @param entityRec
+     * @returns {any}
+     */
+    /* @TODO */
+     binaryAt(propName:string, entityRec:EntityRec):Promise<Binary> {
+         /*
+         const prop: Prop = entityRec.propAtName(propName)
+         if (prop) {
+             if (prop.value instanceof InlineBinaryRef) {
+                 const binRef = prop.value as InlineBinaryRef;
+                 return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+             } else if (prop.value instanceof ObjectBinaryRef) {
+                 const binRef = prop.value as ObjectBinaryRef;
+                 if (binRef.settings['webURL']) {
+                     return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+                 } else {
+                     return this.readBinary(propName, entityRec);
+                 }
+             } else if (typeof prop.value === 'string') {
+                 return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
+             } else {
+                 return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
+             }
+         } else {
+             return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
+         }
+         */
+
+         return Promise.resolve(null);
+     }
+
+     get childrenContexts():Array<PaneContext> {
+        return this._childrenContexts;
+     }
+
+    /**
+     * Get the dialog alias
+     * @returns {any}
+     */
+    get dialogAlias():string {
+        return this.dialogRedirection.dialogProperties['dialogAlias'];
+    }
+
+    /**
+     * Return the error associated with this pane, if any
+     * @returns {any}
+     */
+    get error():DialogException {
+        if(this.hasError) {
+            return (this.view as ErrorMessage).exception;
+        } else {
+            return null;
+        }
+    }
+
+
+    /**
+     * Find a menu def on this Pane with the given actionId
+     * @param actionId
+     * @returns {MenuDef}
+     */
+    findMenuDefAt(actionId:string) {
+        return this.view.findMenuDefAt(actionId);
+    }
+
+    /**
+     * Get a string representation of this property suitable for 'reading'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
+    formatForRead(prop:Property, propName:string):string {
+        return PropFormatter.formatForRead(prop, this.propDefAtName(propName));
+    }
+
+    /**
+     * Get a string representation of this property suitable for 'writing'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
+    formatForWrite(prop:Property, propName:string):string {
+        return PropFormatter.formatForWrite(prop, this.propDefAtName(propName));
+    }
+
+    /**
+     * Get the underlying form definition {@link FormDef} for this Pane.
+     * If this is not a {@link FormContext} this will be the {@link FormDef} of the owning/parent Form
+     * @returns {FormDef}
+     */
+    get formDef():Form {
+        return this.parentContext.formDef;
+    }
+
+    /**
+     * Returns whether or not this pane loaded properly
+     * @returns {boolean}
+     */
+    get hasError():boolean {
+        return this.view instanceof ErrorMessage;
+    }
+
+    /**
+     * Returns whether or not this Form is destroyed
+     * @returns {boolean}
+     */
+    get isDestroyed():boolean {
+        return this._destroyed || this.isAnyChildDestroyed;
+    }
+
+    /**
+     * Returns whether or not the data in this pane is out of date
+     * @returns {boolean}
+     */
+    get isRefreshNeeded():boolean {
+        return this._lastRefreshTime.getTime() < AppContext.singleton.lastMaintenanceTime.getTime();
+    }
+
+    /**
+     * Get the last time this pane's data was refreshed
+     * @returns {Date}
+     */
+    get lastRefreshTime():Date {
+        return this._lastRefreshTime;
+    }
+
+    /**
+     * @param time
+     */
+    set lastRefreshTime(time:Date) {
+        this._lastRefreshTime = time;
+    }
+
+    /**
+     * Get the all {@link MenuDef}'s associated with this Pane
+     * @returns {Array<MenuDef>}
+     */
+    get menu():Menu {
+        return this.view.menu;
+    }
+
+    /**
+     * Get the title of this Pane
+     * @returns {string}
+     */
+    get paneTitle():string {
+        return this.view.findTitle();
+    }
+
+    /**
+     * Parses a value to prepare for 'writing' back to the server
+     * @param formattedValue
+     * @param propName
+     * @returns {any}
+     */
+    parseValue(formattedValue:any, propName:string):any {
+        return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
+    }
+
+    /**
+     * Get the propery definition for a property name
+     * @param propName
+     * @returns {PropDef}
+     */
+    propDefAtName(propName:string):PropertyDef {
+        return this.recordDef.propDefAtName(propName);
+    }
+
+    /**
+     * Read all the Binary values in this {@link EntityRec}
+     * @param entityRec
+     * @returns {Future<Array<Try<Binary>>>}
+     */
+    /* @TODO */
+    readBinaries(record:Record):Promise<Array<Binary>> {
+        /*
+        return Future.sequence<Binary>(
+            this.recordDef.filter((propDef: PropertyDef) => {
+                return propDef.isBinaryType
+            }).map((propDef: PropertyDef) => {
+                return this.readBinary(propDef.name, entityRec);
+            })
+        );
+        */
+        return Promise.resolve(null);
+     }
+
+    /**
+     * Get the all {@link ViewDesc}'s associated with this Form
+     * @returns {Array<ViewDesc>}
+     */
+    /* @TODO */
+    get viewDescs():Array<ViewDesc> {
+        /* @TODO */
+        //return this.form.viewDescs;
+        return [];
+    }
+
+    /* @TODO */
+     writeAttachment(attachment:Attachment):Promise<void> {
+         /*
+        return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.session);
+        */
+         return Promise.resolve(null);
+     }
+
+     //@TODO
+     writeAttachments(entityRec:EntityRec):Promise<Array<void>> {
+         /*
+         return Future.sequence<void>(
+             entityRec.props.filter((prop: Prop) => {
+                 return prop.value instanceof Attachment;
+             }).map((prop: Prop) => {
+                 const attachment: Attachment = prop.value as Attachment;
+                 return this.writeAttachment(attachment);
+             })
+         );
+         */
+         return Promise.resolve(null);
+     }
+
+
+    /**
+     * Write all Binary values in this {@link EntityRecord} back to the server
+     * @param entityRec
+     * @returns {Future<Array<Try<XWritePropertyResult>>>}
+     */
+    /* @TODO */
+     writeBinaries(entityRec:EntityRec):Promise<Array<void>> {
+         /*
+         return Future.sequence<XWritePropertyResult>(
+             entityRec.props.filter((prop: Prop) => {
+                 return this.propDefAtName(prop.name).isBinaryType;
+             }).map((prop: Prop) => {
+                 let writeFuture: Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
+                 if (prop.value) {
+                     let ptr: number = 0;
+                     const encBin: EncodedBinary = prop.value as EncodedBinary;
+                     const data = encBin.data;
+                     while (ptr < data.length) {
+                         const boundPtr = (ptr: number) => {
+                             writeFuture = writeFuture.bind((prevResult) => {
+                                 const encSegment: string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substr(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
+                                 return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.session);
+                             });
+                         }
+                         boundPtr(ptr);
+                         ptr += PaneContext.CHAR_CHUNK_SIZE;
+                     }
+                 } else {
+                     // This is a delete
+                     writeFuture = writeFuture.bind((prevResult) => {
+                         return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
+                     });
+                 }
+                 return writeFuture;
+             })
+         );
+         */
+         return Promise.resolve(null);
+     }
+
+    //@TODO
+    private createChildContexts(children:Array<Dialog>, dialogRedirection:DialogRedirection):Array<PaneContext> {
+
+         return children ? children.map((dialog:Dialog, n:number)=>{ return this.createChildContext(dialog, dialogRedirection, n)}) : [];
+    }
+
+    private createChildContext(dialog:Dialog, dialogRedirection:DialogRedirection, paneRef:number) {
+
+        if (dialog.view instanceof List) {
+
+            return new ListContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
+                dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
+                dialog.viewMode, dialogRedirection, paneRef, this, this.session);
+
+        } else if (dialog.view instanceof Details) {
+
+            return new DetailsContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
+                dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
+                dialog.viewMode, dialogRedirection, paneRef, this, this.session);
+
+        } else if (dialog.view instanceof Map) {
+
+            return new MapContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
+                dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
+                dialog.viewMode, dialogRedirection, paneRef, this, this.session);
+
+        } else if (dialog.view instanceof Form) {
+
+            //@TODO add ActionSource to FormContext constructor here
+            new FormContext(dialog.businessClassName, dialog.children, dialog.dialogClassName,
+                dialog.dialogMode, dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId,
+                <Form>dialog.view, dialog.viewMode, dialogRedirection, paneRef, this, this.session, null);
+
+        }
+
+    }
+
+
+    /* @TODO */
+    openView(targetViewDesc:ViewDesc): Promise<PaneContext | NavRequest>{ return null; }
+
+    protected abstract getSelectedViewId():Promise<string>;
+    protected abstract initialize();
+
+    /**
+     * @private
+     * @param navRequest
+     */
+    protected processNavRequestForDestroyed(referringDialogProperties:StringDictionary) {
+
+        var destroyedStr:string = referringDialogProperties['destroyed'];
+        if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
+            this._destroyed = true;
+        }
+        var fromDialogDestroyed = referringDialogProperties['fromDialogDestroyed'];
+        if (fromDialogDestroyed) {
+            this._destroyed = true;
+        }
+    }
+
+    /* @TODO */
+    //should this be abstract?
+    protected readBinary(propName:string, entityRec:EntityRec):Promise<Binary> { return null; }
+
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    private get isAnyChildDestroyed():boolean {
+        return this.childrenContexts.some((paneContext:PaneContext)=> {
+            return paneContext.isDestroyed;
+        });
+    }
+
+
+}
+
+/**
+ * PaneContext Subtype that represents a Catavolt Form Definition
+ * A form is a 'container' composed of child panes of various concrete types.
+ * A FormContext parallels this design, and contains a list of 'child' contexts
+ * See also {@link FormDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export class FormContext extends PaneContext implements Dialog, NavRequest {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: Form,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                sessionContext:Session,
+                readonly actionSource:ActionSource
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, sessionContext);
+    }
+
+    /**
+     * Close this form
+     * @returns {Future<VoidResult>}
+     */
+    /* @TODO */
+     close():Promise<VoidResult> {
+         /*
+        return DialogService.closeEditorModel(this.dialogRedirection.dialogHandle, this.sessionContext);
+        */
+         return Promise.resolve(null);
+     }
+
+    /**
+     * Get the underlying Form definition for this FormContext
+     * @returns {FormDef}
+     */
+    get form():Form {
+        return this.view as Form;
+    }
+
+    /* @TODO */
+    openView(targetViewDesc: ViewDesc): Promise<PaneContext | NavRequest> {
+        /*
+        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+            .bind((setViewResult: XOpenDialogModelResult) => {
+                const xOpenEditorResult: XOpenEditorModelResult = setViewResult as XOpenEditorModelResult;
+                var ca = new ContextAction('#viewChange', xOpenEditorResult.formRedirection.objectId, this.actionSource);
+                return FormContextBuilder.createWithRedirection(xOpenEditorResult.formModel.form.redirection, ca, this.sessionContext)
+                    .buildFromOpenForm(xOpenEditorResult, xOpenEditorResult.formModel.form.redirection.isEditor)
+                    .map((formContext: FormContext) => {
+                        this._destroyed = true;
+                        return Either.right<PaneContext, NavRequest>(formContext as NavRequest)
+                    });
+            });
+            */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Perform the action associated with the given MenuDef on this Form
+     * @param menuDef
+     * @returns {Future<NavRequest>}
+     */
+    /* @TODO */
+    performMenuAction(menu: Menu): Promise<NavRequest> {
+        /*
+        return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
+            NullEntityRec.singleton, this.sessionContext).bind((value: Redirection) => {
+            var destroyedStr: string = value.fromDialogProperties && value.fromDialogProperties['destroyed'];
+            if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
+                this._destroyed = true;
+            }
+            var ca: ContextAction = new ContextAction(menuDef.actionId, this.dialogRedirection.objectId, this.actionSource);
+            return NavRequestUtil.fromRedirection(value, ca, this.sessionContext);
+        });
+        */
+        return Promise.resolve(null);
+    }
+
+    getSelectedViewId():Promise<string> {
+        /* @TODO */
+        //return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
+        return null;
+    }
+
+    protected initialize() {
+    }
+}
+
+export enum EditorState{ READ, WRITE, DESTROYED };
+
+
+/**
+ * PanContext Subtype that represents an 'Editor Pane'.
+ * An 'Editor' represents and is backed by a single Record and Record definition.
+ * See {@link EntityRec} and {@link RecordDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export class EditorContext extends PaneContext {
+
+    private static GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
+    private static GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
+
+    private _buffer:EntityBuffer;
+    private _editorState:EditorState;
+    private _isFirstReadComplete:boolean;
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: View,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+    }
+
+    /**
+     * Get the current buffered record
+     * @returns {EntityBuffer}
+     */
+    get buffer():EntityBuffer {
+        if (!this._buffer) {
+            this._buffer = new EntityBuffer(NullEntityRec.singleton);
+        }
+        return this._buffer;
+    }
+
+    //@TODO
+    changeViewMode(viewMode:ViewMode):Promise<RecordDef> {
+
+        /*return DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode,
+         this.sessionContext).bind((changePaneModeResult:XChangePaneModeResult)=> {
+         this.putSettings(changePaneModeResult.dialogProps);
+         if (this.isDestroyedSetting) {
+         this._editorState = EditorState.DESTROYED;
+         } else {
+         this.entityRecDef = changePaneModeResult.entityRecDef;
+         if (this.isReadModeSetting) {
+         this._editorState = EditorState.READ;
+         } else {
+         this._editorState = EditorState.WRITE;
+         }
+         }
+         return Future.createSuccessfulFuture('EditorContext::changePaneMode', this.entityRecDef);
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    destroy():void {
+        this._editorState = EditorState.DESTROYED;
+    }
+
+    /**
+     * Get the associated entity record
+     * @returns {EntityRec}
+     */
+    get entityRec():EntityRec {
+        return this._buffer.toEntityRec();
+    }
+
+    /**
+     * Get the current version of the entity record, with any pending changes present
+     * @returns {EntityRec}
+     */
+    get entityRecNow():EntityRec {
+        return this.entityRec;
+    }
+
+    /**
+     * Get the possible values for a 'constrained value' property
+     * @param propName
+     * @returns {Future<Array<any>>}
+     */
+    //@TODO
+    getAvailableValues(propName:string):Promise<Array<Object>> {
+        /*
+         return DialogService.getAvailableValues(this.paneDef.dialogHandle, propName,
+         this.buffer.afterEffects(), this.sessionContext).map((valuesResult:XGetAvailableValuesResult)=> {
+         return valuesResult.list;
+         });
+         */
+        return Promise.resolve(null);
+
+    }
+
+    /**
+     * Returns whether or not this cell definition contains a binary value
+     * @param cellValueDef
+     * @returns {PropDef|boolean}
+     */
+    isBinary(cellValue:AttributeCellValue):boolean {
+        var propDef = this.propDefAtName(cellValue.propertyName);
+        return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValue.isInlineMediaStyle));
+    }
+
+    /**
+     * Returns whether or not this Editor Pane is destroyed
+     * @returns {boolean}
+     */
+    get isDestroyed():boolean {
+        return this._editorState === EditorState.DESTROYED;
+    }
+
+    /**
+     * Returns whether or not this Editor Pane is requested to be destroyed.  This may be set
+     * on a presave action assoicted with an action.
+     * @returns {boolean}
+     */
+    get isDestroyRequested():boolean {
+        return this.isDestroyedRequestedSetting;
+    }
+
+    /**
+     * Returns whether or not the buffers contain valid data via a successful read operation.
+     * @returns {boolean}
+     */
+    get isFirstReadComplete():boolean {
+        return this._isFirstReadComplete;
+    }
+
+    /**
+     * Returns whether or not this Editor is in 'read' mode
+     * @returns {boolean}
+     */
+    get isReadMode():boolean {
+        return this._editorState === EditorState.READ;
+    }
+
+    /**
+     * Returns whether or not this property is read-only
+     * @param propName
+     * @returns {boolean}
+     */
+    isReadModeFor(propName:string):boolean {
+        if (!this.isReadMode) {
+            var propDef = this.propDefAtName(propName);
+            return !propDef || !propDef.writeAllowed || !propDef.writeEnabled;
+        }
+        return true;
+    }
+
+    /**
+     * Returns whether or not this cell definition contains a binary value that should be treated as a signature control
+     * @param cellValueDef
+     * @returns {PropDef|boolean}
+     */
+    isSignature(cellValueDef:AttributeCellValue):boolean {
+        var propDef = this.propDefAtName(cellValueDef.propertyName);
+        return this.isBinary(cellValueDef) && propDef.isSignatureType;
+    }
+
+    /**
+     * Returns whether or not this property is 'writable'
+     * @returns {boolean}
+     */
+    get isWriteMode():boolean {
+        return this._editorState === EditorState.WRITE;
+    }
+
+    //@TODO
+    openView(targetViewDesc:ViewDesc): Promise<PaneContext> {
+        /*
+         return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+         .bind((setViewResult:XOpenDialogModelResult)=>{
+         return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this) });
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Perform the action associated with the given MenuDef on this EditorPane.
+     * Given that the Editor could possibly be destroyed as a result of this action,
+     * any provided pending writes will be saved if present.
+     * @param menuDef
+     * @param pendingWrites
+     * @returns {Future<NavRequest>}
+     */
+    //@TODO
+    performMenuAction(menu:Menu, pendingWrites:EntityRec):Promise<NavRequest> {
+
+        /*
+         return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
+         pendingWrites, this.sessionContext).bind((redirection:Redirection)=> {
+         var ca = new ContextAction(menuDef.actionId, this.parentContext.dialogRedirection.objectId,
+         this.actionSource);
+         return NavRequestUtil.fromRedirection(redirection, ca,
+         this.sessionContext).map((navRequest:NavRequest)=> {
+         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, navRequest);
+         if (this.isDestroyedSetting) {
+         this._editorState = EditorState.DESTROYED;
+         }
+         if (this.isRefreshSetting) {
+         AppContext.singleton.lastMaintenanceTime = new Date();
+         }
+         return navRequest;
+         });
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Properties whose {@link PropDef.canCauseSideEffects} value is true, may change other underlying values in the model.
+     * This method will update those underlying values, given the property name that is changing, and the new value.
+     * This is frequently used with {@link EditorContext.getAvailableValues}.  When a value is seleted, other properties
+     * available values may change. (i.e. Country, State, City dropdowns)
+     * @param propertyName
+     * @param value
+     * @returns {Future<null>}
+     */
+    //@TODO
+    processSideEffects(propertyName:string, value:any):Promise<void> {
+
+        /*
+         var sideEffectsFr:Future<EntityRec> = DialogService.processSideEffects(this.paneDef.dialogHandle,
+         this.sessionContext, propertyName, value, this.buffer.afterEffects()).map((changeResult:XPropertyChangeResult)=> {
+         return changeResult.sideEffects ? changeResult.sideEffects.entityRec : new NullEntityRec();
+         });
+
+         return sideEffectsFr.map((sideEffectsRec:EntityRec)=> {
+         var originalProps = this.buffer.before.props;
+         var userEffects = this.buffer.afterEffects().props;
+         var sideEffects = sideEffectsRec.props;
+         sideEffects = sideEffects.filter((prop:Prop)=> {
+         return prop.name !== propertyName;
+         });
+         this._buffer = EntityBuffer.createEntityBuffer(this.buffer.objectId,
+         EntityRecUtil.union(originalProps, sideEffects),
+         EntityRecUtil.union(originalProps, EntityRecUtil.union(userEffects, sideEffects)));
+         return null;
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Read (load) the {@link EntityRec} assocated with this Editor
+     * The record must be read at least once to initialize the Context
+     * @returns {Future<EntityRec>}
+     */
+    //@TODO
+    read():Promise<EntityRec> {
+
+        /*
+         return DialogService.readEditorModel(this.paneDef.dialogHandle,
+         this.sessionContext).map((readResult:XReadResult)=> {
+         this.entityRecDef = readResult.entityRecDef;
+         this._isFirstReadComplete = true;
+         return readResult.entityRec;
+         }).map((entityRec:EntityRec)=> {
+         this.initBuffer(entityRec);
+         this.lastRefreshTime = new Date();
+         return entityRec;
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Get the requested GPS accuracy
+     * @returns {Number}
+     */
+    requestedAccuracy():number {
+        var accuracyStr = this.settings[EditorContext.GPS_ACCURACY];
+        return accuracyStr ? Number(accuracyStr) : 500;
+    }
+
+    /**
+     * Get the requested GPS timeout in seconds
+     * @returns {Number}
+     */
+    requestedTimeoutSeconds():number {
+        var timeoutStr = this.settings[EditorContext.GPS_SECONDS];
+        return timeoutStr ? Number(timeoutStr) : 30;
+    }
+
+    //@TODO
+    getSelectedViewId():Promise<string> {
+        /*
+         return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
+         */
+        return null;
+    }
+
+    /**
+     * Set the value of a property in this {@link EntityRecord}.
+     * Values may be already constructed target types (CodeRef, TimeValue, Date, etc.)
+     * or primitives, in which case the values will be parsed and objects constructed as necessary.
+     * @param name
+     * @param value
+     * @returns {any}
+     */
+    setPropValue(name:string, value:any):any {
+        const propDef:PropertyDef = this.propDefAtName(name);
+        let parsedValue:any = null;
+        if (propDef) {
+            parsedValue = (value !== null && value !== undefined) ? this.parseValue(value, propDef.name) : null;
+            this.buffer.setValue(propDef.name, parsedValue);
+        }
+        return parsedValue;
+    }
+
+    /**
+     * Set a binary property from a string formatted as a 'data url'
+     * See {@link https://en.wikipedia.org/wiki/Data_URI_scheme}
+     * @param name
+     * @param dataUrl
+     */
+    setBinaryPropWithDataUrl(name:string, dataUrl:string) {
+        if (dataUrl) {
+            const urlObj: DataUrl = new DataUrl(dataUrl);
+            this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
+        } else {
+            this.setPropValue(name, null);  // Property is being deleted/cleared
+        }
+    }
+
+    /**
+     * Set a binary property with base64 encoded data
+     * @param name
+     * @param encodedData
+     * @param mimeType
+     */
+    setBinaryPropWithEncodedData(name:string, encodedData:string, mimeType:string) {
+        const propDef:PropertyDef = this.propDefAtName(name);
+        if (propDef) {
+            const value = new EncodedBinary(encodedData, mimeType);
+            this.buffer.setValue(propDef.name, value);
+        }
+    }
+
+    /**
+     * Write this record (i.e. {@link EntityRec}} back to the server
+     * @returns {Future<Either<NavRequest, EntityRec>>}
+     */
+    //@TODO
+    write(settings?:StringDictionary):Promise<NavRequest | EntityRec> {
+
+        //let deltaRec:EntityRec = this.buffer.afterEffects();
+        /* Write the 'special' props first */
+
+        /*
+         return this.writeBinaries(deltaRec).bind((binResult) => {
+         return this.writeAttachments(deltaRec).bind((atResult) => {
+         /* Remove special property types before writing the actual record */
+        /*
+         deltaRec = this.removeSpecialProps(deltaRec);
+         var result:Future<Either<NavRequest, EntityRec>> = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
+         this.sessionContext, settings).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
+         if (either.isLeft) {
+         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, either.left);
+         var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
+         return NavRequestUtil.fromRedirection(either.left, ca, this.sessionContext).map((navRequest:NavRequest)=> {
+         return Either.left<NavRequest,EntityRec>(navRequest);
+         });
+         } else {
+         var writeResult:XWriteResult = either.right;
+         this.putSettings(writeResult.dialogProps);
+         this.entityRecDef = writeResult.entityRecDef;
+         return Future.createSuccessfulFuture<Either<NavRequest, EntityRec>>('EditorContext::write', Either.right(writeResult.entityRec));
+         }
+         });
+
+         return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
+         var now = new Date();
+         AppContext.singleton.lastMaintenanceTime = now;
+         this.lastRefreshTime = now;
+         if (successfulWrite.isLeft) {
+         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
+         } else {
+         this.initBuffer(successfulWrite.right);
+         }
+         if (this.isDestroyedSetting) {
+         this._editorState = EditorState.DESTROYED;
+         } else {
+         if (this.isReadModeSetting) {
+         this._editorState = EditorState.READ;
+         }
+         }
+         return successfulWrite;
+         });
+         });
+         });
+
+         */
+        return Promise.resolve(null);
+
+    }
+
+    //Module level methods
+
+    /**
+     * @private
+     */
+    initialize() {
+        this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
+        this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
+        this._buffer = null;
+    }
+
+    /**
+     * Get this Editor Pane's settings
+     * @returns {StringDictionary}
+     */
+    get settings():StringDictionary {
+        return this._settings;
+    }
+
+    //protected
+
+    //@TODO
+    protected readBinary(propName:string, entityRec:EntityRec):Promise<Binary> {
+        /*
+         let seq:number = 0;
+         let encodedResult:string = '';
+         let inProgress:string = '';
+         let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
+         if (result.hasMore) {
+         inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
+         return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+         propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+         } else {
+         if (inProgress) {
+         inProgress += atob(result.data);
+         encodedResult = btoa(inProgress);
+         } else {
+         encodedResult = result.data;
+         }
+         return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(encodedResult));
+         }
+         }
+         return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+         propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+         */
+
+        return Promise.resolve(null);
+    }
+
+    //Private methods
+
+    private removeSpecialProps(entityRec:EntityRec):EntityRec {
+        entityRec.props = entityRec.props.filter((prop:Property)=>{
+            /* Remove the Binary(s) as they have been written seperately */
+            return !this.propDefAtName(prop.name).isBinaryType;
+        }).map((prop:Property)=>{
+            /*
+             Remove the Attachment(s) (as they have been written seperately) but replace
+             the property value with the file name of the attachment prior to writing
+             */
+            if(prop.value instanceof Attachment) {
+                const attachment = prop.value as Attachment;
+                return new Property(prop.name, attachment.name, prop.annos);
+            } else {
+                return prop;
+            }
+        });
+        return entityRec;
+    }
+
+    private initBuffer(entityRec:EntityRec) {
+        this._buffer = entityRec ? new EntityBuffer(entityRec) : new EntityBuffer(NullEntityRec.singleton);
+    }
+
+    private get isDestroyedSetting():boolean {
+        var str = this._settings['destroyed'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    private get isDestroyedRequestedSetting():boolean {
+        var str = this._settings['requestDestroy'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    private get isGlobalRefreshSetting():boolean {
+        var str = this._settings['globalRefresh'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    private get isLocalRefreshSetting():boolean {
+        var str = this._settings['localRefresh'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    private get isReadModeSetting():boolean {
+        var paneMode = this.paneModeSetting;
+        return paneMode && paneMode.toLowerCase() === 'read';
+    }
+
+    private get isRefreshSetting():boolean {
+        return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
+    }
+
+    private get paneModeSetting():string {
+        return this._settings['paneMode'];
+    }
+
+    private putSetting(key:string, value:any) {
+        this._settings[key] = value;
+    }
+
+    private putSettings(settings:StringDictionary) {
+        ObjUtil.addAllProps(settings, this._settings);
+    }
+
+    //@TODO
+    /*
+     private updatePaneDef(xOpenResult:XOpenDialogModelResult):Promise<View> {
+
+     const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
+     const menuDefsFr:Future<Array<MenuDef>> = FormContextBuilder.fetchChildMenuDefs(this.dialogRedirection, this.sessionContext);
+
+     return Future.sequence<any>([activeColDefsFr, menuDefsFr])
+     .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
+     var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
+     if (flattenedTry.failure) {
+     return Future.createCompletedFuture<PaneDef>('FormContextBuilder::buildPaneDefFromDialogModel',
+     new Failure<PaneDef>(flattenedTry.failure));
+     }
+     const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
+     const menuDefs:Array<MenuDef> = flattenedTry.success[1];
+     const paneDef = this.paneDef;
+
+     if(xOpenResult instanceof XOpenEditorModelResult) {
+     const editorModelResult:XOpenEditorModelResult = xOpenResult;
+     paneDef.entityRecDef = editorModelResult.editorRecordDef;
+     paneDef.menuDefs = menuDefs;
+     this.initialize();
+     }
+
+     return Future.createSuccessfulFuture('EditorContext::updatePaneDef', paneDef);
+
+     });
+     }
+     */
+
+}
+
+
+/**
+ * Enum to manage query states
+ */
+enum QueryState { ACTIVE, DESTROYED }
+
+/**
+ * Enum specifying query direction
+ */
+export enum QueryDirection { FORWARD, BACKWARD }
+
+/**
+ * PaneContext Subtype that represents a 'Query Pane'.
+ * A 'Query' represents and is backed by a list of Records and a single Record definition.
+ * See {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export class QueryContext extends PaneContext {
+
+    private _lastQueryFr:Promise<QueryResult>;
+    private _queryState:QueryState;
+    private _scroller:QueryScroller;
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: View,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+    }
+
+    /**
+     * Returns whether or not a column is of a binary type
+     * @param columnDef
+     * @returns {PropDef|boolean}
+     */
+    isBinary(column:Column):boolean {
+        var propDef = this.propDefAtName(column.propertyName);
+        return propDef && (propDef.isBinaryType || (propDef.isURLType && propDef.isInlineMediaStyle));
+    }
+
+    destroy():void {
+        this._queryState = QueryState.DESTROYED;
+    }
+
+    /**
+     * Returns whether or not this Query Pane is destroyed
+     * @returns {boolean}
+     */
+    get isDestroyed():boolean {
+        return this._queryState === QueryState.DESTROYED;
+    }
+
+    /**
+     * Get the last query result as a {@link Future}
+     * @returns {Future<QueryResult>}
+     */
+    get lastQueryFr():Promise<QueryResult> {
+        return this._lastQueryFr;
+    }
+
+    //@TODO
+    openView(targetViewDesc:ViewDesc): Promise<PaneContext | NavRequest>{
+        /*
+         return DialogService.setSelectedQueryViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+         .bind((setViewResult:XOpenDialogModelResult)=>{
+         return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this); });
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Get the pane mode
+     * @returns {string}
+     */
+    get paneMode():string {
+        return this._settings['paneMode'];
+    }
+
+    /**
+     * Perform this action associated with the given MenuDef on this Pane.
+     * The targets array is expected to be an array of object ids.
+     * @param menuDef
+     * @param targets
+     * @returns {Future<NavRequest>}
+     */
+    //@TODO
+    performMenuAction(menu:Menu, targets:Array<string>):Promise<NavRequest> {
+        /*
+         return DialogService.performQueryAction(this.paneDef.dialogHandle, menuDef.actionId,
+         targets, this.sessionContext).bind((redirection:Redirection)=> {
+         var target = targets.length > 0 ? targets[0] : null;
+         var ca:ContextAction = new ContextAction(menuDef.actionId, target, this.actionSource);
+         return NavRequestUtil.fromRedirection(redirection, ca, this.sessionContext);
+         }).map((navRequest:NavRequest)=> {
+         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, navRequest);
+         if (this.isDestroyedSetting) {
+         this._queryState = QueryState.DESTROYED;
+         }
+         if (this.isRefreshSetting) {
+         AppContext.singleton.lastMaintenanceTime = new Date();
+         }
+         return navRequest;
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Perform a query
+     * Note: {@link QueryScroller} is the preferred way to perform a query.
+     * see {@link QueryContext.newScroller} and {@link QueryContext.setScroller}
+     * @param maxRows
+     * @param direction
+     * @param fromObjectId
+     * @returns {Future<QueryResult>}
+     */
+    //@TODO
+    query(maxRows:number, direction:QueryDirection, fromObjectId:string):Promise<QueryResult> {
+        /*
+         return DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows,
+         fromObjectId, this.sessionContext).bind((value:XQueryResult)=> {
+         var result = new QueryResult(value.entityRecs, value.hasMore);
+         this.lastRefreshTime = new Date();
+         return Future.createSuccessfulFuture('QueryContext::query', result);
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Clear the QueryScroller's buffer and perform this query
+     * @returns {Future<Array<EntityRec>>}
+     */
+    refresh():Promise<Array<EntityRec>> {
+        return this._scroller.refresh();
+    }
+
+    /**
+     * Get the associated QueryScroller
+     * @returns {QueryScroller}
+     */
+    get scroller():QueryScroller {
+        if (!this._scroller) {
+            this._scroller = this.newScroller();
+        }
+        return this._scroller;
+    }
+
+    //@TODO
+    getSelectedViewId():Promise<string> {
+        /*
+         return DialogService.getSelectedQueryViewId(this.paneDef.dialogHandle, this.sessionContext);
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Creates a new QueryScroller with the given values
+     * @param pageSize
+     * @param firstObjectId
+     * @param markerOptions
+     * @returns {QueryScroller}
+     */
+    setScroller(pageSize:number, firstObjectId:string, markerOptions:Array<QueryMarkerOption>) {
+        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
+        return this._scroller;
+    }
+
+    /**
+     * Creates a new QueryScroller with default buffer size of 50
+     * @returns {QueryScroller}
+     */
+    newScroller():QueryScroller {
+        return this.setScroller(50, null, [QueryMarkerOption.None]);
+    }
+
+    /**
+     * Get the settings associated with this Query
+     * @returns {StringDictionary}
+     */
+    settings():StringDictionary {
+        return this._settings;
+    }
+
+    //protected
+
+    //@TODO
+    protected readBinary(propName:string, entityRec:EntityRec):Promise<Binary> {
+        /*
+         let seq:number = 0;
+         let encodedResult:string = '';
+         let inProgress:string = '';
+         let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
+         if (result.hasMore) {
+         inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
+         return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
+         propName, entityRec.objectId, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+         } else {
+         if (inProgress) {
+         inProgress += atob(result.data);
+         encodedResult = btoa(inProgress);
+         } else {
+         encodedResult = result.data;
+         }
+         return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(encodedResult));
+         }
+         }
+         return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
+         propName, entityRec.objectId, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+         */
+        return Promise.resolve(null);
+    }
+
+    protected initialize() {
+    }
+
+    private get isDestroyedSetting():boolean {
+        var str = this._settings['destroyed'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    private get isGlobalRefreshSetting():boolean {
+        var str = this._settings['globalRefresh'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    private get isLocalRefreshSetting():boolean {
+        var str = this._settings['localRefresh'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    private get isRefreshSetting():boolean {
+        return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
+    }
+
+    //@TODO
+    /*
+     private updatePaneDef(xOpenResult:XOpenDialogModelResult):Future<PaneDef> {
+
+     const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
+     const menuDefsFr:Future<Array<MenuDef>> = FormContextBuilder.fetchChildMenuDefs(this.dialogRedirection, this.sessionContext);
+
+     return Future.sequence<any>([activeColDefsFr, menuDefsFr])
+     .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
+     var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
+     if (flattenedTry.failure) {
+     return Future.createCompletedFuture<PaneDef>('FormContextBuilder::buildPaneDefFromDialogModel',
+     new Failure<PaneDef>(flattenedTry.failure));
+     }
+     const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
+     const menuDefs:Array<MenuDef> = flattenedTry.success[1];
+
+     const paneDef = this.paneDef;
+     if(xOpenResult instanceof  XOpenQueryModelResult) {
+     const queryModelResult:XOpenQueryModelResult = xOpenResult;
+     paneDef.entityRecDef = queryModelResult.entityRecDef;
+     if(paneDef instanceof ListDef) {
+     const listDef:ListDef = paneDef;
+     listDef.defaultActionId = queryModelResult.defaultActionId;
+     listDef.menuDefs = menuDefs;
+     listDef.activeColumnDefs = activeColDefs.columnDefs;
+     //reset the scroller (and clear the buffer)
+     this.newScroller();
+     }
+     } else {
+     return Future.createFailedFuture<PaneDef>('QueryContext:updatePaneDef', 'Query Views are only support on ListDefs at the moment...')
+     }
+
+     return Future.createSuccessfulFuture('QueryContext::updatePaneDef', paneDef);
+
+     });
+     }
+     */
+
+}
+
+export class QueryResult {
+
+    constructor(public entityRecs:Array<EntityRec>, public hasMore:boolean) {
+    }
+
+}
+/**
+ * *********************************
+ */
+
+
+export class HasMoreQueryMarker extends NullEntityRec {
+    static singleton = new HasMoreQueryMarker();
+}
+
+export class IsEmptyQueryMarker extends NullEntityRec {
+    static singleton = new IsEmptyQueryMarker();
+}
+
+export enum QueryMarkerOption {
+    None, IsEmpty, HasMore
+}
+
+export class QueryScroller {
+
+    private _buffer:Array<EntityRec>;
+    private _hasMoreBackward:boolean;
+    private _hasMoreForward:boolean;
+    private _nextPageFr:Promise<QueryResult>;
+    private _prevPageFr:Promise<QueryResult>;
+    private _firstResultOid:string;
+
+    constructor(private _context:QueryContext,
+                private _pageSize:number,
+                private _firstObjectId:string,
+                private _markerOptions:Array<QueryMarkerOption> = []) {
+
+        this.clear();
+
+    }
+
+    get buffer():Array<EntityRec> {
+        return this._buffer;
+    }
+
+    get bufferWithMarkers():Array<EntityRec> {
+        var result = ArrayUtil.copy(this._buffer);
+        if (this.isComplete) {
+            if (this._markerOptions.indexOf(QueryMarkerOption.IsEmpty) > -1) {
+                if (this.isEmpty) {
+                    result.push(IsEmptyQueryMarker.singleton);
+                }
+            }
+        } else if (this._markerOptions.indexOf(QueryMarkerOption.HasMore) > -1) {
+            if (result.length === 0) {
+                result.push(HasMoreQueryMarker.singleton);
+            } else {
+                if (this._hasMoreBackward) {
+                    result.unshift(HasMoreQueryMarker.singleton)
+                }
+                if (this._hasMoreForward) {
+                    result.push(HasMoreQueryMarker.singleton);
+                }
+            }
+        }
+        return result;
+    }
+
+    get context():QueryContext {
+        return this._context;
+    }
+
+    get firstObjectId():string {
+        return this._firstObjectId;
+    }
+
+    get hasMoreBackward():boolean {
+        return this._hasMoreBackward;
+    }
+
+    get hasMoreForward():boolean {
+        return this._hasMoreForward;
+    }
+
+    get isComplete():boolean {
+        return !this._hasMoreBackward && !this._hasMoreForward;
+    }
+
+    get isCompleteAndEmpty():boolean {
+        return this.isComplete && this._buffer.length === 0;
+    }
+
+    get isEmpty():boolean {
+        return this._buffer.length === 0;
+    }
+
+    //@TODO
+    pageBackward():Promise<Array<EntityRec>> {
+        /*
+         if (!this._hasMoreBackward) {
+         return Future.createSuccessfulFuture('QueryScroller::pageBackward', []);
+         }
+         if (!this._prevPageFr || this._prevPageFr.isComplete) {
+         var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
+         this._prevPageFr = this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
+         } else {
+         this._prevPageFr = this._prevPageFr.bind((queryResult:QueryResult)=> {
+         var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
+         return this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
+         });
+         }
+
+         var beforeSize:number = this._buffer.length;
+
+         return this._prevPageFr.map((queryResult:QueryResult)=> {
+         var afterSize = beforeSize;
+         this._hasMoreBackward = queryResult.hasMore;
+         if (queryResult.entityRecs.length > 0) {
+         var newBuffer:Array<EntityRec> = [];
+         for (var i = queryResult.entityRecs.length - 1; i > -1; i--) {
+         newBuffer.push(queryResult.entityRecs[i]);
+         }
+         this._buffer.forEach((entityRec:EntityRec)=> {
+         newBuffer.push(entityRec)
+         });
+         this._buffer = newBuffer;
+         afterSize = this._buffer.length;
+         }
+         return queryResult.entityRecs;
+         });
+         */
+        return Promise.resolve(null);
+
+    }
+
+    //@TODO
+    pageForward():Promise<Array<EntityRec>> {
+
+        /*
+         if (!this._hasMoreForward) {
+         return Future.createSuccessfulFuture('QueryScroller::pageForward', []);
+         }
+         if (!this._nextPageFr || this._nextPageFr.isComplete) {
+         var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
+         this._nextPageFr = this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
+         } else {
+         this._nextPageFr = this._nextPageFr.bind((queryResult:QueryResult)=> {
+         var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
+         return this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
+         });
+         }
+
+         var beforeSize:number = this._buffer.length;
+
+         return this._nextPageFr.map((queryResult:QueryResult)=> {
+         var afterSize = beforeSize;
+         this._hasMoreForward = queryResult.hasMore;
+         if (queryResult.entityRecs.length > 0) {
+         var newBuffer:Array<EntityRec> = [];
+         this._buffer.forEach((entityRec:EntityRec)=> {
+         newBuffer.push(entityRec)
+         });
+         queryResult.entityRecs.forEach((entityRec:EntityRec)=> {
+         newBuffer.push(entityRec);
+         });
+         this._buffer = newBuffer;
+         afterSize = this._buffer.length;
+         }
+         return queryResult.entityRecs;
+         });
+         */
+
+        return Promise.resolve(null);
+    }
+
+    get pageSize():number {
+        return this._pageSize;
+    }
+
+    //@TODO
+    refresh():Promise<Array<EntityRec>> {
+        /*
+         this.clear();
+         return this.pageForward().map((entityRecList:Array<EntityRec>)=> {
+         if(entityRecList.length > 0) {
+         this._firstResultOid = entityRecList[0].objectId;
+         }
+         return entityRecList;
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    trimFirst(n:number) {
+        var newBuffer = [];
+        for (var i = n; i < this._buffer.length; i++) {
+            newBuffer.push(this._buffer[i]);
+        }
+        this._buffer = newBuffer;
+        this._hasMoreBackward = true;
+    }
+
+    trimLast(n:number) {
+        var newBuffer = [];
+        for (var i = 0; i < this._buffer.length - n; i++) {
+            newBuffer.push(this._buffer[i]);
+        }
+        this._buffer = newBuffer;
+        this._hasMoreForward = true;
+    }
+
+    private clear() {
+        this._hasMoreBackward = !!this._firstObjectId;
+        this._hasMoreForward = true;
+        this._buffer = [];
+        this._firstResultOid = null;
+    }
+
+}
+
+export class ErrorContext extends PaneContext {
+
+    constructor(view: ErrorMessage,
+                dialogRedirection: DialogRedirection,
+                paneRef: number,
+                parentContext: PaneContext,
+                session: Session) {
+
+        super(null, null, null, null, null, null, null, null, null,
+            view, null, dialogRedirection, paneRef, parentContext, session);
+
+    }
+
+    protected getSelectedViewId():Promise<string> { return Promise.reject('Not implemented') }
+    protected initialize() {}
+}
+
+
+/**
+ * EditorContext Subtype that represents a 'Details Pane'.
+ * A Details Pane is an Editor Pane with the purpose of displaying property values for a single record,
+ * usually as names/values in a tabular arrangement.
+ * See {@link DetailsDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export class DetailsContext extends EditorContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: Details,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+    }
+
+
+    get details():Details {
+        return <Details>this.view;
+    }
+}
+
+/**
+ * QueryContext Subtype that represents a 'List Pane'.
+ * An 'List' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying a tabular list of records.
+ * See {@link ListDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export class ListContext extends QueryContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: List,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+    }
+
+
+    get columnHeadings():Array<string> {
+        return this.list.columns.map((c:Column)=> {
+            return c.heading;
+        });
+    }
+
+    get list():List {
+        return <List>this.view;
+    }
+
+    rowValues(entityRec:EntityRec):Array<any> {
+        return this.list.columns.map((c:Column)=> {
+            return entityRec.valueAtName(c.propertyName);
+        });
+    }
+
+    get style():string {
+        return this.list.style;
+    }
+
+}
+/**
+ * QueryContext Subtype that represents a 'Map Pane'.
+ * A 'Map' is a type of query backed by a list of Records and a single Record definition, with the
+ * purpose of displaying an annotated map with location markers.
+ * See {@link MapDef}, {@link EntityRec} and {@link EntityRecDef}.
+ * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+ * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
+ */
+export class MapContext extends QueryContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: Map,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+    }
+
+
+
+    get map():Map {
+        return <Map>this.view;
+    }
+
+}
 
 /*
  ************************** Dialog API ****************************
@@ -622,7 +2345,7 @@ export class DialogServiceResponse<T> implements DialogApiResponse<T> {
             if(this.hasMessage) {
                 reject(<DialogMessage>this.clientResponse.value);
             } else {
-                resolve(<T>this.clientResponse.value);
+                this.fullfillJsonToModel<T>(this.clientResponse, resolve, reject);
             }
         });
     }
@@ -632,9 +2355,9 @@ export class DialogServiceResponse<T> implements DialogApiResponse<T> {
             if(this.hasMessage) {
                 reject(<DialogMessage>this.clientResponse.value);
             } else if(this.hasValue) {
-                resolve(<T>this.clientResponse.value);
+                this.fullfillJsonToModel<T>(this.clientResponse, resolve, reject);
             } else {
-                resolve(<Redirection>this.clientResponse.value);
+                this.fullfillJsonToModel<Redirection>(this.clientResponse, resolve, reject);
             }
         });
     }
@@ -659,6 +2382,11 @@ export class DialogServiceResponse<T> implements DialogApiResponse<T> {
 
     get hasMessage():boolean {
         return this.clientResponse.statusCode >= 400;
+    }
+
+    private fullfillJsonToModel<T>(clientResponse:JsonClientResponse, resolve, reject):void {
+
+        ModelUtil.jsonToModel<T>(this.clientResponse.value).then(resolve).catch(reject);
     }
 
 }
@@ -1057,1666 +2785,4 @@ export class PropFormatter {
 
 
 
-///////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Top-level class, representing a Catavolt 'Pane' definition.
- * All 'Context' classes have a composite {@link PaneDef} that defines the Pane along with a single record
- * or a list of records.  See {@EntityRecord}
- * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
- * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
- */
-export abstract class PaneContext implements Dialog{
-
-    //statics
-    private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
-    static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
-
-    //private/protected
-    private _binaryCache:{ [index:string]:Array<Binary> } = {};
-    private _lastRefreshTime:Date = new Date(0);
-    protected _settings:StringDictionary = {};
-    protected _destroyed:boolean = false;
-
-    //public
-    readonly childrenContexts:Array<PaneContext> = [];
-
-    constructor(readonly businessClassName:string,
-                readonly children: Array<Dialog>,
-                readonly dialogClassName:string,
-                readonly dialogMode:DialogMode,
-                readonly dialogType:string,
-                readonly id:string,
-                readonly recordDef: RecordDef,
-                readonly sessionId:string,
-                readonly tenantId: string,
-                readonly view: View,
-                readonly viewMode: ViewMode,
-                readonly dialogRedirection:DialogRedirection,
-                readonly paneRef:number,
-                readonly parentContext:FormContext
-    ) {
-        this.createChildContexts(children);
-        this.initialize();
-    }
-
-    /**
-     * Updates a settings object with the new settings from a 'Navigation'
-     * @param initialSettings
-     * @param navRequest
-     * @returns {StringDictionary}
-     */
-    static resolveSettingsFromRedirection(initialSettings:StringDictionary,
-                                         redirection:Redirection):StringDictionary {
-
-        var result:StringDictionary = ObjUtil.addAllProps(initialSettings, {});
-        ObjUtil.addAllProps(redirection.referringDialogProperties, result);
-        var destroyed = result['fromDialogDestroyed'];
-        if (destroyed) result['destroyed'] = true;
-        return result;
-
-    }
-
-    /**
-     * Load a Binary property from a record
-     * @param propName
-     * @param entityRec
-     * @returns {any}
-     */
-    /* @TODO */
-    /*
-    binaryAt(propName:string, entityRec:EntityRec):Future<Binary> {
-        const prop:Prop = entityRec.propAtName(propName)
-        if (prop) {
-            if (prop.value instanceof InlineBinaryRef) {
-                const binRef = prop.value as InlineBinaryRef;
-                return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
-            } else if (prop.value instanceof ObjectBinaryRef) {
-                const binRef = prop.value as ObjectBinaryRef;
-                if (binRef.settings['webURL']) {
-                    return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
-                } else {
-                    return this.readBinary(propName, entityRec);
-                }
-            } else if (typeof prop.value === 'string') {
-                return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
-            } else {
-                return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
-            }
-        } else {
-            return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
-        }
-    }*/
-
-    /**
-     * Get the dialog alias
-     * @returns {any}
-     */
-    get dialogAlias():string {
-        return this.dialogRedirection.dialogProperties['dialogAlias'];
-    }
-
-    /**
-     * Return the error associated with this pane, if any
-     * @returns {any}
-     */
-    get error():DialogException {
-        if(this.hasError) {
-            return (this.view as ErrorMessage).exception;
-        } else {
-            return null;
-        }
-    }
-
-
-    /**
-     * Find a menu def on this Pane with the given actionId
-     * @param actionId
-     * @returns {MenuDef}
-     */
-    findMenuDefAt(actionId:string) {
-        return this.view.findMenuDefAt(actionId);
-    }
-
-    /**
-     * Get a string representation of this property suitable for 'reading'
-     * @param propValue
-     * @param propName
-     * @returns {string}
-     */
-    formatForRead(prop:Property, propName:string):string {
-        return PropFormatter.formatForRead(prop, this.propDefAtName(propName));
-    }
-
-    /**
-     * Get a string representation of this property suitable for 'writing'
-     * @param propValue
-     * @param propName
-     * @returns {string}
-     */
-    formatForWrite(prop:Property, propName:string):string {
-        return PropFormatter.formatForWrite(prop, this.propDefAtName(propName));
-    }
-
-    /**
-     * Get the underlying form definition {@link FormDef} for this Pane.
-     * If this is not a {@link FormContext} this will be the {@link FormDef} of the owning/parent Form
-     * @returns {FormDef}
-     */
-    get formDef():Form {
-        return this.parentContext.formDef;
-    }
-
-    /**
-     * Returns whether or not this pane loaded properly
-     * @returns {boolean}
-     */
-    get hasError():boolean {
-        return this.view instanceof ErrorMessage;
-    }
-
-    /**
-     * Returns whether or not this Form is destroyed
-     * @returns {boolean}
-     */
-    get isDestroyed():boolean {
-        return this._destroyed || this.isAnyChildDestroyed;
-    }
-
-    /**
-     * Returns whether or not the data in this pane is out of date
-     * @returns {boolean}
-     */
-    get isRefreshNeeded():boolean {
-        return this._lastRefreshTime.getTime() < AppContext.singleton.lastMaintenanceTime.getTime();
-    }
-
-    /**
-     * Get the last time this pane's data was refreshed
-     * @returns {Date}
-     */
-    get lastRefreshTime():Date {
-        return this._lastRefreshTime;
-    }
-
-    /**
-     * @param time
-     */
-    set lastRefreshTime(time:Date) {
-        this._lastRefreshTime = time;
-    }
-
-    /**
-     * Get the all {@link MenuDef}'s associated with this Pane
-     * @returns {Array<MenuDef>}
-     */
-    get menu():Menu {
-        return this.view.menu;
-    }
-
-    /**
-     * Get the title of this Pane
-     * @returns {string}
-     */
-    get paneTitle():string {
-        return this.view.findTitle();
-    }
-
-    /**
-     * Parses a value to prepare for 'writing' back to the server
-     * @param formattedValue
-     * @param propName
-     * @returns {any}
-     */
-    parseValue(formattedValue:any, propName:string):any {
-        return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
-    }
-
-    /**
-     * Get the propery definition for a property name
-     * @param propName
-     * @returns {PropDef}
-     */
-    propDefAtName(propName:string):PropertyDef {
-        return this.recordDef.propDefAtName(propName);
-    }
-
-    /**
-     * Read all the Binary values in this {@link EntityRec}
-     * @param entityRec
-     * @returns {Future<Array<Try<Binary>>>}
-     */
-    /* @TODO */
-    /*readBinaries(record:Record):Future<Array<Try<Binary>>> {
-        return Future.sequence<Binary>(
-            this.recordDef.filter((propDef:PropertyDef)=> {
-                return propDef.isBinaryType
-            }).map((propDef:PropertyDef)=> {
-                return this.readBinary(propDef.name, entityRec);
-            })
-        );
-    }*/
-
-    /**
-     * Get the session information
-     * @returns {SessionContext}
-     */
-    get sessionContext():Session {
-        return this.parentContext.sessionContext;
-    }
-
-    /**
-     * Get the all {@link ViewDesc}'s associated with this Form
-     * @returns {Array<ViewDesc>}
-     */
-    /* @TODO */
-    get viewDescs():Array<ViewDesc> {
-        /* @TODO */
-        //return this.form.viewDescs;
-        return [];
-    }
-
-    /* @TODO */
-    /*
-    writeAttachment(attachment:Attachment):Future<void> {
-        return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.sessionContext);
-    }
-
-    writeAttachments(entityRec:EntityRec):Future<Array<Try<void>>> {
-        return Future.sequence<void>(
-            entityRec.props.filter((prop:Prop)=> {
-                return prop.value instanceof Attachment;
-            }).map((prop:Prop) => {
-                const attachment:Attachment = prop.value as Attachment;
-                return this.writeAttachment(attachment);
-            })
-        );
-    }
-    */
-
-
-    /**
-     * Write all Binary values in this {@link EntityRecord} back to the server
-     * @param entityRec
-     * @returns {Future<Array<Try<XWritePropertyResult>>>}
-     */
-    /* @TODO */
-    /*
-    writeBinaries(entityRec:EntityRec):Future<Array<Try<XWritePropertyResult>>> {
-        return Future.sequence<XWritePropertyResult>(
-            entityRec.props.filter((prop:Prop)=> {
-                return this.propDefAtName(prop.name).isBinaryType;
-            }).map((prop:Prop) => {
-                let writeFuture: Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
-                if (prop.value) {
-                    let ptr: number = 0;
-                    const encBin: EncodedBinary = prop.value as EncodedBinary;
-                    const data = encBin.data;
-                    while (ptr < data.length) {
-                        const boundPtr = (ptr: number) => {
-                            writeFuture = writeFuture.bind((prevResult)=> {
-                                const encSegment: string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substr(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
-                                return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.sessionContext);
-                            });
-                        }
-                        boundPtr(ptr);
-                        ptr += PaneContext.CHAR_CHUNK_SIZE;
-                    }
-                } else {
-                    // This is a delete
-                    writeFuture = writeFuture.bind((prevResult)=> {
-                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
-                    });
-                }
-                return writeFuture;
-            })
-        );
-    }*/
-
-    //@TODO
-    private createChildContexts(children:Array<Dialog>) {
-    }
-
-    //protected  abstract getSelectedViewId():Future<ViewId> { return null; }
-
-    /* @TODO */
-    //openView(targetViewDesc:ViewDesc): Future<Either<PaneContext, NavRequest>>{ return null; }
-
-
-    protected abstract initialize();
-
-    /**
-     * @private
-     * @param navRequest
-     */
-    protected processNavRequestForDestroyed(referringDialogProperties:StringDictionary) {
-
-        var destroyedStr:string = referringDialogProperties['destroyed'];
-        if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
-            this._destroyed = true;
-        }
-        var fromDialogDestroyed = referringDialogProperties['fromDialogDestroyed'];
-        if (fromDialogDestroyed) {
-            this._destroyed = true;
-        }
-    }
-
-    /* @TODO */
-    //protected abstract readBinary(propName:string, record:Record):Promise<Binary>;
-
-    /**
-     * @private
-     * @returns {boolean}
-     */
-    private get isAnyChildDestroyed():boolean {
-        return this.childrenContexts.some((paneContext:PaneContext)=> {
-            return paneContext.isDestroyed;
-        });
-    }
-
-
-}
-
-/**
- * PaneContext Subtype that represents a Catavolt Form Definition
- * A form is a 'container' composed of child panes of various concrete types.
- * A FormContext parallels this design, and contains a list of 'child' contexts
- * See also {@link FormDef}.
- * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
- * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
- */
-export class FormContext extends PaneContext implements Dialog {
-
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: Form,
-                viewMode: ViewMode,
-                dialogRedirection:DialogRedirection,
-                paneRef:number,
-                parentContext:FormContext,
-                readonly actionSource:ActionSource,
-                readonly sessionContext:Session
-
-    ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext);
-
-    }
-
-    /**
-     * Close this form
-     * @returns {Future<VoidResult>}
-     */
-    /* @TODO */
-    /*
-    close():Promise<VoidResult> {
-        return DialogService.closeEditorModel(this.dialogRedirection.dialogHandle, this.sessionContext);
-    }*/
-
-    /**
-     * Get the underlying Form definition for this FormContext
-     * @returns {FormDef}
-     */
-    get form():Form {
-        return this.view as Form;
-    }
-
-    /* @TODO */
-    /*
-    openView(targetViewDesc:ViewDesc):Future<Either<PaneContext, NavRequest>> {
-        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
-            .bind((setViewResult:XOpenDialogModelResult)=>{
-                const xOpenEditorResult:XOpenEditorModelResult = setViewResult as XOpenEditorModelResult;
-                var ca = new ContextAction('#viewChange', xOpenEditorResult.formRedirection.objectId, this.actionSource);
-                return FormContextBuilder.createWithRedirection(xOpenEditorResult.formModel.form.redirection, ca, this.sessionContext)
-                    .buildFromOpenForm(xOpenEditorResult, xOpenEditorResult.formModel.form.redirection.isEditor)
-                    .map((formContext:FormContext)=>{
-                        this._destroyed = true;
-                        return Either.right<PaneContext, NavRequest>(formContext as NavRequest)
-                    });
-            });
-    }
-    */
-
-    /**
-     * Perform the action associated with the given MenuDef on this Form
-     * @param menuDef
-     * @returns {Future<NavRequest>}
-     */
-    /* @TODO */
-    /*
-    performMenuAction(menu:Menu):Promise<NavRequest> {
-
-        return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
-            NullEntityRec.singleton, this.sessionContext).bind((value:Redirection)=> {
-            var destroyedStr:string = value.fromDialogProperties && value.fromDialogProperties['destroyed'];
-            if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
-                this._destroyed = true;
-            }
-            var ca:ContextAction = new ContextAction(menuDef.actionId, this.dialogRedirection.objectId, this.actionSource);
-            return NavRequestUtil.fromRedirection(value, ca, this.sessionContext);
-        });
-    }
-    */
-
-    getSelectedViewId():Promise<string> {
-        /* @TODO */
-        //return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
-        return null;
-    }
-
-    protected initialize() {
-    }
-}
-
-export enum EditorState{ READ, WRITE, DESTROYED };
-
-
-/**
- * PanContext Subtype that represents an 'Editor Pane'.
- * An 'Editor' represents and is backed by a single Record and Record definition.
- * See {@link EntityRec} and {@link EntityRecDef}.
- * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
- * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
- */
-export class EditorContext extends PaneContext {
-
-    private static GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
-    private static GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
-
-    private _buffer:EntityBuffer;
-    private _editorState:EditorState;
-    private _isFirstReadComplete:boolean;
-
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: View,
-                viewMode: ViewMode,
-                dialogRedirection:DialogRedirection,
-                paneRef:number,
-                parentContext:FormContext,
-
-    ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext);
-    }
-
-    /**
-     * Get the current buffered record
-     * @returns {EntityBuffer}
-     */
-    get buffer():EntityBuffer {
-        if (!this._buffer) {
-            this._buffer = new EntityBuffer(NullEntityRec.singleton);
-        }
-        return this._buffer;
-    }
-
-    /**
-     * Toggle the current mode of this Editor
-     * @param paneMode
-     * @returns {Future<EntityRecDef>}
-     */
-    //@TODO
-    changeViewMode(viewMode:ViewMode):Promise<RecordDef> {
-
-        /*return DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode,
-            this.sessionContext).bind((changePaneModeResult:XChangePaneModeResult)=> {
-            this.putSettings(changePaneModeResult.dialogProps);
-            if (this.isDestroyedSetting) {
-                this._editorState = EditorState.DESTROYED;
-            } else {
-                this.entityRecDef = changePaneModeResult.entityRecDef;
-                if (this.isReadModeSetting) {
-                    this._editorState = EditorState.READ;
-                } else {
-                    this._editorState = EditorState.WRITE;
-                }
-            }
-            return Future.createSuccessfulFuture('EditorContext::changePaneMode', this.entityRecDef);
-        });
-        */
-        return null;
-    }
-
-    destroy():void {
-        this._editorState = EditorState.DESTROYED;
-    }
-
-    /**
-     * Get the associated entity record
-     * @returns {EntityRec}
-     */
-    get entityRec():EntityRec {
-        return this._buffer.toEntityRec();
-    }
-
-    /**
-     * Get the current version of the entity record, with any pending changes present
-     * @returns {EntityRec}
-     */
-    get entityRecNow():EntityRec {
-        return this.entityRec;
-    }
-
-    /**
-     * Get the possible values for a 'constrained value' property
-     * @param propName
-     * @returns {Future<Array<any>>}
-     */
-    //@TODO
-    getAvailableValues(propName:string):Promise<Array<Object>> {
-        /*
-        return DialogService.getAvailableValues(this.paneDef.dialogHandle, propName,
-            this.buffer.afterEffects(), this.sessionContext).map((valuesResult:XGetAvailableValuesResult)=> {
-            return valuesResult.list;
-        });
-        */
-        return null;
-
-    }
-
-    /**
-     * Returns whether or not this cell definition contains a binary value
-     * @param cellValueDef
-     * @returns {PropDef|boolean}
-     */
-    isBinary(cellValue:AttributeCellValue):boolean {
-        var propDef = this.propDefAtName(cellValue.propertyName);
-        return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValue.isInlineMediaStyle));
-    }
-
-    /**
-     * Returns whether or not this Editor Pane is destroyed
-     * @returns {boolean}
-     */
-    get isDestroyed():boolean {
-        return this._editorState === EditorState.DESTROYED;
-    }
-
-    /**
-     * Returns whether or not this Editor Pane is requested to be destroyed.  This may be set
-     * on a presave action assoicted with an action.
-     * @returns {boolean}
-     */
-    get isDestroyRequested():boolean {
-        return this.isDestroyedRequestedSetting;
-    }
-
-    /**
-     * Returns whether or not the buffers contain valid data via a successful read operation.
-     * @returns {boolean}
-     */
-    get isFirstReadComplete():boolean {
-        return this._isFirstReadComplete;
-    }
-
-    /**
-     * Returns whether or not this Editor is in 'read' mode
-     * @returns {boolean}
-     */
-    get isReadMode():boolean {
-        return this._editorState === EditorState.READ;
-    }
-
-    /**
-     * Returns whether or not this property is read-only
-     * @param propName
-     * @returns {boolean}
-     */
-    isReadModeFor(propName:string):boolean {
-        if (!this.isReadMode) {
-            var propDef = this.propDefAtName(propName);
-            return !propDef || !propDef.writeAllowed || !propDef.writeEnabled;
-        }
-        return true;
-    }
-
-    /**
-     * Returns whether or not this cell definition contains a binary value that should be treated as a signature control
-     * @param cellValueDef
-     * @returns {PropDef|boolean}
-     */
-    isSignature(cellValueDef:AttributeCellValue):boolean {
-        var propDef = this.propDefAtName(cellValueDef.propertyName);
-        return this.isBinary(cellValueDef) && propDef.isSignatureType;
-    }
-
-    /**
-     * Returns whether or not this property is 'writable'
-     * @returns {boolean}
-     */
-    get isWriteMode():boolean {
-        return this._editorState === EditorState.WRITE;
-    }
-
-    //@TODO
-    openView(targetViewDesc:ViewDesc): Promise<PaneContext> {
-        /*
-        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
-            .bind((setViewResult:XOpenDialogModelResult)=>{
-                return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this) });
-            });
-            */
-        return null;
-    }
-
-    /**
-     * Perform the action associated with the given MenuDef on this EditorPane.
-     * Given that the Editor could possibly be destroyed as a result of this action,
-     * any provided pending writes will be saved if present.
-     * @param menuDef
-     * @param pendingWrites
-     * @returns {Future<NavRequest>}
-     */
-    //@TODO
-    performMenuAction(menu:Menu, pendingWrites:EntityRec):Promise<NavRequest> {
-
-        /*
-        return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
-            pendingWrites, this.sessionContext).bind((redirection:Redirection)=> {
-            var ca = new ContextAction(menuDef.actionId, this.parentContext.dialogRedirection.objectId,
-                this.actionSource);
-            return NavRequestUtil.fromRedirection(redirection, ca,
-                this.sessionContext).map((navRequest:NavRequest)=> {
-                this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, navRequest);
-                if (this.isDestroyedSetting) {
-                    this._editorState = EditorState.DESTROYED;
-                }
-                if (this.isRefreshSetting) {
-                    AppContext.singleton.lastMaintenanceTime = new Date();
-                }
-                return navRequest;
-            });
-        });
-        */
-        return null;
-    }
-
-    /**
-     * Properties whose {@link PropDef.canCauseSideEffects} value is true, may change other underlying values in the model.
-     * This method will update those underlying values, given the property name that is changing, and the new value.
-     * This is frequently used with {@link EditorContext.getAvailableValues}.  When a value is seleted, other properties
-     * available values may change. (i.e. Country, State, City dropdowns)
-     * @param propertyName
-     * @param value
-     * @returns {Future<null>}
-     */
-    //@TODO
-    processSideEffects(propertyName:string, value:any):Promise<void> {
-
-        /*
-        var sideEffectsFr:Future<EntityRec> = DialogService.processSideEffects(this.paneDef.dialogHandle,
-            this.sessionContext, propertyName, value, this.buffer.afterEffects()).map((changeResult:XPropertyChangeResult)=> {
-            return changeResult.sideEffects ? changeResult.sideEffects.entityRec : new NullEntityRec();
-        });
-
-        return sideEffectsFr.map((sideEffectsRec:EntityRec)=> {
-            var originalProps = this.buffer.before.props;
-            var userEffects = this.buffer.afterEffects().props;
-            var sideEffects = sideEffectsRec.props;
-            sideEffects = sideEffects.filter((prop:Prop)=> {
-                return prop.name !== propertyName;
-            });
-            this._buffer = EntityBuffer.createEntityBuffer(this.buffer.objectId,
-                EntityRecUtil.union(originalProps, sideEffects),
-                EntityRecUtil.union(originalProps, EntityRecUtil.union(userEffects, sideEffects)));
-            return null;
-        });
-        */
-        return Promise.resolve(null);
-    }
-
-    /**
-     * Read (load) the {@link EntityRec} assocated with this Editor
-     * The record must be read at least once to initialize the Context
-     * @returns {Future<EntityRec>}
-     */
-    //@TODO
-    read():Promise<EntityRec> {
-
-        /*
-        return DialogService.readEditorModel(this.paneDef.dialogHandle,
-            this.sessionContext).map((readResult:XReadResult)=> {
-            this.entityRecDef = readResult.entityRecDef;
-            this._isFirstReadComplete = true;
-            return readResult.entityRec;
-        }).map((entityRec:EntityRec)=> {
-            this.initBuffer(entityRec);
-            this.lastRefreshTime = new Date();
-            return entityRec;
-        });
-        */
-        return null;
-    }
-
-    /**
-     * Get the requested GPS accuracy
-     * @returns {Number}
-     */
-    requestedAccuracy():number {
-        var accuracyStr = this.settings[EditorContext.GPS_ACCURACY];
-        return accuracyStr ? Number(accuracyStr) : 500;
-    }
-
-    /**
-     * Get the requested GPS timeout in seconds
-     * @returns {Number}
-     */
-    requestedTimeoutSeconds():number {
-        var timeoutStr = this.settings[EditorContext.GPS_SECONDS];
-        return timeoutStr ? Number(timeoutStr) : 30;
-    }
-
-    //@TODO
-    getSelectedViewId():Promise<string> {
-        /*
-        return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
-        */
-        return null;
-    }
-
-    /**
-     * Set the value of a property in this {@link EntityRecord}.
-     * Values may be already constructed target types (CodeRef, TimeValue, Date, etc.)
-     * or primitives, in which case the values will be parsed and objects constructed as necessary.
-     * @param name
-     * @param value
-     * @returns {any}
-     */
-    setPropValue(name:string, value:any):any {
-        const propDef:PropertyDef = this.propDefAtName(name);
-        let parsedValue:any = null;
-        if (propDef) {
-            parsedValue = (value !== null && value !== undefined) ? this.parseValue(value, propDef.name) : null;
-            this.buffer.setValue(propDef.name, parsedValue);
-        }
-        return parsedValue;
-    }
-
-    /**
-     * Set a binary property from a string formatted as a 'data url'
-     * See {@link https://en.wikipedia.org/wiki/Data_URI_scheme}
-     * @param name
-     * @param dataUrl
-     */
-    setBinaryPropWithDataUrl(name:string, dataUrl:string) {
-        if (dataUrl) {
-            const urlObj: DataUrl = new DataUrl(dataUrl);
-            this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
-        } else {
-            this.setPropValue(name, null);  // Property is being deleted/cleared
-        }
-    }
-
-    /**
-     * Set a binary property with base64 encoded data
-     * @param name
-     * @param encodedData
-     * @param mimeType
-     */
-    setBinaryPropWithEncodedData(name:string, encodedData:string, mimeType:string) {
-        const propDef:PropertyDef = this.propDefAtName(name);
-        if (propDef) {
-            const value = new EncodedBinary(encodedData, mimeType);
-            this.buffer.setValue(propDef.name, value);
-        }
-    }
-
-    /**
-     * Write this record (i.e. {@link EntityRec}} back to the server
-     * @returns {Future<Either<NavRequest, EntityRec>>}
-     */
-    //@TODO
-    write(settings?:StringDictionary):Promise<NavRequest | EntityRec> {
-
-        //let deltaRec:EntityRec = this.buffer.afterEffects();
-        /* Write the 'special' props first */
-
-        /*
-        return this.writeBinaries(deltaRec).bind((binResult) => {
-            return this.writeAttachments(deltaRec).bind((atResult) => {
-                /* Remove special property types before writing the actual record */
-        /*
-                deltaRec = this.removeSpecialProps(deltaRec);
-                var result:Future<Either<NavRequest, EntityRec>> = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
-                    this.sessionContext, settings).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
-                    if (either.isLeft) {
-                        this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, either.left);
-                        var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
-                        return NavRequestUtil.fromRedirection(either.left, ca, this.sessionContext).map((navRequest:NavRequest)=> {
-                            return Either.left<NavRequest,EntityRec>(navRequest);
-                        });
-                    } else {
-                        var writeResult:XWriteResult = either.right;
-                        this.putSettings(writeResult.dialogProps);
-                        this.entityRecDef = writeResult.entityRecDef;
-                        return Future.createSuccessfulFuture<Either<NavRequest, EntityRec>>('EditorContext::write', Either.right(writeResult.entityRec));
-                    }
-                });
-
-                return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
-                    var now = new Date();
-                    AppContext.singleton.lastMaintenanceTime = now;
-                    this.lastRefreshTime = now;
-                    if (successfulWrite.isLeft) {
-                        this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
-                    } else {
-                        this.initBuffer(successfulWrite.right);
-                    }
-                    if (this.isDestroyedSetting) {
-                        this._editorState = EditorState.DESTROYED;
-                    } else {
-                        if (this.isReadModeSetting) {
-                            this._editorState = EditorState.READ;
-                        }
-                    }
-                    return successfulWrite;
-                });
-            });
-        });
-
-        */
-        return null;
-
-    }
-
-    //Module level methods
-
-    /**
-     * @private
-     */
-    initialize() {
-        this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
-        this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
-        this._buffer = null;
-    }
-
-    /**
-     * Get this Editor Pane's settings
-     * @returns {StringDictionary}
-     */
-    get settings():StringDictionary {
-        return this._settings;
-    }
-
-    //protected
-
-    //@TODO
-    protected readBinary(propName:string, entityRec:EntityRec):Promise<Binary> {
-        /*
-        let seq:number = 0;
-        let encodedResult:string = '';
-        let inProgress:string = '';
-        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
-            if (result.hasMore) {
-                inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
-                return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
-                    propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-            } else {
-                if (inProgress) {
-                    inProgress += atob(result.data);
-                    encodedResult = btoa(inProgress);
-                } else {
-                    encodedResult = result.data;
-                }
-                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(encodedResult));
-            }
-        }
-        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
-            propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-            */
-
-        return null;
-    }
-
-    //Private methods
-
-    private removeSpecialProps(entityRec:EntityRec):EntityRec {
-        entityRec.props = entityRec.props.filter((prop:Property)=>{
-            /* Remove the Binary(s) as they have been written seperately */
-            return !this.propDefAtName(prop.name).isBinaryType;
-        }).map((prop:Property)=>{
-            /*
-             Remove the Attachment(s) (as they have been written seperately) but replace
-             the property value with the file name of the attachment prior to writing
-             */
-            if(prop.value instanceof Attachment) {
-                const attachment = prop.value as Attachment;
-                return new Property(prop.name, attachment.name, prop.annos);
-            } else {
-                return prop;
-            }
-        });
-        return entityRec;
-    }
-
-    private initBuffer(entityRec:EntityRec) {
-        this._buffer = entityRec ? new EntityBuffer(entityRec) : new EntityBuffer(NullEntityRec.singleton);
-    }
-
-    private get isDestroyedSetting():boolean {
-        var str = this._settings['destroyed'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isDestroyedRequestedSetting():boolean {
-        var str = this._settings['requestDestroy'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isGlobalRefreshSetting():boolean {
-        var str = this._settings['globalRefresh'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isLocalRefreshSetting():boolean {
-        var str = this._settings['localRefresh'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isReadModeSetting():boolean {
-        var paneMode = this.paneModeSetting;
-        return paneMode && paneMode.toLowerCase() === 'read';
-    }
-
-    private get isRefreshSetting():boolean {
-        return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
-    }
-
-    private get paneModeSetting():string {
-        return this._settings['paneMode'];
-    }
-
-    private putSetting(key:string, value:any) {
-        this._settings[key] = value;
-    }
-
-    private putSettings(settings:StringDictionary) {
-        ObjUtil.addAllProps(settings, this._settings);
-    }
-
-    //@TODO
-    /*
-    private updatePaneDef(xOpenResult:XOpenDialogModelResult):Promise<View> {
-
-        const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
-        const menuDefsFr:Future<Array<MenuDef>> = FormContextBuilder.fetchChildMenuDefs(this.dialogRedirection, this.sessionContext);
-
-        return Future.sequence<any>([activeColDefsFr, menuDefsFr])
-            .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
-                var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
-                if (flattenedTry.failure) {
-                    return Future.createCompletedFuture<PaneDef>('FormContextBuilder::buildPaneDefFromDialogModel',
-                        new Failure<PaneDef>(flattenedTry.failure));
-                }
-                const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
-                const menuDefs:Array<MenuDef> = flattenedTry.success[1];
-                const paneDef = this.paneDef;
-
-                if(xOpenResult instanceof XOpenEditorModelResult) {
-                    const editorModelResult:XOpenEditorModelResult = xOpenResult;
-                    paneDef.entityRecDef = editorModelResult.editorRecordDef;
-                    paneDef.menuDefs = menuDefs;
-                    this.initialize();
-                }
-
-                return Future.createSuccessfulFuture('EditorContext::updatePaneDef', paneDef);
-
-            });
-    }
-    */
-
-}
-
-
-/**
- * Enum to manage query states
- */
-enum QueryState { ACTIVE, DESTROYED }
-
-/**
- * Enum specifying query direction
- */
-export enum QueryDirection { FORWARD, BACKWARD }
-
-/**
- * PaneContext Subtype that represents a 'Query Pane'.
- * A 'Query' represents and is backed by a list of Records and a single Record definition.
- * See {@link EntityRec} and {@link EntityRecDef}.
- * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
- * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
- */
-export class QueryContext extends PaneContext {
-
-    private _lastQueryFr:Promise<QueryResult>;
-    private _queryState:QueryState;
-    private _scroller:QueryScroller;
-
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: View,
-                viewMode: ViewMode,
-                dialogRedirection:DialogRedirection,
-                paneRef:number,
-                parentContext:FormContext,
-
-    ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext);
-    }
-
-    /**
-     * Returns whether or not a column is of a binary type
-     * @param columnDef
-     * @returns {PropDef|boolean}
-     */
-    isBinary(column:Column):boolean {
-        var propDef = this.propDefAtName(column.propertyName);
-        return propDef && (propDef.isBinaryType || (propDef.isURLType && propDef.isInlineMediaStyle));
-    }
-
-    destroy():void {
-        this._queryState = QueryState.DESTROYED;
-    }
-
-    /**
-     * Returns whether or not this Query Pane is destroyed
-     * @returns {boolean}
-     */
-    get isDestroyed():boolean {
-        return this._queryState === QueryState.DESTROYED;
-    }
-
-    /**
-     * Get the last query result as a {@link Future}
-     * @returns {Future<QueryResult>}
-     */
-    get lastQueryFr():Promise<QueryResult> {
-        return this._lastQueryFr;
-    }
-
-    //@TODO
-    openView(targetViewDesc:ViewDesc): Promise<PaneContext | NavRequest>{
-        /*
-        return DialogService.setSelectedQueryViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
-            .bind((setViewResult:XOpenDialogModelResult)=>{
-                return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this); });
-            });
-            */
-        return Promise.resolve(null);
-    }
-
-    /**
-     * Get the pane mode
-     * @returns {string}
-     */
-    get paneMode():string {
-        return this._settings['paneMode'];
-    }
-
-    /**
-     * Perform this action associated with the given MenuDef on this Pane.
-     * The targets array is expected to be an array of object ids.
-     * @param menuDef
-     * @param targets
-     * @returns {Future<NavRequest>}
-     */
-    //@TODO
-    performMenuAction(menu:Menu, targets:Array<string>):Promise<NavRequest> {
-        /*
-        return DialogService.performQueryAction(this.paneDef.dialogHandle, menuDef.actionId,
-            targets, this.sessionContext).bind((redirection:Redirection)=> {
-            var target = targets.length > 0 ? targets[0] : null;
-            var ca:ContextAction = new ContextAction(menuDef.actionId, target, this.actionSource);
-            return NavRequestUtil.fromRedirection(redirection, ca, this.sessionContext);
-        }).map((navRequest:NavRequest)=> {
-            this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, navRequest);
-            if (this.isDestroyedSetting) {
-                this._queryState = QueryState.DESTROYED;
-            }
-            if (this.isRefreshSetting) {
-                AppContext.singleton.lastMaintenanceTime = new Date();
-            }
-            return navRequest;
-        });
-        */
-        return Promise.resolve(null);
-    }
-
-    /**
-     * Perform a query
-     * Note: {@link QueryScroller} is the preferred way to perform a query.
-     * see {@link QueryContext.newScroller} and {@link QueryContext.setScroller}
-     * @param maxRows
-     * @param direction
-     * @param fromObjectId
-     * @returns {Future<QueryResult>}
-     */
-    //@TODO
-    query(maxRows:number, direction:QueryDirection, fromObjectId:string):Promise<QueryResult> {
-        /*
-        return DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows,
-            fromObjectId, this.sessionContext).bind((value:XQueryResult)=> {
-            var result = new QueryResult(value.entityRecs, value.hasMore);
-            this.lastRefreshTime = new Date();
-            return Future.createSuccessfulFuture('QueryContext::query', result);
-        });
-        */
-        return Promise.resolve(null);
-    }
-
-    /**
-     * Clear the QueryScroller's buffer and perform this query
-     * @returns {Future<Array<EntityRec>>}
-     */
-    refresh():Promise<Array<EntityRec>> {
-        return this._scroller.refresh();
-    }
-
-    /**
-     * Get the associated QueryScroller
-     * @returns {QueryScroller}
-     */
-    get scroller():QueryScroller {
-        if (!this._scroller) {
-            this._scroller = this.newScroller();
-        }
-        return this._scroller;
-    }
-
-    //@TODO
-    getSelectedViewId():Promise<string> {
-        /*
-        return DialogService.getSelectedQueryViewId(this.paneDef.dialogHandle, this.sessionContext);
-        */
-        return Promise.resolve(null);
-    }
-
-    /**
-     * Creates a new QueryScroller with the given values
-     * @param pageSize
-     * @param firstObjectId
-     * @param markerOptions
-     * @returns {QueryScroller}
-     */
-    setScroller(pageSize:number, firstObjectId:string, markerOptions:Array<QueryMarkerOption>) {
-        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
-        return this._scroller;
-    }
-
-    /**
-     * Creates a new QueryScroller with default buffer size of 50
-     * @returns {QueryScroller}
-     */
-    newScroller():QueryScroller {
-        return this.setScroller(50, null, [QueryMarkerOption.None]);
-    }
-
-    /**
-     * Get the settings associated with this Query
-     * @returns {StringDictionary}
-     */
-    settings():StringDictionary {
-        return this._settings;
-    }
-
-    //protected
-
-    //@TODO
-    protected readBinary(propName:string, entityRec:EntityRec):Promise<Binary> {
-        /*
-        let seq:number = 0;
-        let encodedResult:string = '';
-        let inProgress:string = '';
-        let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
-            if (result.hasMore) {
-                inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
-                return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
-                    propName, entityRec.objectId, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-            } else {
-                if (inProgress) {
-                    inProgress += atob(result.data);
-                    encodedResult = btoa(inProgress);
-                } else {
-                    encodedResult = result.data;
-                }
-                return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(encodedResult));
-            }
-        }
-        return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
-            propName, entityRec.objectId, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-            */
-        return Promise.resolve(null);
-    }
-
-    protected initialize() {
-    }
-
-    private get isDestroyedSetting():boolean {
-        var str = this._settings['destroyed'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isGlobalRefreshSetting():boolean {
-        var str = this._settings['globalRefresh'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isLocalRefreshSetting():boolean {
-        var str = this._settings['localRefresh'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isRefreshSetting():boolean {
-        return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
-    }
-
-    //@TODO
-    /*
-    private updatePaneDef(xOpenResult:XOpenDialogModelResult):Future<PaneDef> {
-
-        const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
-        const menuDefsFr:Future<Array<MenuDef>> = FormContextBuilder.fetchChildMenuDefs(this.dialogRedirection, this.sessionContext);
-
-        return Future.sequence<any>([activeColDefsFr, menuDefsFr])
-            .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
-                var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
-                if (flattenedTry.failure) {
-                    return Future.createCompletedFuture<PaneDef>('FormContextBuilder::buildPaneDefFromDialogModel',
-                        new Failure<PaneDef>(flattenedTry.failure));
-                }
-                const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
-                const menuDefs:Array<MenuDef> = flattenedTry.success[1];
-
-                const paneDef = this.paneDef;
-                if(xOpenResult instanceof  XOpenQueryModelResult) {
-                    const queryModelResult:XOpenQueryModelResult = xOpenResult;
-                    paneDef.entityRecDef = queryModelResult.entityRecDef;
-                    if(paneDef instanceof ListDef) {
-                        const listDef:ListDef = paneDef;
-                        listDef.defaultActionId = queryModelResult.defaultActionId;
-                        listDef.menuDefs = menuDefs;
-                        listDef.activeColumnDefs = activeColDefs.columnDefs;
-                        //reset the scroller (and clear the buffer)
-                        this.newScroller();
-                    }
-                } else {
-                    return Future.createFailedFuture<PaneDef>('QueryContext:updatePaneDef', 'Query Views are only support on ListDefs at the moment...')
-                }
-
-                return Future.createSuccessfulFuture('QueryContext::updatePaneDef', paneDef);
-
-            });
-    }
-     */
-
-}
-
-export class QueryResult {
-
-    constructor(public entityRecs:Array<EntityRec>, public hasMore:boolean) {
-    }
-
-}
-/**
- * *********************************
- */
-
-
-export class HasMoreQueryMarker extends NullEntityRec {
-    static singleton = new HasMoreQueryMarker();
-}
-
-export class IsEmptyQueryMarker extends NullEntityRec {
-    static singleton = new IsEmptyQueryMarker();
-}
-
-export enum QueryMarkerOption {
-    None, IsEmpty, HasMore
-}
-
-export class QueryScroller {
-
-    private _buffer:Array<EntityRec>;
-    private _hasMoreBackward:boolean;
-    private _hasMoreForward:boolean;
-    private _nextPageFr:Promise<QueryResult>;
-    private _prevPageFr:Promise<QueryResult>;
-    private _firstResultOid:string;
-
-    constructor(private _context:QueryContext,
-                private _pageSize:number,
-                private _firstObjectId:string,
-                private _markerOptions:Array<QueryMarkerOption> = []) {
-
-        this.clear();
-
-    }
-
-    get buffer():Array<EntityRec> {
-        return this._buffer;
-    }
-
-    get bufferWithMarkers():Array<EntityRec> {
-        var result = ArrayUtil.copy(this._buffer);
-        if (this.isComplete) {
-            if (this._markerOptions.indexOf(QueryMarkerOption.IsEmpty) > -1) {
-                if (this.isEmpty) {
-                    result.push(IsEmptyQueryMarker.singleton);
-                }
-            }
-        } else if (this._markerOptions.indexOf(QueryMarkerOption.HasMore) > -1) {
-            if (result.length === 0) {
-                result.push(HasMoreQueryMarker.singleton);
-            } else {
-                if (this._hasMoreBackward) {
-                    result.unshift(HasMoreQueryMarker.singleton)
-                }
-                if (this._hasMoreForward) {
-                    result.push(HasMoreQueryMarker.singleton);
-                }
-            }
-        }
-        return result;
-    }
-
-    get context():QueryContext {
-        return this._context;
-    }
-
-    get firstObjectId():string {
-        return this._firstObjectId;
-    }
-
-    get hasMoreBackward():boolean {
-        return this._hasMoreBackward;
-    }
-
-    get hasMoreForward():boolean {
-        return this._hasMoreForward;
-    }
-
-    get isComplete():boolean {
-        return !this._hasMoreBackward && !this._hasMoreForward;
-    }
-
-    get isCompleteAndEmpty():boolean {
-        return this.isComplete && this._buffer.length === 0;
-    }
-
-    get isEmpty():boolean {
-        return this._buffer.length === 0;
-    }
-
-    //@TODO
-    pageBackward():Promise<Array<EntityRec>> {
-        /*
-        if (!this._hasMoreBackward) {
-            return Future.createSuccessfulFuture('QueryScroller::pageBackward', []);
-        }
-        if (!this._prevPageFr || this._prevPageFr.isComplete) {
-            var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
-            this._prevPageFr = this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
-        } else {
-            this._prevPageFr = this._prevPageFr.bind((queryResult:QueryResult)=> {
-                var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
-                return this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
-            });
-        }
-
-        var beforeSize:number = this._buffer.length;
-
-        return this._prevPageFr.map((queryResult:QueryResult)=> {
-            var afterSize = beforeSize;
-            this._hasMoreBackward = queryResult.hasMore;
-            if (queryResult.entityRecs.length > 0) {
-                var newBuffer:Array<EntityRec> = [];
-                for (var i = queryResult.entityRecs.length - 1; i > -1; i--) {
-                    newBuffer.push(queryResult.entityRecs[i]);
-                }
-                this._buffer.forEach((entityRec:EntityRec)=> {
-                    newBuffer.push(entityRec)
-                });
-                this._buffer = newBuffer;
-                afterSize = this._buffer.length;
-            }
-            return queryResult.entityRecs;
-        });
-        */
-        return Promise.resolve(null);
-
-    }
-
-    //@TODO
-    pageForward():Promise<Array<EntityRec>> {
-
-        /*
-        if (!this._hasMoreForward) {
-            return Future.createSuccessfulFuture('QueryScroller::pageForward', []);
-        }
-        if (!this._nextPageFr || this._nextPageFr.isComplete) {
-            var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
-            this._nextPageFr = this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
-        } else {
-            this._nextPageFr = this._nextPageFr.bind((queryResult:QueryResult)=> {
-                var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
-                return this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
-            });
-        }
-
-        var beforeSize:number = this._buffer.length;
-
-        return this._nextPageFr.map((queryResult:QueryResult)=> {
-            var afterSize = beforeSize;
-            this._hasMoreForward = queryResult.hasMore;
-            if (queryResult.entityRecs.length > 0) {
-                var newBuffer:Array<EntityRec> = [];
-                this._buffer.forEach((entityRec:EntityRec)=> {
-                    newBuffer.push(entityRec)
-                });
-                queryResult.entityRecs.forEach((entityRec:EntityRec)=> {
-                    newBuffer.push(entityRec);
-                });
-                this._buffer = newBuffer;
-                afterSize = this._buffer.length;
-            }
-            return queryResult.entityRecs;
-        });
-        */
-
-        return Promise.resolve(null);
-    }
-
-    get pageSize():number {
-        return this._pageSize;
-    }
-
-    //@TODO
-    refresh():Promise<Array<EntityRec>> {
-        /*
-        this.clear();
-        return this.pageForward().map((entityRecList:Array<EntityRec>)=> {
-            if(entityRecList.length > 0) {
-                this._firstResultOid = entityRecList[0].objectId;
-            }
-            return entityRecList;
-        });
-        */
-        return Promise.resolve(null);
-    }
-
-    trimFirst(n:number) {
-        var newBuffer = [];
-        for (var i = n; i < this._buffer.length; i++) {
-            newBuffer.push(this._buffer[i]);
-        }
-        this._buffer = newBuffer;
-        this._hasMoreBackward = true;
-    }
-
-    trimLast(n:number) {
-        var newBuffer = [];
-        for (var i = 0; i < this._buffer.length - n; i++) {
-            newBuffer.push(this._buffer[i]);
-        }
-        this._buffer = newBuffer;
-        this._hasMoreForward = true;
-    }
-
-    private clear() {
-        this._hasMoreBackward = !!this._firstObjectId;
-        this._hasMoreForward = true;
-        this._buffer = [];
-        this._firstResultOid = null;
-    }
-
-}
-
-
-/**
- * EditorContext Subtype that represents a 'Details Pane'.
- * A Details Pane is an Editor Pane with the purpose of displaying property values for a single record,
- * usually as names/values in a tabular arrangement.
- * See {@link DetailsDef}, {@link EntityRec} and {@link EntityRecDef}.
- * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
- * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
- */
-export class DetailsContext extends EditorContext {
-
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: Details,
-                viewMode: ViewMode,
-                dialogRedirection:DialogRedirection,
-                paneRef:number,
-                parentContext:FormContext,
-
-    ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext);
-    }
-
-
-    get details():Details {
-        return <Details>this.view;
-    }
-}
-
-/**
- * QueryContext Subtype that represents a 'List Pane'.
- * An 'List' is a type of query backed by a list of Records and a single Record definition, with the
- * purpose of displaying a tabular list of records.
- * See {@link ListDef}, {@link EntityRec} and {@link EntityRecDef}.
- * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
- * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
- */
-export class ListContext extends QueryContext {
-
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: List,
-                viewMode: ViewMode,
-                dialogRedirection:DialogRedirection,
-                paneRef:number,
-                parentContext:FormContext,
-
-    ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext);
-    }
-
-
-    get columnHeadings():Array<string> {
-        return this.list.columns.map((c:Column)=> {
-            return c.heading;
-        });
-    }
-
-    get list():List {
-        return <List>this.view;
-    }
-
-    rowValues(entityRec:EntityRec):Array<any> {
-        return this.list.columns.map((c:Column)=> {
-            return entityRec.valueAtName(c.propertyName);
-        });
-    }
-
-    get style():string {
-        return this.list.style;
-    }
-
-}
-/**
- * QueryContext Subtype that represents a 'Map Pane'.
- * A 'Map' is a type of query backed by a list of Records and a single Record definition, with the
- * purpose of displaying an annotated map with location markers.
- * See {@link MapDef}, {@link EntityRec} and {@link EntityRecDef}.
- * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
- * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
- */
-export class MapContext extends QueryContext {
-
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: Map,
-                viewMode: ViewMode,
-                dialogRedirection:DialogRedirection,
-                paneRef:number,
-                parentContext:FormContext,
-
-    ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext);
-    }
-
-
-
-    get map():Map {
-        return <Map>this.view;
-    }
-
-}
