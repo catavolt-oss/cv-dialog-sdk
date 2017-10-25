@@ -4,7 +4,7 @@
 
 import * as test from "tape";
 
-import {AppContext, Redirection, DialogRedirectionType, Session, Workbench, WorkbenchAction, Log} from "../catavolt-test";
+import {AppContext, Redirection, DialogRedirectionTypeName, Session, Workbench, WorkbenchAction, Log} from "../catavolt-test";
 
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
     ['***REMOVED***', 'glenn', 'glenn5288', null, 'AAABACffAAAAF91p', 'AAABACfaAAAAAa5z'];
@@ -30,7 +30,6 @@ test("Login Test", (t) => {
     AppContext.singleton.login(tenantId, 'DESKTOP', userId, password).then(session=>{
         t.ok(session);
         t.ok((session as Session).id)
-        sessionId = (session as Session).id;
     })
 });
 
@@ -53,7 +52,7 @@ test("Launch Workbench Test", (t) => {
     AppContext.singleton.performLaunchActionForId(workbenchId, workbenchLaunchId)
         .then((successOrRedir:{actionId:string} | Redirection)=>{
             t.ok(successOrRedir);
-            if((successOrRedir as Redirection).type === DialogRedirectionType) {
+            if((successOrRedir as Redirection).type === DialogRedirectionTypeName) {
                 Log.debug(successOrRedir);
                 redirection = successOrRedir as Redirection;
             } else {
@@ -79,19 +78,19 @@ test("Open Redirection Test", (t) => {
     t.plan(1);
     AppContext.singleton.openRedirection(redirection).then(result=>{
         t.ok(result);
-        Log.debug('Got ' + Log.formatRecString(result))
+        Log.debug('Got ' + result)
     });
 
 });
-
-test("Logout Test", (t) => {
-
-    t.plan(3);
-
-    AppContext.singleton.logout().then((response:{sessionId:string})=>{
-        t.ok(response);
-        t.ok(response.sessionId);
-        t.equal(sessionId, response.sessionId)
-    })
-});
+//
+// test("Logout Test", (t) => {
+//
+//     t.plan(3);
+//
+//     AppContext.singleton.logout().then((response:{sessionId:string})=>{
+//         t.ok(response);
+//         t.ok(response.sessionId);
+//         t.equal(sessionId, response.sessionId)
+//     })
+// });
 
