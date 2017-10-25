@@ -9,7 +9,8 @@ import {
     Session, Tenant, WebRedirection, Workbench, WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef,
     GeoFix, GeoLocation, NavRequest, NullNavRequest, RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage,
     DialogException, ViewDesc, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column, Details,
-    List, Map, SessionTypeName, ModelUtil, WebRedirectionTypeName, WorkbenchRedirectionTypeName
+    List, Map, SessionTypeName, ModelUtil, WebRedirectionTypeName, WorkbenchRedirectionTypeName, QueryDirection,
+    QueryDialog, EditorDialog, Filter, Sort
 } from "./models";
 import {FetchClient} from "./ws";
 import {OfflineClient} from "./offline";
@@ -1227,8 +1228,8 @@ export class EditorContext extends PaneContext {
         const propDef:PropertyDef = this.propDefAtName(name);
         let parsedValue:any = null;
         if (propDef) {
-            parsedValue = (value !== null && value !== undefined) ? this.parseValue(value, propDef.name) : null;
-            this.buffer.setValue(propDef.name, parsedValue);
+            parsedValue = (value !== null && value !== undefined) ? this.parseValue(value, propDef.propertyName) : null;
+            this.buffer.setValue(propDef.propertyName, parsedValue);
         }
         return parsedValue;
     }
@@ -1258,7 +1259,7 @@ export class EditorContext extends PaneContext {
         const propDef:PropertyDef = this.propDefAtName(name);
         if (propDef) {
             const value = new EncodedBinary(encodedData, mimeType);
-            this.buffer.setValue(propDef.name, value);
+            this.buffer.setValue(propDef.propertyName, value);
         }
     }
 
@@ -1473,11 +1474,6 @@ export class EditorContext extends PaneContext {
  * Enum to manage query states
  */
 enum QueryState { ACTIVE, DESTROYED }
-
-/**
- * Enum specifying query direction
- */
-export enum QueryDirection { FORWARD, BACKWARD }
 
 /**
  * PaneContext Subtype that represents a 'Query Pane'.
@@ -2161,26 +2157,34 @@ export interface DialogApi {
 
     performWorkbenchAction(tenantId:string, sessionId:string, workbenchId:string, actionId:string):Promise<{actionId:string} | Redirection>;
 
-    /*getRecord(tenantId:string, sessionId:string, dialogId:string):Promise<Record>;
+    getRecord(tenantId:string, sessionId:string, dialogId:string):Promise<Record>;
 
     putRecord(tenantId:string, sessionId:string, dialogId:string, record:Record):Promise<Record | Redirection>;
 
-    getRecords(tenantId:string, sessionId:string, dialogId:string):Promise<Array<Record>>;
+    getRecords(tenantId:string, sessionId:string, dialogId:string, fetchDirection:QueryDirection,
+               fetchMaxItems:number):Promise<Array<Record>>;
 
-    getMode(tenantId:string, sessionId:string, dialogId:string):Promise<{mode:string}>;
+    getMode(tenantId:string, sessionId:string, dialogId:string):Promise<ViewMode>;
 
-    changeMode(tenantId:string, sessionId:string, dialogId:string, mode:DialogMode):Promise<Dialog>;
+    changeMode(tenantId:string, sessionId:string, dialogId:string, mode:DialogMode):Promise<EditorDialog>;
 
     getView(tenantId:string, sessionId:string, dialogId:string):Promise<View>;
 
-    changeView(tenantId:string, sessionId:string, dialogId:string):Promise<Dialog>;
+    changeView(tenantId:string, sessionId:string, dialogId:string, view:View):Promise<Dialog>;
 
     getViews(tenantId:string, sessionId:string, dialogId:string):Promise<Array<View>>;
 
     getColumns(tenantId:string, sessionId:string, dialogId:string):Promise<Array<Column>>;
 
-    changeColumns(tenantId:string, sessionId:string, dialogId:string):Promise<Dialog>;
-    */
+    changeColumns(tenantId:string, sessionId:string, dialogId:string, columns:Array<Column>):Promise<QueryDialog>;
+
+    getListFilter(tenantId:string, sessionId:string, dialogId:string):Promise<Filter>;
+
+    changeListFilter(tenantId:string, sessionId:string, dialogId:string, filter:Filter):Promise<QueryDialog>;
+
+    getListSort(tenantId:string, sessionId:string, dialogId:string):Promise<Sort>;
+
+    changeListSort(tenantId:string, sessionId:string, dialogId:string, sort:Sort):Promise<QueryDialog>;
 
     lastServiceActivity:Date;
 
@@ -2308,6 +2312,120 @@ export class DialogService implements DialogApi {
 
     }
 
+    getRecord(tenantId:string, sessionId:string, dialogId:string):Promise<Record> {
+
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record`).then(
+            jsonClientResponse=>(new DialogServiceResponse<Record>(jsonClientResponse)).responseValue()
+        );
+
+    }
+
+     putRecord(tenantId:string, sessionId:string, dialogId:string, record:Record):Promise<Record | Redirection> {
+
+         return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record}`, record).then(
+             jsonClientResponse=>(new DialogServiceResponse<Record | Redirection>(jsonClientResponse)).responseValueOrRedirect()
+         );
+     }
+
+     getRecords(tenantId:string, sessionId:string, dialogId:string, fetchDirection:QueryDirection,
+                fetchMaxItems:number):Promise<Array<Record>> {
+
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records`,
+            {fetchDirection:fetchDirection, fetchMaxItems:fetchMaxItems}).then(
+                jsonClientResponse=>(new DialogServiceResponse<Array<Record>>(jsonClientResponse)).responseValue()
+         );
+    }
+
+    getMode(tenantId:string, sessionId:string, dialogId:string):Promise<ViewMode> {
+
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/viewMode`).then(
+            jsonClientResponse=>(new DialogServiceResponse<ViewMode>(jsonClientResponse)).responseValue()
+        );
+    }
+
+    changeMode(tenantId:string, sessionId:string, dialogId:string, mode:DialogMode):Promise<EditorDialog> {
+
+        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/viewMode/${mode}`).then(
+            jsonClientResponse=>(new DialogServiceResponse<EditorDialog>(jsonClientResponse)).responseValue()
+        );
+
+    }
+
+     getView(tenantId:string, sessionId:string, dialogId:string):Promise<View> {
+
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/view`).then(
+             jsonClientResponse=>(new DialogServiceResponse<View>(jsonClientResponse)).responseValue()
+         );
+
+     }
+
+     //@TODO
+     //this should probably take a view id instead of a view
+     changeView(tenantId:string, sessionId:string, dialogId:string, view:View):Promise<Dialog> {
+
+        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/view`, view).then(
+             jsonClientResponse=>(new DialogServiceResponse<Dialog>(jsonClientResponse)).responseValue()
+         );
+
+     }
+
+     getViews(tenantId:string, sessionId:string, dialogId:string):Promise<Array<View>> {
+
+         return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/views`).then(
+             jsonClientResponse=>(new DialogServiceResponse<Array<View>>(jsonClientResponse)).responseValue()
+         );
+
+    }
+
+    getColumns(tenantId:string, sessionId:string, dialogId:string):Promise<Array<Column>> {
+
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/columns`).then(
+            jsonClientResponse=>(new DialogServiceResponse<Array<Column>>(jsonClientResponse)).responseValue()
+        );
+
+    }
+
+    changeColumns(tenantId:string, sessionId:string, dialogId:string, columns:Array<Column>):Promise<QueryDialog> {
+
+        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/view`, columns).then(
+            jsonClientResponse=>(new DialogServiceResponse<QueryDialog>(jsonClientResponse)).responseValue()
+        );
+
+    }
+
+    getListFilter(tenantId:string, sessionId:string, dialogId:string):Promise<Filter> {
+
+       return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/filter`).then(
+           jsonClientResponse=>(new DialogServiceResponse<Filter>(jsonClientResponse)).responseValue()
+       );
+
+    }
+
+    changeListFilter(tenantId:string, sessionId:string, dialogId:string, filter:Filter):Promise<QueryDialog> {
+
+         return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/filter`, filter).then(
+             jsonClientResponse=>(new DialogServiceResponse<QueryDialog>(jsonClientResponse)).responseValue()
+         );
+
+    }
+
+    getListSort(tenantId:string, sessionId:string, dialogId:string):Promise<Sort> {
+
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/sort`).then(
+            jsonClientResponse=>(new DialogServiceResponse<Sort>(jsonClientResponse)).responseValue()
+        );
+
+    }
+
+    changeListSort(tenantId:string, sessionId:string, dialogId:string, sort:Sort):Promise<QueryDialog> {
+
+        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/sort`, sort).then(
+            jsonClientResponse=>(new DialogServiceResponse<QueryDialog>(jsonClientResponse)).responseValue()
+        );
+
+    }
+
+
     get lastServiceActivity():Date {
         return this.client.lastActivity;
     }
@@ -2315,8 +2433,8 @@ export class DialogService implements DialogApi {
 
     /* Private methods */
 
-    private get(path:string):Promise<JsonClientResponse> {
-        return this.client.getJson(`${DialogService.SERVER}/${this.apiVersion}`, path);
+    private get(path:string, queryParams?:StringDictionary):Promise<JsonClientResponse> {
+        return this.client.getJson(`${DialogService.SERVER}/${this.apiVersion}`, path, queryParams);
     }
 
     private post<T>(path:string, body?:T):Promise<JsonClientResponse> {

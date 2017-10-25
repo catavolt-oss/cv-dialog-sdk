@@ -3,9 +3,9 @@
  */
 
 import {StringDictionary, Log} from "./util";
-import {JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
+import {Client, JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
 
-export class OfflineClient {
+export class OfflineClient implements Client{
 
     /* Last operation happened at this time */
     private _lastActivity: Date = new Date();
@@ -22,7 +22,7 @@ export class OfflineClient {
         return response;
     }
 
-    getJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse> {
+    getJson(baseUrl: string, resourcePath: string, queryParams:StringDictionary): Promise<JsonClientResponse> {
         let response:Promise<JsonClientResponse> = null;
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return response;

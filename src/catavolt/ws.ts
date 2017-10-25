@@ -3,11 +3,11 @@
  */
 
 import {StringDictionary, Log} from "./util";
-import {JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
+import {Client, JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
 
 type FetchMethod =  'GET' | 'POST' | 'PUT' | 'DELETE'
 
-export class FetchClient {
+export class FetchClient implements Client{
 
     private _lastActivity:Date = new Date();
 
@@ -26,10 +26,11 @@ export class FetchClient {
     }
 
 
-    getJson(baseUrl:string, resourcePath:string):Promise<JsonClientResponse> {
+    getJson(baseUrl:string, resourcePath?:string, queryParams?:StringDictionary):Promise<JsonClientResponse> {
 
         const headers = {'Accept':'application/json'};
-        const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
+        const queryString = this.encodeQueryParams(queryParams);
+        const url = resourcePath ? `${baseUrl}/${resourcePath}${queryString}` : `${baseUrl}${queryString}`;
         return this.processRequest(url, 'GET', null, headers).then((response:Response)=>{
             return this.assertJsonContentType(response.headers.get('content-type')).then(()=>{
                 return response.json().then(json=>new JsonClientResponse(json, response.status));
@@ -89,6 +90,19 @@ export class FetchClient {
             }
         });
     }
+
+    private encodeQueryParams(queryParams:StringDictionary):string {
+
+        let result = '';
+        if(queryParams) {
+            for (const name in queryParams) {
+                result += `${encodeURIComponent(name)}=${encodeURIComponent(queryParams[name])}&`
+            }
+        }
+
+        return result.length > 0 ? `?${result.slice(0,-1)}` : result;
+    }
+
 
     private isJsonContentType(contentType:string):boolean {
         return contentType && contentType.includes('application/json');
