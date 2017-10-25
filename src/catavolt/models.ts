@@ -1994,7 +1994,7 @@ export class PropertyDef {
                 /**
                  * The name of a business-data value
                  */
-                readonly name: string,
+                readonly propertyName: string,
                 /**
                  * Scale of a decimal type
                  */
@@ -2189,7 +2189,7 @@ export class RecordDef {
     propDefAtName(name:string):PropertyDef {
         var propDef:PropertyDef = null;
         this.propertyDefs.some((p)=> {
-            if (p.name === name) {
+            if (p.propertyName === name) {
                 propDef = p;
                 return true;
             }
@@ -2200,7 +2200,7 @@ export class RecordDef {
 
     get propNames():Array<string> {
         return this.propertyDefs.map((p)=> {
-            return p.name
+            return p.propertyName;
         });
     }
 }
@@ -2438,14 +2438,16 @@ export class ModelUtil {
         return null;
     }
 
-    static jsonToModel<A>(obj, factoryFn:(type:string, jsonObj?)=>any=ModelUtil.factoryFn):Promise<A> {
+    static jsonToModel<A>(obj, factoryFn:(type:string, jsonObj?)=>any=ModelUtil.factoryFn, n=0):Promise<A> {
+
+        const indent = n*4;
 
         if (Array.isArray(obj)) {
-            Log.debug(`Deserializing Array....`);
+            Log.debug(`${' '.repeat(indent)}=> Deserializing Array....`);
             return ModelUtil.deserializeArray(obj);
         } else {
             const objType = obj['type'];
-            Log.debug(`Deserializing ${objType}`);
+            Log.debug(`${' '.repeat(indent)}=> Deserializing ${objType}`);
             const funcPr:Promise<A> = factoryFn(objType, obj); //this returns null if there is no custom function
             if (funcPr) {
                 return funcPr.catch(error=> {
@@ -2463,18 +2465,18 @@ export class ModelUtil {
                     }
                     Promise.all(Object.keys(obj).map(prop=>{
                         const value = obj[prop];
-                        Log.debug(`prop: ${prop} is type ${typeof value}`);
+                        Log.debug(`${' '.repeat(indent)}prop: ${prop} is type ${typeof value}`);
                         if (value && typeof value === 'object') {
                             if(Array.isArray(value) || 'type' in value) {
-                                return ModelUtil.jsonToModel(value).then(model=>{
-                                    ModelUtil.assignProp(prop, model, newObj, objType);
+                                return ModelUtil.jsonToModel(value, ModelUtil.factoryFn, ++n).then(model=>{
+                                    ModelUtil.assignProp(prop, model, newObj, objType, indent);
                                 });
                             } else {
-                                ModelUtil.assignProp(prop, value, newObj, objType);
+                                ModelUtil.assignProp(prop, value, newObj, objType, indent);
                                 return Promise.resolve();
                             }
                         } else {
-                            ModelUtil.assignProp(prop, value, newObj, objType)
+                            ModelUtil.assignProp(prop, value, newObj, objType, indent)
                             return Promise.resolve();
                         }
                     })).then(result=>{
@@ -2503,17 +2505,19 @@ export class ModelUtil {
 
     }
 
-    private static assignProp(prop, value, target, type) {
+    private static assignProp(prop, value, target, type, n) {
         try {
             if ('_' + prop in target) {
                 target['_' + prop] = value;
-                Log.info(`Assigning private prop _${prop} = ${value}`);
+                Log.debug(`${' '.repeat(n)}Assigning private prop _${prop} = ${value}`);
             } else {
-                //it may be public
+                //it may be public prop
                 if (prop in target) {
-                    Log.info(`Assigning public prop ${prop} = ${value}`);
+                    Log.debug(`${' '.repeat(n)}Assigning public prop ${prop} = ${value}`);
                 } else {
-                    Log.debug(`Target doesn't exist for prop ${prop} on target for ${type}`);
+                    //it's either a readonly prop or defined in an interface
+                    //in which case it's will not already exist on the target object
+                    Log.debug(`${' '.repeat(n)}Defining ${prop} on target for ${type}`);
                 }
                 target[prop] = value;
             }

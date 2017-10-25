@@ -422,7 +422,7 @@ export abstract class PaneContext implements Dialog{
     private _childrenContexts:Array<PaneContext>;
 
     constructor(readonly businessClassName:string,
-                readonly children: Array<Dialog>,
+                children: Array<Dialog>,
                 readonly dialogClassName:string,
                 readonly dialogMode:DialogMode,
                 readonly dialogType:string,
@@ -490,6 +490,11 @@ export abstract class PaneContext implements Dialog{
          */
 
          return Promise.resolve(null);
+     }
+
+     //to comply with Dialog interface
+     get children():Array<Dialog> {
+         return this.childrenContexts;
      }
 
      get childrenContexts():Array<PaneContext> {
