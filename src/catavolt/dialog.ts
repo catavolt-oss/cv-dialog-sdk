@@ -9,8 +9,8 @@ import {
     Session, Tenant, WebRedirection, Workbench, WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef,
     GeoFix, GeoLocation, NavRequest, NullNavRequest, RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage,
     DialogException, ViewDesc, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column, Details,
-    List, Map, SessionTypeName, ModelUtil, WebRedirectionTypeName, WorkbenchRedirectionTypeName, QueryDirection,
-    QueryDialog, EditorDialog, Filter, Sort
+    List, Map, TypeNames, ModelUtil, QueryDirection,
+    QueryDialog, EditorDialog, Filter, Sort, ReferringAction
 } from "./models";
 import {FetchClient} from "./ws";
 import {OfflineClient} from "./offline";
@@ -112,6 +112,13 @@ export class AppContext {
         return this.session.tenantProperties['browserLocale'];
     }
 
+    /*@TODO*/
+    changePasswordAndLogin(tenantId:string, clientType:ClientType, userId:string,
+                           existingPassword:string, newPassword:string):Promise<Session | Redirection> {
+
+        return Promise.reject(new Error('Not Yet Implemented'));
+    }
+
     /**
      * Get the number of millis that the client will remain active between calls
      * to the server.
@@ -188,7 +195,7 @@ export class AppContext {
      * @param serverVersion
      * @param serverUrl
      */
-    initDialogApi(serverVersion:string, serverUrl:string):void {
+    initDialogApi(serverUrl:string, serverVersion:string=AppContext.SERVER_VERSION):void {
 
         this._dialogApi = new DialogService(serverVersion, this.getClient(ClientMode.REMOTE), serverUrl);
 
@@ -261,7 +268,7 @@ export class AppContext {
         };
 
         return this.dialogApi.createSession(tenantId, login).then((result:Session | Redirection)=>{
-            if(result.type === SessionTypeName) {
+            if(result.type === TypeNames.SessionTypeName) {
                 this._session = <Session>result;
                 return result;
             } else {
@@ -328,7 +335,7 @@ export class AppContext {
      *
      * @returns {Promise<Session>}
      */
-    refreshContext(tenantId:string,
+    refreshSession(tenantId:string,
                    sessionId:string):Promise<Session> {
 
         return this.dialogApi.getSession(tenantId, sessionId).then(session=>{
@@ -376,14 +383,14 @@ export class AppContext {
                   if(dialog.view instanceof Form) {
                       return new FormContext(dialog.businessClassName, dialog.children, dialog.dialogClassName,
                           dialog.dialogMode, dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId,
-                          <Form>dialog.view, dialog.viewMode, <DialogRedirection>redirection, null, null, this.session, null);
+                          <Form>dialog.view, dialog.viewMode, <DialogRedirection>redirection, null, null, dialog.referringAction, this.session);
                   } else {
                       throw new Error(`Unexpected top-level dialog view type: ${dialog.view.type}`);
                   }
                });
-        } else if(redirection.type === WebRedirectionTypeName) {
+        } else if(redirection.type === TypeNames.WebRedirectionTypeName) {
             return Promise.resolve(<WebRedirection>redirection);
-        } else if(redirection.type === WorkbenchRedirectionTypeName) {
+        } else if(redirection.type === TypeNames.WorkbenchRedirectionTypeName) {
             return this.getWorkbench((<WorkbenchRedirection>redirection).workbenchId);
         } else {
             return Promise.reject(new Error(`Unrecognized type of Redirection ${ObjUtil.formatRecAttr(redirection)}`));
@@ -436,6 +443,7 @@ export abstract class PaneContext implements Dialog{
                 readonly dialogRedirection:DialogRedirection,
                 readonly paneRef:number,
                 readonly parentContext:PaneContext,
+                readonly referringAction:ReferringAction,
                 readonly session:Session
     ) {
         this._childrenContexts = this.createChildContexts(children, dialogRedirection);
@@ -528,8 +536,8 @@ export abstract class PaneContext implements Dialog{
      * @param actionId
      * @returns {MenuDef}
      */
-    findMenuDefAt(actionId:string) {
-        return this.view.findMenuDefAt(actionId);
+    findMenuAt(actionId:string) {
+        return this.view.findMenuAt(actionId);
     }
 
     /**
@@ -613,7 +621,9 @@ export abstract class PaneContext implements Dialog{
      * @returns {string}
      */
     get paneTitle():string {
-        return this.view.findTitle();
+        let title = this.view.findTitle();
+        if (!title) title = this._settings['dialogDescription'];
+        return title;
     }
 
     /**
@@ -741,26 +751,25 @@ export abstract class PaneContext implements Dialog{
 
             return new ListContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
                 dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
-                dialog.viewMode, dialogRedirection, paneRef, this, this.session);
+                dialog.viewMode, dialogRedirection, paneRef, this, this.referringAction, this.session);
 
         } else if (dialog.view instanceof Details) {
 
             return new DetailsContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
                 dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
-                dialog.viewMode, dialogRedirection, paneRef, this, this.session);
+                dialog.viewMode, dialogRedirection, paneRef, this, this.referringAction, this.session);
 
         } else if (dialog.view instanceof Map) {
 
             return new MapContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
                 dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
-                dialog.viewMode, dialogRedirection, paneRef, this, this.session);
+                dialog.viewMode, dialogRedirection, paneRef, this, this.referringAction, this.session);
 
         } else if (dialog.view instanceof Form) {
 
-            //@TODO add ActionSource to FormContext constructor here
             new FormContext(dialog.businessClassName, dialog.children, dialog.dialogClassName,
                 dialog.dialogMode, dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId,
-                <Form>dialog.view, dialog.viewMode, dialogRedirection, paneRef, this, this.session, null);
+                <Form>dialog.view, dialog.viewMode, dialogRedirection, paneRef, this, this.referringAction, this.session);
 
         }
 
@@ -830,11 +839,12 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                sessionContext:Session,
-                readonly actionSource:ActionSource
+                referringAction:ReferringAction,
+                sessionContext:Session
     ) {
         super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, sessionContext);
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef,
+            parentContext, referringAction, sessionContext);
     }
 
     /**
@@ -939,11 +949,12 @@ export class EditorContext extends PaneContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
+                referringAction:ReferringAction,
                 session:Session
 
     ) {
         super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
     }
 
     /**
@@ -1502,11 +1513,12 @@ export class QueryContext extends PaneContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
+                referringAction:ReferringAction,
                 session:Session
 
     ) {
         super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
     }
 
     /**
@@ -1982,10 +1994,11 @@ export class ErrorContext extends PaneContext {
                 dialogRedirection: DialogRedirection,
                 paneRef: number,
                 parentContext: PaneContext,
+                referringAction: ReferringAction,
                 session: Session) {
 
         super(null, null, null, null, null, null, null, null, null,
-            view, null, dialogRedirection, paneRef, parentContext, session);
+            view, null, dialogRedirection, paneRef, parentContext, referringAction, session);
 
     }
 
@@ -2018,11 +2031,12 @@ export class DetailsContext extends EditorContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
+                referringAction:ReferringAction,
                 session:Session
 
     ) {
         super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
     }
 
 
@@ -2055,11 +2069,12 @@ export class ListContext extends QueryContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
+                referringAction:ReferringAction,
                 session:Session
 
     ) {
         super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
     }
 
 
@@ -2108,11 +2123,12 @@ export class MapContext extends QueryContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
+                referringAction:ReferringAction,
                 session:Session
 
     ) {
         super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, session);
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
     }
 
 

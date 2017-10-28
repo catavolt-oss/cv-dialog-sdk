@@ -91,7 +91,7 @@ export abstract class View {
      * @param actionId
      * @returns {MenuDef}
      */
-    findMenuDefAt(actionId:string):Menu {
+    findMenuAt(actionId:string):Menu {
         var result:Menu = null;
         if (this.menu) {
             this.menu.children.some((md:Menu)=> {
@@ -223,10 +223,6 @@ export class Details extends View {
 }
 
 
-export interface DialogId {
-    readonly dialogId: string;
-}
-
 export interface Dialog {
 
     readonly businessClassName:string;
@@ -236,10 +232,19 @@ export interface Dialog {
     readonly dialogType:string;
     readonly id:string;
     readonly recordDef: RecordDef;
+    readonly referringAction:ReferringAction;
     readonly sessionId:string;
     readonly tenantId: string;
     readonly view: View;
     readonly  viewMode: ViewMode;
+
+}
+
+export interface ReferringAction {
+
+    readonly action:Menu;
+    readonly referringId:string;
+    readonly referringType:string;
 
 }
 
@@ -1350,6 +1355,17 @@ export class Menu {
     readonly name: string;
     readonly type: string;
 
+    static findSubMenu(md:Menu, matcher:(menuDef:Menu)=>boolean):Menu {
+        if (matcher(md)) return md;
+        if (md.children) {
+            for (let i = 0; i < md.children.length; i++) {
+                let result = Menu.findSubMenu(md.children[i], matcher);
+                if (result) return result;
+            }
+        }
+        return null;
+    }
+
     findAtId(actionId:string):Menu {
         if (this.id === actionId) return this;
         var result = null;
@@ -1361,6 +1377,29 @@ export class Menu {
         }
         return result;
     }
+
+    findContextMenuDef():Menu {
+        return Menu.findSubMenu(this, (md:Menu) => {
+            return md.name === 'CONTEXT_MENU';
+        });
+    }
+    get isPresaveDirective():boolean {
+        return this.directive && this.directive === 'PRESAVE';
+    }
+
+    get isRead():boolean {
+        return this.modes && this.modes.indexOf('R') > -1;
+    }
+
+    get isSeparator():boolean {
+        return this.type && this.type === 'separator';
+    }
+
+    get isWrite():boolean {
+        return this.modes && this.modes.indexOf('W') > -1;
+    }
+
+
 
 }
 
@@ -2362,7 +2401,9 @@ export type ClientType = 'DESKTOP' | 'MOBILE';
 
 export type DialogMessageType = "CONFIRM" | "ERROR" | "INFO" | "WARN";
 
-export type DialogMode = 'COPY' | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE';
+/* DialogMode */
+export enum DialogModeEnum { COPY = 'COPY' , CREATE = 'CREATE', READ = 'READ', UPDATE = 'UPDATE', DELETE = 'DELETE' }
+export type DialogMode = DialogModeEnum.COPY | DialogModeEnum.CREATE | DialogModeEnum.READ | DialogModeEnum.UPDATE | DialogModeEnum.DELETE;
 
 export type DialogType = 'hxgn.api.dialog.EditorDialog' | 'hxgn.api.dialog.QueryDialog'
 
@@ -2387,15 +2428,18 @@ export type ViewType ='hxgn.api.dialog.BarcodeScan' | 'hxgn.api.dialog.Calendar'
     | 'hxgn.api.dialog.Graph' | 'hxgn.api.dialog.List' | 'hxgn.api.dialog.Map' | 'hxgn.api.dialog.Stream';
 
 
-
-
 /* Type descriminators */
 
-export const DialogRedirectionTypeName = 'hxgn.api.dialog.DialogRedirection';
-export const NullRedirectionTypeName = 'hxgn.api.dialog.NullRedirection';
-export const WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection';
-export const WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection';
-export const SessionTypeName = 'hxgn.api.dialog.Session';
+export enum TypeNames {
+
+    DialogRedirectionTypeName = 'hxgn.api.dialog.DialogRedirection',
+    NullRedirectionTypeName = 'hxgn.api.dialog.NullRedirection',
+    WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
+    WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection',
+    SessionTypeName = 'hxgn.api.dialog.Session'
+
+}
+
 
 export class ModelUtil {
 
