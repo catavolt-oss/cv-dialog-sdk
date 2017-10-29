@@ -10,7 +10,7 @@ import {
     GeoFix, GeoLocation, NavRequest, NullNavRequest, RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage,
     DialogException, ViewDesc, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column, Details,
     List, Map, TypeNames, ModelUtil, QueryDirection,
-    QueryDialog, EditorDialog, Filter, Sort, ReferringAction
+    QueryDialog, EditorDialog, Filter, Sort, ReferringAction, Graph, Calendar, PrintMarkup, BarcodeScan, ImagePicker
 } from "./models";
 import {FetchClient} from "./ws";
 import {OfflineClient} from "./offline";
@@ -2045,6 +2045,126 @@ export class DetailsContext extends EditorContext {
     }
 }
 
+export class BarcodeScanContext extends EditorContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: BarcodeScan,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                referringAction:ReferringAction,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+    }
+
+
+    get barcodeScan():BarcodeScan {
+        return <BarcodeScan>this.view;
+    }
+}
+
+export class GeoFixContext extends EditorContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: GeoFix,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                referringAction:ReferringAction,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+    }
+
+
+    get geoFix():GeoFix {
+        return <GeoFix>this.view;
+    }
+}
+
+export class GeoLocationContext extends EditorContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: GeoLocation,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                referringAction:ReferringAction,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+    }
+
+
+    get geoLocation():GeoLocation {
+        return <GeoLocation>this.view;
+    }
+}
+
+export class PrintMarkupContext extends EditorContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: PrintMarkup,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                referringAction:ReferringAction,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+    }
+
+
+    get printMarkup():PrintMarkup {
+        return <PrintMarkup>this.view;
+    }
+}
+
 /**
  * QueryContext Subtype that represents a 'List Pane'.
  * An 'List' is a type of query backed by a list of Records and a single Record definition, with the
@@ -2099,6 +2219,103 @@ export class ListContext extends QueryContext {
     }
 
 }
+
+export class CalendarContext extends QueryContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: Calendar,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                referringAction:ReferringAction,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+    }
+
+
+
+    get calendar():Calendar {
+        return <Calendar>this.view;
+    }
+
+}
+
+export class GraphContext extends QueryContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: Graph,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                referringAction:ReferringAction,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+    }
+
+
+
+    get graph():Graph {
+        return <Graph>this.view;
+    }
+
+}
+
+export class ImagePickerContext extends QueryContext {
+
+    constructor(businessClassName:string,
+                children: Array<Dialog>,
+                dialogClassName:string,
+                dialogMode:DialogMode,
+                dialogType:string,
+                id:string,
+                recordDef: RecordDef,
+                sessionId:string,
+                tenantId: string,
+                view: ImagePicker,
+                viewMode: ViewMode,
+                dialogRedirection:DialogRedirection,
+                paneRef:number,
+                parentContext:PaneContext,
+                referringAction:ReferringAction,
+                session:Session
+
+    ) {
+        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
+            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+    }
+
+
+
+    get imagePicker():ImagePicker {
+        return <ImagePicker>this.view;
+    }
+
+}
+
 /**
  * QueryContext Subtype that represents a 'Map Pane'.
  * A 'Map' is a type of query backed by a list of Records and a single Record definition, with the

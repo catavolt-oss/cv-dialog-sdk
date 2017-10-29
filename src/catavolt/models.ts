@@ -641,6 +641,13 @@ export class EntityRecUtil {
         return annos ? new EntityRecImpl(objectId, ArrayUtil.copy(props), ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, ArrayUtil.copy(props));
     }
 
+    static isEntityRec(o:any):boolean {
+
+       return (o instanceof EntityRecImpl)
+           || (o instanceof EntityBuffer)
+           || (o instanceof NullEntityRec);
+    }
+
     /*
      static union(l1:Array<Property>, l2:Array<Property>):Array<Property> {
      var result:Array<Property> = ArrayUtil.copy(l1);
@@ -1260,6 +1267,9 @@ export interface GraphDataPoint {
 
 }
 
+export class ImagePicker extends View {
+}
+
 export class InlineBinaryRef extends BinaryRef {
 
     constructor(private _inlineData:string, settings:StringDictionary) {
@@ -1639,6 +1649,9 @@ export class ObjectRef {
         return this.objectId + ":" + this.description;
     }
 
+}
+
+export class PrintMarkup extends View {
 }
 
 
@@ -2421,7 +2434,8 @@ export type RedirectionType =
 
 export type SortDirection = "ASC" | "DESC";
 
-export type ViewMode = "READ" | "WRITE";
+export enum ViewModeEnum { READ = 'READ', WRITE = 'WRITE'}
+export type ViewMode = ViewModeEnum.READ | ViewModeEnum.WRITE;
 
 export type ViewType ='hxgn.api.dialog.BarcodeScan' | 'hxgn.api.dialog.Calendar' | 'hxgn.api.dialog.Details'
     | 'hxgn.api.dialog.Form' | 'hxgn.api.dialog.GeoFix' | 'hxgn.api.dialog.GeoLocation'
@@ -2437,7 +2451,6 @@ export enum TypeNames {
     WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
     WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection',
     SessionTypeName = 'hxgn.api.dialog.Session'
-
 }
 
 
