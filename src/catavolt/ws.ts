@@ -119,7 +119,7 @@ export class FetchClient implements Client{
             requestHeaders.append('Accept','gzip');
             const init:RequestInit = { method: method, mode: 'cors'};
             if(body) init.body = body;
-            if(headers) init.headers = headers;
+            if(headers) init.headers = new Headers(headers);
 
             if(!['GET', 'POST', 'PUT', 'DELETE'].some(v=>method === v)) {
                 reject(new Error(`FetchClient::processRequest: Unsupported method: ${method}`))

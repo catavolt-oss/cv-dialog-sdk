@@ -2,7 +2,10 @@
  * Created by rburson on 10/19/17.
  */
 
-import {StringDictionary, Log, ObjUtil, StringUtil, ArrayUtil, DateValue, DateTimeValue, TimeValue} from './util'
+import {
+    StringDictionary, Log, ObjUtil, StringUtil, ArrayUtil, DateValue, DateTimeValue, TimeValue,
+    Dictionary
+} from './util'
 /*
  ************************** Dialog Models ****************************
  * These models correspond to those in the WebAPI schema specification
@@ -39,7 +42,25 @@ export abstract class BinaryRef {
 
 export abstract class CellValue {
 
+    readonly type:string;
+
     constructor(readonly style:string) {}
+
+    get isHeading1Style():boolean {
+        return this.style && (this.style === PropertyDef.STYLE_HEADING1);
+    }
+
+    get isHeading2Style():boolean {
+        return this.style && (this.style === PropertyDef.STYLE_HEADING2);
+    }
+
+    get isHeading3Style():boolean {
+        return this.style && (this.style === PropertyDef.STYLE_HEADING3);
+    }
+
+    get isHeading4Style():boolean {
+        return this.style && (this.style === PropertyDef.STYLE_HEADING4);
+    }
 
     get isInlineMediaStyle():boolean {
         return this.style && (this.style === PropertyDef.STYLE_INLINE_MEDIA || this.style === PropertyDef.STYLE_INLINE_MEDIA2);
@@ -89,7 +110,7 @@ export abstract class View {
     /**
      * Find a menu def on this View with the given actionId
      * @param actionId
-     * @returns {MenuDef}
+     * @returns {Menu}
      */
     findMenuAt(actionId:string):Menu {
         var result:Menu = null;
@@ -106,6 +127,13 @@ export abstract class View {
 }
 
 /** ************************** Subclasses *******************************************************/
+
+export interface ActionParameters {
+
+    readonly pendingWrites:Record;
+    readonly targets:Array<string>;
+
+}
 
 export interface AppWindow {
 
@@ -225,26 +253,49 @@ export class Details extends View {
 
 export interface Dialog {
 
+    readonly availableViews:Array<ViewDescriptor>;
     readonly businessClassName:string;
     readonly children: Array<Dialog>;
     readonly dialogClassName:string;
     readonly dialogMode:DialogMode;
-    readonly dialogType:string;
+    readonly header:View;
     readonly id:string;
     readonly recordDef: RecordDef;
     readonly referringAction:ReferringAction;
+    readonly selectedViewId:string;
     readonly sessionId:string;
     readonly tenantId: string;
+    readonly type:DialogType;
     readonly view: View;
     readonly  viewMode: ViewMode;
 
 }
 
-export interface ReferringAction {
+export class ReferringAction {
 
     readonly action:Menu;
     readonly referringId:string;
     readonly referringType:string;
+
+    isDialogReferrer():boolean {
+        return this.referringType === TypeNames.DialogTypeName;
+    }
+
+    isWorkbenchReferrer():boolean {
+        return this.referringType === TypeNames.WorkbenchTypeName;
+    }
+
+    get actionId():string {
+        return this.action ? this.action.id : null;
+    }
+
+    get workbenchId():string {
+        return this.isWorkbenchReferrer() ? this.referringId : null;
+    }
+
+    get dialogId():string {
+        return this.isDialogReferrer() ? this.referringId : null;
+    }
 
 }
 
@@ -1133,8 +1184,13 @@ export interface Filter {
 /**
  * A purely declarative type. This object has no additional properties.
  */
-export interface ForcedLineCellValue extends CellValue {
-}
+export class ForcedLineCellValue extends CellValue {
+
+    constructor(style?:string) {
+       super(style);
+    }
+
+ }
 
 /**
  * A composition of View objects that, together, comprise a UI form.
@@ -1144,7 +1200,6 @@ export class Form extends View {
     readonly borderStyle: string;
     readonly formStyle: string;
     readonly formLayout: string;
-    readonly headerDef:Details;
 
     get isCompositeForm():boolean {
         return this.formStyle === 'COMPOSITE_FORM'
@@ -1250,11 +1305,29 @@ export class GeoLocation extends View {
  */
 export class Graph extends View {
 
+
+    static GRAPH_TYPE_CARTESIAN = "GRAPH_TYPE_BAR";
+    static GRAPH_TYPE_PIE = "GRAPH_TYPE_PIE";
+    static PLOT_TYPE_BAR = "BAR";
+    static PLOT_TYPE_BUBBLE = "BUBBLE";
+    static PLOT_TYPE_LINE = "LINE";
+    static PLOT_TYPE_SCATTER = "SCATTER";
+    static PLOT_TYPE_STACKED = "STACKED";
+
+    readonly defaultActionId:string;
+    readonly graphType: string;
+    readonly displayQuadrantLines:boolean;
+    readonly identityDataPoint: GraphDataPoint;
+    readonly groupingDataPoint: GraphDataPoint;
     readonly dataPoints: Array<GraphDataPoint>;
     readonly filterDataPoints: Array<GraphDataPoint>;
-    readonly graphType: string;
-    readonly groupingDataPoint: GraphDataPoint;
-    readonly identityDataPoint: GraphDataPoint;
+    readonly sampleModel:string;
+    readonly xAxisLabel:string;
+    readonly xAxisRangeFrom:number;
+    readonly xAxisRangeTo:number;
+    readonly yAxisLabel:string;
+    readonly yAxisRangeFrom:number;
+    readonly yAxisRangeTo:number;
 
 }
 
@@ -1264,6 +1337,11 @@ export interface GraphDataPoint {
     readonly legendKey: string;
     readonly plotType: string;
     readonly type: string;
+    readonly bubbleRadiusName:string,
+    readonly bubbleRadiusType:string,
+    readonly seriesColor:string,
+    readonly xAxisName:string,
+    readonly xAxisType:string
 
 }
 
@@ -1290,8 +1368,12 @@ export class InlineBinaryRef extends BinaryRef {
 /**
  * A text description typically preceeding a UI component as a prompt
  */
-export interface LabelCellValue extends CellValue {
-    readonly value: string;
+export class LabelCellValue extends CellValue {
+
+    constructor(style, readonly value:string) {
+        super(style);
+    }
+
 }
 
 export interface Login {
@@ -1300,6 +1382,7 @@ export interface Login {
     readonly password:string;
     readonly clientType:ClientType;
     readonly deviceProperties:StringDictionary;
+    readonly type:string;
 
 }
 
@@ -1358,6 +1441,7 @@ export class Menu {
     readonly id: string;
     readonly iconUrl: string;
     readonly label: string;
+    readonly showOnMenu:boolean;
     /**
      * The menu is allowed (active) for these modes
      */
@@ -1365,7 +1449,7 @@ export class Menu {
     readonly name: string;
     readonly type: string;
 
-    static findSubMenu(md:Menu, matcher:(menuDef:Menu)=>boolean):Menu {
+    static findSubMenu(md:Menu, matcher:(menu:Menu)=>boolean):Menu {
         if (matcher(md)) return md;
         if (md.children) {
             for (let i = 0; i < md.children.length; i++) {
@@ -1388,7 +1472,7 @@ export class Menu {
         return result;
     }
 
-    findContextMenuDef():Menu {
+    findContextMenu():Menu {
         return Menu.findSubMenu(this, (md:Menu) => {
             return md.name === 'CONTEXT_MENU';
         });
@@ -1413,7 +1497,11 @@ export class Menu {
 
 }
 
-export interface NavRequest {}
+export interface NavRequest {
+
+    readonly referringDialogProperties:StringDictionary;
+    readonly referringAction:ReferringAction;
+}
 
 /**
  * An empty or uninitialized {@link EntityRec}.
@@ -1607,10 +1695,8 @@ export class NullEntityRec implements EntityRec {
 
 export class NullNavRequest implements NavRequest {
 
-    referringDialogProperties:StringDictionary;
-
-    constructor() {
-        this.referringDialogProperties = {};
+    constructor(readonly referringDialogProperties:StringDictionary = {},
+                readonly referringAction:ReferringAction = null) {
     }
 }
 
@@ -1652,6 +1738,33 @@ export class ObjectRef {
 }
 
 export class PrintMarkup extends View {
+
+    readonly cancelButtonText:string;
+    readonly commitButtonText:string;
+    readonly editable:boolean;
+    readonly focusPropName:string;
+    readonly printMarkupXML:string;
+    readonly rows:Array<Array<Cell>>;
+
+    private _orderedCellValue:Dictionary<AttributeCellValue> = null;
+
+    get orderedCellValues():StringDictionary {
+        if (!this._orderedCellValue) {
+            this._orderedCellValue = {};
+            this.rows.forEach((cellRow:Array<Cell>, index)=> {
+                cellRow.forEach((cell:Cell) => {
+                    cell.forEach((cellValue:CellValue) => {
+                        if (cellValue instanceof AttributeCellValue) {
+                            let attributeCellValue = cellValue as AttributeCellValue;
+                            this._orderedCellValue[attributeCellValue.propertyName] = attributeCellValue;
+                        }
+                    });
+                });
+            });
+        };
+        return this._orderedCellValue;
+    }
+
 }
 
 
@@ -2014,6 +2127,10 @@ export class Property {
  */
 export class PropertyDef {
 
+    static STYLE_HEADING1 = "textHeading1";
+    static STYLE_HEADING2 = "textHeading2";
+    static STYLE_HEADING3 = "textHeading3";
+    static STYLE_HEADING4 = "textHeading4";
     static STYLE_INLINE_MEDIA = "inlineMedia";
     static STYLE_INLINE_MEDIA2 = "Image/Video";
 
@@ -2259,11 +2376,26 @@ export class RecordDef {
 
 export interface Redirection {
 
-    readonly dialogProperties: StringDictionary;
-    readonly type:RedirectionType;
+    readonly id:string;
+    readonly otherProperties: StringDictionary;
     readonly referringDialogProperties: StringDictionary;
+    readonly referringAction:ReferringAction;
     readonly sessionId: string;
     readonly tenantId: string;
+    readonly type:RedirectionType;
+
+}
+
+export class RedirectionUtil {
+
+    static isRedirection(o:any):boolean {
+
+        return [ TypeNames.DialogRedirectionTypeName,
+            TypeNames.NullRedirectionTypeName,
+            TypeNames.WebRedirectionTypeName,
+            TypeNames.WorkbenchRedirectionTypeName
+        ].some(n => n === o['type']);
+    }
 
 }
 
@@ -2329,16 +2461,23 @@ export class Stream extends View {
 /**
  * A text template containing substitution parameters that is instantiated at presentation time and filled with business values.
  */
-export interface SubstitutionCellValue extends CellValue {
+export class SubstitutionCellValue extends CellValue {
 
-    readonly value: string;
+    constructor(style, readonly value:string) {
+        super(style);
+    }
 
 }
 
 /**
  * A purely declarative type. This object has no additional properties.
  */
-export interface TabCellValue extends CellValue {
+export class TabCellValue extends CellValue {
+
+    constructor(style) {
+        super(style);
+    }
+
 }
 
 
@@ -2360,9 +2499,9 @@ export class UserMessage {
 
 
 
-export class ViewDesc {
+export class ViewDescriptor {
 
-    constructor(public name:string, public description:string, public viewId:string){}
+    constructor(readonly id:string, readonly name:string, readonly title:string){}
 
 }
 
@@ -2397,7 +2536,7 @@ export interface WebRedirection extends Redirection, NavRequest {
 
 }
 
-export interface WorkbenchRedirection extends Redirection, NavRequest {
+export interface WorkbenchRedirection extends Redirection {
 
     readonly workbenchId:string;
 
@@ -2446,11 +2585,15 @@ export type ViewType ='hxgn.api.dialog.BarcodeScan' | 'hxgn.api.dialog.Calendar'
 
 export enum TypeNames {
 
+    DialogTypeName = 'hxgn.api.dialog.Dialog',
     DialogRedirectionTypeName = 'hxgn.api.dialog.DialogRedirection',
     NullRedirectionTypeName = 'hxgn.api.dialog.NullRedirection',
     WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
     WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection',
-    SessionTypeName = 'hxgn.api.dialog.Session'
+    SessionTypeName = 'hxgn.api.dialog.Session',
+    WorkbenchTypeName = 'hxgn.api.dialog.Workbench',
+    AppWindowTypeName = 'hxgn.api.dialog.AppWindow',
+    LoginTypeName = 'hxgn.api.dialog.Login'
 }
 
 
@@ -2473,11 +2616,12 @@ export class ModelUtil {
         'hxgn.api.dialog.Property': Property,
         'hxgn.api.dialog.PropertyDef': PropertyDef,
         'hxgn.api.dialog.RecordDef': RecordDef,
-        'hxgn.api.dialog.ViewDesc': ViewDesc,
+        'hxgn.api.dialog.ViewDescriptor': ViewDescriptor,
         'hxgn.api.dialog.InlineBinaryRef': InlineBinaryRef,
         'hxgn.api.dialog.ObjectBinaryRef': ObjectBinaryRef,
         'hxgn.api.dialog.DialogException': DialogException,
-        'hxgn.api.dialog.DataAnno': DataAnno
+        'hxgn.api.dialog.DataAnno': DataAnno,
+        'hxgn.api.dialog.ReferrringAction': ReferringAction
     };
 
     private static typeFns:{[index:string]:(s:string, a:any)=>Promise<any>} = {

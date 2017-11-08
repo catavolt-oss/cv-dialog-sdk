@@ -8,14 +8,16 @@ import {
     ClientType, Dialog, DialogMessage, DialogRedirection, Login, Menu, PropertyDef, Property, Redirection,
     Session, Tenant, WebRedirection, Workbench, WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef,
     GeoFix, GeoLocation, NavRequest, NullNavRequest, RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage,
-    DialogException, ViewDesc, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column, Details,
+    DialogException, ViewDescriptor, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column, Details,
     List, Map, TypeNames, ModelUtil, QueryDirection,
-    QueryDialog, EditorDialog, Filter, Sort, ReferringAction, Graph, Calendar, PrintMarkup, BarcodeScan, ImagePicker
+    QueryDialog, EditorDialog, Filter, Sort, ReferringAction, Graph, Calendar, PrintMarkup, BarcodeScan, ImagePicker,
+    RedirectionUtil, DialogType, NullRedirection, ActionParameters
 } from "./models";
 import {FetchClient} from "./ws";
 import {OfflineClient} from "./offline";
 import * as moment from 'moment';
 import * as numeral from "numeral";
+import {PrintForm} from "./print";
 
 /**
  * Top-level entry point into the Catavolt API
@@ -55,7 +57,7 @@ export class AppContext {
      */
     static get singleton():AppContext {
         if (!AppContext._singleton) {
-            AppContext._singleton = new AppContext(AppContext.SERVER_VERSION, AppContext.SERVER_URL);
+            AppContext._singleton = new AppContext(AppContext.SERVER_URL, AppContext.SERVER_VERSION);
         }
         return AppContext._singleton;
     }
@@ -65,7 +67,7 @@ export class AppContext {
      * This should not be called directly, instead use the 'singleton' method
      * @private
      */
-    private constructor(serverVersion:string, serverUrl:string) {
+    private constructor(serverUrl:string, serverVersion:string) {
 
         if (AppContext._singleton) {
             throw new Error("Singleton instance already created");
@@ -73,7 +75,7 @@ export class AppContext {
         this._devicePropsStatic = {};
         this._devicePropsDynamic = {};
 
-        this.initDialogApi(serverVersion, serverUrl);
+        this.initDialogApi(serverUrl, serverVersion);
 
         AppContext._singleton = this;
     }
@@ -197,7 +199,7 @@ export class AppContext {
      */
     initDialogApi(serverUrl:string, serverVersion:string=AppContext.SERVER_VERSION):void {
 
-        this._dialogApi = new DialogService(serverVersion, this.getClient(ClientMode.REMOTE), serverUrl);
+        this._dialogApi = new DialogService(this.getClient(ClientMode.REMOTE), serverUrl, serverVersion);
 
     }
 
@@ -209,7 +211,7 @@ export class AppContext {
      */
     initOfflineApi(serverVersion:string, serverUrl:string):void {
 
-        this._dialogApi = new DialogService(serverVersion, this.getClient(ClientMode.OFFLINE), serverUrl);
+        this._dialogApi = new DialogService(this.getClient(ClientMode.OFFLINE), serverUrl, serverVersion);
 
     }
 
@@ -264,7 +266,8 @@ export class AppContext {
             userId:userId,
             password: password,
             clientType:clientType,
-            deviceProperties:this.deviceProps
+            deviceProperties:this.deviceProps,
+            type:TypeNames.LoginTypeName
         };
 
         return this.dialogApi.createSession(tenantId, login).then((result:Session | Redirection)=>{
@@ -301,7 +304,37 @@ export class AppContext {
      * @returns {Promise<NavRequest>}
      */
     openRedirection(redirection:Redirection):Promise<NavRequest> {
-        return this.fromRedirection(redirection);
+
+        if(redirection.type === TypeNames.DialogRedirectionTypeName) {
+            return this.openDialog(redirection as DialogRedirection);
+        } else if(redirection.type === TypeNames.WebRedirectionTypeName) {
+            return Promise.resolve(<WebRedirection>redirection);
+        } else if(redirection.type === TypeNames.WorkbenchRedirectionTypeName) {
+            return this.getWorkbench((<WorkbenchRedirection>redirection).workbenchId);
+        } else if (redirection.type === TypeNames.NullRedirectionTypeName) {
+            const nullNavRequest = new NullNavRequest(redirection.referringDialogProperties, redirection.referringAction);
+        } else {
+            return Promise.reject(new Error(`Unrecognized type of Redirection ${ObjUtil.formatRecAttr(redirection)}`));
+        }
+
+    }
+
+    openDialog(redirection:DialogRedirection):Promise<NavRequest> {
+
+        return this.dialogApi.getDialog(this.session.tenantId, this.session.id, redirection.dialogId)
+            .then((dialog:Dialog)=>{
+                if(dialog.view instanceof Form) {
+                    return new FormContext(dialog, <DialogRedirection>redirection, null, null, this.session);
+                } else {
+                    throw new Error(`Unexpected top-level dialog view type: ${dialog.view.type}`);
+                }
+            });
+    }
+
+    getRedirection(redirectionId:string):Promise<Redirection> {
+
+        return this.dialogApi.getRedirection(this.session.tenantId, this.session.id, redirectionId);
+
     }
 
     /**
@@ -313,6 +346,23 @@ export class AppContext {
 
         return this.performLaunchActionForId(workbench.id, launchAction.id);
 
+    }
+
+    performNavigation(workbench:Workbench, launchAction:WorkbenchAction):Promise<NavRequest> {
+
+        return this.performNavigationForId(workbench.id, launchAction.id);
+
+    }
+
+    performNavigationForId(workbenchId:string, launchActionId:string):Promise<NavRequest> {
+
+        return this.performLaunchActionForId(workbenchId, launchActionId).then((result:{actionId:string} | Redirection)=>{
+          if(RedirectionUtil.isRedirection(result)) {
+            return this.openRedirection(result as Redirection);
+          } else {
+              return new NullNavRequest();
+          }
+        });
     }
 
     /**
@@ -374,29 +424,6 @@ export class AppContext {
        Private Ops
      ******************* */
 
-    //@TODO - add action source to FormContext constructor - it is currently null
-    private fromRedirection(redirection:Redirection):Promise<NavRequest> {
-
-        if(redirection.type === 'hxgn.api.dialog.DialogRedirection') {
-           return this.dialogApi.getDialog(this.session.tenantId, this.session.id, (<DialogRedirection>redirection).dialogId)
-               .then((dialog:Dialog)=>{
-                  if(dialog.view instanceof Form) {
-                      return new FormContext(dialog.businessClassName, dialog.children, dialog.dialogClassName,
-                          dialog.dialogMode, dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId,
-                          <Form>dialog.view, dialog.viewMode, <DialogRedirection>redirection, null, null, dialog.referringAction, this.session);
-                  } else {
-                      throw new Error(`Unexpected top-level dialog view type: ${dialog.view.type}`);
-                  }
-               });
-        } else if(redirection.type === TypeNames.WebRedirectionTypeName) {
-            return Promise.resolve(<WebRedirection>redirection);
-        } else if(redirection.type === TypeNames.WorkbenchRedirectionTypeName) {
-            return this.getWorkbench((<WorkbenchRedirection>redirection).workbenchId);
-        } else {
-            return Promise.reject(new Error(`Unrecognized type of Redirection ${ObjUtil.formatRecAttr(redirection)}`));
-        }
-    }
-
     private getClient(clientType:ClientMode):Client {
         if(clientType === ClientMode.REMOTE) {
             return new FetchClient();
@@ -416,7 +443,7 @@ export class AppContext {
  * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
  * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
-export abstract class PaneContext implements Dialog{
+export abstract class PaneContext implements Dialog {
 
     //statics
     private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
@@ -429,24 +456,13 @@ export abstract class PaneContext implements Dialog{
     protected _destroyed:boolean = false;
     private _childrenContexts:Array<PaneContext>;
 
-    constructor(readonly businessClassName:string,
-                children: Array<Dialog>,
-                readonly dialogClassName:string,
-                readonly dialogMode:DialogMode,
-                readonly dialogType:string,
-                readonly id:string,
-                readonly recordDef: RecordDef,
-                readonly sessionId:string,
-                readonly tenantId: string,
-                readonly view: View,
-                readonly viewMode: ViewMode,
+    constructor(readonly dialog:Dialog,
                 readonly dialogRedirection:DialogRedirection,
                 readonly paneRef:number,
                 readonly parentContext:PaneContext,
-                readonly referringAction:ReferringAction,
                 readonly session:Session
     ) {
-        this._childrenContexts = this.createChildContexts(children, dialogRedirection);
+        this._childrenContexts = this.createChildContexts(dialog.children, dialogRedirection);
         this.initialize();
     }
 
@@ -466,6 +482,54 @@ export abstract class PaneContext implements Dialog{
         return result;
 
     }
+
+    /** Dialog Impl */
+
+    get availableViews():Array<ViewDescriptor>{
+       return this.dialog.availableViews;
+    }
+    get businessClassName():string{
+       return this.dialog.businessClassName;
+    }
+    get dialogClassName():string{
+        return this.dialog.dialogClassName;
+    }
+    get dialogMode():DialogMode{
+        return this.dialog.dialogMode;
+    }
+    get header():View{
+        return this.dialog.header;
+    }
+    get id():string{
+        return this.dialog.id;
+    }
+    get recordDef(): RecordDef{
+        return this.dialog.recordDef;
+    }
+    get referringAction():ReferringAction {
+        return this.dialog.referringAction;
+    }
+    get selectedViewId():string{
+        return this.dialog.selectedViewId;
+    }
+    get sessionId():string{
+        return this.dialog.sessionId;
+    }
+    get tenantId(): string{
+        return this.dialog.tenantId;
+    }
+    get type():DialogType {
+       return this.dialog.type;
+    }
+    get view():View{
+        return this.dialog.view;
+    }
+    get viewMode():ViewMode{
+        return this.dialog.viewMode;
+    }
+
+
+    /* public methods */
 
     /**
      * Load a Binary property from a record
@@ -515,7 +579,7 @@ export abstract class PaneContext implements Dialog{
      * @returns {any}
      */
     get dialogAlias():string {
-        return this.dialogRedirection.dialogProperties['dialogAlias'];
+        return this.dialogRedirection.otherProperties['dialogAlias'];
     }
 
     /**
@@ -534,7 +598,7 @@ export abstract class PaneContext implements Dialog{
     /**
      * Find a menu def on this Pane with the given actionId
      * @param actionId
-     * @returns {MenuDef}
+     * @returns {Menu}
      */
     findMenuAt(actionId:string) {
         return this.view.findMenuAt(actionId);
@@ -609,8 +673,8 @@ export abstract class PaneContext implements Dialog{
     }
 
     /**
-     * Get the all {@link MenuDef}'s associated with this Pane
-     * @returns {Array<MenuDef>}
+     * Get the all {@link Menu}'s associated with this Pane
+     * @returns {Array<Menu>}
      */
     get menu():Menu {
         return this.view.menu;
@@ -665,11 +729,11 @@ export abstract class PaneContext implements Dialog{
      }
 
     /**
-     * Get the all {@link ViewDesc}'s associated with this Form
-     * @returns {Array<ViewDesc>}
+     * Get the all {@link ViewDescriptor}'s associated with this Form
+     * @returns {Array<ViewDescriptor>}
      */
     /* @TODO */
-    get viewDescs():Array<ViewDesc> {
+    get viewDescs():Array<ViewDescriptor> {
         /* @TODO */
         //return this.form.viewDescs;
         return [];
@@ -749,27 +813,19 @@ export abstract class PaneContext implements Dialog{
 
         if (dialog.view instanceof List) {
 
-            return new ListContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
-                dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
-                dialog.viewMode, dialogRedirection, paneRef, this, this.referringAction, this.session);
+            return new ListContext(dialog, dialogRedirection, paneRef, this, this.session);
 
         } else if (dialog.view instanceof Details) {
 
-            return new DetailsContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
-                dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
-                dialog.viewMode, dialogRedirection, paneRef, this, this.referringAction, this.session);
+            return new DetailsContext(dialog, dialogRedirection, paneRef, this, this.session);
 
         } else if (dialog.view instanceof Map) {
 
-            return new MapContext(dialog.businessClassName, dialog.children, dialog.dialogClassName, dialog.dialogMode,
-                dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId, dialog.view,
-                dialog.viewMode, dialogRedirection, paneRef, this, this.referringAction, this.session);
+            return new MapContext(dialog, dialogRedirection, paneRef, this, this.session);
 
         } else if (dialog.view instanceof Form) {
 
-            new FormContext(dialog.businessClassName, dialog.children, dialog.dialogClassName,
-                dialog.dialogMode, dialog.dialogType, dialog.id, dialog.recordDef, dialog.sessionId, dialog.tenantId,
-                <Form>dialog.view, dialog.viewMode, dialogRedirection, paneRef, this, this.referringAction, this.session);
+            new FormContext(dialog, dialogRedirection, paneRef, this, this.session);
 
         }
 
@@ -777,9 +833,8 @@ export abstract class PaneContext implements Dialog{
 
 
     /* @TODO */
-    openView(targetViewDesc:ViewDesc): Promise<PaneContext | NavRequest>{ return null; }
+    openView(targetViewDescriptor:ViewDescriptor): Promise<PaneContext | Redirection>{ return null; }
 
-    protected abstract getSelectedViewId():Promise<string>;
     protected abstract initialize();
 
     /**
@@ -825,26 +880,14 @@ export abstract class PaneContext implements Dialog{
  */
 export class FormContext extends PaneContext implements Dialog, NavRequest {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: Form,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 sessionContext:Session
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef,
-            parentContext, referringAction, sessionContext);
+        super(dialog, dialogRedirection, paneRef,
+            parentContext, sessionContext);
     }
 
     /**
@@ -867,10 +910,9 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
         return this.view as Form;
     }
 
-    /* @TODO */
-    openView(targetViewDesc: ViewDesc): Promise<PaneContext | NavRequest> {
+    openView(targetViewDescriptor: ViewDescriptor): Promise<PaneContext | Redirection> {
         /*
-        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDescriptor.viewId), this.sessionContext)
             .bind((setViewResult: XOpenDialogModelResult) => {
                 const xOpenEditorResult: XOpenEditorModelResult = setViewResult as XOpenEditorModelResult;
                 var ca = new ContextAction('#viewChange', xOpenEditorResult.formRedirection.objectId, this.actionSource);
@@ -886,30 +928,34 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
     }
 
     /**
-     * Perform the action associated with the given MenuDef on this Form
-     * @param menuDef
+     * Perform the action associated with the given Menu on this Form
+     * @param menu
      * @returns {Future<NavRequest>}
      */
     /* @TODO */
-    performMenuAction(menu: Menu): Promise<NavRequest> {
+    performMenuAction(menu: Menu): Promise<{actionId:string} | Redirection> {
         /*
-        return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
+        return DialogService.performEditorAction(this.paneDef.dialogHandle, menu.actionId,
             NullEntityRec.singleton, this.sessionContext).bind((value: Redirection) => {
             var destroyedStr: string = value.fromDialogProperties && value.fromDialogProperties['destroyed'];
             if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
                 this._destroyed = true;
             }
-            var ca: ContextAction = new ContextAction(menuDef.actionId, this.dialogRedirection.objectId, this.actionSource);
+            var ca: ContextAction = new ContextAction(menu.actionId, this.dialogRedirection.objectId, this.actionSource);
             return NavRequestUtil.fromRedirection(value, ca, this.sessionContext);
         });
         */
         return Promise.resolve(null);
     }
 
-    getSelectedViewId():Promise<string> {
-        /* @TODO */
-        //return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
-        return null;
+    performNavigation(menu: Menu): Promise<NavRequest> {
+
+        return Promise.resolve(null);
+
+    }
+
+    get referringDialogProperties():StringDictionary {
+        return this.dialogRedirection.referringDialogProperties;
     }
 
     protected initialize() {
@@ -935,26 +981,14 @@ export class EditorContext extends PaneContext {
     private _editorState:EditorState;
     private _isFirstReadComplete:boolean;
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: View,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
 
     /**
@@ -1102,9 +1136,9 @@ export class EditorContext extends PaneContext {
     }
 
     //@TODO
-    openView(targetViewDesc:ViewDesc): Promise<PaneContext> {
+    openView(targetViewDescriptor:ViewDescriptor): Promise<PaneContext | Redirection> {
         /*
-         return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+         return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDescriptor.viewId), this.sessionContext)
          .bind((setViewResult:XOpenDialogModelResult)=>{
          return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this) });
          });
@@ -1113,20 +1147,20 @@ export class EditorContext extends PaneContext {
     }
 
     /**
-     * Perform the action associated with the given MenuDef on this EditorPane.
+     * Perform the action associated with the given Menu on this EditorPane.
      * Given that the Editor could possibly be destroyed as a result of this action,
      * any provided pending writes will be saved if present.
-     * @param menuDef
+     * @param menu
      * @param pendingWrites
      * @returns {Future<NavRequest>}
      */
     //@TODO
-    performMenuAction(menu:Menu, pendingWrites:EntityRec):Promise<NavRequest> {
+    performMenuAction(menu:Menu, pendingWrites:EntityRec):Promise<{actionId:string} | Redirection> {
 
         /*
-         return DialogService.performEditorAction(this.paneDef.dialogHandle, menuDef.actionId,
+         return DialogService.performEditorAction(this.paneDef.dialogHandle, menu.actionId,
          pendingWrites, this.sessionContext).bind((redirection:Redirection)=> {
-         var ca = new ContextAction(menuDef.actionId, this.parentContext.dialogRedirection.objectId,
+         var ca = new ContextAction(menu.actionId, this.parentContext.dialogRedirection.objectId,
          this.actionSource);
          return NavRequestUtil.fromRedirection(redirection, ca,
          this.sessionContext).map((navRequest:NavRequest)=> {
@@ -1142,6 +1176,12 @@ export class EditorContext extends PaneContext {
          });
          */
         return Promise.resolve(null);
+    }
+
+    performNavigation(menu:Menu, pendingWrites:EntityRec):Promise<NavRequest> {
+
+        return Promise.resolve(null);
+
     }
 
     /**
@@ -1217,14 +1257,6 @@ export class EditorContext extends PaneContext {
     requestedTimeoutSeconds():number {
         var timeoutStr = this.settings[EditorContext.GPS_SECONDS];
         return timeoutStr ? Number(timeoutStr) : 30;
-    }
-
-    //@TODO
-    getSelectedViewId():Promise<string> {
-        /*
-         return DialogService.getSelectedEditorViewId(this.paneDef.dialogHandle, this.sessionContext);
-         */
-        return null;
     }
 
     /**
@@ -1338,7 +1370,7 @@ export class EditorContext extends PaneContext {
      * @private
      */
     initialize() {
-        this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
+        this._settings = ObjUtil.addAllProps(this.dialogRedirection.otherProperties, {});
         this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
         this._buffer = null;
     }
@@ -1452,9 +1484,9 @@ export class EditorContext extends PaneContext {
      private updatePaneDef(xOpenResult:XOpenDialogModelResult):Promise<View> {
 
      const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
-     const menuDefsFr:Future<Array<MenuDef>> = FormContextBuilder.fetchChildMenuDefs(this.dialogRedirection, this.sessionContext);
+     const menusFr:Future<Array<Menu>> = FormContextBuilder.fetchChildMenus(this.dialogRedirection, this.sessionContext);
 
-     return Future.sequence<any>([activeColDefsFr, menuDefsFr])
+     return Future.sequence<any>([activeColDefsFr, menusFr])
      .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
      var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
      if (flattenedTry.failure) {
@@ -1462,13 +1494,13 @@ export class EditorContext extends PaneContext {
      new Failure<PaneDef>(flattenedTry.failure));
      }
      const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
-     const menuDefs:Array<MenuDef> = flattenedTry.success[1];
+     const menus:Array<Menu> = flattenedTry.success[1];
      const paneDef = this.paneDef;
 
      if(xOpenResult instanceof XOpenEditorModelResult) {
      const editorModelResult:XOpenEditorModelResult = xOpenResult;
      paneDef.entityRecDef = editorModelResult.editorRecordDef;
-     paneDef.menuDefs = menuDefs;
+     paneDef.menus = menus;
      this.initialize();
      }
 
@@ -1499,26 +1531,14 @@ export class QueryContext extends PaneContext {
     private _queryState:QueryState;
     private _scroller:QueryScroller;
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: View,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
 
     /**
@@ -1552,9 +1572,9 @@ export class QueryContext extends PaneContext {
     }
 
     //@TODO
-    openView(targetViewDesc:ViewDesc): Promise<PaneContext | NavRequest>{
+    openView(targetViewDescriptor:ViewDescriptor): Promise<PaneContext | Redirection>{
         /*
-         return DialogService.setSelectedQueryViewId(this.paneDef.dialogHandle, new ViewId(targetViewDesc.viewId), this.sessionContext)
+         return DialogService.setSelectedQueryViewId(this.paneDef.dialogHandle, new ViewId(targetViewDescriptor.viewId), this.sessionContext)
          .bind((setViewResult:XOpenDialogModelResult)=>{
          return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this); });
          });
@@ -1571,19 +1591,19 @@ export class QueryContext extends PaneContext {
     }
 
     /**
-     * Perform this action associated with the given MenuDef on this Pane.
+     * Perform this action associated with the given Menu on this Pane.
      * The targets array is expected to be an array of object ids.
-     * @param menuDef
+     * @param menu
      * @param targets
      * @returns {Future<NavRequest>}
      */
     //@TODO
-    performMenuAction(menu:Menu, targets:Array<string>):Promise<NavRequest> {
+    performMenuAction(menu:Menu, targets:Array<string>):Promise<{actionId:string} | Redirection> {
         /*
-         return DialogService.performQueryAction(this.paneDef.dialogHandle, menuDef.actionId,
+         return DialogService.performQueryAction(this.paneDef.dialogHandle, menu.actionId,
          targets, this.sessionContext).bind((redirection:Redirection)=> {
          var target = targets.length > 0 ? targets[0] : null;
-         var ca:ContextAction = new ContextAction(menuDef.actionId, target, this.actionSource);
+         var ca:ContextAction = new ContextAction(menu.actionId, target, this.actionSource);
          return NavRequestUtil.fromRedirection(redirection, ca, this.sessionContext);
          }).map((navRequest:NavRequest)=> {
          this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, navRequest);
@@ -1597,6 +1617,12 @@ export class QueryContext extends PaneContext {
          });
          */
         return Promise.resolve(null);
+    }
+
+    performNavigation(menu:Menu, targets:Array<string>):Promise<NavRequest> {
+
+        return Promise.resolve(null);
+
     }
 
     /**
@@ -1638,14 +1664,6 @@ export class QueryContext extends PaneContext {
             this._scroller = this.newScroller();
         }
         return this._scroller;
-    }
-
-    //@TODO
-    getSelectedViewId():Promise<string> {
-        /*
-         return DialogService.getSelectedQueryViewId(this.paneDef.dialogHandle, this.sessionContext);
-         */
-        return Promise.resolve(null);
     }
 
     /**
@@ -1732,9 +1750,9 @@ export class QueryContext extends PaneContext {
      private updatePaneDef(xOpenResult:XOpenDialogModelResult):Future<PaneDef> {
 
      const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
-     const menuDefsFr:Future<Array<MenuDef>> = FormContextBuilder.fetchChildMenuDefs(this.dialogRedirection, this.sessionContext);
+     const menusFr:Future<Array<Menu>> = FormContextBuilder.fetchChildMenus(this.dialogRedirection, this.sessionContext);
 
-     return Future.sequence<any>([activeColDefsFr, menuDefsFr])
+     return Future.sequence<any>([activeColDefsFr, menusFr])
      .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
      var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
      if (flattenedTry.failure) {
@@ -1742,7 +1760,7 @@ export class QueryContext extends PaneContext {
      new Failure<PaneDef>(flattenedTry.failure));
      }
      const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
-     const menuDefs:Array<MenuDef> = flattenedTry.success[1];
+     const menus:Array<Menu> = flattenedTry.success[1];
 
      const paneDef = this.paneDef;
      if(xOpenResult instanceof  XOpenQueryModelResult) {
@@ -1751,7 +1769,7 @@ export class QueryContext extends PaneContext {
      if(paneDef instanceof ListDef) {
      const listDef:ListDef = paneDef;
      listDef.defaultActionId = queryModelResult.defaultActionId;
-     listDef.menuDefs = menuDefs;
+     listDef.menus = menus;
      listDef.activeColumnDefs = activeColDefs.columnDefs;
      //reset the scroller (and clear the buffer)
      this.newScroller();
@@ -1990,19 +2008,17 @@ export class QueryScroller {
 
 export class ErrorContext extends PaneContext {
 
-    constructor(view: ErrorMessage,
+    constructor(dialog:Dialog,
                 dialogRedirection: DialogRedirection,
                 paneRef: number,
                 parentContext: PaneContext,
-                referringAction: ReferringAction,
-                session: Session) {
+                session: Session){
 
-        super(null, null, null, null, null, null, null, null, null,
-            view, null, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
+
 
     }
 
-    protected getSelectedViewId():Promise<string> { return Promise.reject('Not implemented') }
     protected initialize() {}
 }
 
@@ -2017,26 +2033,14 @@ export class ErrorContext extends PaneContext {
  */
 export class DetailsContext extends EditorContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: Details,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
 
 
@@ -2047,28 +2051,15 @@ export class DetailsContext extends EditorContext {
 
 export class BarcodeScanContext extends EditorContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: BarcodeScan,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
 
     get barcodeScan():BarcodeScan {
         return <BarcodeScan>this.view;
@@ -2077,28 +2068,15 @@ export class BarcodeScanContext extends EditorContext {
 
 export class GeoFixContext extends EditorContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: GeoFix,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
 
     get geoFix():GeoFix {
         return <GeoFix>this.view;
@@ -2107,28 +2085,15 @@ export class GeoFixContext extends EditorContext {
 
 export class GeoLocationContext extends EditorContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: GeoLocation,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
 
     get geoLocation():GeoLocation {
         return <GeoLocation>this.view;
@@ -2137,31 +2102,27 @@ export class GeoLocationContext extends EditorContext {
 
 export class PrintMarkupContext extends EditorContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: PrintMarkup,
-                viewMode: ViewMode,
+    private _printMarkupModel:PrintForm;
+
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
 
     get printMarkup():PrintMarkup {
         return <PrintMarkup>this.view;
+    }
+
+    get printMarkupModel():PrintForm {
+        if (!this._printMarkupModel) {
+            this._printMarkupModel=PrintForm.fromXMLString(this.printMarkup.printMarkupXML);
+        }
+        return this._printMarkupModel;
     }
 }
 
@@ -2175,28 +2136,15 @@ export class PrintMarkupContext extends EditorContext {
  */
 export class ListContext extends QueryContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: List,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
 
     get columnHeadings():Array<string> {
         return this.list.columns.map((c:Column)=> {
@@ -2222,29 +2170,15 @@ export class ListContext extends QueryContext {
 
 export class CalendarContext extends QueryContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: Calendar,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
-
 
     get calendar():Calendar {
         return <Calendar>this.view;
@@ -2254,29 +2188,15 @@ export class CalendarContext extends QueryContext {
 
 export class GraphContext extends QueryContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: Graph,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
-
 
     get graph():Graph {
         return <Graph>this.view;
@@ -2286,29 +2206,15 @@ export class GraphContext extends QueryContext {
 
 export class ImagePickerContext extends QueryContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: ImagePicker,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
-
 
     get imagePicker():ImagePicker {
         return <ImagePicker>this.view;
@@ -2326,29 +2232,15 @@ export class ImagePickerContext extends QueryContext {
  */
 export class MapContext extends QueryContext {
 
-    constructor(businessClassName:string,
-                children: Array<Dialog>,
-                dialogClassName:string,
-                dialogMode:DialogMode,
-                dialogType:string,
-                id:string,
-                recordDef: RecordDef,
-                sessionId:string,
-                tenantId: string,
-                view: Map,
-                viewMode: ViewMode,
+    constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                referringAction:ReferringAction,
                 session:Session
 
     ) {
-        super(businessClassName, children, dialogClassName, dialogMode, dialogType, id,
-            recordDef, sessionId, tenantId, view, viewMode, dialogRedirection, paneRef, parentContext, referringAction, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session);
     }
-
-
 
     get map():Map {
         return <Map>this.view;
@@ -2362,10 +2254,6 @@ export class MapContext extends QueryContext {
 
 export interface DialogApi {
 
-    getTenants():Promise<Array<Tenant>>;
-
-    getSessions(tenantId:string):Promise<Array<Session>>;
-
     createSession(tenantId:string, login:Login):Promise<Session | Redirection>;
 
     getSession(tenantId:string, sessionId:string):Promise<Session>;
@@ -2376,19 +2264,20 @@ export interface DialogApi {
 
     getWorkbench(tenantId:string, sessionId:string, workbenchId:string):Promise<Workbench>;
 
-    getDialogs(tenantId:string, sessionId:string):Promise<Array<Dialog>>;
-
     getDialog(tenantId:string, sessionId:string, dialogId:string):Promise<Dialog>;
 
     deleteDialog(tenantId:string, sessionId:string, dialogId:string):Promise<{dialogId:string}>;
 
     getActions(tenantId:string, sessionId:string, dialogId:string):Promise<Array<Menu>>;
 
-    performAction(tenantId:string, sessionId:string, dialogId:string, actionId:string):Promise<{actionId:string} | Redirection>;
+    performAction(tenantId:string, sessionId:string, dialogId:string, actionId:string,
+                  actionParameters:ActionParameters):Promise<{actionId:string} | Redirection>;
 
     getWorkbenchActions(tenantId:string, sessionId:string, workbenchId:string):Promise<Array<WorkbenchAction>>;
 
     performWorkbenchAction(tenantId:string, sessionId:string, workbenchId:string, actionId:string):Promise<{actionId:string} | Redirection>;
+
+    getRedirection(tenantId:string, sessionId:string, redirectionId:string):Promise<Redirection>;
 
     getRecord(tenantId:string, sessionId:string, dialogId:string):Promise<Record>;
 
@@ -2403,21 +2292,9 @@ export interface DialogApi {
 
     getView(tenantId:string, sessionId:string, dialogId:string):Promise<View>;
 
-    changeView(tenantId:string, sessionId:string, dialogId:string, view:View):Promise<Dialog>;
+    changeView(tenantId:string, sessionId:string, dialogId:string, viewId:string):Promise<Dialog>;
 
-    getViews(tenantId:string, sessionId:string, dialogId:string):Promise<Array<View>>;
-
-    getColumns(tenantId:string, sessionId:string, dialogId:string):Promise<Array<Column>>;
-
-    changeColumns(tenantId:string, sessionId:string, dialogId:string, columns:Array<Column>):Promise<QueryDialog>;
-
-    getListFilter(tenantId:string, sessionId:string, dialogId:string):Promise<Filter>;
-
-    changeListFilter(tenantId:string, sessionId:string, dialogId:string, filter:Filter):Promise<QueryDialog>;
-
-    getListSort(tenantId:string, sessionId:string, dialogId:string):Promise<Sort>;
-
-    changeListSort(tenantId:string, sessionId:string, dialogId:string, sort:Sort):Promise<QueryDialog>;
+    getViews(tenantId:string, sessionId:string, dialogId:string):Promise<Array<ViewDescriptor>>;
 
     lastServiceActivity:Date;
 
@@ -2429,24 +2306,8 @@ export class DialogService implements DialogApi {
 
     readonly baseUrl:string;
 
-    constructor(readonly apiVersion:string='v0', readonly client:Client, serverUrl=DialogService.SERVER) {
+    constructor(readonly client:Client, serverUrl:string=DialogService.SERVER, readonly apiVersion:string='v0') {
         this.baseUrl = `${serverUrl}/${apiVersion}`;
-    }
-
-    getTenants():Promise<Array<Tenant>>{
-
-        return this.get('tenants').then(
-            jsonClientResponse=>(new DialogServiceResponse<Array<Tenant>>(jsonClientResponse)).responseValue()
-        );
-
-    }
-
-    getSessions(tenantId:string):Promise<Array<Session>> {
-
-        return this.get(`tenants/${tenantId}/sessions`).then(
-            jsonClientResponse=>(new DialogServiceResponse<Array<Session>>(jsonClientResponse)).responseValue()
-        );
-
     }
 
     createSession(tenantId:string, login:Login):Promise<Session | Redirection> {
@@ -2489,10 +2350,10 @@ export class DialogService implements DialogApi {
 
     }
 
-    getDialogs(tenantId:string, sessionId:string):Promise<Array<Dialog>> {
+    getRedirection(tenantId:string, sessionId:string, redirectionId:string):Promise<Redirection> {
 
-        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs`).then(
-            jsonClientResponse=>(new DialogServiceResponse<Array<Dialog>>(jsonClientResponse)).responseValue()
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/redirections/${redirectionId}`).then(
+            jsonClientResponse=>(new DialogServiceResponse<Redirection>(jsonClientResponse)).responseValue()
         );
 
     }
@@ -2521,9 +2382,10 @@ export class DialogService implements DialogApi {
 
     }
 
-    performAction(tenantId:string, sessionId:string, dialogId:string, actionId:string):Promise<{actionId:string} | Redirection> {
+    performAction(tenantId:string, sessionId:string, dialogId:string, actionId:string,
+                  actionParameters:ActionParameters):Promise<{actionId:string} | Redirection> {
 
-        return this.post(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions/${actionId}`, {}).then(
+        return this.post(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions/${actionId}`, actionParameters).then(
             jsonClientResponse=>(new DialogServiceResponse<{actionId:string}>(jsonClientResponse)).responseValueOrRedirect()
         );
 
@@ -2592,72 +2454,21 @@ export class DialogService implements DialogApi {
 
      }
 
-     //@TODO
-     //this should probably take a view id instead of a view
-     changeView(tenantId:string, sessionId:string, dialogId:string, view:View):Promise<Dialog> {
+     changeView(tenantId:string, sessionId:string, dialogId:string, viewId:string):Promise<Dialog> {
 
-        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/view`, view).then(
+        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/selectedView/{viewId}`, {}).then(
              jsonClientResponse=>(new DialogServiceResponse<Dialog>(jsonClientResponse)).responseValue()
          );
 
      }
 
-     getViews(tenantId:string, sessionId:string, dialogId:string):Promise<Array<View>> {
+     getViews(tenantId:string, sessionId:string, dialogId:string):Promise<Array<ViewDescriptor>> {
 
-         return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/views`).then(
+         return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/availableViews`).then(
              jsonClientResponse=>(new DialogServiceResponse<Array<View>>(jsonClientResponse)).responseValue()
          );
 
     }
-
-    getColumns(tenantId:string, sessionId:string, dialogId:string):Promise<Array<Column>> {
-
-        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/columns`).then(
-            jsonClientResponse=>(new DialogServiceResponse<Array<Column>>(jsonClientResponse)).responseValue()
-        );
-
-    }
-
-    changeColumns(tenantId:string, sessionId:string, dialogId:string, columns:Array<Column>):Promise<QueryDialog> {
-
-        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/view`, columns).then(
-            jsonClientResponse=>(new DialogServiceResponse<QueryDialog>(jsonClientResponse)).responseValue()
-        );
-
-    }
-
-    getListFilter(tenantId:string, sessionId:string, dialogId:string):Promise<Filter> {
-
-       return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/filter`).then(
-           jsonClientResponse=>(new DialogServiceResponse<Filter>(jsonClientResponse)).responseValue()
-       );
-
-    }
-
-    changeListFilter(tenantId:string, sessionId:string, dialogId:string, filter:Filter):Promise<QueryDialog> {
-
-         return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/filter`, filter).then(
-             jsonClientResponse=>(new DialogServiceResponse<QueryDialog>(jsonClientResponse)).responseValue()
-         );
-
-    }
-
-    getListSort(tenantId:string, sessionId:string, dialogId:string):Promise<Sort> {
-
-        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/sort`).then(
-            jsonClientResponse=>(new DialogServiceResponse<Sort>(jsonClientResponse)).responseValue()
-        );
-
-    }
-
-    changeListSort(tenantId:string, sessionId:string, dialogId:string, sort:Sort):Promise<QueryDialog> {
-
-        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/sort`, sort).then(
-            jsonClientResponse=>(new DialogServiceResponse<QueryDialog>(jsonClientResponse)).responseValue()
-        );
-
-    }
-
 
     get lastServiceActivity():Date {
         return this.client.lastActivity;
