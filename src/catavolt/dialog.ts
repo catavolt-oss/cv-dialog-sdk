@@ -8,10 +8,11 @@ import {
     ClientType, Dialog, DialogMessage, DialogRedirection, Login, Menu, PropertyDef, Property, Redirection,
     Session, Tenant, WebRedirection, Workbench, WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef,
     GeoFix, GeoLocation, NavRequest, NullNavRequest, RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage,
-    DialogException, ViewDescriptor, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column, Details,
+    DialogException, ViewDescriptor, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column,
+    Details,
     List, Map, TypeNames, ModelUtil, QueryDirection,
     QueryDialog, EditorDialog, Filter, Sort, ReferringAction, Graph, Calendar, PrintMarkup, BarcodeScan, ImagePicker,
-    RedirectionUtil, DialogType, NullRedirection, ActionParameters
+    RedirectionUtil, DialogType, NullRedirection, ActionParameters, RecordSet
 } from "./models";
 import {FetchClient} from "./ws";
 import {OfflineClient} from "./offline";
@@ -324,7 +325,7 @@ export class AppContext {
         return this.dialogApi.getDialog(this.session.tenantId, this.session.id, redirection.dialogId)
             .then((dialog:Dialog)=>{
                 if(dialog.view instanceof Form) {
-                    return new FormContext(dialog, <DialogRedirection>redirection, null, null, this.session);
+                    return new FormContext(dialog, <DialogRedirection>redirection, null, null, this.session, this);
                 } else {
                     throw new Error(`Unexpected top-level dialog view type: ${dialog.view.type}`);
                 }
@@ -451,38 +452,21 @@ export abstract class PaneContext implements Dialog {
 
     //private/protected
     private _binaryCache:{ [index:string]:Array<Binary> } = {};
-    private _lastRefreshTime:Date = new Date(0);
-    protected _settings:StringDictionary = {};
-    protected _destroyed:boolean = false;
     private _childrenContexts:Array<PaneContext>;
+    private _lastRefreshTime:Date = new Date(0);
+    protected _destroyed:boolean = false;
+    protected _settings:StringDictionary = {};
 
     constructor(readonly dialog:Dialog,
                 readonly dialogRedirection:DialogRedirection,
                 readonly paneRef:number,
                 readonly parentContext:PaneContext,
-                readonly session:Session
+                readonly session:Session,
+                readonly appContext:AppContext
     ) {
         this._childrenContexts = this.createChildContexts(dialog.children, dialogRedirection);
         this.initialize();
     }
-
-    /**
-     * Updates a settings object with the new settings from a 'Navigation'
-     * @param initialSettings
-     * @param navRequest
-     * @returns {StringDictionary}
-     */
-    static resolveSettingsFromRedirection(initialSettings:StringDictionary,
-                                          redirection:Redirection):StringDictionary {
-
-        var result:StringDictionary = ObjUtil.addAllProps(initialSettings, {});
-        ObjUtil.addAllProps(redirection.referringDialogProperties, result);
-        var destroyed = result['fromDialogDestroyed'];
-        if (destroyed) result['destroyed'] = true;
-        return result;
-
-    }
-
     /** Dialog Impl */
 
     get availableViews():Array<ViewDescriptor>{
@@ -574,12 +558,13 @@ export abstract class PaneContext implements Dialog {
         return this._childrenContexts;
      }
 
+     abstract destroy():void;
     /**
      * Get the dialog alias
      * @returns {any}
      */
     get dialogAlias():string {
-        return this.dialogRedirection.otherProperties['dialogAlias'];
+        return this.dialogRedirection.dialogProperties['dialogAlias'];
     }
 
     /**
@@ -629,8 +614,8 @@ export abstract class PaneContext implements Dialog {
      * If this is not a {@link FormContext} this will be the {@link FormDef} of the owning/parent Form
      * @returns {FormDef}
      */
-    get formDef():Form {
-        return this.parentContext.formDef;
+    get form():Form {
+        return this.parentContext.form;
     }
 
     /**
@@ -649,12 +634,36 @@ export abstract class PaneContext implements Dialog {
         return this._destroyed || this.isAnyChildDestroyed;
     }
 
+    get isDestroyedSetting():boolean {
+        var str = this._settings['destroyed'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    get isDestroyedRequestedSetting():boolean {
+        var str = this._settings['requestDestroy'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    get isGlobalRefreshSetting():boolean {
+        var str = this._settings['globalRefresh'];
+        return str && str.toLowerCase() === 'true';
+    }
+
+    get isLocalRefreshSetting():boolean {
+        var str = this._settings['localRefresh'];
+        return str && str.toLowerCase() === 'true';
+    }
+
     /**
      * Returns whether or not the data in this pane is out of date
      * @returns {boolean}
      */
     get isRefreshNeeded():boolean {
         return this._lastRefreshTime.getTime() < AppContext.singleton.lastMaintenanceTime.getTime();
+    }
+
+    get isRefreshSetting():boolean {
+        return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
     }
 
     /**
@@ -678,6 +687,10 @@ export abstract class PaneContext implements Dialog {
      */
     get menu():Menu {
         return this.view.menu;
+    }
+
+    get paneModeSetting():string {
+        return this._settings['paneMode'];
     }
 
     /**
@@ -708,6 +721,16 @@ export abstract class PaneContext implements Dialog {
     propDefAtName(propName:string):PropertyDef {
         return this.recordDef.propDefAtName(propName);
     }
+
+
+    putSetting(key:string, value:any) {
+        this._settings[key] = value;
+    }
+
+    putSettings(settings:StringDictionary) {
+        ObjUtil.addAllProps(settings, this._settings);
+    }
+
 
     /**
      * Read all the Binary values in this {@link EntityRec}
@@ -803,7 +826,6 @@ export abstract class PaneContext implements Dialog {
          return Promise.resolve(null);
      }
 
-    //@TODO
     private createChildContexts(children:Array<Dialog>, dialogRedirection:DialogRedirection):Array<PaneContext> {
 
          return children ? children.map((dialog:Dialog, n:number)=>{ return this.createChildContext(dialog, dialogRedirection, n)}) : [];
@@ -813,19 +835,19 @@ export abstract class PaneContext implements Dialog {
 
         if (dialog.view instanceof List) {
 
-            return new ListContext(dialog, dialogRedirection, paneRef, this, this.session);
+            return new ListContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
 
         } else if (dialog.view instanceof Details) {
 
-            return new DetailsContext(dialog, dialogRedirection, paneRef, this, this.session);
+            return new DetailsContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
 
         } else if (dialog.view instanceof Map) {
 
-            return new MapContext(dialog, dialogRedirection, paneRef, this, this.session);
+            return new MapContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
 
         } else if (dialog.view instanceof Form) {
 
-            new FormContext(dialog, dialogRedirection, paneRef, this, this.session);
+            new FormContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
 
         }
 
@@ -835,22 +857,19 @@ export abstract class PaneContext implements Dialog {
     /* @TODO */
     openView(targetViewDescriptor:ViewDescriptor): Promise<PaneContext | Redirection>{ return null; }
 
-    protected abstract initialize();
+    protected initialize() {
+        this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
+    }
 
-    /**
-     * @private
-     * @param navRequest
-     */
-    protected processNavRequestForDestroyed(referringDialogProperties:StringDictionary) {
+    updateSettingsWithNewDialogProperties(dialogProperties:StringDictionary) {
 
-        var destroyedStr:string = referringDialogProperties['destroyed'];
-        if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
+        const newSettings:StringDictionary = ObjUtil.addAllProps(this._settings, {});
+        ObjUtil.addAllProps(dialogProperties, newSettings);
+        if (newSettings['fromDialogDestroyed']){
+            newSettings['destroyed'] = true;
             this._destroyed = true;
         }
-        var fromDialogDestroyed = referringDialogProperties['fromDialogDestroyed'];
-        if (fromDialogDestroyed) {
-            this._destroyed = true;
-        }
+        this._settings = newSettings;
     }
 
     /* @TODO */
@@ -866,7 +885,6 @@ export abstract class PaneContext implements Dialog {
             return paneContext.isDestroyed;
         });
     }
-
 
 }
 
@@ -884,10 +902,11 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                sessionContext:Session
+                sessionContext:Session,
+                appContext:AppContext
     ) {
         super(dialog, dialogRedirection, paneRef,
-            parentContext, sessionContext);
+            parentContext, sessionContext, appContext);
     }
 
     /**
@@ -901,6 +920,8 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
         */
          return Promise.resolve(null);
      }
+
+     destroy():void{}
 
     /**
      * Get the underlying Form definition for this FormContext
@@ -959,6 +980,7 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
     }
 
     protected initialize() {
+        super.initialize();
     }
 }
 
@@ -985,10 +1007,10 @@ export class EditorContext extends PaneContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
-
+                session:Session,
+                appContext:AppContext
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     /**
@@ -1370,7 +1392,7 @@ export class EditorContext extends PaneContext {
      * @private
      */
     initialize() {
-        this._settings = ObjUtil.addAllProps(this.dialogRedirection.otherProperties, {});
+        super.initialize();
         this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
         this._buffer = null;
     }
@@ -1416,7 +1438,7 @@ export class EditorContext extends PaneContext {
     //Private methods
 
     private removeSpecialProps(entityRec:EntityRec):EntityRec {
-        entityRec.props = entityRec.props.filter((prop:Property)=>{
+        entityRec.properties = entityRec.properties.filter((prop:Property)=>{
             /* Remove the Binary(s) as they have been written seperately */
             return !this.propDefAtName(prop.name).isBinaryType;
         }).map((prop:Property)=>{
@@ -1426,7 +1448,7 @@ export class EditorContext extends PaneContext {
              */
             if(prop.value instanceof Attachment) {
                 const attachment = prop.value as Attachment;
-                return new Property(prop.name, attachment.name, prop.annos);
+                return new Property(prop.name, attachment.name, prop.annotations);
             } else {
                 return prop;
             }
@@ -1438,45 +1460,9 @@ export class EditorContext extends PaneContext {
         this._buffer = entityRec ? new EntityBuffer(entityRec) : new EntityBuffer(NullEntityRec.singleton);
     }
 
-    private get isDestroyedSetting():boolean {
-        var str = this._settings['destroyed'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isDestroyedRequestedSetting():boolean {
-        var str = this._settings['requestDestroy'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isGlobalRefreshSetting():boolean {
-        var str = this._settings['globalRefresh'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isLocalRefreshSetting():boolean {
-        var str = this._settings['localRefresh'];
-        return str && str.toLowerCase() === 'true';
-    }
-
     private get isReadModeSetting():boolean {
         var paneMode = this.paneModeSetting;
         return paneMode && paneMode.toLowerCase() === 'read';
-    }
-
-    private get isRefreshSetting():boolean {
-        return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
-    }
-
-    private get paneModeSetting():string {
-        return this._settings['paneMode'];
-    }
-
-    private putSetting(key:string, value:any) {
-        this._settings[key] = value;
-    }
-
-    private putSettings(settings:StringDictionary) {
-        ObjUtil.addAllProps(settings, this._settings);
     }
 
     //@TODO
@@ -1527,7 +1513,7 @@ enum QueryState { ACTIVE, DESTROYED }
  */
 export class QueryContext extends PaneContext {
 
-    private _lastQueryFr:Promise<QueryResult>;
+    private _lastQueryFr:Promise<RecordSet>;
     private _queryState:QueryState;
     private _scroller:QueryScroller;
 
@@ -1535,10 +1521,11 @@ export class QueryContext extends PaneContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     /**
@@ -1565,9 +1552,9 @@ export class QueryContext extends PaneContext {
 
     /**
      * Get the last query result as a {@link Future}
-     * @returns {Future<QueryResult>}
+     * @returns {Future<RecordSet>}
      */
-    get lastQueryFr():Promise<QueryResult> {
+    get lastQueryFr():Promise<RecordSet> {
         return this._lastQueryFr;
     }
 
@@ -1597,32 +1584,30 @@ export class QueryContext extends PaneContext {
      * @param targets
      * @returns {Future<NavRequest>}
      */
-    //@TODO
     performMenuAction(menu:Menu, targets:Array<string>):Promise<{actionId:string} | Redirection> {
-        /*
-         return DialogService.performQueryAction(this.paneDef.dialogHandle, menu.actionId,
-         targets, this.sessionContext).bind((redirection:Redirection)=> {
-         var target = targets.length > 0 ? targets[0] : null;
-         var ca:ContextAction = new ContextAction(menu.actionId, target, this.actionSource);
-         return NavRequestUtil.fromRedirection(redirection, ca, this.sessionContext);
-         }).map((navRequest:NavRequest)=> {
-         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, navRequest);
-         if (this.isDestroyedSetting) {
-         this._queryState = QueryState.DESTROYED;
-         }
-         if (this.isRefreshSetting) {
-         AppContext.singleton.lastMaintenanceTime = new Date();
-         }
-         return navRequest;
-         });
-         */
-        return Promise.resolve(null);
+
+        return this.appContext.dialogApi.performAction(this.session.tenantId, this.session.id,
+            this.dialog.id, menu.id, {targets:targets, type:TypeNames.ActionParametersTypeName}).then((result:{actionId:string} | Redirection)=>{
+                if(RedirectionUtil.isRedirection(result)) {
+                    this.updateSettingsWithNewDialogProperties((result as Redirection).referringDialogProperties);
+                    if(this._destroyed) this._queryState = QueryState.DESTROYED;
+                }
+                if (this.isRefreshSetting) {
+                    AppContext.singleton.lastMaintenanceTime = new Date();
+                }
+                return result;
+        });
     }
 
     performNavigation(menu:Menu, targets:Array<string>):Promise<NavRequest> {
 
-        return Promise.resolve(null);
-
+        return this.performMenuAction(menu, targets).then((result:{actionId:string} | Redirection)=>{
+            if(RedirectionUtil.isRedirection(result)) {
+                return this.appContext.openRedirection(result as Redirection);
+            } else {
+                return new NullNavRequest();
+            }
+        });
     }
 
     /**
@@ -1632,19 +1617,17 @@ export class QueryContext extends PaneContext {
      * @param maxRows
      * @param direction
      * @param fromObjectId
-     * @returns {Future<QueryResult>}
+     * @returns {Future<RecordSet>}
      */
     //@TODO
-    query(maxRows:number, direction:QueryDirection, fromObjectId:string):Promise<QueryResult> {
-        /*
-         return DialogService.queryQueryModel(this.paneDef.dialogHandle, direction, maxRows,
-         fromObjectId, this.sessionContext).bind((value:XQueryResult)=> {
-         var result = new QueryResult(value.entityRecs, value.hasMore);
-         this.lastRefreshTime = new Date();
-         return Future.createSuccessfulFuture('QueryContext::query', result);
-         });
-         */
-        return Promise.resolve(null);
+    query(maxRows:number, direction:QueryDirection, fromObjectId:string):Promise<RecordSet> {
+
+        return this.appContext.dialogApi.getRecords(this.session.tenantId,
+            this.session.id, this.dialog.id, direction, maxRows).then((recordSet:RecordSet) => {
+                this.lastRefreshTime = new Date();
+                return recordSet;
+        });
+
     }
 
     /**
@@ -1724,25 +1707,7 @@ export class QueryContext extends PaneContext {
     }
 
     protected initialize() {
-    }
-
-    private get isDestroyedSetting():boolean {
-        var str = this._settings['destroyed'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isGlobalRefreshSetting():boolean {
-        var str = this._settings['globalRefresh'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isLocalRefreshSetting():boolean {
-        var str = this._settings['localRefresh'];
-        return str && str.toLowerCase() === 'true';
-    }
-
-    private get isRefreshSetting():boolean {
-        return this.isLocalRefreshSetting || this.isGlobalRefreshSetting;
+        super.initialize();
     }
 
     //@TODO
@@ -1786,12 +1751,6 @@ export class QueryContext extends PaneContext {
 
 }
 
-export class QueryResult {
-
-    constructor(public entityRecs:Array<EntityRec>, public hasMore:boolean) {
-    }
-
-}
 /**
  * *********************************
  */
@@ -1814,8 +1773,8 @@ export class QueryScroller {
     private _buffer:Array<EntityRec>;
     private _hasMoreBackward:boolean;
     private _hasMoreForward:boolean;
-    private _nextPageFr:Promise<QueryResult>;
-    private _prevPageFr:Promise<QueryResult>;
+    private _nextPagePromise:Promise<RecordSet>;
+    private _prevPagePromise:Promise<RecordSet>;
     private _firstResultOid:string;
 
     constructor(private _context:QueryContext,
@@ -1882,106 +1841,97 @@ export class QueryScroller {
         return this._buffer.length === 0;
     }
 
-    //@TODO
     pageBackward():Promise<Array<EntityRec>> {
-        /*
-         if (!this._hasMoreBackward) {
-         return Future.createSuccessfulFuture('QueryScroller::pageBackward', []);
-         }
-         if (!this._prevPageFr || this._prevPageFr.isComplete) {
-         var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
-         this._prevPageFr = this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
-         } else {
-         this._prevPageFr = this._prevPageFr.bind((queryResult:QueryResult)=> {
-         var fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].objectId;
-         return this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
-         });
-         }
 
-         var beforeSize:number = this._buffer.length;
+        if (!this._hasMoreBackward) {
+            return Promise.resolve([]);
+        }
 
-         return this._prevPageFr.map((queryResult:QueryResult)=> {
-         var afterSize = beforeSize;
-         this._hasMoreBackward = queryResult.hasMore;
-         if (queryResult.entityRecs.length > 0) {
-         var newBuffer:Array<EntityRec> = [];
-         for (var i = queryResult.entityRecs.length - 1; i > -1; i--) {
-         newBuffer.push(queryResult.entityRecs[i]);
-         }
-         this._buffer.forEach((entityRec:EntityRec)=> {
-         newBuffer.push(entityRec)
-         });
-         this._buffer = newBuffer;
-         afterSize = this._buffer.length;
-         }
-         return queryResult.entityRecs;
-         });
-         */
-        return Promise.resolve(null);
+        if (this._prevPagePromise) {
+            this._prevPagePromise = this._prevPagePromise.then((recordSet: RecordSet) => {
+                const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
+                return this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
+            });
+        } else {
+            const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
+            this._prevPagePromise = this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
+        }
+
+        const beforeSize: number = this._buffer.length;
+
+        return this._prevPagePromise.then((queryResult: RecordSet) => {
+            let afterSize = beforeSize;
+            this._hasMoreBackward = queryResult.hasMore;
+            if (queryResult.records.length > 0) {
+                const newBuffer: Array<EntityRec> = [];
+                for (let i = queryResult.records.length - 1; i > -1; i--) {
+                    newBuffer.push(queryResult.records[i]);
+                }
+                this._buffer.forEach((entityRec: EntityRec) => {
+                    newBuffer.push(entityRec)
+                });
+                this._buffer = newBuffer;
+                afterSize = this._buffer.length;
+            }
+            return queryResult.records;
+        });
 
     }
 
-    //@TODO
     pageForward():Promise<Array<EntityRec>> {
 
-        /*
-         if (!this._hasMoreForward) {
-         return Future.createSuccessfulFuture('QueryScroller::pageForward', []);
-         }
-         if (!this._nextPageFr || this._nextPageFr.isComplete) {
-         var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
-         this._nextPageFr = this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
-         } else {
-         this._nextPageFr = this._nextPageFr.bind((queryResult:QueryResult)=> {
-         var fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].objectId;
-         return this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
-         });
-         }
+        if (!this._hasMoreForward) {
+            return Promise.resolve([]);
+        }
 
-         var beforeSize:number = this._buffer.length;
+        if(this._nextPagePromise) {
+            this._nextPagePromise = this._nextPagePromise.then((recordSet:RecordSet)=>{
+                const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
+                return this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
+            });
+        } else {
+            const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
+            this._nextPagePromise = this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
+        }
 
-         return this._nextPageFr.map((queryResult:QueryResult)=> {
-         var afterSize = beforeSize;
-         this._hasMoreForward = queryResult.hasMore;
-         if (queryResult.entityRecs.length > 0) {
-         var newBuffer:Array<EntityRec> = [];
-         this._buffer.forEach((entityRec:EntityRec)=> {
-         newBuffer.push(entityRec)
-         });
-         queryResult.entityRecs.forEach((entityRec:EntityRec)=> {
-         newBuffer.push(entityRec);
-         });
-         this._buffer = newBuffer;
-         afterSize = this._buffer.length;
-         }
-         return queryResult.entityRecs;
-         });
-         */
+        const beforeSize: number = this._buffer.length;
 
-        return Promise.resolve(null);
+        return this._nextPagePromise.then((queryResult: RecordSet) => {
+            let afterSize = beforeSize;
+            this._hasMoreForward = queryResult.hasMore;
+            if (queryResult.records.length > 0) {
+                const newBuffer: Array<EntityRec> = [];
+                this._buffer.forEach((entityRec: EntityRec) => {
+                    newBuffer.push(entityRec)
+                });
+                queryResult.records.forEach((entityRec: EntityRec) => {
+                    newBuffer.push(entityRec);
+                });
+                this._buffer = newBuffer;
+                afterSize = this._buffer.length;
+            }
+            return queryResult.records;
+        });
+
     }
 
     get pageSize():number {
         return this._pageSize;
     }
 
-    //@TODO
     refresh():Promise<Array<EntityRec>> {
-        /*
-         this.clear();
-         return this.pageForward().map((entityRecList:Array<EntityRec>)=> {
-         if(entityRecList.length > 0) {
-         this._firstResultOid = entityRecList[0].objectId;
-         }
-         return entityRecList;
-         });
-         */
-        return Promise.resolve(null);
+        this.clear();
+        return this.pageForward().then((entityRecList: Array<EntityRec>) => {
+            if (entityRecList.length > 0) {
+                this._firstResultOid = entityRecList[0].id;
+            }
+            return entityRecList;
+        });
     }
 
     trimFirst(n:number) {
-        var newBuffer = [];
-        for (var i = n; i < this._buffer.length; i++) {
+        const newBuffer = [];
+        for (let i = n; i < this._buffer.length; i++) {
             newBuffer.push(this._buffer[i]);
         }
         this._buffer = newBuffer;
@@ -1990,7 +1940,7 @@ export class QueryScroller {
 
     trimLast(n:number) {
         var newBuffer = [];
-        for (var i = 0; i < this._buffer.length - n; i++) {
+        for (let i = 0; i < this._buffer.length - n; i++) {
             newBuffer.push(this._buffer[i]);
         }
         this._buffer = newBuffer;
@@ -2012,14 +1962,18 @@ export class ErrorContext extends PaneContext {
                 dialogRedirection: DialogRedirection,
                 paneRef: number,
                 parentContext: PaneContext,
-                session: Session){
+                session: Session,
+                appContext:AppContext){
 
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
-
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
 
     }
 
-    protected initialize() {}
+    destroy():void{}
+
+    protected initialize() {
+        super.initialize();
+    }
 }
 
 
@@ -2037,10 +1991,11 @@ export class DetailsContext extends EditorContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
 
@@ -2055,10 +2010,11 @@ export class BarcodeScanContext extends EditorContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get barcodeScan():BarcodeScan {
@@ -2072,10 +2028,11 @@ export class GeoFixContext extends EditorContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get geoFix():GeoFix {
@@ -2089,10 +2046,11 @@ export class GeoLocationContext extends EditorContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get geoLocation():GeoLocation {
@@ -2108,10 +2066,11 @@ export class PrintMarkupContext extends EditorContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get printMarkup():PrintMarkup {
@@ -2140,10 +2099,11 @@ export class ListContext extends QueryContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get columnHeadings():Array<string> {
@@ -2174,10 +2134,11 @@ export class CalendarContext extends QueryContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get calendar():Calendar {
@@ -2192,10 +2153,11 @@ export class GraphContext extends QueryContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get graph():Graph {
@@ -2210,10 +2172,11 @@ export class ImagePickerContext extends QueryContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get imagePicker():ImagePicker {
@@ -2236,10 +2199,11 @@ export class MapContext extends QueryContext {
                 dialogRedirection:DialogRedirection,
                 paneRef:number,
                 parentContext:PaneContext,
-                session:Session
+                session:Session,
+                appContext:AppContext
 
     ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session);
+        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
     get map():Map {
@@ -2284,7 +2248,7 @@ export interface DialogApi {
     putRecord(tenantId:string, sessionId:string, dialogId:string, record:Record):Promise<Record | Redirection>;
 
     getRecords(tenantId:string, sessionId:string, dialogId:string, fetchDirection:QueryDirection,
-               fetchMaxItems:number):Promise<Array<Record>>;
+               fetchMaxItems:number):Promise<RecordSet>;
 
     getMode(tenantId:string, sessionId:string, dialogId:string):Promise<ViewMode>;
 
@@ -2385,7 +2349,8 @@ export class DialogService implements DialogApi {
     performAction(tenantId:string, sessionId:string, dialogId:string, actionId:string,
                   actionParameters:ActionParameters):Promise<{actionId:string} | Redirection> {
 
-        return this.post(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions/${actionId}`, actionParameters).then(
+        const encodedActionId = encodeURIComponent(actionId);
+        return this.post(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions/${encodedActionId}`, actionParameters).then(
             jsonClientResponse=>(new DialogServiceResponse<{actionId:string}>(jsonClientResponse)).responseValueOrRedirect()
         );
 
@@ -2423,11 +2388,11 @@ export class DialogService implements DialogApi {
      }
 
      getRecords(tenantId:string, sessionId:string, dialogId:string, fetchDirection:QueryDirection,
-                fetchMaxItems:number):Promise<Array<Record>> {
+                fetchMaxItems:number):Promise<RecordSet> {
 
         return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records`,
             {fetchDirection:fetchDirection, fetchMaxItems:fetchMaxItems}).then(
-                jsonClientResponse=>(new DialogServiceResponse<Array<Record>>(jsonClientResponse)).responseValue()
+                jsonClientResponse=>(new DialogServiceResponse<RecordSet>(jsonClientResponse)).responseValue()
          );
     }
 

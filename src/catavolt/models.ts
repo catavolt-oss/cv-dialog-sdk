@@ -130,8 +130,9 @@ export abstract class View {
 
 export interface ActionParameters {
 
-    readonly pendingWrites:Record;
-    readonly targets:Array<string>;
+    readonly pendingWrites?:Record;
+    readonly targets?:Array<string>;
+    readonly type:string;
 
 }
 
@@ -355,7 +356,7 @@ export class DialogException {
 
 }
 
-export class DataAnno {
+export class Annotation {
 
     private static BOLD_TEXT = "BOLD_TEXT";
     private static BACKGROUND_COLOR = "BGND_COLOR";
@@ -374,15 +375,15 @@ export class DataAnno {
     private static PLACEMENT_STRETCH_UNDER = "STRETCH_UNDER";
 
     /*
-     static annotatePropsUsingWSDataAnnotation(props:Array<Prop>, jsonObj:StringDictionary):Try<Array<Prop>> {
-     return DialogTriple.fromListOfWSDialogObject<Array<DataAnno>>(jsonObj, 'WSDataAnnotation', OType.factoryFn).bind(
-     (propAnnos:Array<Array<DataAnno>>) => {
+     static annotatePropsUsingWSAnnotationtation(properties:Array<Prop>, jsonObj:StringDictionary):Try<Array<Prop>> {
+     return DialogTriple.fromListOfWSDialogObject<Array<Annotation>>(jsonObj, 'WSAnnotationtation', OType.factoryFn).bind(
+     (propAnnos:Array<Array<Annotation>>) => {
      var annotatedProps:Array<Prop> = [];
-     for (var i = 0; i < props.length; i++) {
-     var p = props[i];
-     var annos:Array<DataAnno> = propAnnos[i];
-     if (annos) {
-     annotatedProps.push(new Prop(p.name, p.value, annos));
+     for (var i = 0; i < properties.length; i++) {
+     var p = properties[i];
+     var annotations:Array<Annotation> = propAnnos[i];
+     if (annotations) {
+     annotatedProps.push(new Prop(p.name, p.value, annotations));
      } else {
      annotatedProps.push(p);
      }
@@ -393,125 +394,125 @@ export class DataAnno {
      }
      */
 
-    static backgroundColor(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+    static backgroundColor(annotations:Array<Annotation>):string {
+        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isBackgroundColor;
         });
         return result ? result.backgroundColor : null;
     }
 
-    static foregroundColor(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+    static foregroundColor(annotations:Array<Annotation>):string {
+        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isForegroundColor;
         });
         return result ? result.foregroundColor : null;
     }
 
     /*
-     static fromWS(otype:string, jsonObj):Try<Array<DataAnno>> {
+     static fromWS(otype:string, jsonObj):Try<Array<Annotation>> {
      var stringObj = jsonObj['annotations'];
      if (stringObj['WS_LTYPE'] !== 'String') {
-     return new Failure<Array<DataAnno>>('DataAnno:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
+     return new Failure<Array<Annotation>>('Annotation:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
      }
      var annoStrings:Array<string> = stringObj['values'];
-     var annos:Array<DataAnno> = [];
+     var annotations:Array<Annotation> = [];
      for (var i = 0; i < annoStrings.length; i++) {
-     annos.push(DataAnno.parseString(annoStrings[i]));
+     annotations.push(Annotation.parseString(annoStrings[i]));
      }
-     return new Success<Array<DataAnno>>(annos);
+     return new Success<Array<Annotation>>(annotations);
      }
      */
 
-    static imageName(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+    static imageName(annotations:Array<Annotation>):string {
+        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isImageName;
         });
         return result ? result.value : null;
     }
 
-    static imagePlacement(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+    static imagePlacement(annotations:Array<Annotation>):string {
+        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isImagePlacement;
         });
         return result ? result.value : null;
     }
 
-    static isBoldText(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
+    static isBoldText(annotations:Array<Annotation>):boolean {
+        return annotations.some((anno)=> {
             return anno.isBoldText
         });
     }
 
-    static isItalicText(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
+    static isItalicText(annotations:Array<Annotation>):boolean {
+        return annotations.some((anno)=> {
             return anno.isItalicText
         });
     }
 
-    static isPlacementCenter(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
+    static isPlacementCenter(annotations:Array<Annotation>):boolean {
+        return annotations.some((anno)=> {
             return anno.isPlacementCenter
         });
     }
 
-    static isPlacementLeft(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
+    static isPlacementLeft(annotations:Array<Annotation>):boolean {
+        return annotations.some((anno)=> {
             return anno.isPlacementLeft
         });
     }
 
-    static isPlacementRight(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
+    static isPlacementRight(annotations:Array<Annotation>):boolean {
+        return annotations.some((anno)=> {
             return anno.isPlacementRight
         });
     }
 
-    static isPlacementStretchUnder(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
+    static isPlacementStretchUnder(annotations:Array<Annotation>):boolean {
+        return annotations.some((anno)=> {
             return anno.isPlacementStretchUnder
         });
     }
 
-    static isPlacementUnder(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
+    static isPlacementUnder(annotations:Array<Annotation>):boolean {
+        return annotations.some((anno)=> {
             return anno.isPlacementUnder
         });
     }
 
-    static isUnderlineText(annos:Array<DataAnno>):boolean {
-        return annos.some((anno)=> {
+    static isUnderlineText(annotations:Array<Annotation>):boolean {
+        return annotations.some((anno)=> {
             return anno.isUnderlineText
         });
     }
 
-    static overrideText(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+    static overrideText(annotations:Array<Annotation>):string {
+        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isOverrideText;
         });
         return result ? result.value : null;
     }
 
-    static tipText(annos:Array<DataAnno>):string {
-        var result:DataAnno = ArrayUtil.find(annos, (anno)=> {
+    static tipText(annotations:Array<Annotation>):string {
+        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isTipText;
         });
         return result ? result.value : null;
     }
 
 
-    static toListOfWSDataAnno(annos:Array<DataAnno>):StringDictionary {
-        var result:StringDictionary = {'WS_LTYPE': 'WSDataAnno'};
+    static toListOfWSAnnotation(annotations:Array<Annotation>):StringDictionary {
+        var result:StringDictionary = {'WS_LTYPE': 'WSAnnotation'};
         var values = [];
-        annos.forEach((anno)=> {
+        annotations.forEach((anno)=> {
             values.push(anno.toWS())
         });
         result['values'] = values;
         return result;
     }
 
-    private static parseString(formatted:string):DataAnno {
+    private static parseString(formatted:string):Annotation {
         var pair = StringUtil.splitSimpleKeyValuePair(formatted);
-        return new DataAnno(pair[0], pair[1]);
+        return new Annotation(pair[0], pair[1]);
     }
 
 
@@ -526,64 +527,64 @@ export class DataAnno {
         return this.isForegroundColor ? this.value : null;
     }
 
-    equals(dataAnno:DataAnno):boolean {
+    equals(dataAnno:Annotation):boolean {
         return this.name === dataAnno.name;
     }
 
     get isBackgroundColor():boolean {
-        return this.name === DataAnno.BACKGROUND_COLOR;
+        return this.name === Annotation.BACKGROUND_COLOR;
     }
 
     get isBoldText():boolean {
-        return this.name === DataAnno.BOLD_TEXT && this.value === DataAnno.TRUE_VALUE;
+        return this.name === Annotation.BOLD_TEXT && this.value === Annotation.TRUE_VALUE;
     }
 
     get isForegroundColor():boolean {
-        return this.name === DataAnno.FOREGROUND_COLOR;
+        return this.name === Annotation.FOREGROUND_COLOR;
     }
 
     get isImageName():boolean {
-        return this.name === DataAnno.IMAGE_NAME;
+        return this.name === Annotation.IMAGE_NAME;
     }
 
     get isImagePlacement():boolean {
-        return this.name === DataAnno.IMAGE_PLACEMENT;
+        return this.name === Annotation.IMAGE_PLACEMENT;
     }
 
     get isItalicText():boolean {
-        return this.name === DataAnno.ITALIC_TEXT && this.value === DataAnno.TRUE_VALUE;
+        return this.name === Annotation.ITALIC_TEXT && this.value === Annotation.TRUE_VALUE;
     }
 
     get isOverrideText():boolean {
-        return this.name === DataAnno.OVERRIDE_TEXT;
+        return this.name === Annotation.OVERRIDE_TEXT;
     }
 
     get isPlacementCenter():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_CENTER;
+        return this.isImagePlacement && this.value === Annotation.PLACEMENT_CENTER;
     }
 
     get isPlacementLeft():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_LEFT;
+        return this.isImagePlacement && this.value === Annotation.PLACEMENT_LEFT;
     }
 
     get isPlacementRight():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_RIGHT;
+        return this.isImagePlacement && this.value === Annotation.PLACEMENT_RIGHT;
     }
 
     get isPlacementStretchUnder():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_STRETCH_UNDER;
+        return this.isImagePlacement && this.value === Annotation.PLACEMENT_STRETCH_UNDER;
     }
 
     get isPlacementUnder():boolean {
-        return this.isImagePlacement && this.value === DataAnno.PLACEMENT_UNDER;
+        return this.isImagePlacement && this.value === Annotation.PLACEMENT_UNDER;
     }
 
     get isTipText():boolean {
-        return this.name === DataAnno.TIP_TEXT;
+        return this.name === Annotation.TIP_TEXT;
     }
 
     get isUnderlineText():boolean {
-        return this.name === DataAnno.UNDERLINE && this.value === DataAnno.TRUE_VALUE;
+        return this.name === Annotation.UNDERLINE && this.value === Annotation.TRUE_VALUE;
     }
 
     get name():string {
@@ -595,7 +596,7 @@ export class DataAnno {
     }
 
     toWS():StringDictionary {
-        return {'WS_OTYPE': 'WSDataAnno', 'name': this.name, 'value': this.value};
+        return {'WS_OTYPE': 'WSAnnotation', 'name': this.name, 'value': this.value};
     }
 
 }
@@ -608,13 +609,11 @@ export interface EditorDialog extends Dialog {
 
 /**
  * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ * An EntityRec may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
-export interface EntityRec {
+export interface EntityRec extends Record {
 
-    annos:Array<DataAnno>;
-
-    annosAtName(propName:string):Array<DataAnno>;
+    annotationsAtName(propName:string):Array<Annotation>;
 
     afterEffects(after:EntityRec):EntityRec;
 
@@ -654,8 +653,6 @@ export interface EntityRec {
     isUnderline:boolean;
     isUnderlineFor(propName:string):boolean;
 
-    objectId:string;
-
     overrideText:string;
     overrideTextFor(propName:string):string;
 
@@ -668,8 +665,6 @@ export interface EntityRec {
     propNames:Array<string>;
 
     propValues:Array<any>;
-
-    props:Array<Property>;
 
     tipText:string;
     tipTextFor(propName:string):string;
@@ -688,13 +683,13 @@ export interface EntityRec {
  */
 export class EntityRecUtil {
 
-    static newEntityRec(objectId:string, props:Array<Property>, annos?:Array<DataAnno>):EntityRec {
-        return annos ? new EntityRecImpl(objectId, ArrayUtil.copy(props), ArrayUtil.copy(annos)) : new EntityRecImpl(objectId, ArrayUtil.copy(props));
+    static newEntityRec(id:string, properties:Array<Property>, annotations?:Array<Annotation>):EntityRec {
+        return annotations ? new RecordImpl(id, ArrayUtil.copy(properties), ArrayUtil.copy(annotations)) : new RecordImpl(id, ArrayUtil.copy(properties));
     }
 
     static isEntityRec(o:any):boolean {
 
-       return (o instanceof EntityRecImpl)
+       return (o instanceof RecordImpl)
            || (o instanceof EntityBuffer)
            || (o instanceof NullEntityRec);
     }
@@ -720,12 +715,12 @@ export class EntityRecUtil {
 /**
  * An {@link EntityRec} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
  * An EntityRec Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ * An EntityRec may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
 export class EntityBuffer implements EntityRec {
 
-    static createEntityBuffer(objectId:string, before:Array<Property>, after:Array<Property>):EntityBuffer {
-        return new EntityBuffer(EntityRecUtil.newEntityRec(objectId, before), EntityRecUtil.newEntityRec(objectId, after));
+    static createEntityBuffer(id:string, before:Array<Property>, after:Array<Property>):EntityBuffer {
+        return new EntityBuffer(EntityRecUtil.newEntityRec(id, before), EntityRecUtil.newEntityRec(id, after));
     }
 
     constructor(private _before:EntityRec, private _after?:EntityRec) {
@@ -737,12 +732,12 @@ export class EntityBuffer implements EntityRec {
         return this._after;
     }
 
-    get annos():Array<DataAnno> {
-        return this._after.annos;
+    get annotations():Array<Annotation> {
+        return this._after.annotations;
     }
 
-    annosAtName(propName:string):Array<DataAnno> {
-        return this._after.annosAtName(propName);
+    annotationsAtName(propName:string):Array<Annotation> {
+        return this._after.annotationsAtName(propName);
     }
 
     afterEffects(afterAnother?:EntityRec):EntityRec {
@@ -859,8 +854,8 @@ export class EntityBuffer implements EntityRec {
         return this._after.isUnderlineFor(propName);
     }
 
-    get objectId():string {
-        return this._after.objectId;
+    get id():string {
+        return this._after.id;
     }
 
     get overrideText():string {
@@ -872,7 +867,7 @@ export class EntityBuffer implements EntityRec {
     }
 
     propAtIndex(index:number):Property {
-        return this.props[index];
+        return this.properties[index];
     }
 
     propAtName(propName:string):Property {
@@ -887,8 +882,8 @@ export class EntityBuffer implements EntityRec {
         return this._after.propNames;
     }
 
-    get props():Array<Property> {
-        return this._after.props;
+    get properties():Array<Property> {
+        return this._after.properties;
     }
 
     get propValues():Array<any> {
@@ -898,7 +893,7 @@ export class EntityBuffer implements EntityRec {
     setValue(name:string, value) {
         const newProps = [];
         let found = false;
-        this.props.forEach((prop:Property)=> {
+        this.properties.forEach((prop:Property)=> {
             if (prop.name === name) {
                 newProps.push(new Property(name, value));
                 found = true;
@@ -909,7 +904,7 @@ export class EntityBuffer implements EntityRec {
         if (!found) {
             newProps.push(new Property(name, value));
         }
-        this._after = EntityRecUtil.newEntityRec(this.objectId, newProps, this.annos);
+        this._after = EntityRecUtil.newEntityRec(this.id, newProps, this.annotations);
     }
 
     get tipText():string {
@@ -921,7 +916,7 @@ export class EntityBuffer implements EntityRec {
     }
 
     toEntityRec():EntityRec {
-        return EntityRecUtil.newEntityRec(this.objectId, this.props);
+        return EntityRecUtil.newEntityRec(this.id, this.properties);
     }
 
     toWSEditorRecord():StringDictionary {
@@ -943,31 +938,31 @@ export class EntityBuffer implements EntityRec {
 /**
  * The implementation of {@link EntityRec}.
  * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ * An EntityRec may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
-export class EntityRecImpl implements EntityRec {
+export class RecordImpl implements EntityRec {
 
-    constructor(public objectId:string, public props:Array<Property> = [], public annos:Array<DataAnno> = []) {
+    constructor(readonly id:string, readonly properties:Array<Property> = [], readonly annotations:Array<Annotation> = []) {
     }
 
-    annosAtName(propName:string):Array<DataAnno> {
+    annotationsAtName(propName:string):Array<Annotation> {
         var p = this.propAtName(propName);
-        return p ? p.annos : [];
+        return p ? p.annotations : [];
     }
 
     afterEffects(after:EntityRec):EntityRec {
         var effects = [];
-        after.props.forEach((afterProp)=> {
+        after.properties.forEach((afterProp)=> {
             var beforeProp = this.propAtName(afterProp.name);
             if (!afterProp.equals(beforeProp)) {
                 effects.push(afterProp);
             }
         });
-        return new EntityRecImpl(after.objectId, effects);
+        return new RecordImpl(after.id, effects);
     }
 
     get backgroundColor():string {
-        return DataAnno.backgroundColor(this.annos);
+        return Annotation.backgroundColor(this.annotations);
     }
 
     backgroundColorFor(propName:string):string {
@@ -976,7 +971,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get foregroundColor():string {
-        return DataAnno.foregroundColor(this.annos);
+        return Annotation.foregroundColor(this.annotations);
     }
 
     foregroundColorFor(propName:string):string {
@@ -985,7 +980,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get imageName():string {
-        return DataAnno.imageName(this.annos);
+        return Annotation.imageName(this.annotations);
     }
 
     imageNameFor(propName:string):string {
@@ -994,7 +989,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get imagePlacement():string {
-        return DataAnno.imagePlacement(this.annos);
+        return Annotation.imagePlacement(this.annotations);
     }
 
     imagePlacementFor(propName:string):string {
@@ -1003,7 +998,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get isBoldText():boolean {
-        return DataAnno.isBoldText(this.annos);
+        return Annotation.isBoldText(this.annotations);
     }
 
     isBoldTextFor(propName:string):boolean {
@@ -1012,7 +1007,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get isItalicText():boolean {
-        return DataAnno.isItalicText(this.annos);
+        return Annotation.isItalicText(this.annotations);
     }
 
     isItalicTextFor(propName:string):boolean {
@@ -1022,7 +1017,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get isPlacementCenter():boolean {
-        return DataAnno.isPlacementCenter(this.annos);
+        return Annotation.isPlacementCenter(this.annotations);
     }
 
     isPlacementCenterFor(propName:string):boolean {
@@ -1031,7 +1026,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get isPlacementLeft():boolean {
-        return DataAnno.isPlacementLeft(this.annos);
+        return Annotation.isPlacementLeft(this.annotations);
     }
 
     isPlacementLeftFor(propName:string):boolean {
@@ -1041,7 +1036,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get isPlacementRight():boolean {
-        return DataAnno.isPlacementRight(this.annos);
+        return Annotation.isPlacementRight(this.annotations);
     }
 
     isPlacementRightFor(propName:string):boolean {
@@ -1050,7 +1045,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get isPlacementStretchUnder():boolean {
-        return DataAnno.isPlacementStretchUnder(this.annos);
+        return Annotation.isPlacementStretchUnder(this.annotations);
     }
 
     isPlacementStretchUnderFor(propName:string):boolean {
@@ -1059,7 +1054,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get isPlacementUnder():boolean {
-        return DataAnno.isPlacementUnder(this.annos);
+        return Annotation.isPlacementUnder(this.annotations);
     }
 
     isPlacementUnderFor(propName:string):boolean {
@@ -1068,7 +1063,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get isUnderline():boolean {
-        return DataAnno.isUnderlineText(this.annos);
+        return Annotation.isUnderlineText(this.annotations);
     }
 
     isUnderlineFor(propName:string):boolean {
@@ -1078,7 +1073,7 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get overrideText():string {
-        return DataAnno.overrideText(this.annos);
+        return Annotation.overrideText(this.annotations);
     }
 
     overrideTextFor(propName:string):string {
@@ -1088,12 +1083,12 @@ export class EntityRecImpl implements EntityRec {
     }
 
     propAtIndex(index:number):Property {
-        return this.props[index];
+        return this.properties[index];
     }
 
     propAtName(propName:string):Property {
         var prop:Property = null;
-        this.props.some((p)=> {
+        this.properties.some((p)=> {
             if (p.name === propName) {
                 prop = p;
                 return true;
@@ -1104,23 +1099,23 @@ export class EntityRecImpl implements EntityRec {
     }
 
     get propCount():number {
-        return this.props.length;
+        return this.properties.length;
     }
 
     get propNames():Array<string> {
-        return this.props.map((p)=> {
+        return this.properties.map((p)=> {
             return p.name;
         });
     }
 
     get propValues():Array<any> {
-        return this.props.map((p)=> {
+        return this.properties.map((p)=> {
             return p.value;
         });
     }
 
     get tipText():string {
-        return DataAnno.tipText(this.annos);
+        return Annotation.tipText(this.annotations);
     }
 
     tipTextFor(propName:string):string {
@@ -1135,7 +1130,7 @@ export class EntityRecImpl implements EntityRec {
 
     toWSEditorRecord():StringDictionary {
         var result:StringDictionary = {'WS_OTYPE': 'WSEditorRecord'};
-        if (this.objectId) result['objectId'] = this.objectId;
+        if (this.id) result['objectId'] = this.id;
         result['names'] = Property.toWSListOfString(this.propNames);
         result['properties'] = Property.toWSListOfProperties(this.propValues);
         return result;
@@ -1143,15 +1138,15 @@ export class EntityRecImpl implements EntityRec {
 
     toWS():StringDictionary {
         var result:StringDictionary = {'WS_OTYPE': 'WSEntityRec'};
-        if (this.objectId) result['objectId'] = this.objectId;
-        result['props'] = Property.toListOfWSProp(this.props);
-        if (this.annos) result['annos'] = DataAnno.toListOfWSDataAnno(this.annos);
+        if (this.id) result['objectId'] = this.id;
+        result['properties'] = Property.toListOfWSProp(this.properties);
+        if (this.annotations) result['annotations'] = Annotation.toListOfWSAnnotation(this.annotations);
         return result;
     }
 
     valueAtName(propName:string):any {
         var value = null;
-        this.props.some((p)=> {
+        this.properties.some((p)=> {
             if (p.name === propName) {
                 value = p.value;
                 return true;
@@ -1506,7 +1501,7 @@ export interface NavRequest {
 /**
  * An empty or uninitialized {@link EntityRec}.
  * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link DataAnno}s (style annotations) that apply to the whole 'record'
+ * An EntityRec may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
 export class NullEntityRec implements EntityRec {
 
@@ -1515,11 +1510,11 @@ export class NullEntityRec implements EntityRec {
     constructor() {
     }
 
-    get annos():Array<DataAnno> {
+    get annotations():Array<Annotation> {
         return [];
     }
 
-    annosAtName(propName:string):Array<DataAnno> {
+    annotationsAtName(propName:string):Array<Annotation> {
         return [];
     }
 
@@ -1540,6 +1535,10 @@ export class NullEntityRec implements EntityRec {
     }
 
     foregroundColorFor(propName:string):string {
+        return null;
+    }
+
+    get id():string {
         return null;
     }
 
@@ -1651,7 +1650,7 @@ export class NullEntityRec implements EntityRec {
         return [];
     }
 
-    get props():Array<Property> {
+    get properties():Array<Property> {
         return [];
     }
 
@@ -1673,7 +1672,7 @@ export class NullEntityRec implements EntityRec {
 
     toWSEditorRecord():StringDictionary {
         var result:StringDictionary = {'WS_OTYPE': 'WSEditorRecord'};
-        if (this.objectId) result['objectId'] = this.objectId;
+        if (this.id) result['id'] = this.id;
         result['names'] = Property.toWSListOfString(this.propNames);
         result['properties'] = Property.toWSListOfProperties(this.propValues);
         return result;
@@ -1681,9 +1680,9 @@ export class NullEntityRec implements EntityRec {
 
     toWS():StringDictionary {
         var result:StringDictionary = {'WS_OTYPE': 'WSEntityRec'};
-        if (this.objectId) result['objectId'] = this.objectId;
-        result['props'] = Property.toListOfWSProp(this.props);
-        if (this.annos) result['annos'] = DataAnno.toListOfWSDataAnno(this.annos);
+        if (this.id) result['id'] = this.id;
+        result['properties'] = Property.toListOfWSProp(this.properties);
+        if (this.annotations) result['annotations'] = Annotation.toListOfWSAnnotation(this.annotations);
         return result;
     }
 
@@ -1771,7 +1770,7 @@ export class PrintMarkup extends View {
 /**
  * Represents a 'value' or field in a row or record. See {@link EntityRec}
  * A Prop has a corresponding {@link PropDef} that describes the property.
- * Like an {@link EntityRec}, a Prop may also have {@link DataAnno}s (style annotations),
+ * Like an {@link EntityRec}, a Prop may also have {@link Annotation}s (style annotations),
  * but these apply to the property only
  */
 export class Property {
@@ -1819,13 +1818,13 @@ export class Property {
      */
     /*
     static fromListOfWSValue(values:Array<any>):Try<Array<any>> {
-        var props = [];
+        var properties = [];
         values.forEach((v)=> {
             var propTry = Prop.fromWSValue(v);
             if (propTry.isFailure) return new Failure(propTry.failure);
-            props.push(propTry.success);
+            properties.push(propTry.success);
         });
-        return new Success(props);
+        return new Success(properties);
     }
     */
 
@@ -1931,14 +1930,14 @@ export class Property {
         var name:string = jsonObj['name'];
         var valueTry = Prop.fromWSValue(jsonObj['value']);
         if (valueTry.isFailure) return new Failure<Prop>(valueTry.failure);
-        var annos:Array<DataAnno> = null;
-        if (jsonObj['annos']) {
-            var annosListTry:Try<Array<DataAnno>> =
-                DialogTriple.fromListOfWSDialogObject<DataAnno>(jsonObj['annos'], 'WSDataAnno', OType.factoryFn);
-            if (annosListTry.isFailure) return new Failure<Prop>(annosListTry.failure);
-            annos = annosListTry.success;
+        var annotations:Array<Annotation> = null;
+        if (jsonObj['annotations']) {
+            var annotationsListTry:Try<Array<Annotation>> =
+                DialogTriple.fromListOfWSDialogObject<Annotation>(jsonObj['annotations'], 'WSAnnotation', OType.factoryFn);
+            if (annotationsListTry.isFailure) return new Failure<Prop>(annotationsListTry.failure);
+            annotations = annotationsListTry.success;
         }
-        return new Success(new Prop(name, valueTry.success, annos));
+        return new Success(new Prop(name, valueTry.success, annotations));
     }
     */
 
@@ -2017,14 +2016,14 @@ export class Property {
     /**
      *
      * @private
-     * @param props
+     * @param properties
      * @returns {StringDictionary}
      */
     /* TODO */
-    static toListOfWSProp(props:Array<Property>):StringDictionary {
+    static toListOfWSProp(properties:Array<Property>):StringDictionary {
         var result:StringDictionary = {'WS_LTYPE': 'WSProp'};
         var values = [];
-        props.forEach((prop)=> {
+        properties.forEach((prop)=> {
             values.push(prop.toWS())
         });
         result['values'] = values;
@@ -2036,9 +2035,9 @@ export class Property {
      * @private
      * @param _name
      * @param _value
-     * @param _annos
+     * @param _annotations
      */
-    constructor(readonly name:string, readonly value:any, readonly annos:Array<DataAnno> = []) {
+    constructor(readonly name:string, readonly value:any, readonly annotations:Array<Annotation> = []) {
     }
 
     equals(prop:Property):boolean {
@@ -2046,59 +2045,59 @@ export class Property {
     }
 
     get backgroundColor():string {
-        return DataAnno.backgroundColor(this.annos);
+        return Annotation.backgroundColor(this.annotations);
     }
 
     get foregroundColor():string {
-        return DataAnno.foregroundColor(this.annos);
+        return Annotation.foregroundColor(this.annotations);
     }
 
     get imageName():string {
-        return DataAnno.imageName(this.annos);
+        return Annotation.imageName(this.annotations);
     }
 
     get imagePlacement():string {
-        return DataAnno.imagePlacement(this.annos);
+        return Annotation.imagePlacement(this.annotations);
     }
 
     get isBoldText():boolean {
-        return DataAnno.isBoldText(this.annos);
+        return Annotation.isBoldText(this.annotations);
     }
 
     get isItalicText():boolean {
-        return DataAnno.isItalicText(this.annos);
+        return Annotation.isItalicText(this.annotations);
     }
 
     get isPlacementCenter():boolean {
-        return DataAnno.isPlacementCenter(this.annos);
+        return Annotation.isPlacementCenter(this.annotations);
     }
 
     get isPlacementLeft():boolean {
-        return DataAnno.isPlacementLeft(this.annos);
+        return Annotation.isPlacementLeft(this.annotations);
     }
 
     get isPlacementRight():boolean {
-        return DataAnno.isPlacementRight(this.annos);
+        return Annotation.isPlacementRight(this.annotations);
     }
 
     get isPlacementStretchUnder():boolean {
-        return DataAnno.isPlacementStretchUnder(this.annos);
+        return Annotation.isPlacementStretchUnder(this.annotations);
     }
 
     get isPlacementUnder():boolean {
-        return DataAnno.isPlacementUnder(this.annos);
+        return Annotation.isPlacementUnder(this.annotations);
     }
 
     get isUnderline():boolean {
-        return DataAnno.isUnderlineText(this.annos);
+        return Annotation.isUnderlineText(this.annotations);
     }
 
     get overrideText():string {
-        return DataAnno.overrideText(this.annos);
+        return Annotation.overrideText(this.annotations);
     }
 
     get tipText():string {
-        return DataAnno.tipText(this.annos);
+        return Annotation.tipText(this.annotations);
     }
 
     /**
@@ -2107,8 +2106,8 @@ export class Property {
      */
     toWS():StringDictionary {
         var result:StringDictionary = {'WS_OTYPE': 'WSProp', 'name': this.name, 'value': Property.toWSProperty(this.value)};
-        if (this.annos) {
-            result['annos'] = DataAnno.toListOfWSDataAnno(this.annos);
+        if (this.annotations) {
+            result['annotations'] = Annotation.toListOfWSAnnotation(this.annotations);
         }
         return result;
     }
@@ -2336,8 +2335,9 @@ export interface QueryDialog extends Dialog {
 
 export interface Record {
 
+    readonly annotations:Array<Annotation>;
     readonly id: string;
-    readonly properties: any;
+    properties:Array<Property>;
 
 }
 
@@ -2374,10 +2374,19 @@ export class RecordDef {
     }
 }
 
+export interface RecordSet{
+
+    defaultActionId:string;
+    hasMore:boolean;
+    //note: we upgrade the 'Record' to an 'EntityRec'
+    records:Array<EntityRec>;
+
+}
+
 export interface Redirection {
 
     readonly id:string;
-    readonly otherProperties: StringDictionary;
+    readonly dialogProperties: StringDictionary;
     readonly referringDialogProperties: StringDictionary;
     readonly referringAction:ReferringAction;
     readonly sessionId: string;
@@ -2593,7 +2602,8 @@ export enum TypeNames {
     SessionTypeName = 'hxgn.api.dialog.Session',
     WorkbenchTypeName = 'hxgn.api.dialog.Workbench',
     AppWindowTypeName = 'hxgn.api.dialog.AppWindow',
-    LoginTypeName = 'hxgn.api.dialog.Login'
+    LoginTypeName = 'hxgn.api.dialog.Login',
+    ActionParametersTypeName = 'hxgn.api.dialog.ActionParameters'
 }
 
 
@@ -2615,12 +2625,13 @@ export class ModelUtil {
         'hxgn.api.dialog.ObjectRef': ObjectRef,
         'hxgn.api.dialog.Property': Property,
         'hxgn.api.dialog.PropertyDef': PropertyDef,
+        'hxgn.api.dialog.Record': RecordImpl,
         'hxgn.api.dialog.RecordDef': RecordDef,
         'hxgn.api.dialog.ViewDescriptor': ViewDescriptor,
         'hxgn.api.dialog.InlineBinaryRef': InlineBinaryRef,
         'hxgn.api.dialog.ObjectBinaryRef': ObjectBinaryRef,
         'hxgn.api.dialog.DialogException': DialogException,
-        'hxgn.api.dialog.DataAnno': DataAnno,
+        'hxgn.api.dialog.Annotation': Annotation,
         'hxgn.api.dialog.ReferrringAction': ReferringAction
     };
 
