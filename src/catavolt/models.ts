@@ -2656,11 +2656,11 @@ export class ModelUtil {
         const indent = n*4;
 
         if (Array.isArray(obj)) {
-            Log.debug(`${' '.repeat(indent)}=> Deserializing Array....`);
+            //Log.debug(`${' '.repeat(indent)}=> Deserializing Array....`);
             return ModelUtil.deserializeArray(obj);
         } else {
             const objType = obj['type'];
-            Log.debug(`${' '.repeat(indent)}=> Deserializing ${objType}`);
+            //Log.debug(`${' '.repeat(indent)}=> Deserializing ${objType}`);
             const funcPr:Promise<A> = factoryFn(objType, obj); //this returns null if there is no custom function
             if (funcPr) {
                 return funcPr.catch(error=> {
@@ -2673,12 +2673,12 @@ export class ModelUtil {
                     let newObj = ModelUtil.typeInstance(objType);
                     if (!newObj) {
                         const message = `ModelUtil::jsonToModel: no type constructor found for ${objType}: assuming interface`
-                        Log.debug(message);
+                        //Log.debug(message);
                         newObj = {};  //assume it's an interface
                     }
                     Promise.all(Object.keys(obj).map(prop=>{
                         const value = obj[prop];
-                        Log.debug(`${' '.repeat(indent)}prop: ${prop} is type ${typeof value}`);
+                        //Log.debug(`${' '.repeat(indent)}prop: ${prop} is type ${typeof value}`);
                         if (value && typeof value === 'object') {
                             if(Array.isArray(value) || 'type' in value) {
                                 return ModelUtil.jsonToModel(value, ModelUtil.factoryFn, ++n).then(model=>{
@@ -2722,15 +2722,15 @@ export class ModelUtil {
         try {
             if ('_' + prop in target) {
                 target['_' + prop] = value;
-                Log.debug(`${' '.repeat(n)}Assigning private prop _${prop} = ${value}`);
+                //Log.debug(`${' '.repeat(n)}Assigning private prop _${prop} = ${value}`);
             } else {
                 //it may be public prop
                 if (prop in target) {
-                    Log.debug(`${' '.repeat(n)}Assigning public prop ${prop} = ${value}`);
+                    //Log.debug(`${' '.repeat(n)}Assigning public prop ${prop} = ${value}`);
                 } else {
                     //it's either a readonly prop or defined in an interface
                     //in which case it's will not already exist on the target object
-                    Log.debug(`${' '.repeat(n)}Defining ${prop} on target for ${type}`);
+                    //Log.debug(`${' '.repeat(n)}Defining ${prop} on target for ${type}`);
                 }
                 target[prop] = value;
             }
