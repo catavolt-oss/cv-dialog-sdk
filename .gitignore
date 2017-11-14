@@ -32,7 +32,6 @@
 .project
 .classpath
 .buildpath
-bin/
 .settings/
 
 # Intellij
