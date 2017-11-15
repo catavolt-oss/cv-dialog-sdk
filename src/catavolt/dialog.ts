@@ -19,6 +19,7 @@ import {OfflineClient} from "./offline";
 import * as moment from 'moment';
 import * as numeral from "numeral";
 import {PrintForm} from "./print";
+import {InlineBinaryRef, ObjectBinaryRef} from "../tsd/catavolt/models";
 
 /**
  * Top-level entry point into the Catavolt API
@@ -447,25 +448,26 @@ export class AppContext {
 export abstract class PaneContext implements Dialog {
 
     //statics
-    private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
     static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
+    private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
 
     //private/protected
-    private _binaryCache:{ [index:string]:Array<Binary> } = {};
-    private _childrenContexts:Array<PaneContext>;
-    private _lastRefreshTime:Date = new Date(0);
     protected _destroyed:boolean = false;
     protected _settings:StringDictionary = {};
+    private _binaryCache:{ [index:string]:Array<Binary> } = {};
+    private _childrenContexts:Array<PaneContext>;
+    private _dialog:Dialog;
+    private _dialogRedirection:DialogRedirection;
+    private _lastRefreshTime:Date = new Date(0);
 
-    constructor(readonly dialog:Dialog,
-                readonly dialogRedirection:DialogRedirection,
+    constructor(dialog:Dialog,
+                dialogRedirection:DialogRedirection,
                 readonly paneRef:number,
                 readonly parentContext:PaneContext,
                 readonly session:Session,
                 readonly appContext:AppContext
     ) {
-        this._childrenContexts = this.createChildContexts(dialog.children, dialogRedirection);
-        this.initialize();
+        this.initialize(dialog, dialogRedirection);
     }
     /** Dialog Impl */
 
@@ -521,32 +523,28 @@ export abstract class PaneContext implements Dialog {
      * @param entityRec
      * @returns {any}
      */
-    /* @TODO */
      binaryAt(propName:string, entityRec:EntityRec):Promise<Binary> {
-         /*
-         const prop: Prop = entityRec.propAtName(propName)
+
+         const prop: Property = entityRec.propAtName(propName)
          if (prop) {
              if (prop.value instanceof InlineBinaryRef) {
                  const binRef = prop.value as InlineBinaryRef;
-                 return Future.createSuccessfulFuture('binaryAt', new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+                 return Promise.resolve(new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
              } else if (prop.value instanceof ObjectBinaryRef) {
                  const binRef = prop.value as ObjectBinaryRef;
                  if (binRef.settings['webURL']) {
-                     return Future.createSuccessfulFuture('binaryAt', new UrlBinary(binRef.settings['webURL']));
+                     return Promise.resolve(new UrlBinary(binRef.settings['webURL']));
                  } else {
                      return this.readBinary(propName, entityRec);
                  }
              } else if (typeof prop.value === 'string') {
-                 return Future.createSuccessfulFuture('binaryAt', new UrlBinary(prop.value));
+                 return Promise.resolve(new UrlBinary(prop.value));
              } else {
-                 return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
+                 return Promise.reject('No binary found at ' + propName);
              }
          } else {
-             return Future.createFailedFuture<Binary>('binaryAt', 'No binary found at ' + propName);
+             return Promise.reject('No binary found at ' + propName);
          }
-         */
-
-         return Promise.resolve(null);
      }
 
      //to comply with Dialog interface
@@ -559,12 +557,21 @@ export abstract class PaneContext implements Dialog {
      }
 
      abstract destroy():void;
+
+     get dialog():Dialog {
+        return this._dialog;
+     }
+
     /**
      * Get the dialog alias
      * @returns {any}
      */
     get dialogAlias():string {
         return this.dialogRedirection.dialogProperties['dialogAlias'];
+    }
+
+    get dialogRedirection():DialogRedirection {
+        return this._dialogRedirection;
     }
 
     /**
@@ -636,7 +643,7 @@ export abstract class PaneContext implements Dialog {
 
     get isDestroyedSetting():boolean {
         var str = this._settings['destroyed'];
-        return str && str.toLowerCase() === 'true';
+        return str === true || (str && str.toLowerCase() === 'true');
     }
 
     get isDestroyedRequestedSetting():boolean {
@@ -689,6 +696,17 @@ export abstract class PaneContext implements Dialog {
         return this.view.menu;
     }
 
+    openView(targetViewDescriptor:ViewDescriptor): Promise<PaneContext>{
+
+        return this.appContext.dialogApi.changeView(this.tenantId, this.sessionId, this.dialog.id, targetViewDescriptor.id)
+            .then((dialog:Dialog)=>{
+                this.initialize(dialog, this.dialogRedirection);
+                return this;
+            });
+
+    };
+
+
     get paneModeSetting():string {
         return this._settings['paneMode'];
     }
@@ -737,29 +755,22 @@ export abstract class PaneContext implements Dialog {
      * @param entityRec
      * @returns {Future<Array<Try<Binary>>>}
      */
-    /* @TODO */
     readBinaries(record:Record):Promise<Array<Binary>> {
-        /*
-        return Future.sequence<Binary>(
-            this.recordDef.filter((propDef: PropertyDef) => {
+        return Promise.all(
+            this.recordDef.propertyDefs.filter((propDef: PropertyDef) => {
                 return propDef.isBinaryType
             }).map((propDef: PropertyDef) => {
-                return this.readBinary(propDef.name, entityRec);
+                return this.readBinary(propDef.propertyName, record);
             })
         );
-        */
-        return Promise.resolve(null);
-     }
+    }
 
     /**
      * Get the all {@link ViewDescriptor}'s associated with this Form
      * @returns {Array<ViewDescriptor>}
      */
-    /* @TODO */
     get viewDescs():Array<ViewDescriptor> {
-        /* @TODO */
-        //return this.form.viewDescs;
-        return [];
+        return this.dialog.availableViews;
     }
 
     /* @TODO */
@@ -770,19 +781,17 @@ export abstract class PaneContext implements Dialog {
          return Promise.resolve(null);
      }
 
-     //@TODO
      writeAttachments(entityRec:EntityRec):Promise<Array<void>> {
-         /*
-         return Future.sequence<void>(
-             entityRec.props.filter((prop: Prop) => {
+
+         return Promise.all(
+             entityRec.properties.filter((prop: Property) => {
                  return prop.value instanceof Attachment;
-             }).map((prop: Prop) => {
+             }).map((prop: Property) => {
                  const attachment: Attachment = prop.value as Attachment;
                  return this.writeAttachment(attachment);
              })
          );
-         */
-         return Promise.resolve(null);
+
      }
 
 
@@ -794,18 +803,18 @@ export abstract class PaneContext implements Dialog {
     /* @TODO */
      writeBinaries(entityRec:EntityRec):Promise<Array<void>> {
          /*
-         return Future.sequence<XWritePropertyResult>(
-             entityRec.props.filter((prop: Prop) => {
+         return Promise.all(
+             entityRec.properties.filter((prop: Property) => {
                  return this.propDefAtName(prop.name).isBinaryType;
-             }).map((prop: Prop) => {
-                 let writeFuture: Future<XWritePropertyResult> = Future.createSuccessfulFuture<XWritePropertyResult>('startSeq', {} as XWritePropertyResult);
+             }).map((prop: Property) => {
+                 let writePromise:Promise<XWritePropertyResult> = Promise.resolve({} as XWritePropertyResult);
                  if (prop.value) {
                      let ptr: number = 0;
                      const encBin: EncodedBinary = prop.value as EncodedBinary;
                      const data = encBin.data;
                      while (ptr < data.length) {
                          const boundPtr = (ptr: number) => {
-                             writeFuture = writeFuture.bind((prevResult) => {
+                             writePromise = writePromise.then((prevResult) => {
                                  const encSegment: string = (ptr + PaneContext.CHAR_CHUNK_SIZE) <= data.length ? data.substr(ptr, PaneContext.CHAR_CHUNK_SIZE) : data.substring(ptr);
                                  return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.session);
                              });
@@ -815,53 +824,91 @@ export abstract class PaneContext implements Dialog {
                      }
                  } else {
                      // This is a delete
-                     writeFuture = writeFuture.bind((prevResult) => {
+                     writePromise =writePromise.then((prevResult) => {
                          return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
                      });
                  }
-                 return writeFuture;
+                 return writePromise;
              })
          );
          */
+
          return Promise.resolve(null);
      }
 
-    private createChildContexts(children:Array<Dialog>, dialogRedirection:DialogRedirection):Array<PaneContext> {
 
-         return children ? children.map((dialog:Dialog, n:number)=>{ return this.createChildContext(dialog, dialogRedirection, n)}) : [];
+    protected initialize(dialog:Dialog, dialogRedirection:DialogRedirection) {
+
+        this._dialog = dialog;
+        this._dialogRedirection = this.dialogRedirection;
+        this._childrenContexts = this.createChildContexts(dialog.children, dialogRedirection);
+        this._settings = ObjUtil.addAllProps(dialogRedirection.dialogProperties, {});
+
     }
 
-    private createChildContext(dialog:Dialog, dialogRedirection:DialogRedirection, paneRef:number) {
+    /**
+     * Perform this action associated with the given Menu on this Pane.
+     * The targets array is expected to be an array of object ids.
+     * @param menu
+     * @param targets
+     * @returns {Future<NavRequest>}
+     */
+    protected invokeMenuAction(menu:Menu, actionParams:ActionParameters):Promise<{actionId:string} | Redirection> {
 
-        if (dialog.view instanceof List) {
+        return this.appContext.dialogApi.performAction(this.session.tenantId, this.session.id,
+            this.dialog.id, menu.id, actionParams).then((result:{actionId:string} | Redirection)=>{
+            if(RedirectionUtil.isRedirection(result)) {
+                this.updateSettingsWithNewDialogProperties((result as Redirection).referringDialogProperties);
+            }
+            if (this.isRefreshSetting) {
+                AppContext.singleton.lastMaintenanceTime = new Date();
+            }
+            return result;
+        });
+    }
 
-            return new ListContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+    protected invokeNavigation(menu:Menu, actionParams:ActionParameters):Promise<NavRequest> {
 
-        } else if (dialog.view instanceof Details) {
+        return this.invokeMenuAction(menu, actionParams).then((result:{actionId:string} | Redirection)=>{
+            if(RedirectionUtil.isRedirection(result)) {
+                return this.appContext.openRedirection(result as Redirection);
+            } else {
+                return new NullNavRequest();
+            }
+        });
+    }
 
-            return new DetailsContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
 
-        } else if (dialog.view instanceof Map) {
+    //@TODO
+    protected readBinary(propName:string, record:Record):Promise<Binary> {
 
-            return new MapContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
-
-        } else if (dialog.view instanceof Form) {
-
-            new FormContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
-
+        /*
+        let seq: number = 0;
+        let encodedResult: string = '';
+        let inProgress: string = '';
+        let f: (XReadPropertyResult) => Promise<Binary> = (result: XReadPropertyResult) => {
+            if (result.hasMore) {
+                inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
+                return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+                    propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            } else {
+                if (inProgress) {
+                    inProgress += atob(result.data);
+                    encodedResult = btoa(inProgress);
+                } else {
+                    encodedResult = result.data;
+                }
+                return Promise.resolve<Binary>(new EncodedBinary(encodedResult));
+            }
         }
+        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+            propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            */
+        return Promise.resolve(null);
+    };
 
-    }
 
-
-    /* @TODO */
-    openView(targetViewDescriptor:ViewDescriptor): Promise<PaneContext | Redirection>{ return null; }
-
-    protected initialize() {
-        this._settings = ObjUtil.addAllProps(this.dialogRedirection.dialogProperties, {});
-    }
-
-    updateSettingsWithNewDialogProperties(dialogProperties:StringDictionary) {
+    protected updateSettingsWithNewDialogProperties(dialogProperties:StringDictionary) {
 
         const newSettings:StringDictionary = ObjUtil.addAllProps(this._settings, {});
         ObjUtil.addAllProps(dialogProperties, newSettings);
@@ -872,9 +919,31 @@ export abstract class PaneContext implements Dialog {
         this._settings = newSettings;
     }
 
-    /* @TODO */
-    //should this be abstract?
-    protected readBinary(propName:string, entityRec:EntityRec):Promise<Binary> { return null; }
+
+
+    /*
+        Private Methods
+     */
+
+
+    private createChildContexts(children:Array<Dialog>, dialogRedirection:DialogRedirection):Array<PaneContext> {
+
+        return children ? children.map((dialog:Dialog, n:number)=>{ return this.createChildContext(dialog, dialogRedirection, n)}) : [];
+    }
+
+    private createChildContext(dialog:Dialog, dialogRedirection:DialogRedirection, paneRef:number) {
+
+        if (dialog.view instanceof List) {
+            return new ListContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if (dialog.view instanceof Details) {
+            return new DetailsContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if (dialog.view instanceof Map) {
+            return new MapContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if (dialog.view instanceof Form) {
+            new FormContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        }
+    }
+
 
     /**
      * @private
@@ -931,56 +1000,36 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
         return this.view as Form;
     }
 
-    openView(targetViewDescriptor: ViewDescriptor): Promise<PaneContext | Redirection> {
-        /*
-        return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDescriptor.viewId), this.sessionContext)
-            .bind((setViewResult: XOpenDialogModelResult) => {
-                const xOpenEditorResult: XOpenEditorModelResult = setViewResult as XOpenEditorModelResult;
-                var ca = new ContextAction('#viewChange', xOpenEditorResult.formRedirection.objectId, this.actionSource);
-                return FormContextBuilder.createWithRedirection(xOpenEditorResult.formModel.form.redirection, ca, this.sessionContext)
-                    .buildFromOpenForm(xOpenEditorResult, xOpenEditorResult.formModel.form.redirection.isEditor)
-                    .map((formContext: FormContext) => {
-                        this._destroyed = true;
-                        return Either.right<PaneContext, NavRequest>(formContext as NavRequest)
-                    });
-            });
-            */
-        return Promise.resolve(null);
-    }
-
     /**
      * Perform the action associated with the given Menu on this Form
      * @param menu
      * @returns {Future<NavRequest>}
      */
-    /* @TODO */
     performMenuAction(menu: Menu): Promise<{actionId:string} | Redirection> {
-        /*
-        return DialogService.performEditorAction(this.paneDef.dialogHandle, menu.actionId,
-            NullEntityRec.singleton, this.sessionContext).bind((value: Redirection) => {
-            var destroyedStr: string = value.fromDialogProperties && value.fromDialogProperties['destroyed'];
-            if (destroyedStr && destroyedStr.toLowerCase() === 'true') {
-                this._destroyed = true;
-            }
-            var ca: ContextAction = new ContextAction(menu.actionId, this.dialogRedirection.objectId, this.actionSource);
-            return NavRequestUtil.fromRedirection(value, ca, this.sessionContext);
+
+        return this.invokeMenuAction(menu, {type:TypeNames.ActionParametersTypeName}).then(result=>{
+            return result;
         });
-        */
-        return Promise.resolve(null);
+
     }
 
     performNavigation(menu: Menu): Promise<NavRequest> {
 
-        return Promise.resolve(null);
-
+        return this.performMenuAction(menu).then((result:{actionId:string} | Redirection)=>{
+            if(RedirectionUtil.isRedirection(result)) {
+                return this.appContext.openRedirection(result as Redirection);
+            } else {
+                return new NullNavRequest();
+            }
+        });
     }
 
     get referringDialogProperties():StringDictionary {
         return this.dialogRedirection.referringDialogProperties;
     }
 
-    protected initialize() {
-        super.initialize();
+    protected initialize(dialog:Dialog, dialogRedirection:DialogRedirection) {
+        super.initialize(dialog, dialogRedirection);
     }
 }
 
@@ -1157,17 +1206,6 @@ export class EditorContext extends PaneContext {
         return this._editorState === EditorState.WRITE;
     }
 
-    //@TODO
-    openView(targetViewDescriptor:ViewDescriptor): Promise<PaneContext | Redirection> {
-        /*
-         return DialogService.setSelectedEditorViewId(this.paneDef.dialogHandle, new ViewId(targetViewDescriptor.viewId), this.sessionContext)
-         .bind((setViewResult:XOpenDialogModelResult)=>{
-         return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this) });
-         });
-         */
-        return Promise.resolve(null);
-    }
-
     /**
      * Perform the action associated with the given Menu on this EditorPane.
      * Given that the Editor could possibly be destroyed as a result of this action,
@@ -1179,31 +1217,23 @@ export class EditorContext extends PaneContext {
     //@TODO
     performMenuAction(menu:Menu, pendingWrites:EntityRec):Promise<{actionId:string} | Redirection> {
 
-        /*
-         return DialogService.performEditorAction(this.paneDef.dialogHandle, menu.actionId,
-         pendingWrites, this.sessionContext).bind((redirection:Redirection)=> {
-         var ca = new ContextAction(menu.actionId, this.parentContext.dialogRedirection.objectId,
-         this.actionSource);
-         return NavRequestUtil.fromRedirection(redirection, ca,
-         this.sessionContext).map((navRequest:NavRequest)=> {
-         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, navRequest);
-         if (this.isDestroyedSetting) {
-         this._editorState = EditorState.DESTROYED;
-         }
-         if (this.isRefreshSetting) {
-         AppContext.singleton.lastMaintenanceTime = new Date();
-         }
-         return navRequest;
-         });
-         });
-         */
-        return Promise.resolve(null);
+        return this.invokeMenuAction(menu, {pendingWrites:pendingWrites, type:TypeNames.ActionParametersTypeName}).then(result=>{
+            if (this.isDestroyedSetting) {
+                this._editorState = EditorState.DESTROYED;
+            }
+            return result;
+        });
     }
 
     performNavigation(menu:Menu, pendingWrites:EntityRec):Promise<NavRequest> {
 
-        return Promise.resolve(null);
-
+            return this.performMenuAction(menu, pendingWrites).then((result:{actionId:string} | Redirection)=>{
+                if(RedirectionUtil.isRedirection(result)) {
+                    return this.appContext.openRedirection(result as Redirection);
+                } else {
+                    return new NullNavRequest();
+                }
+            });
     }
 
     /**
@@ -1391,8 +1421,8 @@ export class EditorContext extends PaneContext {
     /**
      * @private
      */
-    initialize() {
-        super.initialize();
+    initialize(dialog:Dialog, dialogRedirection:DialogRedirection) {
+        super.initialize(dialog, dialogRedirection);
         this._editorState = this.isReadModeSetting ? EditorState.READ : EditorState.WRITE;
         this._buffer = null;
     }
@@ -1403,36 +1433,6 @@ export class EditorContext extends PaneContext {
      */
     get settings():StringDictionary {
         return this._settings;
-    }
-
-    //protected
-
-    //@TODO
-    protected readBinary(propName:string, entityRec:EntityRec):Promise<Binary> {
-        /*
-         let seq:number = 0;
-         let encodedResult:string = '';
-         let inProgress:string = '';
-         let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
-         if (result.hasMore) {
-         inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
-         return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
-         propName, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-         } else {
-         if (inProgress) {
-         inProgress += atob(result.data);
-         encodedResult = btoa(inProgress);
-         } else {
-         encodedResult = result.data;
-         }
-         return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(encodedResult));
-         }
-         }
-         return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
-         propName, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-         */
-
-        return Promise.resolve(null);
     }
 
     //Private methods
@@ -1464,37 +1464,6 @@ export class EditorContext extends PaneContext {
         var paneMode = this.paneModeSetting;
         return paneMode && paneMode.toLowerCase() === 'read';
     }
-
-    //@TODO
-    /*
-     private updatePaneDef(xOpenResult:XOpenDialogModelResult):Promise<View> {
-
-     const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
-     const menusFr:Future<Array<Menu>> = FormContextBuilder.fetchChildMenus(this.dialogRedirection, this.sessionContext);
-
-     return Future.sequence<any>([activeColDefsFr, menusFr])
-     .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
-     var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
-     if (flattenedTry.failure) {
-     return Future.createCompletedFuture<PaneDef>('FormContextBuilder::buildPaneDefFromDialogModel',
-     new Failure<PaneDef>(flattenedTry.failure));
-     }
-     const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
-     const menus:Array<Menu> = flattenedTry.success[1];
-     const paneDef = this.paneDef;
-
-     if(xOpenResult instanceof XOpenEditorModelResult) {
-     const editorModelResult:XOpenEditorModelResult = xOpenResult;
-     paneDef.entityRecDef = editorModelResult.editorRecordDef;
-     paneDef.menus = menus;
-     this.initialize();
-     }
-
-     return Future.createSuccessfulFuture('EditorContext::updatePaneDef', paneDef);
-
-     });
-     }
-     */
 
 }
 
@@ -1558,17 +1527,6 @@ export class QueryContext extends PaneContext {
         return this._lastQueryFr;
     }
 
-    //@TODO
-    openView(targetViewDescriptor:ViewDescriptor): Promise<PaneContext | Redirection>{
-        /*
-         return DialogService.setSelectedQueryViewId(this.paneDef.dialogHandle, new ViewId(targetViewDescriptor.viewId), this.sessionContext)
-         .bind((setViewResult:XOpenDialogModelResult)=>{
-         return this.updatePaneDef(setViewResult).map((paneDef:PaneDef)=>{ return Either.left(this); });
-         });
-         */
-        return Promise.resolve(null);
-    }
-
     /**
      * Get the pane mode
      * @returns {string}
@@ -1586,17 +1544,11 @@ export class QueryContext extends PaneContext {
      */
     performMenuAction(menu:Menu, targets:Array<string>):Promise<{actionId:string} | Redirection> {
 
-        return this.appContext.dialogApi.performAction(this.session.tenantId, this.session.id,
-            this.dialog.id, menu.id, {targets:targets, type:TypeNames.ActionParametersTypeName}).then((result:{actionId:string} | Redirection)=>{
-                if(RedirectionUtil.isRedirection(result)) {
-                    this.updateSettingsWithNewDialogProperties((result as Redirection).referringDialogProperties);
-                    if(this._destroyed) this._queryState = QueryState.DESTROYED;
-                }
-                if (this.isRefreshSetting) {
-                    AppContext.singleton.lastMaintenanceTime = new Date();
-                }
-                return result;
-        });
+       return this.invokeMenuAction(menu, {targets:targets, type:TypeNames.ActionParametersTypeName}).then(result=>{
+           if(this._destroyed) this._queryState = QueryState.DESTROYED;
+           return result;
+       });
+
     }
 
     performNavigation(menu:Menu, targets:Array<string>):Promise<NavRequest> {
@@ -1679,75 +1631,10 @@ export class QueryContext extends PaneContext {
 
     //protected
 
-    //@TODO
-    protected readBinary(propName:string, entityRec:EntityRec):Promise<Binary> {
-        /*
-         let seq:number = 0;
-         let encodedResult:string = '';
-         let inProgress:string = '';
-         let f:(XReadPropertyResult)=>Future<Binary> = (result:XReadPropertyResult) => {
-         if (result.hasMore) {
-         inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
-         return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
-         propName, entityRec.objectId, ++seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-         } else {
-         if (inProgress) {
-         inProgress += atob(result.data);
-         encodedResult = btoa(inProgress);
-         } else {
-         encodedResult = result.data;
-         }
-         return Future.createSuccessfulFuture<Binary>('readProperty', new EncodedBinary(encodedResult));
-         }
-         }
-         return DialogService.readQueryProperty(this.paneDef.dialogRedirection.dialogHandle,
-         propName, entityRec.objectId, seq, PaneContext.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-         */
-        return Promise.resolve(null);
+    protected initialize(dialog:Dialog, dialogRedirection:DialogRedirection) {
+        super.initialize(dialog, dialogRedirection);
+        this.newScroller();
     }
-
-    protected initialize() {
-        super.initialize();
-    }
-
-    //@TODO
-    /*
-     private updatePaneDef(xOpenResult:XOpenDialogModelResult):Future<PaneDef> {
-
-     const activeColDefsFr:Future<XGetActiveColumnDefsResult> = FormContextBuilder.fetchChildActiveColDefs(this.dialogRedirection, this.sessionContext);
-     const menusFr:Future<Array<Menu>> = FormContextBuilder.fetchChildMenus(this.dialogRedirection, this.sessionContext);
-
-     return Future.sequence<any>([activeColDefsFr, menusFr])
-     .bind<PaneDef>((arrayOfTries:Array<Try<any>>)=>{
-     var flattenedTry:Try<Array<any>> = FormContextBuilder.getFlattenedResults(arrayOfTries);
-     if (flattenedTry.failure) {
-     return Future.createCompletedFuture<PaneDef>('FormContextBuilder::buildPaneDefFromDialogModel',
-     new Failure<PaneDef>(flattenedTry.failure));
-     }
-     const activeColDefs:XGetActiveColumnDefsResult = flattenedTry.success[0];
-     const menus:Array<Menu> = flattenedTry.success[1];
-
-     const paneDef = this.paneDef;
-     if(xOpenResult instanceof  XOpenQueryModelResult) {
-     const queryModelResult:XOpenQueryModelResult = xOpenResult;
-     paneDef.entityRecDef = queryModelResult.entityRecDef;
-     if(paneDef instanceof ListDef) {
-     const listDef:ListDef = paneDef;
-     listDef.defaultActionId = queryModelResult.defaultActionId;
-     listDef.menus = menus;
-     listDef.activeColumnDefs = activeColDefs.columnDefs;
-     //reset the scroller (and clear the buffer)
-     this.newScroller();
-     }
-     } else {
-     return Future.createFailedFuture<PaneDef>('QueryContext:updatePaneDef', 'Query Views are only support on ListDefs at the moment...')
-     }
-
-     return Future.createSuccessfulFuture('QueryContext::updatePaneDef', paneDef);
-
-     });
-     }
-     */
 
 }
 
@@ -1971,8 +1858,8 @@ export class ErrorContext extends PaneContext {
 
     destroy():void{}
 
-    protected initialize() {
-        super.initialize();
+    protected initialize(dialog:Dialog, dialogRedirection:DialogRedirection) {
+        super.initialize(dialog, dialogRedirection);
     }
 }
 

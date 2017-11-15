@@ -2572,7 +2572,7 @@ export type FilterOperator = "AND" | "CONTAINS" | "ENDS_WITH" | "EQUAL_TO" |
     "GREATER_THAN" | "GREATER_THAN_OR_EQUAL_TO" | "LESS_THAN" | "LESS_THAN_OR_EQUAL_TO"
     | "NOT_EQUAL_TO" | "OR" | "STARTS_WITH";
 
-export enum QueryDirection { FORWARD, BACKWARD }
+export enum QueryDirection { FORWARD = 'FORWARD', BACKWARD = 'BACKWARD'}
 
 export type RedirectionType =
     'hxgn.api.dialog.DialogRedirection' |
