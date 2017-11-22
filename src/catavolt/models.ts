@@ -204,7 +204,9 @@ export class Calendar extends View {
     readonly startTimePropertyName: string;
 }
 
-export interface Cell extends Array<CellValue> {}
+export interface Cell {
+    values:Array<CellValue>;
+}
 
 export interface Column {
 
@@ -1309,7 +1311,6 @@ export class Graph extends View {
     static PLOT_TYPE_SCATTER = "SCATTER";
     static PLOT_TYPE_STACKED = "STACKED";
 
-    readonly defaultActionId:string;
     readonly graphType: string;
     readonly displayQuadrantLines:boolean;
     readonly identityDataPoint: GraphDataPoint;
@@ -1393,8 +1394,6 @@ export class List extends View {
     readonly columns: Array<Column>;
     readonly filter: Array<Filter>;
     readonly sort: Array<Sort>;
-    //@TODO leftover from ListDef
-    readonly defaultActionId:string;
 
     get isDefaultStyle():boolean {
         return this.style && this.style === 'DEFAULT';
@@ -1436,7 +1435,7 @@ export class Menu {
     readonly id: string;
     readonly iconUrl: string;
     readonly label: string;
-    readonly showOnMenu:boolean;
+    readonly visible:boolean;
     /**
      * The menu is allowed (active) for these modes
      */
@@ -1752,7 +1751,7 @@ export class PrintMarkup extends View {
             this._orderedCellValue = {};
             this.rows.forEach((cellRow:Array<Cell>, index)=> {
                 cellRow.forEach((cell:Cell) => {
-                    cell.forEach((cellValue:CellValue) => {
+                    cell.values.forEach((cellValue:CellValue) => {
                         if (cellValue instanceof AttributeCellValue) {
                             let attributeCellValue = cellValue as AttributeCellValue;
                             this._orderedCellValue[attributeCellValue.propertyName] = attributeCellValue;
@@ -2333,6 +2332,15 @@ export class PropertyDef {
 export interface QueryDialog extends Dialog {
 }
 
+export interface QueryParameters {
+
+    fetchDirection:QueryDirection;
+    fetchMaxRecords:number;
+    fromBusinessId?:string;
+    type:string;
+
+}
+
 export interface Record {
 
     readonly annotations:Array<Annotation>;
@@ -2442,14 +2450,6 @@ export interface Session {
 
     readonly userId:string;
 
-}
-
-export interface SessionId {
-
-    readonly sessionId: string;
-}
-
-export interface Sessions extends Array<Session> {
 }
 
 export interface Sort {
@@ -2563,8 +2563,8 @@ export type ClientType = 'DESKTOP' | 'MOBILE';
 export type DialogMessageType = "CONFIRM" | "ERROR" | "INFO" | "WARN";
 
 /* DialogMode */
-export enum DialogModeEnum { COPY = 'COPY' , CREATE = 'CREATE', READ = 'READ', UPDATE = 'UPDATE', DELETE = 'DELETE' }
-export type DialogMode = DialogModeEnum.COPY | DialogModeEnum.CREATE | DialogModeEnum.READ | DialogModeEnum.UPDATE | DialogModeEnum.DELETE;
+export enum DialogModeEnum { COPY = 'COPY' , CREATE = 'CREATE', READ = 'READ', UPDATE = 'UPDATE', DELETE = 'DELETE', LIST = 'LIST'}
+export type DialogMode = DialogModeEnum.COPY | DialogModeEnum.CREATE | DialogModeEnum.READ | DialogModeEnum.UPDATE | DialogModeEnum.DELETE | DialogModeEnum.LIST;
 
 export type DialogType = 'hxgn.api.dialog.EditorDialog' | 'hxgn.api.dialog.QueryDialog'
 
@@ -2572,7 +2572,8 @@ export type FilterOperator = "AND" | "CONTAINS" | "ENDS_WITH" | "EQUAL_TO" |
     "GREATER_THAN" | "GREATER_THAN_OR_EQUAL_TO" | "LESS_THAN" | "LESS_THAN_OR_EQUAL_TO"
     | "NOT_EQUAL_TO" | "OR" | "STARTS_WITH";
 
-export enum QueryDirection { FORWARD = 'FORWARD', BACKWARD = 'BACKWARD'}
+export enum QueryDirectionEnum { FORWARD = 'FORWARD', BACKWARD = 'BACKWARD'}
+export type QueryDirection = QueryDirectionEnum.FORWARD | QueryDirectionEnum.BACKWARD;
 
 export type RedirectionType =
     'hxgn.api.dialog.DialogRedirection' |
@@ -2603,7 +2604,8 @@ export enum TypeNames {
     WorkbenchTypeName = 'hxgn.api.dialog.Workbench',
     AppWindowTypeName = 'hxgn.api.dialog.AppWindow',
     LoginTypeName = 'hxgn.api.dialog.Login',
-    ActionParametersTypeName = 'hxgn.api.dialog.ActionParameters'
+    ActionParametersTypeName = 'hxgn.api.dialog.ActionParameters',
+    QueryParametersTypeName = 'hxgn.api.dialog.QueryParameters'
 }
 
 

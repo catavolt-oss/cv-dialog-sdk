@@ -12,14 +12,14 @@ import {
     Details,
     List, Map, TypeNames, ModelUtil, QueryDirection,
     QueryDialog, EditorDialog, Filter, Sort, ReferringAction, Graph, Calendar, PrintMarkup, BarcodeScan, ImagePicker,
-    RedirectionUtil, DialogType, NullRedirection, ActionParameters, RecordSet
+    RedirectionUtil, DialogType, NullRedirection, ActionParameters, RecordSet, QueryParameters, QueryDirectionEnum,
+    InlineBinaryRef, ObjectBinaryRef
 } from "./models";
 import {FetchClient} from "./ws";
 import {OfflineClient} from "./offline";
 import * as moment from 'moment';
 import * as numeral from "numeral";
 import {PrintForm} from "./print";
-import {InlineBinaryRef, ObjectBinaryRef} from "../tsd/catavolt/models";
 
 /**
  * Top-level entry point into the Catavolt API
@@ -840,7 +840,7 @@ export abstract class PaneContext implements Dialog {
     protected initialize(dialog:Dialog, dialogRedirection:DialogRedirection) {
 
         this._dialog = dialog;
-        this._dialogRedirection = this.dialogRedirection;
+        this._dialogRedirection = dialogRedirection;
         this._childrenContexts = this.createChildContexts(dialog.children, dialogRedirection);
         this._settings = ObjUtil.addAllProps(dialogRedirection.dialogProperties, {});
 
@@ -1432,107 +1432,103 @@ export class EditorContext extends PaneContext {
      * @returns {StringDictionary}
      */
     get settings():StringDictionary {
-        return this._settings;
+            return this._settings;
+        }
+
+        //Private methods
+
+        private removeSpecialProps(entityRec:EntityRec):EntityRec {
+            entityRec.properties = entityRec.properties.filter((prop:Property)=>{
+                /* Remove the Binary(s) as they have been written seperately */
+                return !this.propDefAtName(prop.name).isBinaryType;
+            }).map((prop:Property)=>{
+                /*
+                 Remove the Attachment(s) (as they have been written seperately) but replace
+                 the property value with the file name of the attachment prior to writing
+                 */
+                if(prop.value instanceof Attachment) {
+                    const attachment = prop.value as Attachment;
+                    return new Property(prop.name, attachment.name, prop.annotations);
+                } else {
+                    return prop;
+                }
+            });
+            return entityRec;
+        }
+
+        private initBuffer(entityRec:EntityRec) {
+            this._buffer = entityRec ? new EntityBuffer(entityRec) : new EntityBuffer(NullEntityRec.singleton);
+        }
+
+        private get isReadModeSetting():boolean {
+            var paneMode = this.paneModeSetting;
+            return paneMode && paneMode.toLowerCase() === 'read';
+        }
+
     }
 
-    //Private methods
-
-    private removeSpecialProps(entityRec:EntityRec):EntityRec {
-        entityRec.properties = entityRec.properties.filter((prop:Property)=>{
-            /* Remove the Binary(s) as they have been written seperately */
-            return !this.propDefAtName(prop.name).isBinaryType;
-        }).map((prop:Property)=>{
-            /*
-             Remove the Attachment(s) (as they have been written seperately) but replace
-             the property value with the file name of the attachment prior to writing
-             */
-            if(prop.value instanceof Attachment) {
-                const attachment = prop.value as Attachment;
-                return new Property(prop.name, attachment.name, prop.annotations);
-            } else {
-                return prop;
-            }
-        });
-        return entityRec;
-    }
-
-    private initBuffer(entityRec:EntityRec) {
-        this._buffer = entityRec ? new EntityBuffer(entityRec) : new EntityBuffer(NullEntityRec.singleton);
-    }
-
-    private get isReadModeSetting():boolean {
-        var paneMode = this.paneModeSetting;
-        return paneMode && paneMode.toLowerCase() === 'read';
-    }
-
-}
-
-
-/**
- * Enum to manage query states
- */
-enum QueryState { ACTIVE, DESTROYED }
-
-/**
- * PaneContext Subtype that represents a 'Query Pane'.
- * A 'Query' represents and is backed by a list of Records and a single Record definition.
- * See {@link EntityRec} and {@link EntityRecDef}.
- * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
- * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
- */
-export class QueryContext extends PaneContext {
-
-    private _lastQueryFr:Promise<RecordSet>;
-    private _queryState:QueryState;
-    private _scroller:QueryScroller;
-
-    constructor(dialog:Dialog,
-                dialogRedirection:DialogRedirection,
-                paneRef:number,
-                parentContext:PaneContext,
-                session:Session,
-                appContext:AppContext
-
-    ) {
-        super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
-    }
 
     /**
-     * Returns whether or not a column is of a binary type
-     * @param columnDef
-     * @returns {PropDef|boolean}
+     * Enum to manage query states
      */
-    isBinary(column:Column):boolean {
-        var propDef = this.propDefAtName(column.propertyName);
-        return propDef && (propDef.isBinaryType || (propDef.isURLType && propDef.isInlineMediaStyle));
-    }
-
-    destroy():void {
-        this._queryState = QueryState.DESTROYED;
-    }
+    enum QueryState { ACTIVE, DESTROYED }
 
     /**
-     * Returns whether or not this Query Pane is destroyed
-     * @returns {boolean}
+     * PaneContext Subtype that represents a 'Query Pane'.
+     * A 'Query' represents and is backed by a list of Records and a single Record definition.
+     * See {@link EntityRec} and {@link EntityRecDef}.
+     * Context classes, while similar to {@link PaneDef} and subclasses, contain both the corresponding subtype of pane definition {@link PaneDef}
+     * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
      */
-    get isDestroyed():boolean {
-        return this._queryState === QueryState.DESTROYED;
-    }
+    export class QueryContext extends PaneContext {
 
-    /**
-     * Get the last query result as a {@link Future}
-     * @returns {Future<RecordSet>}
-     */
-    get lastQueryFr():Promise<RecordSet> {
-        return this._lastQueryFr;
-    }
+        private _queryState:QueryState;
+        private _scroller:QueryScroller;
+        private _defaultActionId:string;
 
-    /**
-     * Get the pane mode
-     * @returns {string}
-     */
-    get paneMode():string {
-        return this._settings['paneMode'];
+        constructor(dialog:Dialog,
+                    dialogRedirection:DialogRedirection,
+                    paneRef:number,
+                    parentContext:PaneContext,
+                    session:Session,
+                    appContext:AppContext
+
+        ) {
+            super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
+        }
+
+        /**
+         * Returns whether or not a column is of a binary type
+         * @param columnDef
+         * @returns {PropDef|boolean}
+         */
+        isBinary(column:Column):boolean {
+            var propDef = this.propDefAtName(column.propertyName);
+            return propDef && (propDef.isBinaryType || (propDef.isURLType && propDef.isInlineMediaStyle));
+        }
+
+        destroy():void {
+            this._queryState = QueryState.DESTROYED;
+        }
+
+        get defaultActionId():string {
+            return this._defaultActionId;
+        }
+
+        /**
+         * Returns whether or not this Query Pane is destroyed
+         * @returns {boolean}
+         */
+        get isDestroyed():boolean {
+            return this._queryState === QueryState.DESTROYED;
+        }
+
+        /**
+         * Get the pane mode
+         * @returns {string}
+         */
+        get paneMode():string {
+            return this._settings['paneMode'];
     }
 
     /**
@@ -1571,12 +1567,16 @@ export class QueryContext extends PaneContext {
      * @param fromObjectId
      * @returns {Future<RecordSet>}
      */
-    //@TODO
     query(maxRows:number, direction:QueryDirection, fromObjectId:string):Promise<RecordSet> {
 
-        return this.appContext.dialogApi.getRecords(this.session.tenantId,
-            this.session.id, this.dialog.id, direction, maxRows).then((recordSet:RecordSet) => {
+        const queryParams:QueryParameters = fromObjectId ?
+            {fetchDirection: direction, fetchMaxRecords: maxRows, fromBusinessId:fromObjectId, type: TypeNames.QueryParametersTypeName} :
+            {fetchDirection: direction, fetchMaxRecords: maxRows, type: TypeNames.QueryParametersTypeName};
+
+        return this.appContext.dialogApi.getRecords(this.session.tenantId, this.session.id, this.dialog.id, queryParams)
+            .then((recordSet:RecordSet) => {
                 this.lastRefreshTime = new Date();
+                this._defaultActionId = recordSet.defaultActionId;
                 return recordSet;
         });
 
@@ -1737,11 +1737,11 @@ export class QueryScroller {
         if (this._prevPagePromise) {
             this._prevPagePromise = this._prevPagePromise.then((recordSet: RecordSet) => {
                 const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
-                return this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
+                return this._context.query(this._pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
             });
         } else {
             const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
-            this._prevPagePromise = this._context.query(this._pageSize, QueryDirection.BACKWARD, fromObjectId);
+            this._prevPagePromise = this._context.query(this._pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
         }
 
         const beforeSize: number = this._buffer.length;
@@ -1774,11 +1774,11 @@ export class QueryScroller {
         if(this._nextPagePromise) {
             this._nextPagePromise = this._nextPagePromise.then((recordSet:RecordSet)=>{
                 const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
-                return this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
+                return this._context.query(this._pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
             });
         } else {
             const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
-            this._nextPagePromise = this._context.query(this._pageSize, QueryDirection.FORWARD, fromObjectId);
+            this._nextPagePromise = this._context.query(this._pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
         }
 
         const beforeSize: number = this._buffer.length;
@@ -2134,8 +2134,7 @@ export interface DialogApi {
 
     putRecord(tenantId:string, sessionId:string, dialogId:string, record:Record):Promise<Record | Redirection>;
 
-    getRecords(tenantId:string, sessionId:string, dialogId:string, fetchDirection:QueryDirection,
-               fetchMaxItems:number):Promise<RecordSet>;
+    getRecords(tenantId:string, sessionId:string, dialogId:string, queryParams:QueryParameters):Promise<RecordSet>;
 
     getMode(tenantId:string, sessionId:string, dialogId:string):Promise<ViewMode>;
 
@@ -2274,11 +2273,9 @@ export class DialogService implements DialogApi {
          );
      }
 
-     getRecords(tenantId:string, sessionId:string, dialogId:string, fetchDirection:QueryDirection,
-                fetchMaxItems:number):Promise<RecordSet> {
+     getRecords(tenantId:string, sessionId:string, dialogId:string, queryParams:QueryParameters):Promise<RecordSet> {
 
-        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records`,
-            {fetchDirection:fetchDirection, fetchMaxItems:fetchMaxItems}).then(
+        return this.post(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records`, queryParams).then(
                 jsonClientResponse=>(new DialogServiceResponse<RecordSet>(jsonClientResponse)).responseValue()
          );
     }
