@@ -1,0 +1,16 @@
+html, body {
+    height: 100%;
+}
+
+html {
+    background-color: #ffffff;
+}
+
+body {
+    padding-top: 0px;
+    background-color: transparent;
+}
+
+#cvApp {
+    height:100%;
+}

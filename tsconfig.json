@@ -12,6 +12,7 @@
     },
     "files":[
       "./src/catavolt.ts",
-      "./src/test/catavolt-test.ts"
+      "./src/test/catavolt-test.ts",
+      "./src/test/explorer/index.ts"
     ]
 }
