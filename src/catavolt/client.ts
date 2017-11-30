@@ -28,7 +28,7 @@ export abstract class ClientResponse<T> {
 export class JsonClientResponse extends ClientResponse<StringDictionary | Array<any>> {
 
     constructor(value:StringDictionary | Array<any>, statusCode:number) {
-        Log.debug(`JsonClientResponse: [status]:${statusCode} [body]:${JSON.stringify(value)}`);
+        Log.debug(`JsonClientResponse: [status]:${statusCode} [body]:${Log.prettyPrint(value)}`);
         super(value, statusCode);
     }
 

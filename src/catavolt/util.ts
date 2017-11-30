@@ -261,7 +261,7 @@ export class Log {
         if (level >= LogLevel.DEBUG) {
             Log.debug = (message, method?:string, clz?:string)=> {
                 Log.log((o)=> {
-                    console.info(o);
+                    console.debug(o);
                 }, 'DEBUG: ' + message, method, clz);
             };
         } else {
@@ -279,6 +279,16 @@ export class Log {
             };
         }
         if (level >= LogLevel.WARN) {
+            Log.warn = (message, clz?:string, method?:string)=> {
+                Log.log((o)=> {
+                    console.warn(o);
+                }, 'WARN: ' + message, method, clz);
+            };
+        } else {
+            Log.warn = (message, clz?:string, method?:string)=> {
+            };
+        }
+        if (level >= LogLevel.ERROR) {
             Log.error = (message, clz?:string, method?:string)=> {
                 Log.log((o)=> {
                     console.error(o);
@@ -286,16 +296,6 @@ export class Log {
             };
         } else {
             Log.error = (message, clz?:string, method?:string)=> {
-            };
-        }
-        if (level >= LogLevel.ERROR) {
-            Log.warn = (message, clz?:string, method?:string)=> {
-                Log.log((o)=> {
-                    console.info(o);
-                }, 'WARN: ' + message, method, clz);
-            };
-        } else {
-            Log.warn = (message, clz?:string, method?:string)=> {
             };
         }
 
@@ -318,6 +318,10 @@ export class Log {
         } else {
             logger(m);
         }
+    }
+
+    static prettyPrint(o):string {
+        return ObjUtil.formatRecAttr(o, true);
     }
 
     static formatRecString(o):string {
@@ -366,9 +370,13 @@ export class ObjUtil {
         return newObj;
     }
 
-    static formatRecAttr(o):string {
+    static formatRecAttr(o, prettyPrint?:true):string {
         //@TODO - add a filter here to build a cache and detect (and skip) circular references
-        return JSON.stringify(o);
+        if(prettyPrint) {
+            return JSON.stringify(o, null, 2);
+        } else {
+            return JSON.stringify(o);
+        }
     }
 
     static newInstance(type) {

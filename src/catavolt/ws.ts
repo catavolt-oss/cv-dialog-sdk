@@ -9,7 +9,7 @@ type FetchMethod =  'GET' | 'POST' | 'PUT' | 'DELETE'
 
 export class FetchClient implements Client{
 
-    private _lastActivity:Date = new Date();
+?    private _lastActivity:Date = new Date();
 
     get(baseUrl:string, resourcePath?:string):Promise<TextClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
