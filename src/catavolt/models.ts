@@ -116,7 +116,7 @@ export abstract class View {
         var result:Menu = null;
         if (this.menu) {
             this.menu.children.some((md:Menu)=> {
-                result = md.findAtId(actionId);
+                result = md.findAtActionId(actionId);
                 return result != null;
             });
         }
@@ -259,48 +259,50 @@ export interface Dialog {
     readonly availableViews:Array<ViewDescriptor>;
     readonly businessClassName:string;
     readonly children: Array<Dialog>;
+    readonly description:string;
     readonly dialogClassName:string;
-    readonly dialogMode:DialogMode;
+    dialogMode:DialogMode;
     readonly header:View;
     readonly id:string;
     readonly recordDef: RecordDef;
-    readonly referringAction:ReferringAction;
+    readonly referringObject:ReferringObject,
     readonly selectedViewId:string;
     readonly sessionId:string;
     readonly tenantId: string;
     readonly type:DialogType;
     readonly view: View;
-    readonly  viewMode: ViewMode;
+    readonly viewMode: ViewMode;
 
 }
 
-export class ReferringAction {
+export class ReferringObject {
 
-    readonly action:Menu;
-    readonly referringId:string;
-    readonly referringType:string;
+    readonly type:string;
+    readonly actionId:string;
 
     isDialogReferrer():boolean {
-        return this.referringType === TypeNames.DialogTypeName;
+        return this.type === TypeNames.ReferringDialogTypeName;
     }
 
     isWorkbenchReferrer():boolean {
-        return this.referringType === TypeNames.WorkbenchTypeName;
-    }
-
-    get actionId():string {
-        return this.action ? this.action.id : null;
-    }
-
-    get workbenchId():string {
-        return this.isWorkbenchReferrer() ? this.referringId : null;
-    }
-
-    get dialogId():string {
-        return this.isDialogReferrer() ? this.referringId : null;
+        return this.type === TypeNames.ReferringWorkbenchTypeName;
     }
 
 }
+
+export class ReferringDialog extends ReferringObject{
+
+    readonly dialogId:string;
+    readonly dialogMode:DialogMode;
+
+}
+
+export class ReferringWorkbench extends ReferringObject{
+
+    readonly workbenchId:string;
+
+}
+
 
 export interface DialogMessage {
 
@@ -335,13 +337,8 @@ export interface DialogMessage {
 }
 export interface DialogRedirection extends Redirection {
 
+    readonly dialogDescription:string;
     readonly dialogId:string;
-    readonly dialogType:DialogType;
-    readonly dialogMode:DialogMode;
-    readonly dialogClassName:string;
-    readonly businessClassName:string;
-    readonly businessId:string;
-    readonly viewMode:ViewMode;
 
 }
 
@@ -1431,16 +1428,16 @@ export class Menu {
     /**
      * A special value understood by the UI, such as 'refresh'
      */
+    readonly actionId:string;
     readonly directive: string;
-    readonly id: string;
     readonly iconUrl: string;
+    readonly id:string;
     readonly label: string;
     readonly visible:boolean;
     /**
      * The menu is allowed (active) for these modes
      */
     readonly modes: Array<string>;
-    readonly name: string;
     readonly type: string;
 
     static findSubMenu(md:Menu, matcher:(menu:Menu)=>boolean):Menu {
@@ -1454,12 +1451,12 @@ export class Menu {
         return null;
     }
 
-    findAtId(actionId:string):Menu {
-        if (this.id === actionId) return this;
+    findAtActionId(actionId:string):Menu {
+        if (this.actionId === actionId) return this;
         var result = null;
         if (this.children) {
             this.children.some((md:Menu)=> {
-                result = md.findAtId(actionId);
+                result = md.findAtActionId(actionId);
                 return result != null;
             });
         }
@@ -1468,7 +1465,7 @@ export class Menu {
 
     findContextMenu():Menu {
         return Menu.findSubMenu(this, (md:Menu) => {
-            return md.name === 'CONTEXT_MENU';
+            return md.id === 'CONTEXT_MENU';
         });
     }
     get isPresaveDirective():boolean {
@@ -1493,8 +1490,7 @@ export class Menu {
 
 export interface NavRequest {
 
-    readonly referringDialogProperties:StringDictionary;
-    readonly referringAction:ReferringAction;
+    readonly referringObject:ReferringObject;
 }
 
 /**
@@ -1693,8 +1689,7 @@ export class NullEntityRec implements EntityRec {
 
 export class NullNavRequest implements NavRequest {
 
-    constructor(readonly referringDialogProperties:StringDictionary = {},
-                readonly referringAction:ReferringAction = null) {
+    constructor(readonly referringObject:ReferringObject = null) {
     }
 }
 
@@ -2330,6 +2325,11 @@ export class PropertyDef {
  * Query dialog
  */
 export interface QueryDialog extends Dialog {
+
+    positionalQueryAbility:PositionalQueryAbilityType;
+    supportsColumnStatistics:boolean;
+    supportsPositionalQueries:boolean;
+
 }
 
 export interface QueryParameters {
@@ -2394,9 +2394,7 @@ export interface RecordSet{
 export interface Redirection {
 
     readonly id:string;
-    readonly dialogProperties: StringDictionary;
-    readonly referringDialogProperties: StringDictionary;
-    readonly referringAction:ReferringAction;
+    readonly referringObject:ReferringObject;
     readonly sessionId: string;
     readonly tenantId: string;
     readonly type:RedirectionType;
@@ -2563,14 +2561,17 @@ export type ClientType = 'DESKTOP' | 'MOBILE';
 export type DialogMessageType = "CONFIRM" | "ERROR" | "INFO" | "WARN";
 
 /* DialogMode */
-export enum DialogModeEnum { COPY = 'COPY' , CREATE = 'CREATE', READ = 'READ', UPDATE = 'UPDATE', DELETE = 'DELETE', LIST = 'LIST'}
-export type DialogMode = DialogModeEnum.COPY | DialogModeEnum.CREATE | DialogModeEnum.READ | DialogModeEnum.UPDATE | DialogModeEnum.DELETE | DialogModeEnum.LIST;
+export enum DialogModeEnum { COPY = 'COPY' , CREATE = 'CREATE', READ = 'READ', UPDATE = 'UPDATE', DESTROYED = 'DESTROYED', DELETE = 'DELETE', LIST = 'LIST'}
+export type DialogMode = DialogModeEnum.COPY | DialogModeEnum.CREATE | DialogModeEnum.READ | DialogModeEnum.UPDATE
+    | DialogModeEnum.DESTROYED | DialogModeEnum.DELETE | DialogModeEnum.LIST;
 
 export type DialogType = 'hxgn.api.dialog.EditorDialog' | 'hxgn.api.dialog.QueryDialog'
 
 export type FilterOperator = "AND" | "CONTAINS" | "ENDS_WITH" | "EQUAL_TO" |
     "GREATER_THAN" | "GREATER_THAN_OR_EQUAL_TO" | "LESS_THAN" | "LESS_THAN_OR_EQUAL_TO"
     | "NOT_EQUAL_TO" | "OR" | "STARTS_WITH";
+
+export type PositionalQueryAbilityType = 'FULL' | 'NONE';
 
 export enum QueryDirectionEnum { FORWARD = 'FORWARD', BACKWARD = 'BACKWARD'}
 export type QueryDirection = QueryDirectionEnum.FORWARD | QueryDirectionEnum.BACKWARD;
@@ -2600,6 +2601,8 @@ export enum TypeNames {
     NullRedirectionTypeName = 'hxgn.api.dialog.NullRedirection',
     WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
     WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection',
+    ReferringDialogTypeName = 'hxgn.api.dialog.ReferringDialog',
+    ReferringWorkbenchTypeName = 'hxgn.api.dialog.ReferringWorkbench',
     SessionTypeName = 'hxgn.api.dialog.Session',
     WorkbenchTypeName = 'hxgn.api.dialog.Workbench',
     AppWindowTypeName = 'hxgn.api.dialog.AppWindow',
@@ -2612,29 +2615,35 @@ export enum TypeNames {
 export class ModelUtil {
 
     private static classTypes = {
+        'hxgn.api.dialog.Annotation': Annotation,
+        'hxgn.api.dialog.AttributeCellValue': AttributeCellValue,
+        'hxgn.api.dialog.TabCellValue': TabCellValue,
         'hxgn.api.dialog.BarcodeScan': BarcodeScan,
         'hxgn.api.dialog.Calendar': Calendar,
+        'hxgn.api.dialog.CodeRef': CodeRef,
         'hxgn.api.dialog.Details': Details,
+        'hxgn.api.dialog.DialogException': DialogException,
+        'hxgn.api.dialog.ForcedLineCellValue': ForcedLineCellValue,
         'hxgn.api.dialog.Form': Form,
         'hxgn.api.dialog.GeoFix': GeoFix,
         'hxgn.api.dialog.GeoLocation': GeoLocation,
         'hxgn.api.dialog.Graph': Graph,
+        'hxgn.api.dialog.InlineBinaryRef': InlineBinaryRef,
+        'hxgn.api.dialog.LabelCellValue': LabelCellValue,
         'hxgn.api.dialog.List': List,
         'hxgn.api.dialog.Map': Map,
-        'hxgn.api.dialog.Stream': Stream,
-        'hxgn.api.dialog.CodeRef': CodeRef,
         'hxgn.api.dialog.Menu': Menu,
+        'hxgn.api.dialog.ObjectBinaryRef': ObjectBinaryRef,
         'hxgn.api.dialog.ObjectRef': ObjectRef,
         'hxgn.api.dialog.Property': Property,
         'hxgn.api.dialog.PropertyDef': PropertyDef,
         'hxgn.api.dialog.Record': RecordImpl,
         'hxgn.api.dialog.RecordDef': RecordDef,
-        'hxgn.api.dialog.ViewDescriptor': ViewDescriptor,
-        'hxgn.api.dialog.InlineBinaryRef': InlineBinaryRef,
-        'hxgn.api.dialog.ObjectBinaryRef': ObjectBinaryRef,
-        'hxgn.api.dialog.DialogException': DialogException,
-        'hxgn.api.dialog.Annotation': Annotation,
-        'hxgn.api.dialog.ReferrringAction': ReferringAction
+        'hxgn.api.dialog.ReferringDialog': ReferringDialog,
+        'hxgn.api.dialog.ReferringWorkbench': ReferringWorkbench,
+        'hxgn.api.dialog.Stream': Stream,
+        'hxgn.api.dialog.SubstitutionCellValue': SubstitutionCellValue,
+        'hxgn.api.dialog.ViewDescriptor': ViewDescriptor
     };
 
     private static typeFns:{[index:string]:(s:string, a:any)=>Promise<any>} = {
