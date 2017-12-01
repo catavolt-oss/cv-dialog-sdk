@@ -6436,7 +6436,7 @@ __export(require("./catavolt/util"));
 __export(require("./catavolt/client"));
 __export(require("./catavolt/ws"));
 __export(require("./catavolt/models"));
-__export(require("./catavolt/offline"));
+__export(require("../../src/catavolt/persistence"));
 __export(require("./catavolt/dialog"));
 __export(require("./catavolt/print"));
 __export(require("./catavolt/version"));

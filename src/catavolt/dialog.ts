@@ -16,7 +16,7 @@ import {
     InlineBinaryRef, ObjectBinaryRef, ViewModeEnum, DialogModeEnum, ReferringDialog
 } from "./models";
 import {FetchClient} from "./ws";
-import {OfflineClient} from "./offline";
+import {PersistentClient} from "./persistence";
 import * as moment from 'moment';
 import * as numeral from "numeral";
 import {PrintForm} from "./print";
@@ -35,7 +35,7 @@ export class AppContext {
     private static SERVER_VERSION = 'v0';
 
     public lastMaintenanceTime:Date = new Date(0);
-    private _clientMode:ClientMode;
+    private _clientMode:ClientMode = ClientMode.REMOTE;
     private _dialogApi:DialogApi;
     private _session:Session;
     private _devicePropsDynamic:{[index:string]:()=>string;};
@@ -202,8 +202,7 @@ export class AppContext {
      */
     initDialogApi(serverUrl:string, serverVersion:string=AppContext.SERVER_VERSION):void {
 
-        this._dialogApi = new DialogService(this.getClient(ClientMode.REMOTE), serverUrl, serverVersion);
-        this._clientMode = ClientMode.REMOTE;
+        this._dialogApi = new DialogService(new FetchClient(this._clientMode), serverUrl, serverVersion);
 
     }
 
@@ -213,15 +212,18 @@ export class AppContext {
      * @param serverVersion
      * @param serverUrl
      */
-    initOfflineApi(serverUrl:string, serverVersion:string):void {
+    initPersistentApi(serverUrl:string, serverVersion:string):void {
 
-        this._dialogApi = new DialogService(this.getClient(ClientMode.OFFLINE), serverUrl, serverVersion);
-        this._clientMode = ClientMode.OFFLINE;
+        this._dialogApi = new DialogService(new PersistentClient(this._clientMode), serverUrl, serverVersion);
 
     }
 
     isOfflineMode():boolean {
         return this._clientMode === ClientMode.OFFLINE;
+    }
+
+    isPersistentClient():boolean {
+        return (this.dialogApi as DialogService).client instanceof PersistentClient;
     }
 
     /**
@@ -429,24 +431,22 @@ export class AppContext {
         return this.remainingSessionTime < 0;
     }
 
-    setOfflineMode():void {
-        this.initOfflineApi(AppContext.SERVER_URL, AppContext.SERVER_VERSION);
+    setPersistentClient():void {
+        this.initPersistentApi(AppContext.SERVER_URL, AppContext.SERVER_VERSION);
     }
 
-    setOnlineMode():void {
+    setOnlineClient():void {
         this.initDialogApi(AppContext.SERVER_URL, AppContext.SERVER_VERSION);
     }
 
-    /* *****************
-       Private Ops
-     ******************* */
+    setOfflineMode():void {
+        this._clientMode = ClientMode.OFFLINE;
+        this.dialogApi.setClientMode(this._clientMode);
+    }
 
-    private getClient(clientType:ClientMode):Client {
-        if(clientType === ClientMode.REMOTE) {
-            return new FetchClient();
-        } else if(clientType === ClientMode.OFFLINE) {
-            return new OfflineClient();
-        }
+    setOnlineMode():void {
+        this._clientMode = ClientMode.REMOTE;
+        this.dialogApi.setClientMode(this._clientMode);
     }
 
 }
@@ -2027,6 +2027,8 @@ export interface DialogApi {
 
     getViews(tenantId:string, sessionId:string, dialogId:string):Promise<Array<ViewDescriptor>>;
 
+    setClientMode(clientMode:ClientMode):void;
+
     lastServiceActivity:Date;
 
 }
@@ -2204,6 +2206,9 @@ export class DialogService implements DialogApi {
         return this.client.lastActivity;
     }
 
+    setClientMode(clientMode:ClientMode):void {
+        this.client.setClientMode(clientMode);
+    }
 
     /* Private methods */
 

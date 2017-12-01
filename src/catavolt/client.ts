@@ -13,6 +13,7 @@ export interface Client {
     putJson(baseUrl:string, resourcePath:string, body?:StringDictionary):Promise<JsonClientResponse>;
     deleteJson(baseUrl:string, resourcePath:string):Promise<JsonClientResponse>;
 
+    setClientMode(clientMode:ClientMode);
     lastActivity:Date;
 
 }

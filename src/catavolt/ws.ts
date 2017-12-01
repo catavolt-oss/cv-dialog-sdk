@@ -3,13 +3,18 @@
  */
 
 import {StringDictionary, Log} from "./util";
-import {Client, JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
+import {Client, ClientMode, JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
 
 type FetchMethod =  'GET' | 'POST' | 'PUT' | 'DELETE'
 
 export class FetchClient implements Client{
 
     private _lastActivity:Date = new Date();
+    private _clientMode:ClientMode;
+
+    constructor(clientMode:ClientMode = ClientMode.REMOTE) {
+        this._clientMode = clientMode;
+    }
 
     get(baseUrl:string, resourcePath?:string):Promise<TextClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
@@ -80,6 +85,11 @@ export class FetchClient implements Client{
         });
 
     }
+
+    setClientMode(clientMode:ClientMode) {
+        this._clientMode = clientMode;
+    }
+
 
     private assertJsonContentType(contentType:string):Promise<void> {
         return new Promise((resolve, reject)=>{

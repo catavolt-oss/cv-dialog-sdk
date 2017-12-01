@@ -3,12 +3,17 @@
  */
 
 import {StringDictionary, Log} from "./util";
-import {Client, JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
+import {Client, JsonClientResponse, TextClientResponse, VoidClientResponse, ClientMode} from "./client"
 
-export class OfflineClient implements Client{
+export class PersistentClient implements Client{
 
     /* Last operation happened at this time */
     private _lastActivity: Date = new Date();
+    private _clientMode:ClientMode;
+
+    constructor(clientMode:ClientMode = ClientMode.REMOTE) {
+        this._clientMode = clientMode;
+    }
 
     get(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> {
         let response:Promise<TextClientResponse> = null;
@@ -49,4 +54,9 @@ export class OfflineClient implements Client{
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return response;
     }
+
+    setClientMode(clientMode:ClientMode):void {
+        this._clientMode = clientMode;
+    }
+
 }
