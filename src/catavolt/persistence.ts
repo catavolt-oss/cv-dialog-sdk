@@ -11,7 +11,7 @@ export class PersistentClient implements Client{
     private _lastActivity: Date = new Date();
     private _clientMode:ClientMode;
 
-    constructor(clientMode:ClientMode = ClientMode.REMOTE) {
+    constructor(clientMode:ClientMode = ClientMode.ONLINE) {
         this._clientMode = clientMode;
     }
 

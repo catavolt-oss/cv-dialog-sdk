@@ -18,7 +18,7 @@ export interface Client {
 
 }
 
-export enum ClientMode { REMOTE, OFFLINE }
+export enum ClientMode { ONLINE, OFFLINE }
 
 export abstract class ClientResponse<T> {
 

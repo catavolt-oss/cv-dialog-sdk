@@ -35,7 +35,7 @@ export class AppContext {
     private static SERVER_VERSION = 'v0';
 
     public lastMaintenanceTime:Date = new Date(0);
-    private _clientMode:ClientMode = ClientMode.REMOTE;
+    private _clientMode:ClientMode = ClientMode.ONLINE;
     private _dialogApi:DialogApi;
     private _session:Session;
     private _devicePropsDynamic:{[index:string]:()=>string;};
@@ -445,7 +445,7 @@ export class AppContext {
     }
 
     setOnlineMode():void {
-        this._clientMode = ClientMode.REMOTE;
+        this._clientMode = ClientMode.ONLINE;
         this.dialogApi.setClientMode(this._clientMode);
     }
 

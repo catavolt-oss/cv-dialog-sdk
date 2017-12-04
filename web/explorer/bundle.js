@@ -6457,7 +6457,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var util_1 = require("./util");
 var ClientMode;
 (function (ClientMode) {
-    ClientMode[ClientMode["REMOTE"] = 0] = "REMOTE";
+    ClientMode[ClientMode["ONLINE"] = 0] = "ONLINE";
     ClientMode[ClientMode["OFFLINE"] = 1] = "OFFLINE";
 })(ClientMode = exports.ClientMode || (exports.ClientMode = {}));
 
@@ -6658,7 +6658,7 @@ var AppContext = function () {
         value: function initDialogApi(serverUrl) {
             var serverVersion = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : AppContext.SERVER_VERSION;
 
-            this._dialogApi = new DialogService(this.getClient(client_1.ClientMode.REMOTE), serverUrl, serverVersion);
+            this._dialogApi = new DialogService(this.getClient(client_1.ClientMode.ONLINE), serverUrl, serverVersion);
         }
         /**
          * Initialize an offline dialog service
@@ -6865,7 +6865,7 @@ var AppContext = function () {
            Private Ops
          ******************* */
         value: function getClient(clientType) {
-            if (clientType === client_1.ClientMode.REMOTE) {
+            if (clientType === client_1.ClientMode.ONLINE) {
                 return new ws_1.FetchClient();
             } else if (clientType === client_1.ClientMode.OFFLINE) {
                 return new offline_1.OfflineClient();
