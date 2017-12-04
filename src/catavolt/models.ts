@@ -77,6 +77,7 @@ export abstract class CellValue {
 export abstract class View {
 
     /* From View */
+    readonly alias:string;
     readonly id:string;
     readonly name:string;
     readonly menu:Menu;
