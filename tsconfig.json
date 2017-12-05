@@ -10,9 +10,10 @@
         "declarationDir": "src/tsd",
         "declaration": true
     },
-    "files":[
-      "./src/catavolt.ts",
-      "./src/test/catavolt-test.ts",
-      "./src/test/explorer/index.ts"
+    "include":[
+      "./src/**/*.ts"
+    ],
+    "exclude":[
+       "./src/**/*.d.ts"
     ]
 }
