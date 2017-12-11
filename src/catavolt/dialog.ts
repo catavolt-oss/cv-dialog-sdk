@@ -897,7 +897,7 @@ export abstract class PaneContext implements Dialog {
         return children ? children.map((dialog:Dialog, n:number)=>{ return this.createChildContext(dialog, dialogRedirection, n)}) : [];
     }
 
-    private createChildContext(dialog:Dialog, dialogRedirection:DialogRedirection, paneRef:number) {
+    private createChildContext(dialog:Dialog, dialogRedirection:DialogRedirection, paneRef:number):PaneContext {
 
         if (dialog.view instanceof List) {
             return new ListContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
@@ -906,7 +906,21 @@ export abstract class PaneContext implements Dialog {
         } else if (dialog.view instanceof Map) {
             return new MapContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
         } else if (dialog.view instanceof Form) {
-            new FormContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+            return new FormContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof Graph) {
+           return new GraphContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof PrintMarkup) {
+            return new PrintMarkupContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof Calendar) {
+            return new CalendarContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof GeoFix) {
+            return new GeoFixContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof GeoLocation) {
+            return new GeoLocationContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof BarcodeScan) {
+            return new BarcodeScanContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof ImagePicker) {
+            return new ImagePickerContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
         }
     }
 
@@ -995,9 +1009,6 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
     }
 }
 
-export enum EditorState{ READ, WRITE, DESTROYED };
-
-
 /**
  * PanContext Subtype that represents an 'Editor Pane'.
  * An 'Editor' represents and is backed by a single Record and Record definition.
@@ -1011,7 +1022,6 @@ export class EditorContext extends PaneContext {
     private static GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
 
     private _buffer:EntityBuffer;
-    private _editorState:EditorState;
     private _isFirstReadComplete:boolean;
 
     constructor(dialog:Dialog,
@@ -1035,26 +1045,13 @@ export class EditorContext extends PaneContext {
         return this._buffer;
     }
 
-    //@TODO
     changeViewMode(viewMode:ViewMode):Promise<RecordDef> {
 
-        /*return DialogService.changePaneMode(this.paneDef.dialogHandle, paneMode,
-         this.sessionContext).bind((changePaneModeResult:XChangePaneModeResult)=> {
-         this.putSettings(changePaneModeResult.dialogProps);
-         if (this.isDestroyedSetting) {
-         this._editorState = EditorState.DESTROYED;
-         } else {
-         this.entityRecDef = changePaneModeResult.entityRecDef;
-         if (this.isReadModeSetting) {
-         this._editorState = EditorState.READ;
-         } else {
-         this._editorState = EditorState.WRITE;
-         }
-         }
-         return Future.createSuccessfulFuture('EditorContext::changePaneMode', this.entityRecDef);
-         });
-         */
-        return Promise.resolve(null);
+        return this.appContext.dialogApi.changeMode(this.tenantId, this.sessionId, this.dialog.id, viewMode)
+            .then((dialog:EditorDialog)=>{
+                this.initialize(dialog, this.dialogRedirection);
+                return this.dialog.recordDef;
+            });
     }
 
     /**
@@ -1167,9 +1164,6 @@ export class EditorContext extends PaneContext {
     performMenuAction(menu:Menu, pendingWrites:EntityRec):Promise<{actionId:string} | Redirection> {
 
         return this.invokeMenuAction(menu, {pendingWrites:pendingWrites, type:TypeNames.ActionParametersTypeName}).then(result=>{
-            if (this.isDestroyed) {
-                this._editorState = EditorState.DESTROYED;
-            }
             return result;
         });
     }
@@ -1348,7 +1342,6 @@ export class EditorContext extends PaneContext {
      */
     initialize(dialog:Dialog, dialogRedirection:DialogRedirection) {
         super.initialize(dialog, dialogRedirection);
-        this._editorState = this.isReadMode ? EditorState.READ : EditorState.WRITE;
         this._buffer = null;
     }
 
@@ -2019,7 +2012,7 @@ export interface DialogApi {
 
     getMode(tenantId:string, sessionId:string, dialogId:string):Promise<ViewMode>;
 
-    changeMode(tenantId:string, sessionId:string, dialogId:string, mode:DialogMode):Promise<EditorDialog>;
+    changeMode(tenantId:string, sessionId:string, dialogId:string, mode:ViewMode):Promise<EditorDialog>;
 
     getView(tenantId:string, sessionId:string, dialogId:string):Promise<View>;
 
@@ -2170,7 +2163,7 @@ export class DialogService implements DialogApi {
         );
     }
 
-    changeMode(tenantId:string, sessionId:string, dialogId:string, mode:DialogMode):Promise<EditorDialog> {
+    changeMode(tenantId:string, sessionId:string, dialogId:string, mode:ViewMode):Promise<EditorDialog> {
 
         return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/viewMode/${mode}`).then(
             jsonClientResponse=>(new DialogServiceResponse<EditorDialog>(jsonClientResponse)).responseValue()
