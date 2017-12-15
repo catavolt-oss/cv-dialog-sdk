@@ -6,6 +6,7 @@ import {
     StringDictionary, Log, ObjUtil, StringUtil, ArrayUtil, DateValue, DateTimeValue, TimeValue,
     Dictionary
 } from './util'
+import moment = require("moment");
 /*
  ************************** Dialog Models ****************************
  * These models correspond to those in the WebAPI schema specification
@@ -42,28 +43,35 @@ export abstract class BinaryRef {
 
 export abstract class CellValue {
 
+    static STYLE_HEADING1 = "textHeading1";
+    static STYLE_HEADING2 = "textHeading2";
+    static STYLE_HEADING3 = "textHeading3";
+    static STYLE_HEADING4 = "textHeading4";
+    static STYLE_INLINE_MEDIA = "inlineMedia";
+    static STYLE_INLINE_MEDIA2 = "Image/Video";
+
     readonly type:string;
 
     constructor(readonly style:string) {}
 
     get isHeading1Style():boolean {
-        return this.style && (this.style === PropertyDef.STYLE_HEADING1);
+        return this.style && (this.style === CellValue.STYLE_HEADING1);
     }
 
     get isHeading2Style():boolean {
-        return this.style && (this.style === PropertyDef.STYLE_HEADING2);
+        return this.style && (this.style === CellValue.STYLE_HEADING2);
     }
 
     get isHeading3Style():boolean {
-        return this.style && (this.style === PropertyDef.STYLE_HEADING3);
+        return this.style && (this.style === CellValue.STYLE_HEADING3);
     }
 
     get isHeading4Style():boolean {
-        return this.style && (this.style === PropertyDef.STYLE_HEADING4);
+        return this.style && (this.style === CellValue.STYLE_HEADING4);
     }
 
     get isInlineMediaStyle():boolean {
-        return this.style && (this.style === PropertyDef.STYLE_INLINE_MEDIA || this.style === PropertyDef.STYLE_INLINE_MEDIA2);
+        return this.style && (this.style === CellValue.STYLE_INLINE_MEDIA || this.style === CellValue.STYLE_INLINE_MEDIA2);
     }
 
 }
@@ -218,20 +226,7 @@ export interface Column {
 
 export class CodeRef {
 
-    static fromFormattedValue(value:string) {
-        var pair = StringUtil.splitSimpleKeyValuePair(value);
-        return new CodeRef(pair[0], pair[1]);
-    }
-
-    constructor(private _code:string, private _description:string) {
-    }
-
-    get code():string {
-        return this._code;
-    }
-
-    get description():string {
-        return this._description;
+    constructor(readonly code:string, readonly description:string, readonly type:string) {
     }
 
     toString():string {
@@ -356,7 +351,13 @@ export class DialogException {
 
 }
 
-export class Annotation {
+export interface Annotation {
+    readonly name:string;
+    readonly value:string;
+    readonly type:string;
+}
+
+export class DataAnnotation implements Annotation{
 
     private static BOLD_TEXT = "BOLD_TEXT";
     private static BACKGROUND_COLOR = "BGND_COLOR";
@@ -374,149 +375,98 @@ export class Annotation {
     private static PLACEMENT_UNDER = "UNDER";
     private static PLACEMENT_STRETCH_UNDER = "STRETCH_UNDER";
 
-    /*
-     static annotatePropsUsingWSAnnotationtation(properties:Array<Prop>, jsonObj:StringDictionary):Try<Array<Prop>> {
-     return DialogTriple.fromListOfWSDialogObject<Array<Annotation>>(jsonObj, 'WSAnnotationtation', OType.factoryFn).bind(
-     (propAnnos:Array<Array<Annotation>>) => {
-     var annotatedProps:Array<Prop> = [];
-     for (var i = 0; i < properties.length; i++) {
-     var p = properties[i];
-     var annotations:Array<Annotation> = propAnnos[i];
-     if (annotations) {
-     annotatedProps.push(new Prop(p.name, p.value, annotations));
-     } else {
-     annotatedProps.push(p);
-     }
-     }
-     return new Success(annotatedProps);
-     }
-     );
-     }
-     */
-
-    static backgroundColor(annotations:Array<Annotation>):string {
-        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
+    static backgroundColor(annotations:Array<DataAnnotation>):string {
+        var result:DataAnnotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isBackgroundColor;
         });
         return result ? result.backgroundColor : null;
     }
 
-    static foregroundColor(annotations:Array<Annotation>):string {
-        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
+    static foregroundColor(annotations:Array<DataAnnotation>):string {
+        var result:DataAnnotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isForegroundColor;
         });
         return result ? result.foregroundColor : null;
     }
 
-    /*
-     static fromWS(otype:string, jsonObj):Try<Array<Annotation>> {
-     var stringObj = jsonObj['annotations'];
-     if (stringObj['WS_LTYPE'] !== 'String') {
-     return new Failure<Array<Annotation>>('Annotation:fromWS: expected WS_LTYPE of String but found ' + stringObj['WS_LTYPE']);
-     }
-     var annoStrings:Array<string> = stringObj['values'];
-     var annotations:Array<Annotation> = [];
-     for (var i = 0; i < annoStrings.length; i++) {
-     annotations.push(Annotation.parseString(annoStrings[i]));
-     }
-     return new Success<Array<Annotation>>(annotations);
-     }
-     */
-
-    static imageName(annotations:Array<Annotation>):string {
-        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
+    static imageName(annotations:Array<DataAnnotation>):string {
+        var result:DataAnnotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isImageName;
         });
         return result ? result.value : null;
     }
 
-    static imagePlacement(annotations:Array<Annotation>):string {
-        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
+    static imagePlacement(annotations:Array<DataAnnotation>):string {
+        var result:DataAnnotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isImagePlacement;
         });
         return result ? result.value : null;
     }
 
-    static isBoldText(annotations:Array<Annotation>):boolean {
+    static isBoldText(annotations:Array<DataAnnotation>):boolean {
         return annotations.some((anno)=> {
             return anno.isBoldText
         });
     }
 
-    static isItalicText(annotations:Array<Annotation>):boolean {
+    static isItalicText(annotations:Array<DataAnnotation>):boolean {
         return annotations.some((anno)=> {
             return anno.isItalicText
         });
     }
 
-    static isPlacementCenter(annotations:Array<Annotation>):boolean {
+    static isPlacementCenter(annotations:Array<DataAnnotation>):boolean {
         return annotations.some((anno)=> {
             return anno.isPlacementCenter
         });
     }
 
-    static isPlacementLeft(annotations:Array<Annotation>):boolean {
+    static isPlacementLeft(annotations:Array<DataAnnotation>):boolean {
         return annotations.some((anno)=> {
             return anno.isPlacementLeft
         });
     }
 
-    static isPlacementRight(annotations:Array<Annotation>):boolean {
+    static isPlacementRight(annotations:Array<DataAnnotation>):boolean {
         return annotations.some((anno)=> {
             return anno.isPlacementRight
         });
     }
 
-    static isPlacementStretchUnder(annotations:Array<Annotation>):boolean {
+    static isPlacementStretchUnder(annotations:Array<DataAnnotation>):boolean {
         return annotations.some((anno)=> {
             return anno.isPlacementStretchUnder
         });
     }
 
-    static isPlacementUnder(annotations:Array<Annotation>):boolean {
+    static isPlacementUnder(annotations:Array<DataAnnotation>):boolean {
         return annotations.some((anno)=> {
             return anno.isPlacementUnder
         });
     }
 
-    static isUnderlineText(annotations:Array<Annotation>):boolean {
+    static isUnderlineText(annotations:Array<DataAnnotation>):boolean {
         return annotations.some((anno)=> {
             return anno.isUnderlineText
         });
     }
 
-    static overrideText(annotations:Array<Annotation>):string {
-        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
+    static overrideText(annotations:Array<DataAnnotation>):string {
+        var result:DataAnnotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isOverrideText;
         });
         return result ? result.value : null;
     }
 
-    static tipText(annotations:Array<Annotation>):string {
-        var result:Annotation = ArrayUtil.find(annotations, (anno)=> {
+    static tipText(annotations:Array<DataAnnotation>):string {
+        var result:DataAnnotation = ArrayUtil.find(annotations, (anno)=> {
             return anno.isTipText;
         });
         return result ? result.value : null;
     }
 
 
-    static toListOfWSAnnotation(annotations:Array<Annotation>):StringDictionary {
-        var result:StringDictionary = {'WS_LTYPE': 'WSAnnotation'};
-        var values = [];
-        annotations.forEach((anno)=> {
-            values.push(anno.toWS())
-        });
-        result['values'] = values;
-        return result;
-    }
-
-    private static parseString(formatted:string):Annotation {
-        var pair = StringUtil.splitSimpleKeyValuePair(formatted);
-        return new Annotation(pair[0], pair[1]);
-    }
-
-
-    constructor(private _name:string, private _value:string) {
+    constructor(readonly name:string, readonly value:string, readonly type:string) {
     }
 
     get backgroundColor():string {
@@ -532,71 +482,63 @@ export class Annotation {
     }
 
     get isBackgroundColor():boolean {
-        return this.name === Annotation.BACKGROUND_COLOR;
+        return this.name === DataAnnotation.BACKGROUND_COLOR;
     }
 
     get isBoldText():boolean {
-        return this.name === Annotation.BOLD_TEXT && this.value === Annotation.TRUE_VALUE;
+        return this.name === DataAnnotation.BOLD_TEXT && this.value === DataAnnotation.TRUE_VALUE;
     }
 
     get isForegroundColor():boolean {
-        return this.name === Annotation.FOREGROUND_COLOR;
+        return this.name === DataAnnotation.FOREGROUND_COLOR;
     }
 
     get isImageName():boolean {
-        return this.name === Annotation.IMAGE_NAME;
+        return this.name === DataAnnotation.IMAGE_NAME;
     }
 
     get isImagePlacement():boolean {
-        return this.name === Annotation.IMAGE_PLACEMENT;
+        return this.name === DataAnnotation.IMAGE_PLACEMENT;
     }
 
     get isItalicText():boolean {
-        return this.name === Annotation.ITALIC_TEXT && this.value === Annotation.TRUE_VALUE;
+        return this.name === DataAnnotation.ITALIC_TEXT && this.value === DataAnnotation.TRUE_VALUE;
     }
 
     get isOverrideText():boolean {
-        return this.name === Annotation.OVERRIDE_TEXT;
+        return this.name === DataAnnotation.OVERRIDE_TEXT;
     }
 
     get isPlacementCenter():boolean {
-        return this.isImagePlacement && this.value === Annotation.PLACEMENT_CENTER;
+        return this.isImagePlacement && this.value === DataAnnotation.PLACEMENT_CENTER;
     }
 
     get isPlacementLeft():boolean {
-        return this.isImagePlacement && this.value === Annotation.PLACEMENT_LEFT;
+        return this.isImagePlacement && this.value === DataAnnotation.PLACEMENT_LEFT;
     }
 
     get isPlacementRight():boolean {
-        return this.isImagePlacement && this.value === Annotation.PLACEMENT_RIGHT;
+        return this.isImagePlacement && this.value === DataAnnotation.PLACEMENT_RIGHT;
     }
 
     get isPlacementStretchUnder():boolean {
-        return this.isImagePlacement && this.value === Annotation.PLACEMENT_STRETCH_UNDER;
+        return this.isImagePlacement && this.value === DataAnnotation.PLACEMENT_STRETCH_UNDER;
     }
 
     get isPlacementUnder():boolean {
-        return this.isImagePlacement && this.value === Annotation.PLACEMENT_UNDER;
+        return this.isImagePlacement && this.value === DataAnnotation.PLACEMENT_UNDER;
     }
 
     get isTipText():boolean {
-        return this.name === Annotation.TIP_TEXT;
+        return this.name === DataAnnotation.TIP_TEXT;
     }
 
     get isUnderlineText():boolean {
-        return this.name === Annotation.UNDERLINE && this.value === Annotation.TRUE_VALUE;
+        return this.name === DataAnnotation.UNDERLINE && this.value === DataAnnotation.TRUE_VALUE;
     }
 
-    get name():string {
-        return this._name;
-    }
-
-    get value():string {
-        return this._value;
-    }
-
-    toWS():StringDictionary {
-        return {'WS_OTYPE': 'WSAnnotation', 'name': this.name, 'value': this.value};
+    toJSON():Annotation {
+        return {name: this.name, value: this.value, type: this.type};
     }
 
 }
@@ -613,7 +555,7 @@ export interface EditorDialog extends Dialog {
  */
 export interface EntityRec extends Record {
 
-    annotationsAtName(propName:string):Array<Annotation>;
+    annotationsAtName(propName:string):Array<DataAnnotation>;
 
     afterEffects(after:EntityRec):EntityRec;
 
@@ -669,11 +611,7 @@ export interface EntityRec extends Record {
     tipText:string;
     tipTextFor(propName:string):string;
 
-    toEntityRec():EntityRec;
-
-    toWSEditorRecord():StringDictionary;
-
-    toWS():StringDictionary;
+    toJSON();
 
     valueAtName(propName:string):any;
 }
@@ -683,8 +621,9 @@ export interface EntityRec extends Record {
  */
 export class EntityRecUtil {
 
-    static newEntityRec(id:string, properties:Array<Property>, annotations?:Array<Annotation>):EntityRec {
-        return annotations ? new RecordImpl(id, ArrayUtil.copy(properties), ArrayUtil.copy(annotations)) : new RecordImpl(id, ArrayUtil.copy(properties));
+    static newEntityRec(id:string, properties:Array<Property>, annotations:Array<DataAnnotation>, type:string):EntityRec {
+        return annotations ? new RecordImpl(id, ArrayUtil.copy(properties), ArrayUtil.copy(annotations), type) :
+            new RecordImpl(id, ArrayUtil.copy(properties), null, type);
     }
 
     static isEntityRec(o:any):boolean {
@@ -719,8 +658,8 @@ export class EntityRecUtil {
  */
 export class EntityBuffer implements EntityRec {
 
-    static createEntityBuffer(id:string, before:Array<Property>, after:Array<Property>):EntityBuffer {
-        return new EntityBuffer(EntityRecUtil.newEntityRec(id, before), EntityRecUtil.newEntityRec(id, after));
+    static createEntityBuffer(id:string, before:Array<Property>, after:Array<Property>, annotations:Array<DataAnnotation>, type:string):EntityBuffer {
+        return new EntityBuffer(EntityRecUtil.newEntityRec(id, before, annotations, type), EntityRecUtil.newEntityRec(id, after, annotations, type));
     }
 
     constructor(private _before:EntityRec, private _after?:EntityRec) {
@@ -732,11 +671,11 @@ export class EntityBuffer implements EntityRec {
         return this._after;
     }
 
-    get annotations():Array<Annotation> {
+    get annotations():Array<DataAnnotation> {
         return this._after.annotations;
     }
 
-    annotationsAtName(propName:string):Array<Annotation> {
+    annotationsAtName(propName:string):Array<DataAnnotation> {
         return this._after.annotationsAtName(propName);
     }
 
@@ -890,12 +829,16 @@ export class EntityBuffer implements EntityRec {
         return this._after.propValues;
     }
 
+    get type():string {
+        return this._after.type;
+    }
+
     setValue(name:string, value) {
         const newProps = [];
         let found = false;
         this.properties.forEach((prop:Property)=> {
             if (prop.name === name) {
-                newProps.push(new Property(name, value));
+                newProps.push(new Property(name, value, prop.propertyType, prop.format, prop.annotations));
                 found = true;
             } else {
                 newProps.push(prop);
@@ -904,7 +847,7 @@ export class EntityBuffer implements EntityRec {
         if (!found) {
             newProps.push(new Property(name, value));
         }
-        this._after = EntityRecUtil.newEntityRec(this.id, newProps, this.annotations);
+        this._after = EntityRecUtil.newEntityRec(this.id, newProps, this.annotations, this.type);
     }
 
     get tipText():string {
@@ -916,15 +859,11 @@ export class EntityBuffer implements EntityRec {
     }
 
     toEntityRec():EntityRec {
-        return EntityRecUtil.newEntityRec(this.id, this.properties);
+        return EntityRecUtil.newEntityRec(this.id, this.properties, this.annotations, this.type);
     }
 
-    toWSEditorRecord():StringDictionary {
-        return this.afterEffects().toWSEditorRecord();
-    }
-
-    toWS():StringDictionary {
-        return this.afterEffects().toWS();
+    toJSON() {
+       return this.afterEffects().toJSON();
     }
 
     valueAtName(propName:string):any {
@@ -942,10 +881,10 @@ export class EntityBuffer implements EntityRec {
  */
 export class RecordImpl implements EntityRec {
 
-    constructor(readonly id:string, readonly properties:Array<Property> = [], readonly annotations:Array<Annotation> = []) {
+    constructor(readonly id:string, readonly properties:Array<Property> = [], readonly annotations:Array<DataAnnotation> = [], readonly type:string) {
     }
 
-    annotationsAtName(propName:string):Array<Annotation> {
+    annotationsAtName(propName:string):Array<DataAnnotation> {
         var p = this.propAtName(propName);
         return p ? p.annotations : [];
     }
@@ -958,11 +897,11 @@ export class RecordImpl implements EntityRec {
                 effects.push(afterProp);
             }
         });
-        return new RecordImpl(after.id, effects);
+        return new RecordImpl(after.id, effects, after.annotations, after.type);
     }
 
     get backgroundColor():string {
-        return Annotation.backgroundColor(this.annotations);
+        return DataAnnotation.backgroundColor(this.annotations);
     }
 
     backgroundColorFor(propName:string):string {
@@ -971,7 +910,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get foregroundColor():string {
-        return Annotation.foregroundColor(this.annotations);
+        return DataAnnotation.foregroundColor(this.annotations);
     }
 
     foregroundColorFor(propName:string):string {
@@ -980,7 +919,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get imageName():string {
-        return Annotation.imageName(this.annotations);
+        return DataAnnotation.imageName(this.annotations);
     }
 
     imageNameFor(propName:string):string {
@@ -989,7 +928,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get imagePlacement():string {
-        return Annotation.imagePlacement(this.annotations);
+        return DataAnnotation.imagePlacement(this.annotations);
     }
 
     imagePlacementFor(propName:string):string {
@@ -998,7 +937,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get isBoldText():boolean {
-        return Annotation.isBoldText(this.annotations);
+        return DataAnnotation.isBoldText(this.annotations);
     }
 
     isBoldTextFor(propName:string):boolean {
@@ -1007,7 +946,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get isItalicText():boolean {
-        return Annotation.isItalicText(this.annotations);
+        return DataAnnotation.isItalicText(this.annotations);
     }
 
     isItalicTextFor(propName:string):boolean {
@@ -1017,7 +956,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get isPlacementCenter():boolean {
-        return Annotation.isPlacementCenter(this.annotations);
+        return DataAnnotation.isPlacementCenter(this.annotations);
     }
 
     isPlacementCenterFor(propName:string):boolean {
@@ -1026,7 +965,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get isPlacementLeft():boolean {
-        return Annotation.isPlacementLeft(this.annotations);
+        return DataAnnotation.isPlacementLeft(this.annotations);
     }
 
     isPlacementLeftFor(propName:string):boolean {
@@ -1036,7 +975,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get isPlacementRight():boolean {
-        return Annotation.isPlacementRight(this.annotations);
+        return DataAnnotation.isPlacementRight(this.annotations);
     }
 
     isPlacementRightFor(propName:string):boolean {
@@ -1045,7 +984,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get isPlacementStretchUnder():boolean {
-        return Annotation.isPlacementStretchUnder(this.annotations);
+        return DataAnnotation.isPlacementStretchUnder(this.annotations);
     }
 
     isPlacementStretchUnderFor(propName:string):boolean {
@@ -1054,7 +993,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get isPlacementUnder():boolean {
-        return Annotation.isPlacementUnder(this.annotations);
+        return DataAnnotation.isPlacementUnder(this.annotations);
     }
 
     isPlacementUnderFor(propName:string):boolean {
@@ -1063,7 +1002,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get isUnderline():boolean {
-        return Annotation.isUnderlineText(this.annotations);
+        return DataAnnotation.isUnderlineText(this.annotations);
     }
 
     isUnderlineFor(propName:string):boolean {
@@ -1073,7 +1012,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get overrideText():string {
-        return Annotation.overrideText(this.annotations);
+        return DataAnnotation.overrideText(this.annotations);
     }
 
     overrideTextFor(propName:string):string {
@@ -1115,7 +1054,7 @@ export class RecordImpl implements EntityRec {
     }
 
     get tipText():string {
-        return Annotation.tipText(this.annotations);
+        return DataAnnotation.tipText(this.annotations);
     }
 
     tipTextFor(propName:string):string {
@@ -1124,24 +1063,16 @@ export class RecordImpl implements EntityRec {
 
     }
 
+    toJSON() {
+        return {
+            id: this.id,
+            properties: this.properties,
+            type: TypeNames.RecordTypeName
+        };
+    }
+
     toEntityRec():EntityRec {
         return this;
-    }
-
-    toWSEditorRecord():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSEditorRecord'};
-        if (this.id) result['objectId'] = this.id;
-        result['names'] = Property.toWSListOfString(this.propNames);
-        result['properties'] = Property.toWSListOfProperties(this.propValues);
-        return result;
-    }
-
-    toWS():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSEntityRec'};
-        if (this.id) result['objectId'] = this.id;
-        result['properties'] = Property.toListOfWSProp(this.properties);
-        if (this.annotations) result['annotations'] = Annotation.toListOfWSAnnotation(this.annotations);
-        return result;
     }
 
     valueAtName(propName:string):any {
@@ -1254,46 +1185,30 @@ export class Form extends View {
 /**
  * A purely declarative type. This object has no additional properties.
  */
-export class GeoFix extends View {
+export class GpsReading extends View {
+}
 
-    static fromFormattedValue(value:string):GeoFix {
-        var pair = StringUtil.splitSimpleKeyValuePair(value);
-        return new GeoFix(Number(pair[0]), Number(pair[1]), null, null);
-    }
+export class GpsReadingProperty{
 
-    constructor(readonly latitude:number,
-                readonly longitude:number,
-                readonly source:string,
-                readonly accuracy:number) {
-        super();
-    }
+    constructor(readonly accuracy:number, readonly latitude:number,
+                readonly longitude:number,readonly source:string, readonly type:string){}
 
-    toString():string {
-        return this.latitude + ":" + this.longitude;
-    }
 }
 
 
 /**
  * A purely declarative type. This object has no additional properties.
  */
-export class GeoLocation extends View {
-
-
-    static fromFormattedValue(value:string):GeoLocation {
-        var pair = StringUtil.splitSimpleKeyValuePair(value);
-        return new GeoLocation(Number(pair[0]), Number(pair[1]));
-    }
-
-    constructor(readonly latitude:number,
-                readonly longitude:number) {
-        super();
-    }
-
-    toString():string {
-        return this.latitude + ":" + this.longitude;
-    }
+export class MapLocation extends View {
 }
+
+export class MapLocationProperty{
+
+    constructor(readonly latitude:number, readonly longitude:number, readonly type:string){};
+
+}
+
+
 
 /**
  * A view describing how to display a collection of data as a line graph, pie chart, bar chart, etc.
@@ -1506,11 +1421,11 @@ export class NullEntityRec implements EntityRec {
     constructor() {
     }
 
-    get annotations():Array<Annotation> {
+    get annotations():Array<DataAnnotation> {
         return [];
     }
 
-    annotationsAtName(propName:string):Array<Annotation> {
+    annotationsAtName(propName:string):Array<DataAnnotation> {
         return [];
     }
 
@@ -1658,6 +1573,10 @@ export class NullEntityRec implements EntityRec {
         return null;
     }
 
+    get type():string {
+        return null;
+    }
+
     tipTextFor(propName:string):string {
         return null;
     }
@@ -1666,20 +1585,12 @@ export class NullEntityRec implements EntityRec {
         return this;
     }
 
-    toWSEditorRecord():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSEditorRecord'};
-        if (this.id) result['id'] = this.id;
-        result['names'] = Property.toWSListOfString(this.propNames);
-        result['properties'] = Property.toWSListOfProperties(this.propValues);
-        return result;
-    }
-
-    toWS():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSEntityRec'};
-        if (this.id) result['id'] = this.id;
-        result['properties'] = Property.toListOfWSProp(this.properties);
-        if (this.annotations) result['annotations'] = Annotation.toListOfWSAnnotation(this.annotations);
-        return result;
+    toJSON() {
+        return {
+            id: this.id,
+            properties: this.properties,
+            type: TypeNames.RecordTypeName
+        };
     }
 
     valueAtName(propName:string):any {
@@ -1709,20 +1620,7 @@ export class ObjectBinaryRef extends BinaryRef {
 
 export class ObjectRef {
 
-    static fromFormattedValue(value:string):ObjectRef {
-        var pair = StringUtil.splitSimpleKeyValuePair(value);
-        return new ObjectRef(pair[0], pair[1]);
-    }
-
-    constructor(private _objectId:string, private _description:string) {
-    }
-
-    get description():string {
-        return this._description;
-    }
-
-    get objectId():string {
-        return this._objectId;
+    constructor(readonly objectId:string, readonly description:string, readonly type:string) {
     }
 
     toString():string {
@@ -1794,9 +1692,9 @@ export class Property {
                 return (o as CodeRef).code;
             } else if (o instanceof ObjectRef) {
                 return (o as ObjectRef).objectId;
-            } else if (o instanceof GeoFix) {
+            } else if (o instanceof GpsReading) {
                 return o.toString();
-            } else if (o instanceof GeoLocation) {
+            } else if (o instanceof MapLocation) {
                 return o.toString();
             } else {
                 return String(o);
@@ -1806,223 +1704,14 @@ export class Property {
         }
     }
 
-    /**
-     * @private
-     * @param values
-     * @returns {Success}
-     */
-    /*
-    static fromListOfWSValue(values:Array<any>):Try<Array<any>> {
-        var properties = [];
-        values.forEach((v)=> {
-            var propTry = Prop.fromWSValue(v);
-            if (propTry.isFailure) return new Failure(propTry.failure);
-            properties.push(propTry.success);
-        });
-        return new Success(properties);
-    }
-    */
-
-    /**
-     * @private
-     * @param name
-     * @param value
-     * @returns {any}
-     */
-    /*
-    static fromWSNameAndWSValue(name:string, value:any):Try<Prop> {
-        var propTry:Try<any> = Prop.fromWSValue(value);
-        if (propTry.isFailure) {
-            return new Failure<Prop>(propTry.failure);
-        }
-        return new Success<Prop>(new Prop(name, propTry.success));
-    }
-    */
-
-    /**
-     * @private
-     * @param names
-     * @param values
-     * @returns {any}
-     */
-    /*
-    static fromWSNamesAndValues(names:Array<string>, values:Array<any>):Try<Array<Prop>> {
-        if (names.length != values.length) {
-            return new Failure<Array<Prop>>("Prop::fromWSNamesAndValues: names and values must be of same length");
-        }
-        var list:Array<Prop> = [];
-        for (var i = 0; i < names.length; i++) {
-            var propTry:Try<Prop> = Prop.fromWSNameAndWSValue(names[i], values[i]);
-            if (propTry.isFailure) {
-                return new Failure<Array<Prop>>(propTry.failure);
-            }
-            list.push(propTry.success);
-        }
-        return new Success<Array<Prop>>(list);
-    }
-    */
-
-    /**
-     * @private
-     * @param value
-     * @returns {any}
-     */
-    /*
-    static fromWSValue(value:any):Try<any> {
-        var propValue = value;
-        if (value && 'object' === typeof value) {
-            var PType = value['WS_PTYPE'];
-            var strVal = value['value'];
-            if (PType) {
-                if (PType === 'Decimal') {
-                    propValue = Number(strVal);
-                } else if (PType === 'Date') {
-                    //parse as ISO - no offset specified by server right now, so we assume local time
-                    propValue = moment(strVal, 'YYYY-M-D').toDate();
-                } else if (PType === 'DateTime') {
-                    //parse as ISO - no offset specified by server right now, so we assume local time
-                    //strip invalid suffix (sometimes) provided by server
-                    const i = strVal.indexOf('T0:');
-                    propValue = moment((i > -1) ? strVal.substring(0, i) : strVal).toDate();
-                } else if (PType === 'Time') {
-                    propValue = TimeValue.fromString(strVal);
-                } else if (PType === 'BinaryRef') {
-                    var binaryRefTry = BinaryRef.fromWSValue(strVal, value['properties']);
-                    if (binaryRefTry.isFailure) return new Failure(binaryRefTry.failure);
-                    propValue = binaryRefTry.success;
-                } else if (PType === 'ObjectRef') {
-                    propValue = ObjectRef.fromFormattedValue(strVal);
-                } else if (PType === 'CodeRef') {
-                    const codeRef:CodeRef = value;
-                    if(codeRef.code && codeRef.description) {
-                        propValue = new CodeRef(codeRef.code, codeRef.description);
-                    } else {
-                        propValue = CodeRef.fromFormattedValue(strVal);
-                    }
-                } else if (PType === 'GeoFix') {
-                    propValue = GeoFix.fromFormattedValue(strVal);
-                } else if (PType === 'GeoLocation') {
-                    propValue = GeoLocation.fromFormattedValue(strVal);
-                } else {
-                    return new Failure('Prop::fromWSValue: Property WS_PTYPE is not valid: ' + PType);
-                }
-            } else if(value['WS_LTYPE']) {
-                return Prop.fromListOfWSValue(value['values']);
-            }
-        }
-        return new Success(propValue);
-    }
-    */
-
-    /**
-     * @private
-     * @param otype
-     * @param jsonObj
-     * @returns {any}
-     */
-    /*
-    static fromWS(otype:string, jsonObj):Try<Prop> {
-        var name:string = jsonObj['name'];
-        var valueTry = Prop.fromWSValue(jsonObj['value']);
-        if (valueTry.isFailure) return new Failure<Prop>(valueTry.failure);
-        var annotations:Array<Annotation> = null;
-        if (jsonObj['annotations']) {
-            var annotationsListTry:Try<Array<Annotation>> =
-                DialogTriple.fromListOfWSDialogObject<Annotation>(jsonObj['annotations'], 'WSAnnotation', OType.factoryFn);
-            if (annotationsListTry.isFailure) return new Failure<Prop>(annotationsListTry.failure);
-            annotations = annotationsListTry.success;
-        }
-        return new Success(new Prop(name, valueTry.success, annotations));
-    }
-    */
-
-    /**
-     * @private
-     * @param o
-     * @returns {any}
-     */
-
-    /* TODO */
-
-    static toWSProperty(o:any) {
-        if (typeof o === 'number') {
-            return {'WS_PTYPE': 'Decimal', 'value': String(o)};
-        } else if (typeof o === 'object') {
-            if (o instanceof Date) {
-                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
-                return {'WS_PTYPE': 'DateTime', 'value': o.toISOString().slice(0, -1)};
-            } else if (o instanceof DateTimeValue) {
-                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
-                return {'WS_PTYPE': 'DateTime', 'value': o.dateObj.toISOString().slice(0, -1)};
-            } else if (o instanceof DateValue) {
-                //remove all Time information from the end of the ISO string from the 'T' to the end...
-                const isoString = o.dateObj.toISOString();
-                return {'WS_PTYPE': 'Date', 'value': isoString.slice(0, isoString.indexOf('T'))};
-            } else if (o instanceof TimeValue) {
-                return {'WS_PTYPE': 'Time', 'value': o.toString()};
-            } else if (o instanceof CodeRef) {
-                const codeRef:CodeRef = o;
-                return {'WS_PTYPE': 'CodeRef', 'value': codeRef.toString(), 'description': codeRef.description, 'code': codeRef.code};
-            } else if (o instanceof ObjectRef) {
-                const objectRef:ObjectRef = o;
-                return {'WS_PTYPE': 'ObjectRef', 'value': objectRef.toString(), 'description': objectRef.description, 'objectId': objectRef.objectId};
-            } else if (o instanceof GeoFix) {
-                return {'WS_PTYPE': 'GeoFix', 'value': o.toString()};
-            } else if (o instanceof GeoLocation) {
-                return {'WS_PTYPE': 'GeoLocation', 'value': o.toString()};
-            } else if (o instanceof InlineBinaryRef) {
-                return {'WS_PTYPE': 'BinaryRef', 'value': o.toString(), properties: (o as BinaryRef).settings}
-            } else if (Array.isArray(o)) {
-                return Property.toWSListOfProperties(o);
-            } else {
-                return o;
-            }
-        } else {
-            return o;
-        }
-    }
-
-    /**
-     *
-     * @param list
-     * @returns {StringDictionary}
-     */
-    /* TODO */
-    static toWSListOfProperties(list:Array<any>):StringDictionary {
-        var result:StringDictionary = {'WS_LTYPE': 'Object'};
-        var values = [];
-        list.forEach((o)=> {
-            values.push(Property.toWSProperty(o))
-        });
-        result['values'] = values;
-        return result;
-    }
-
-    /**
-     * @private
-     * @param list
-     * @returns {{WS_LTYPE: string, values: Array<string>}}
-     */
-    /* TODO */
-    static toWSListOfString(list:Array<string>):StringDictionary {
-        return {'WS_LTYPE': 'String', 'values': list};
-    }
-
-    /**
-     *
-     * @private
-     * @param properties
-     * @returns {StringDictionary}
-     */
-    /* TODO */
-    static toListOfWSProp(properties:Array<Property>):StringDictionary {
-        var result:StringDictionary = {'WS_LTYPE': 'WSProp'};
-        var values = [];
-        properties.forEach((prop)=> {
-            values.push(prop.toWS())
-        });
-        result['values'] = values;
-        return result;
+    static fromJSON(jsonObject:StringDictionary):Property {
+       return new Property(
+           jsonObject.name,
+           Property.parseValue(jsonObject.value, jsonObject.format),
+           jsonObject.propertyType,
+           jsonObject.format,
+           jsonObject.annotations
+       );
     }
 
     /**
@@ -2032,7 +1721,8 @@ export class Property {
      * @param _value
      * @param _annotations
      */
-    constructor(readonly name:string, readonly value:any, readonly annotations:Array<Annotation> = []) {
+    constructor(readonly name:string, readonly value:any, readonly propertyType?:string, readonly format?:string,
+                readonly annotations:Array<DataAnnotation> = []) {
     }
 
     equals(prop:Property):boolean {
@@ -2040,73 +1730,122 @@ export class Property {
     }
 
     get backgroundColor():string {
-        return Annotation.backgroundColor(this.annotations);
+        return DataAnnotation.backgroundColor(this.annotations);
     }
 
     get foregroundColor():string {
-        return Annotation.foregroundColor(this.annotations);
+        return DataAnnotation.foregroundColor(this.annotations);
     }
 
     get imageName():string {
-        return Annotation.imageName(this.annotations);
+        return DataAnnotation.imageName(this.annotations);
     }
 
     get imagePlacement():string {
-        return Annotation.imagePlacement(this.annotations);
+        return DataAnnotation.imagePlacement(this.annotations);
     }
 
     get isBoldText():boolean {
-        return Annotation.isBoldText(this.annotations);
+        return DataAnnotation.isBoldText(this.annotations);
     }
 
     get isItalicText():boolean {
-        return Annotation.isItalicText(this.annotations);
+        return DataAnnotation.isItalicText(this.annotations);
     }
 
     get isPlacementCenter():boolean {
-        return Annotation.isPlacementCenter(this.annotations);
+        return DataAnnotation.isPlacementCenter(this.annotations);
     }
 
     get isPlacementLeft():boolean {
-        return Annotation.isPlacementLeft(this.annotations);
+        return DataAnnotation.isPlacementLeft(this.annotations);
     }
 
     get isPlacementRight():boolean {
-        return Annotation.isPlacementRight(this.annotations);
+        return DataAnnotation.isPlacementRight(this.annotations);
     }
 
     get isPlacementStretchUnder():boolean {
-        return Annotation.isPlacementStretchUnder(this.annotations);
+        return DataAnnotation.isPlacementStretchUnder(this.annotations);
     }
 
     get isPlacementUnder():boolean {
-        return Annotation.isPlacementUnder(this.annotations);
+        return DataAnnotation.isPlacementUnder(this.annotations);
     }
 
     get isUnderline():boolean {
-        return Annotation.isUnderlineText(this.annotations);
+        return DataAnnotation.isUnderlineText(this.annotations);
     }
 
     get overrideText():string {
-        return Annotation.overrideText(this.annotations);
+        return DataAnnotation.overrideText(this.annotations);
     }
 
     get tipText():string {
-        return Annotation.tipText(this.annotations);
+        return DataAnnotation.tipText(this.annotations);
     }
 
-    /**
-     * @private
-     * @returns {StringDictionary}
-     */
-    toWS():StringDictionary {
-        var result:StringDictionary = {'WS_OTYPE': 'WSProp', 'name': this.name, 'value': Property.toWSProperty(this.value)};
-        if (this.annotations) {
-            result['annotations'] = Annotation.toListOfWSAnnotation(this.annotations);
+    get valueForWrite() {
+        const o = this.value;
+        if (typeof o === 'number') {
+            return String(o);
+        } else if (typeof o === 'object') {
+            if (o instanceof Date) {
+                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                return o.toISOString().slice(0, -1);
+            } else if (o instanceof DateTimeValue) {
+                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                return o.dateObj.toISOString().slice(0, -1);
+            } else if (o instanceof DateValue) {
+                //remove all Time information from the end of the ISO string from the 'T' to the end...
+                const isoString = o.dateObj.toISOString();
+                return isoString.slice(0, isoString.indexOf('T'));
+            } else if (o instanceof TimeValue) {
+                return o.toString();
+            } else {
+                //for any other type of value, return the object itself
+                //this could include string, Array, CodeRef, ObjectRef, GpsReadingProperty, MapLocationProperty, InlineBinaryRef
+                return o;
+            }
+        } else {
+            return o;
         }
-        return result;
     }
 
+    toJSON() {
+        const jsonObject = {
+            name: this.name,
+            value: this.valueForWrite,
+            type: TypeNames.PropertyTypeName
+        }
+        if(this.propertyType) jsonObject['propertyType'] = this.propertyType;
+        if(this.format) jsonObject['format'] =  this.format;
+
+        return jsonObject;
+    }
+
+    private static parseValue(value:any, format:string):any {
+
+        if(typeof value === 'string' && format) {
+            if (['integer', 'decimal', 'int32', 'int64', 'float', 'double'].some(v => format === v)) {
+                return Number(value);
+            } else if(format === 'date'){
+                //parse as ISO - no offset specified by server right now, so we assume local time
+                return moment(value, 'YYYY-M-D').toDate();
+            } else if(format === 'date-time'){
+                //parse as ISO - no offset specified by server right now, so we assume local time
+                //strip invalid suffix (sometimes) provided by server
+                const i = value.indexOf('T0:');
+                return moment((i > -1) ? value.substring(0, i) : value).toDate();
+            } else if(format === 'time'){
+                TimeValue.fromString(value);
+            } else {
+                return value;
+            }
+        } else {
+            return value;
+        }
+    }
 }
 
 
@@ -2119,20 +1858,17 @@ export class Property {
  * Contains information that 'defines' a property {@link Prop} (name/value)
  * An instance of the {@link Property} contains the actual data value.
  */
-export class PropertyDef {
 
-    static STYLE_HEADING1 = "textHeading1";
-    static STYLE_HEADING2 = "textHeading2";
-    static STYLE_HEADING3 = "textHeading3";
-    static STYLE_HEADING4 = "textHeading4";
-    static STYLE_INLINE_MEDIA = "inlineMedia";
-    static STYLE_INLINE_MEDIA2 = "Image/Video";
+
+export class PropertyDef {
 
     constructor(/**
                  * The canCauseSideEffects meta property indicates that writing to this property can cause LOCAL side effects
                  * (on the same business object). For example, changing a 'zipCode' property case cause the 'state' property to change. If a user interface changes a property that can cause side effects, it should refresh the associated business view.
                  */
                 readonly canCauseSideEffects: boolean,
+
+                readonly contentType: string,
                 /**
                  * Length of a type to be displayed. Some types are longer than what is practically needed by the application.
                  * This property is used to define the practical length used in user interfaces.
@@ -2163,7 +1899,6 @@ export class PropertyDef {
                  */
                 readonly scale: number,
 
-                readonly style: string,
                 /**
                  * Whereas 'type' and 'format' define the physical meaning of a property, the 'semanticType' adds meaningful
                  * insight into the usage of the property. For example, a 'decimal' type may be further defined semantically as a 'money' type.
@@ -2179,10 +1914,7 @@ export class PropertyDef {
     }
 
     get isBarcodeType(): boolean {
-        return this.propertyType &&
-            this.propertyType === 'STRING' &&
-            this.semanticType &&
-            this.semanticType === 'DATA_BARCODE';
+        return this.semanticType === 'BARCODE';
     }
 
     get isBinaryType(): boolean {
@@ -2190,135 +1922,120 @@ export class PropertyDef {
     }
 
     get isBooleanType(): boolean {
-        return this.propertyType && this.propertyType === 'BOOLEAN';
+        return this.propertyType === 'boolean';
     }
 
     get isCodeRefType(): boolean {
-        return this.propertyType && this.propertyType === 'CODE_REF';
+        return this.propertyType === TypeNames.CodeRefTypeName;
     }
 
     get isDateType(): boolean {
-        return this.propertyType && this.propertyType === 'DATE';
+        return this.format === 'date';
     }
 
     get isDateTimeType(): boolean {
-        return this.propertyType && this.propertyType === 'DATE_TIME';
+        return this.format === 'date-time';
     }
 
     get isDecimalType(): boolean {
-        return this.propertyType && this.propertyType === 'DECIMAL';
+        return this.format === 'decimal';
     }
 
     get isDoubleType(): boolean {
-        return this.propertyType && this.propertyType === 'DOUBLE';
+        return this.format === 'double';
     }
 
     get isEmailType(): boolean {
-        return this.propertyType && this.propertyType === 'DATA_EMAIL';
+        return this.semanticType === 'EMAIL';
     }
 
     get isFileAttachment(): boolean {
-        return this.semanticType &&
-            this.semanticType === 'DATA_UPLOAD_FILE';
+        return this.semanticType === 'FILE_UPLOAD';
     }
 
-    get isGeoFixType(): boolean {
-        return this.propertyType && this.propertyType === 'GEO_FIX';
+    get isFloatType(): boolean {
+        return this.format === 'float';
     }
 
-    get isGeoLocationType(): boolean {
-        return this.propertyType && this.propertyType === 'GEO_LOCATION';
+    get isGpsReadingType(): boolean {
+        return this.propertyType === TypeNames.GpsReadingPropertyTypeName;
+    }
+
+    get isMapLocationType(): boolean {
+        return this.propertyType === TypeNames.MapLocationPropertyTypeName;
     }
 
     get isHTMLType(): boolean {
-        return this.propertyType && this.propertyType === 'DATA_HTML';
+        return this.semanticType === 'DATA_HTML';
     }
 
+    //@TODO
     get isInlineMediaStyle():boolean {
-        return this.style &&
-            (this.style === PropertyDef.STYLE_INLINE_MEDIA || this.style === PropertyDef.STYLE_INLINE_MEDIA2);
+            return (this.semanticType === CellValue.STYLE_INLINE_MEDIA || this.semanticType === CellValue.STYLE_INLINE_MEDIA2);
     }
 
     get isListType(): boolean {
-        return this.propertyType && this.propertyType === 'LIST';
+        return this.propertyType === 'array';
     }
 
     get isIntType(): boolean {
-        return this.propertyType && this.propertyType === 'INT';
+        return ['integer', 'int32', 'int64'].some(v=>this.propertyType === v);
     }
 
     get isLargeBinaryType(): boolean {
-        return this.propertyType &&
-            this.propertyType === 'com.dgoi.core.domain.BinaryRef' &&
-            this.semanticType &&
-            this.semanticType === 'DATA_LARGEBINARY';
+        return this.semanticType === 'LARGE_BINARY';
     }
 
     get isLongType(): boolean {
-        return this.propertyType && this.propertyType === 'LONG';
+        return this.format === 'int64';
     }
 
     get isMoneyType(): boolean {
-        return this.isNumericType &&
-            this.semanticType &&
-            this.semanticType === 'DATA_MONEY';
+        return this.semanticType === 'MONEY';
     }
 
     get isNumericType(): boolean {
-        return this.isDecimalType || this.isDoubleType || this.isIntType || this.isLongType;
+        return this.isDecimalType || this.isIntType || this.isDoubleType || this.isLongType || this.isFloatType;
     }
 
     get isObjRefType(): boolean {
-        return this.propertyType && this.propertyType === 'OBJ_REF';
+        return this.propertyType === TypeNames.ObjectRefTypeName;
     }
 
     get isPasswordType(): boolean {
-        return this.isStringType &&
-            this.semanticType &&
-            this.semanticType === 'DATA_PASSWORD';
+        return this.format === 'password' || this.semanticType === 'PASSWORD';
     }
 
     get isPercentType(): boolean {
-        return this.isNumericType &&
-            this.semanticType &&
-            this.semanticType === 'DATA_PERCENT';
+        return this.semanticType === 'PERCENT';
     }
 
     get isSignatureType(): boolean {
-        return this.propertyType &&
-            this.propertyType === 'com.dgoi.core.domain.BinaryRef' &&
-            this.semanticType &&
-            this.semanticType === 'DATA_LARGEBINARY_SIGNATURE';
+        return this.semanticType === 'USER_SIGNATURE';
     }
 
     get isStringType(): boolean {
-        return this.propertyType && this.propertyType === 'STRING';
+        return this.propertyType === 'string';
     }
 
     get isTelephoneType(): boolean {
-        return this.isStringType &&
-            this.semanticType &&
-            this.semanticType === 'DATA_TELEPHONE';
+        return this.semanticType === 'TELEPHONE';
     }
 
     get isTextBlock(): boolean {
-        return this.semanticType && this.semanticType === 'DATA_TEXT_BLOCK';
+        return this.semanticType === 'TEXT_BLOCK';
     }
 
     get isTimeType(): boolean {
-        return this.propertyType && this.propertyType === 'TIME';
+        return this.format === 'time';
     }
 
     get isUnformattedNumericType(): boolean {
-        return this.isNumericType &&
-            this.semanticType &&
-            this.semanticType === 'DATA_UNFORMATTED_NUMBER';
+        return this.semanticType === 'UNFORMATTED';
     }
 
     get isURLType(): boolean {
-        return this.isStringType &&
-            this.semanticType &&
-            this.semanticType === 'DATA_URL';
+        return this.semanticType === 'URL';
     }
 }
 
@@ -2344,9 +2061,10 @@ export interface QueryParameters {
 
 export interface Record {
 
-    readonly annotations:Array<Annotation>;
+    readonly annotations?:Array<DataAnnotation>;
     readonly id: string;
     properties:Array<Property>;
+    type:string;
 
 }
 
@@ -2589,7 +2307,7 @@ export enum ViewModeEnum { READ = 'READ', WRITE = 'WRITE'}
 export type ViewMode = ViewModeEnum.READ | ViewModeEnum.WRITE;
 
 export type ViewType ='hxgn.api.dialog.BarcodeScan' | 'hxgn.api.dialog.Calendar' | 'hxgn.api.dialog.Details'
-    | 'hxgn.api.dialog.Form' | 'hxgn.api.dialog.GeoFix' | 'hxgn.api.dialog.GeoLocation'
+    | 'hxgn.api.dialog.Form' | 'hxgn.api.dialog.GpsReading' | 'hxgn.api.dialog.MapLocation'
     | 'hxgn.api.dialog.Graph' | 'hxgn.api.dialog.List' | 'hxgn.api.dialog.Map' | 'hxgn.api.dialog.Stream';
 
 
@@ -2597,26 +2315,32 @@ export type ViewType ='hxgn.api.dialog.BarcodeScan' | 'hxgn.api.dialog.Calendar'
 
 export enum TypeNames {
 
+    ActionParametersTypeName = 'hxgn.api.dialog.ActionParameters',
+    AppWindowTypeName = 'hxgn.api.dialog.AppWindow',
+    CodeRefTypeName = 'hxgn.api.dialog.CodeRef',
     DialogTypeName = 'hxgn.api.dialog.Dialog',
     DialogRedirectionTypeName = 'hxgn.api.dialog.DialogRedirection',
+    GpsReadingPropertyTypeName = 'hxgn.api.dialog.GpsReadingProperty',
+    LoginTypeName = 'hxgn.api.dialog.Login',
+    MapLocationPropertyTypeName = 'hxgn.api.dialog.MapLocationProperty',
     NullRedirectionTypeName = 'hxgn.api.dialog.NullRedirection',
-    WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
-    WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection',
+    ObjectRefTypeName = 'hxgn.api.dialog.ObjectRef',
+    PropertyTypeName = 'hxgn.api.dialog.Property',
+    QueryParametersTypeName = 'hxgn.api.dialog.QueryParameters',
+    RecordTypeName = 'hxgn.api.dialog.Record',
     ReferringDialogTypeName = 'hxgn.api.dialog.ReferringDialog',
     ReferringWorkbenchTypeName = 'hxgn.api.dialog.ReferringWorkbench',
     SessionTypeName = 'hxgn.api.dialog.Session',
+    WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
     WorkbenchTypeName = 'hxgn.api.dialog.Workbench',
-    AppWindowTypeName = 'hxgn.api.dialog.AppWindow',
-    LoginTypeName = 'hxgn.api.dialog.Login',
-    ActionParametersTypeName = 'hxgn.api.dialog.ActionParameters',
-    QueryParametersTypeName = 'hxgn.api.dialog.QueryParameters'
+    WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection',
 }
 
 
 export class ModelUtil {
 
     private static classTypes = {
-        'hxgn.api.dialog.Annotation': Annotation,
+        'hxgn.api.dialog.Annotation': DataAnnotation,
         'hxgn.api.dialog.AttributeCellValue': AttributeCellValue,
         'hxgn.api.dialog.TabCellValue': TabCellValue,
         'hxgn.api.dialog.BarcodeScan': BarcodeScan,
@@ -2626,8 +2350,10 @@ export class ModelUtil {
         'hxgn.api.dialog.DialogException': DialogException,
         'hxgn.api.dialog.ForcedLineCellValue': ForcedLineCellValue,
         'hxgn.api.dialog.Form': Form,
-        'hxgn.api.dialog.GeoFix': GeoFix,
-        'hxgn.api.dialog.GeoLocation': GeoLocation,
+        'hxgn.api.dialog.GpsReading': GpsReading,
+        'hxgn.api.dialog.GpsReadingProperty': GpsReadingProperty,
+        'hxgn.api.dialog.MapLocation': MapLocation,
+        'hxgn.api.dialog.MapLocationProperty': MapLocationProperty,
         'hxgn.api.dialog.Graph': Graph,
         'hxgn.api.dialog.InlineBinaryRef': InlineBinaryRef,
         'hxgn.api.dialog.LabelCellValue': LabelCellValue,
@@ -2647,23 +2373,16 @@ export class ModelUtil {
         'hxgn.api.dialog.ViewDescriptor': ViewDescriptor
     };
 
-    private static typeFns:{[index:string]:(s:string, a:any)=>Promise<any>} = {
+    private static classType(name) {
+       return ModelUtil.classTypes[name];
     }
 
     private static typeInstance(name) {
-        const type = ModelUtil.classTypes[name];
+        const type = ModelUtil.classType(name);
         return type && new type;
     }
 
-    static factoryFn<A>(type:string, jsonObj):Promise<A> {
-       const typeFn:(string, any)=>Promise<A> = ModelUtil.typeFns[type];
-        if (typeFn) {
-            return typeFn(type, jsonObj);
-        }
-        return null;
-    }
-
-    static jsonToModel<A>(obj, factoryFn:(type:string, jsonObj?)=>any=ModelUtil.factoryFn, n=0):Promise<A> {
+    static jsonToModel<A>(obj, n=0):Promise<A> {
 
         const indent = n*4;
 
@@ -2673,27 +2392,25 @@ export class ModelUtil {
         } else {
             const objType = obj['type'];
             //Log.debug(`${' '.repeat(indent)}=> Deserializing ${objType}`);
-            const funcPr:Promise<A> = factoryFn(objType, obj); //this returns null if there is no custom function
-            if (funcPr) {
-                return funcPr.catch(error=> {
-                    const message = `ModelUtil::jsonToModel: factory failed to produce object for : ${objType} : ${ObjUtil.formatRecAttr(error)}`;
-                    Log.error(error);
-                    throw new Error(message);
-                });
-            } else {
-                return new Promise<A>((resolve, reject)=>{
+            return new Promise<A>((resolve, reject)=>{
+                //if the class has a fromJSON method, use it
+                const classType = ModelUtil.classType(objType);
+                if(classType && typeof classType.fromJSON === 'function') {
+                    resolve(classType.fromJSON(obj));
+                } else {
                     let newObj = ModelUtil.typeInstance(objType);
                     if (!newObj) {
                         const message = `ModelUtil::jsonToModel: no type constructor found for ${objType}: assuming interface`
                         //Log.debug(message);
                         newObj = {};  //assume it's an interface
                     }
-                    Promise.all(Object.keys(obj).map(prop=>{
+                    //otherwise, copy field values
+                    Promise.all(Object.keys(obj).map(prop => {
                         const value = obj[prop];
                         //Log.debug(`${' '.repeat(indent)}prop: ${prop} is type ${typeof value}`);
                         if (value && typeof value === 'object') {
-                            if(Array.isArray(value) || 'type' in value) {
-                                return ModelUtil.jsonToModel(value, ModelUtil.factoryFn, ++n).then(model=>{
+                            if (Array.isArray(value) || 'type' in value) {
+                                return ModelUtil.jsonToModel(value, ++n).then(model => {
                                     ModelUtil.assignProp(prop, model, newObj, objType, indent);
                                 });
                             } else {
@@ -2704,11 +2421,11 @@ export class ModelUtil {
                             ModelUtil.assignProp(prop, value, newObj, objType, indent)
                             return Promise.resolve();
                         }
-                    })).then(result=>{
-                       resolve(newObj);
-                    }).catch(error=>reject(error));
-                });
-            }
+                    })).then(result => {
+                        resolve(newObj);
+                    }).catch(error => reject(error));
+                }
+            });
         }
     }
 

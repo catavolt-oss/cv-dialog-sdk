@@ -7,10 +7,9 @@ import {ArrayUtil, DataUrl, DateTimeValue, DateValue, Log, ObjUtil, StringDictio
 import {
     ClientType, Dialog, DialogMessage, DialogRedirection, Login, Menu, PropertyDef, Property, Redirection,
     Session, Tenant, WebRedirection, Workbench, WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef,
-    GeoFix, GeoLocation, NavRequest, NullNavRequest, RecordDef, DialogMode, View, ViewMode, Form, ErrorMessage,
-    DialogException, ViewDescriptor, Record, EntityBuffer, NullEntityRec, EntityRec, AttributeCellValue, Column,
-    Details,
-    List, Map, TypeNames, ModelUtil, QueryDirection,
+    MapLocation, GpsReading, MapLocationProperty, GpsReadingProperty, NavRequest, NullNavRequest, RecordDef,
+    DialogMode, View, ViewMode, Form, ErrorMessage, DialogException, ViewDescriptor, Record, EntityBuffer, NullEntityRec,
+    EntityRec, AttributeCellValue, Column, Details, List, Map, TypeNames, ModelUtil, QueryDirection,
     QueryDialog, EditorDialog, Filter, Sort, ReferringObject, Graph, Calendar, PrintMarkup, BarcodeScan, ImagePicker,
     RedirectionUtil, DialogType, NullRedirection, ActionParameters, RecordSet, QueryParameters, QueryDirectionEnum,
     InlineBinaryRef, ObjectBinaryRef, ViewModeEnum, DialogModeEnum, ReferringDialog
@@ -658,7 +657,7 @@ export abstract class PaneContext implements Dialog {
      * @returns {boolean}
      */
     get isRefreshNeeded():boolean {
-        return this._lastRefreshTime.getTime() < AppContext.singleton.lastMaintenanceTime.getTime();
+        return this._lastRefreshTime.getTime() < this.appContext.lastMaintenanceTime.getTime();
     }
 
     /**
@@ -799,7 +798,7 @@ export abstract class PaneContext implements Dialog {
                      }
                  } else {
                      // This is a delete
-                     writePromise =writePromise.then((prevResult) => {
+                     writePromise = writePromise.then((prevResult) => {
                          return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
                      });
                  }
@@ -834,7 +833,7 @@ export abstract class PaneContext implements Dialog {
             if(RedirectionUtil.isRedirection(result)) {
                 this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
             }
-            AppContext.singleton.lastMaintenanceTime = new Date();
+            this.appContext.lastMaintenanceTime = new Date();
             return result;
         });
     }
@@ -913,10 +912,10 @@ export abstract class PaneContext implements Dialog {
             return new PrintMarkupContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
         } else if(dialog.view instanceof Calendar) {
             return new CalendarContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
-        } else if(dialog.view instanceof GeoFix) {
-            return new GeoFixContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
-        } else if(dialog.view instanceof GeoLocation) {
-            return new GeoLocationContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof GpsReading) {
+            return new GpsReadingContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
+        } else if(dialog.view instanceof MapLocation) {
+            return new MapLocationContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
         } else if(dialog.view instanceof BarcodeScan) {
             return new BarcodeScanContext(dialog, dialogRedirection, paneRef, this, this.session, this.appContext);
         } else if(dialog.view instanceof ImagePicker) {
@@ -1017,9 +1016,6 @@ export class FormContext extends PaneContext implements Dialog, NavRequest {
  * (i.e. describing this UI component, layout, etc.) and also the 'data record(s)' as one or more {@link EntityRec}(s)
  */
 export class EditorContext extends PaneContext {
-
-    private static GPS_ACCURACY = 'com.catavolt.core.domain.GeoFix.accuracy';
-    private static GPS_SECONDS = 'com.catavolt.core.domain.GeoFix.seconds';
 
     private _buffer:EntityBuffer;
     private _isFirstReadComplete:boolean;
@@ -1160,7 +1156,6 @@ export class EditorContext extends PaneContext {
      * @param pendingWrites
      * @returns {Future<NavRequest>}
      */
-    //@TODO
     performMenuAction(menu:Menu, pendingWrites:EntityRec):Promise<{actionId:string} | Redirection> {
 
         return this.invokeMenuAction(menu, {pendingWrites:pendingWrites, type:TypeNames.ActionParametersTypeName}).then(result=>{
@@ -1281,58 +1276,45 @@ export class EditorContext extends PaneContext {
      * Write this record (i.e. {@link EntityRec}} back to the server
      * @returns {Future<Either<NavRequest, EntityRec>>}
      */
-    //@TODO
-    write(settings?:StringDictionary):Promise<NavRequest | EntityRec> {
+    write():Promise<EntityRec | Redirection> {
 
-        //let deltaRec:EntityRec = this.buffer.afterEffects();
+        let deltaRec: EntityRec = this.buffer.afterEffects();
+
         /* Write the 'special' props first */
+        return this.writeBinaries(deltaRec).then((binResult:Array<void>) => {
+            return this.writeAttachments(deltaRec).then((atResult:Array<void>) => {
+                /* Remove special property types before writing the actual record */
+                deltaRec = this.removeSpecialProps(deltaRec);
+                return this.appContext.dialogApi.putRecord(this.tenantId, this.sessionId, this.dialog.id, deltaRec).then(result=>{
+                    const now = new Date();
+                    this.appContext.lastMaintenanceTime = now;
+                    this.lastRefreshTime = now;
+                    if(RedirectionUtil.isRedirection(result)) {
+                        this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
+                        return result as EntityRec | Redirection;
+                    } else {
+                        //we need to refresh the dialog in case of changes
+                        return this.appContext.dialogApi.getDialog(this.tenantId, this.sessionId, this.dialog.id)
+                            .then((dialog:Dialog)=>{
+                                this.initialize(this.dialog, this.dialogRedirection);
+                                this.initBuffer(result as EntityRec);
+                                return result as EntityRec | Redirection;
+                            });
+                    }
+                });
+            });
+        });
 
-        /*
-         return this.writeBinaries(deltaRec).bind((binResult) => {
-         return this.writeAttachments(deltaRec).bind((atResult) => {
-         /* Remove special property types before writing the actual record */
-        /*
-         deltaRec = this.removeSpecialProps(deltaRec);
-         var result:Future<Either<NavRequest, EntityRec>> = DialogService.writeEditorModel(this.paneDef.dialogRedirection.dialogHandle, deltaRec,
-         this.sessionContext, settings).bind<Either<NavRequest, EntityRec>>((either:Either<Redirection,XWriteResult>)=> {
-         if (either.isLeft) {
-         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, either.left);
-         var ca = new ContextAction('#write', this.parentContext.dialogRedirection.objectId, this.actionSource);
-         return NavRequestUtil.fromRedirection(either.left, ca, this.sessionContext).map((navRequest:NavRequest)=> {
-         return Either.left<NavRequest,EntityRec>(navRequest);
-         });
-         } else {
-         var writeResult:XWriteResult = either.right;
-         this.putSettings(writeResult.dialogProps);
-         this.entityRecDef = writeResult.entityRecDef;
-         return Future.createSuccessfulFuture<Either<NavRequest, EntityRec>>('EditorContext::write', Either.right(writeResult.entityRec));
-         }
-         });
+    }
 
-         return result.map((successfulWrite:Either<NavRequest,EntityRec>)=> {
-         var now = new Date();
-         AppContext.singleton.lastMaintenanceTime = now;
-         this.lastRefreshTime = now;
-         if (successfulWrite.isLeft) {
-         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
-         } else {
-         this.initBuffer(successfulWrite.right);
-         }
-         if (this.isDestroyedSetting) {
-         this._editorState = EditorState.DESTROYED;
-         } else {
-         if (this.isReadModeSetting) {
-         this._editorState = EditorState.READ;
-         }
-         }
-         return successfulWrite;
-         });
-         });
-         });
-
-         */
-        return Promise.resolve(null);
-
+    writeAndNavigate():Promise<NavRequest | EntityRec> {
+        return this.write().then((result: Record | Redirection) => {
+            if (RedirectionUtil.isRedirection(result)) {
+                return this.appContext.openRedirection(result as Redirection) as Promise<NavRequest | EntityRec>;
+            } else {
+                return result as NavRequest | EntityRec;
+            }
+        });
     }
 
     //Module level methods
@@ -1347,6 +1329,10 @@ export class EditorContext extends PaneContext {
 
     //Private methods
 
+    /*
+        @TODO
+        Consider clone and deep copy here, to avoid potential ui side-effects
+     */
     private removeSpecialProps(entityRec:EntityRec):EntityRec {
         entityRec.properties = entityRec.properties.filter((prop:Property)=>{
             /* Remove the Binary(s) as they have been written seperately */
@@ -1358,7 +1344,7 @@ export class EditorContext extends PaneContext {
              */
             if(prop.value instanceof Attachment) {
                 const attachment = prop.value as Attachment;
-                return new Property(prop.name, attachment.name, prop.annotations);
+                return new Property(prop.name, attachment.name, prop.propertyType, prop.format, prop.annotations);
             } else {
                 return prop;
             }
@@ -1783,7 +1769,7 @@ export class BarcodeScanContext extends EditorContext {
     }
 }
 
-export class GeoFixContext extends EditorContext {
+export class GpsReadingContext extends EditorContext {
 
     constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
@@ -1796,12 +1782,12 @@ export class GeoFixContext extends EditorContext {
         super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
-    get geoFix():GeoFix {
-        return <GeoFix>this.view;
+    get gpsLocation():GpsReading {
+        return <GpsReading>this.view;
     }
 }
 
-export class GeoLocationContext extends EditorContext {
+export class MapLocationContext extends EditorContext {
 
     constructor(dialog:Dialog,
                 dialogRedirection:DialogRedirection,
@@ -1814,8 +1800,8 @@ export class GeoLocationContext extends EditorContext {
         super(dialog, dialogRedirection, paneRef, parentContext, session, appContext);
     }
 
-    get geoLocation():GeoLocation {
-        return <GeoLocation>this.view;
+    get mapLocation():MapLocation {
+        return <MapLocation>this.view;
     }
 }
 
@@ -2144,7 +2130,7 @@ export class DialogService implements DialogApi {
 
      putRecord(tenantId:string, sessionId:string, dialogId:string, record:Record):Promise<Record | Redirection> {
 
-         return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record}`, record).then(
+         return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record`, record).then(
              jsonClientResponse=>(new DialogServiceResponse<Record | Redirection>(jsonClientResponse)).responseValueOrRedirect()
          );
      }
@@ -2549,7 +2535,6 @@ export class PropFormatter {
             } else {
                 propValue = !!value;
             }
-
         } else if (propDef.isDateType) {
             //this could be a DateValue, a Date, or a string
             if(value instanceof DateValue) {
@@ -2572,14 +2557,6 @@ export class PropFormatter {
             }
         } else if (propDef.isTimeType) {
             propValue = value instanceof TimeValue ? value : TimeValue.fromString(value);
-        } else if (propDef.isObjRefType) {
-            propValue = value instanceof ObjectRef ? value : ObjectRef.fromFormattedValue(value);
-        } else if (propDef.isCodeRefType) {
-            propValue = value instanceof CodeRef ? value : CodeRef.fromFormattedValue(value);
-        } else if (propDef.isGeoFixType) {
-            propValue = value instanceof GeoFix ? value : GeoFix.fromFormattedValue(value);
-        } else if (propDef.isGeoLocationType) {
-            propValue = value instanceof GeoLocation ? value : GeoLocation.fromFormattedValue(value);
         }
         return propValue;
     }
@@ -2648,9 +2625,9 @@ export class PropFormatter {
                 return o.toString();
             } else if (o instanceof ObjectRef) {
                 return o.toString();
-            } else if (o instanceof GeoFix) {
+            } else if (o instanceof GpsReadingProperty) {
                 return o.toString();
-            } else if (o instanceof GeoLocation) {
+            } else if (o instanceof MapLocationProperty) {
                 return o.toString();
             } else {
                 return String(o);
