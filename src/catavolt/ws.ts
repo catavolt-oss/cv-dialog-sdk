@@ -3,7 +3,10 @@
  */
 
 import {StringDictionary, Log} from "./util";
-import {Client, ClientMode, JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
+import {
+    BlobClientResponse, Client, ClientMode, ClientResponse, JsonClientResponse, TextClientResponse,
+    VoidClientResponse
+} from "./client"
 
 type FetchMethod =  'GET' | 'POST' | 'PUT' | 'DELETE'
 
@@ -16,7 +19,14 @@ export class FetchClient implements Client{
         this._clientMode = clientMode;
     }
 
-    get(baseUrl:string, resourcePath?:string):Promise<TextClientResponse> {
+    getBlob(baseUrl:string, resourcePath?:string):Promise<BlobClientResponse> {
+        const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
+        return this.processRequest(url, 'GET').then((response:Response)=>{
+            return response.blob().then(blob=>new BlobClientResponse(blob, response.status));
+        });
+    }
+
+    getText(baseUrl:string, resourcePath?:string):Promise<TextClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return this.processRequest(url, 'GET').then((response:Response)=>{
             return response.text().then(text=>new TextClientResponse(text, response.status));

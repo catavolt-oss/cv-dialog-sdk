@@ -3,7 +3,10 @@ State * Created by rburson on 10/16/17.
  */
 
 import {StringDictionary} from "./util";
-import {Client, ClientMode, JsonClientResponse, TextClientResponse, VoidClientResponse} from "./client"
+import {
+    BlobClientResponse, Client, ClientMode, JsonClientResponse, TextClientResponse,
+    VoidClientResponse
+} from "./client"
 import {FetchClient} from "./ws";
 import {PersistenceTools} from "./persistence-tools";
 
@@ -28,8 +31,13 @@ export class PersistentClient implements Client {
         return this._lastActivity;
     }
 
-    get(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> {
-        let response: Promise<TextClientResponse> = this._fetchClient.get(baseUrl, resourcePath);
+    getBlob(baseUrl:string, resourcePath?:string):Promise<BlobClientResponse> {
+        let response: Promise<BlobClientResponse> = this._fetchClient.getBlob(baseUrl, resourcePath);
+        return response;
+    }
+
+    getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> {
+        let response: Promise<TextClientResponse> = this._fetchClient.getText(baseUrl, resourcePath);
         return response;
     }
 

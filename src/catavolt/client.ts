@@ -5,7 +5,8 @@ import {StringDictionary, Log} from "./util";
 
 export interface Client {
 
-    get(baseUrl:string, resourcePath?:string):Promise<TextClientResponse>;
+    getBlob(baseUrl:string, resourcePath?:string):Promise<BlobClientResponse>;
+    getText(baseUrl:string, resourcePath?:string):Promise<TextClientResponse>;
     postMultipart<T>(baseUrl:string, resourcePath:string, formData:FormData):Promise<VoidClientResponse>;
 
     getJson(baseUrl:string, resourcePath:string, queryParams?:StringDictionary):Promise<JsonClientResponse>;
@@ -30,6 +31,14 @@ export class JsonClientResponse extends ClientResponse<StringDictionary | Array<
 
     constructor(value:StringDictionary | Array<any>, statusCode:number) {
         //Log.debug(`JsonClientResponse: [status]:${statusCode} [body]:${Log.prettyPrint(value)}`);
+        super(value, statusCode);
+    }
+
+}
+
+export class BlobClientResponse extends ClientResponse<Blob> {
+
+    constructor(value:Blob, statusCode:number) {
         super(value, statusCode);
     }
 
