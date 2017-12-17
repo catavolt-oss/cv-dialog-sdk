@@ -1,12 +1,12 @@
 
-import {PersistentClient} from "./persistence";
+
+export const test = null;
 
 console.log('I loaded');
 
-self.addEventListener('install', function(event) {
+self.addEventListener('fetch', function(event) {
 
         // Perform install steps
-        const client:PersistentClient = new PersistentClient();
-        console.log("I installed.  Time to service, etc.....")
+        console.log("I fetched.  Time to service, etc.....")
 });
 
