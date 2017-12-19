@@ -17,6 +17,20 @@ import {
 import {FetchClient} from "./ws";
 import {PersistentClient} from "./persistence";
 import * as moment from 'moment';
+// Chose the locales to load based on this list:
+// https://stackoverflow.com/questions/9711066/most-common-locales-for-worldwide-compatibility
+// Best effort for now.  Need to dynamically load these from Globalize???
+import 'moment/locale/zh-cn';
+import 'moment/locale/ru';
+import 'moment/locale/fr';
+import 'moment/locale/es';
+import 'moment/locale/en-gb';
+import 'moment/locale/de';
+import 'moment/locale/pt';
+import 'moment/locale/pt-br';
+import 'moment/locale/en-ca';
+import 'moment/locale/it';
+import 'moment/locale/ja';
 import * as numeral from "numeral";
 import {PrintForm} from "./print";
 
@@ -555,6 +569,9 @@ export abstract class PaneContext implements Dialog {
                  }
              } else if (typeof prop.value === 'string') {
                  return Promise.resolve(new UrlBinary(prop.value));
+             } else if (prop.value instanceof EncodedBinary) {
+                 return Promise.resolve(prop.value);
+
              } else {
                  return Promise.reject('No binary found at ' + propName);
              }
@@ -2473,6 +2490,29 @@ export class PropFormatter {
     }
 
     static formatValueForRead(value: any, propDef:PropertyDef) {
+        let lang:string = null;
+        // The locale from the browser is not reliable.  The Extender server pulls the browser's locale from the
+        // agent string at logon time.  Use that with a fallback approach to find the best fit locale.
+        // var localeTest = window.navigator.userLanguage || window.navigator.language;
+        if (AppContext.singleton.browserLocaleJson) {
+            let browserLocale = JSON.parse(AppContext.singleton.browserLocaleJson);  // country/language/varient
+            if (browserLocale.country) {
+                let key = browserLocale.language + "-" + browserLocale.country.toLowerCase();
+                if (moment().lang(key)) {
+                    lang = key;
+                }
+            }
+            if (!lang) {
+                let x = moment().lang(browserLocale.language);
+                if (moment().lang(browserLocale.language)) {
+                    lang = browserLocale.language;
+                }
+            }
+            if (!lang) {
+                lang = "en";
+            }
+        }
+        // let test = (moment as any).locales();
         if(value === null || value === undefined) {
             return '';
         } else if ((propDef && propDef.isCodeRefType) || value instanceof CodeRef) {
@@ -2480,12 +2520,26 @@ export class PropFormatter {
         } else if ((propDef && propDef.isObjRefType) || value instanceof ObjectRef) {
             return (value as ObjectRef).description;
         }else if ((propDef && propDef.isDateTimeType)) {
-            return (value as Date).toString();
+            if (!lang) {
+                return (value as Date).toString();
+            } else {
+                return moment(value as Date).locale(lang).format("lll");
+                // return moment(value as Date).format("lll");
+            }
         } else if ((propDef && propDef.isDateType) || value instanceof Date) {
-            return (value as Date).toLocaleDateString();
+            if (!lang) {
+                return (value as Date).toLocaleDateString();
+            } else {
+                return moment(value as Date).locale(lang).format("L");
+                // return moment(value as Date).format("L");
+            }
         } else if ((propDef && propDef.isTimeType) || value instanceof TimeValue) {
-            const timeValue:TimeValue = value as TimeValue;
-            return moment(timeValue).format("LT");
+            if (!lang) {
+                return moment(value as TimeValue).format("LT");
+            } else {
+                return moment(value as TimeValue).locale(lang).format("LT");
+                // return moment(value as TimeValue).format("LT");
+            }
         } else if ((propDef && propDef.isPasswordType)) {
             return (value as string).replace(/./g, "*");
         } else if ((propDef && propDef.isListType) || Array.isArray(value)) {
