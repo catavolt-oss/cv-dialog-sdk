@@ -34,6 +34,12 @@ export class PersistenceTools {
             path[2] == PersistenceTools.SESSIONS;
     }
 
+    public static isDialogRequest(path: string[]): boolean {
+        return path.length > 3 &&
+        path[0] == PersistenceTools.TENANTS &&
+        path[2] == PersistenceTools.SESSIONS;
+    }
+
     public static isGetAvailableViews(path: string[]): boolean {
         return path.length == 7 &&
             path[0] == PersistenceTools.TENANTS &&
