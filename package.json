@@ -17,10 +17,10 @@
   "dependencies": {
     "moment": "~2.14.1",
     "moment-timezone": "^0.5.13",
-    "numeral": "^2.0.6",
-    "typescript": "~2.6.1"
+    "numeral": "^2.0.6"
   },
   "devDependencies": {
+    "typescript": "~2.6.1",
     "@types/numeral": "0.0.21",
     "@types/tape": "^4.2.30",
     "babel-cli": "^6.26.0",
