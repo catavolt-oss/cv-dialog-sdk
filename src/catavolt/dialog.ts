@@ -850,7 +850,10 @@ export abstract class PaneContext implements Dialog {
             if(RedirectionUtil.isRedirection(result)) {
                 this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
             }
-            this.appContext.lastMaintenanceTime = new Date();
+            //@TODO
+            //lastMaintenanceTime really should not be set here (i.e. we don't know if changes were actually made)
+            //use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
+            //this.appContext.lastMaintenanceTime = new Date();
             return result;
         });
     }
