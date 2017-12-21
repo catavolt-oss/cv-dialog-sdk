@@ -307,7 +307,7 @@ export interface DialogMessage {
      */
     readonly code:string;
 
-    readonly type: DialogMessageType;
+    readonly messageType: DialogMessageType;
     /**
      * A human-readable informative description. If a code is provided, then this message explains the meaning of the code.
      */
@@ -329,6 +329,8 @@ export interface DialogMessage {
      * If the case of a host programming error, this property contains a stack trace of the host programming language.
      */
     readonly stackTrace: string;
+
+    readonly type:string;
 
 }
 export interface DialogRedirection extends Redirection {
