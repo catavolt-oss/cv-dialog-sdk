@@ -336,7 +336,7 @@ export class AppContext {
         } else if(redirection.type === TypeNames.WorkbenchRedirectionTypeName) {
             return this.getWorkbench((<WorkbenchRedirection>redirection).workbenchId);
         } else if (redirection.type === TypeNames.NullRedirectionTypeName) {
-            const nullNavRequest = new NullNavRequest(redirection.referringObject);
+           return Promise.resolve(new NullNavRequest(redirection.referringObject));
         } else {
             return Promise.reject(new Error(`Unrecognized type of Redirection ${ObjUtil.formatRecAttr(redirection)}`));
         }
