@@ -480,7 +480,6 @@ export abstract class PaneContext implements Dialog {
     private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
 
     //private/protected
-    protected _destroyed:boolean = false;
     private _binaryCache:{ [index:string]:Array<Binary> } = {};
     private _childrenContexts:Array<PaneContext>;
     private _dialog:Dialog;
@@ -902,7 +901,8 @@ export abstract class PaneContext implements Dialog {
     protected updateSettingsWithNewDialogProperties(referringObject:ReferringObject) {
 
         if(referringObject.isDialogReferrer()) {
-            this.dialog.dialogMode = (referringObject as ReferringDialog).dialogMode;
+            //@TODO - remove this once all DialogModes come back from server as uppercase
+            this.dialog.dialogMode = (referringObject as ReferringDialog).dialogMode.toUpperCase() as DialogMode;
         }
 
     }
