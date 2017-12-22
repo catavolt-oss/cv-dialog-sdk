@@ -1,7 +1,7 @@
 
 import {PersistenceTools} from "./persistence-tools";
 
-const ThisCacheName = 'v0.10';
+const ThisCacheName = 'v0.16';
 const ActiveCacheNames = [ThisCacheName];
 const MessagePrefix = `[Catavolt ServiceWorker ${ThisCacheName} ${(new Date()).toLocaleString()}]`;
 
@@ -44,7 +44,7 @@ export class ServiceWorker {
         }
         // Slice off version number before passing path to PersistenceTools
         // Do NOT cache dialog requests, that is the responsibility of the persistence module
-        if (path.length > 0 && PersistenceTools.isDialogRequest(path.slice(1))) {
+        if (path.length > 0 && ServiceWorker.isDialogRequest(path.slice(1))) {
             return fetch(event.request.clone());
         }
         fetchCount++;
@@ -83,7 +83,7 @@ export class ServiceWorker {
         }
         // Slice off version number before passing path to PersistenceTools
         // Do NOT cache dialog requests, that is the responsibility of the persistence module
-        if (path.length > 0 && PersistenceTools.isDialogRequest(path.slice(1))) {
+        if (path.length > 0 && ServiceWorker.isDialogRequest(path.slice(1))) {
             return fetch(event.request.clone());
         }
         fetchCount++;
@@ -152,6 +152,12 @@ export class ServiceWorker {
           })
         );
         console.log(`${MessagePrefix} End install() method`);
+    }
+
+    public static isDialogRequest(path: string[]): boolean {
+        return path.length > 3 &&
+        path[0] == PersistenceTools.TENANTS &&
+        path[2] == PersistenceTools.SESSIONS;
     }
 
 }

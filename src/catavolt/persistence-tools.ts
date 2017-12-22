@@ -5,18 +5,18 @@ import {Log} from "./util";
 
 export class PersistenceTools {
 
-    private static ACTIONS = 'actions';
-    private static AVAILABLE_VALUES = 'availableValues';
-    private static AVAILABLE_VIEWS = 'availableViews';
-    private static DIALOGS = 'dialogs';
-    private static RECORD = 'record';
-    private static RECORDS = 'records';
-    private static REDIRECTIONS = 'redirections';
-    private static SELECTED_VIEW = 'selectedView';
-    private static SESSIONS = 'sessions';
-    private static TENANTS = 'tenants';
-    private static VIEW_MODE = 'viewMode';
-    private static WORKBENCHES = 'workbenches';
+    public static ACTIONS = 'actions';
+    public static AVAILABLE_VALUES = 'availableValues';
+    public static AVAILABLE_VIEWS = 'availableViews';
+    public static DIALOGS = 'dialogs';
+    public static RECORD = 'record';
+    public static RECORDS = 'records';
+    public static REDIRECTIONS = 'redirections';
+    public static SELECTED_VIEW = 'selectedView';
+    public static SESSIONS = 'sessions';
+    public static TENANTS = 'tenants';
+    public static VIEW_MODE = 'viewMode';
+    public static WORKBENCHES = 'workbenches';
 
     public static deleteAllState(tenantId: string, userId: string) {
         const keyCount = localStorage.length;
@@ -32,12 +32,6 @@ export class PersistenceTools {
         return path.length == 4 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS;
-    }
-
-    public static isDialogRequest(path: string[]): boolean {
-        return path.length > 3 &&
-        path[0] == PersistenceTools.TENANTS &&
-        path[2] == PersistenceTools.SESSIONS;
     }
 
     public static isGetAvailableViews(path: string[]): boolean {
@@ -173,7 +167,7 @@ export class PersistenceTools {
     }
 
     public static readDialogState(tenantId: string, userId: string, dialogId: string): any {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId, {});
+        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId, null);
     }
 
     public static writeDialogState(tenantId: string, userId: string, dialog: any) {
@@ -181,7 +175,7 @@ export class PersistenceTools {
     }
 
     public static readRedirectionState(tenantId: string, userId: string, redirectionId: string): any {
-        return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId, {});
+        return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId, null);
     }
 
     public static writeRedirectionState(tenantId: string, userId: string, redirection: any) {
@@ -189,7 +183,7 @@ export class PersistenceTools {
     }
 
     public static readSessionState(tenantId: string, userId: string): any {
-        return this.readPersistentState(tenantId, userId, 'session', {});
+        return this.readPersistentState(tenantId, userId, 'session', null);
     }
 
     public static writeSessionState(session: any) {
