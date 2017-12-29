@@ -366,15 +366,15 @@ export class AppContext {
      * @param launchAction
      * @returns {Promise<{actionId:string} | Redirection>}
      */
-    performLaunchAction(workbench:Workbench, launchAction:WorkbenchAction):Promise<{actionId:string} | Redirection> {
+    performLaunchAction(launchAction:WorkbenchAction):Promise<{actionId:string} | Redirection> {
 
-        return this.performLaunchActionForId(workbench.id, launchAction.id);
+        return this.performLaunchActionForId(launchAction.workbenchId, launchAction.workbenchId);
 
     }
 
-    performNavigation(workbench:Workbench, launchAction:WorkbenchAction):Promise<NavRequest> {
+    performNavigation(launchAction:WorkbenchAction):Promise<NavRequest> {
 
-        return this.performNavigationForId(workbench.id, launchAction.id);
+        return this.performNavigationForId(launchAction.workbenchId, launchAction.actionId);
 
     }
 
