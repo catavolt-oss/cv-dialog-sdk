@@ -91,7 +91,7 @@ export class AppContext {
         this._devicePropsStatic = {};
         this._devicePropsDynamic = {};
 
-        this.initDialogApi(serverUrl, serverVersion);
+        this.initPersistentApi(serverUrl, serverVersion);
 
         AppContext._singleton = this;
     }
@@ -2710,8 +2710,3 @@ export class PropFormatter {
     }
 
 }
-
-
-
-
-

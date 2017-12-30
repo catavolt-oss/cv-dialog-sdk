@@ -174,6 +174,14 @@ export class PersistenceTools {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialog.id, dialog);
     }
 
+    public static readNavigationState(tenantId: string, userId: string, navigationId: string): any {
+        return this.readPersistentState(tenantId, userId, 'navigation.' + navigationId, null);
+    }
+
+    public static writeNavigationState(tenantId: string, userId: string, navigation: any) {
+        this.writePersistentState(tenantId, userId, 'navigation.' + navigation.id, navigation);
+    }
+
     public static readRedirectionState(tenantId: string, userId: string, redirectionId: string): any {
         return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId, null);
     }

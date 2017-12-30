@@ -1,7 +1,7 @@
 
 import {PersistenceTools} from "./persistence-tools";
 
-const ThisCacheName = 'v0.16';
+const ThisCacheName = 'v0.27';
 const ActiveCacheNames = [ThisCacheName];
 const MessagePrefix = `[Catavolt ServiceWorker ${ThisCacheName} ${(new Date()).toLocaleString()}]`;
 
@@ -129,7 +129,7 @@ export class ServiceWorker {
         console.log(`${MessagePrefix} Begin install() method`);
         event.waitUntil(
           caches.open(ThisCacheName).then(cache => {
-            return cache.addAll([
+            const resourceList = [
                 'index.html',
                 'bundle.js',
                 'ag-grid/ag-grid.css',
@@ -148,7 +148,9 @@ export class ServiceWorker {
                 'lib/bootstrap.min.js',
                 'lib/toastr.min.js',
                 'react-widgets/css/react-widgets.css',
-            ]);
+            ];
+            console.log(`${MessagePrefix} install() adding resources to cache: ${resourceList}`);
+            return cache.addAll(resourceList);
           })
         );
         console.log(`${MessagePrefix} End install() method`);
