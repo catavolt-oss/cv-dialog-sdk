@@ -1,5 +1,3 @@
-/*
- */
 
 import {Log} from "./util";
 
@@ -166,12 +164,62 @@ export class PersistenceTools {
             path[6] == PersistenceTools.VIEW_MODE;
     }
 
+    public static deleteDialogState(tenantId: string, userId: string, dialogId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId);
+    }
+
+    public static deleteAllDialogState(tenantId: string, userId: string, dialogId: string) {
+        const dialog = this.readDialogState(tenantId, userId, dialogId);
+        if (dialog) {
+            this.deleteAllDialogStateFor(tenantId, userId, dialog);
+        }
+    }
+
+    public static deleteAllDialogStateFor(tenantId: string, userId: string, dialog: any) {
+        const dialogChildren = dialog.children;
+        if (dialogChildren) {
+            for (let child of dialogChildren) {
+                this.deleteAllDialogStateFor(tenantId, userId, child);
+            }
+        }
+        this.deleteRedirectionState(tenantId, userId, dialog.id);
+        this.deleteDialogState(tenantId, userId, dialog.id);
+        this.deleteRecordSetState(tenantId, userId, dialog.id);
+        this.deleteDialogParentState(tenantId, userId, dialog.id);
+    }
+
     public static readDialogState(tenantId: string, userId: string, dialogId: string): any {
         return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId, null);
     }
 
+    public static readDialogParentState(tenantId: string, userId: string, childId: string): any {
+        return this.readPersistentState(tenantId, userId, 'dialog.' + childId + '.parent', null);
+    }
+
+    public static writeDialogParentState(tenantId: string, userId: string, child: any, parent: any) {
+        this.writePersistentState(tenantId, userId, 'dialog.' + child.id + '.parent', parent.id);
+        this.writeAllDialogParentState(tenantId, userId, child);
+    }
+
+    public static deleteDialogParentState(tenantId: string, userId: string, childId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
+    }
+
+    public static writeAllDialogParentState(tenantId: string, userId: string, parent: any) {
+        const dialogChildren = parent.children;
+        if (dialogChildren) {
+            for (let child of dialogChildren) {
+                this.writeDialogParentState(tenantId, userId, child, parent);
+            }
+        }
+    }
+
     public static writeDialogState(tenantId: string, userId: string, dialog: any) {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialog.id, dialog);
+    }
+
+    public static deleteNavigationState(tenantId: string, userId: string, navigationId: string) {
+        this.deletePersistentState(tenantId, userId, 'navigation.' + navigationId);
     }
 
     public static readNavigationState(tenantId: string, userId: string, navigationId: string): any {
@@ -182,6 +230,22 @@ export class PersistenceTools {
         this.writePersistentState(tenantId, userId, 'navigation.' + navigation.id, navigation);
     }
 
+    public static readRecordSetState(tenantId: string, userId: string, dialogId: string): any {
+        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', null);
+    }
+
+    public static writeRecordSetState(tenantId: string, userId: string, dialogId: string, recordSet: any): any {
+        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', recordSet);
+    }
+
+    public static deleteRecordSetState(tenantId: string, userId: string, dialogId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet');
+    }
+
+    public static deleteRedirectionState(tenantId: string, userId: string, redirectionId: string) {
+        this.deletePersistentState(tenantId, userId, 'redirection.' + redirectionId);
+    }
+
     public static readRedirectionState(tenantId: string, userId: string, redirectionId: string): any {
         return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId, null);
     }
@@ -190,12 +254,21 @@ export class PersistenceTools {
         this.writePersistentState(tenantId, userId, 'redirection.' + redirection.id, redirection);
     }
 
+    public static deleteSessionState(tenantId: string, userId: string) {
+        this.deletePersistentState(tenantId, userId, 'session');
+    }
+
     public static readSessionState(tenantId: string, userId: string): any {
         return this.readPersistentState(tenantId, userId, 'session', null);
     }
 
     public static writeSessionState(session: any) {
         this.writePersistentState(session.tenantId, session.userId, 'session', session);
+    }
+
+    public static deletePersistentState(tenantId: string, userId: string, stateId: string) {
+        const key: string = tenantId + '.' + userId + '.' + stateId;
+        window.localStorage.removeItem(key);
     }
 
     public static readPersistentState(tenantId: string, userId: string, stateId: string, defaultValue: any): any {
@@ -207,18 +280,6 @@ export class PersistenceTools {
     public static writePersistentState(tenantId: string, userId: string, stateId: string, state: any) {
         const key: string = tenantId + '.' + userId + '.' + stateId;
         window.localStorage.setItem(key, JSON.stringify(state));
-    }
-
-    private static addBriefcaseAction(session: any) {
-        // Workbench id must be substituted
-        var briefcaseAction = {
-            iconBase: "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/hexagonsdaop/images/Scan2.png",
-            name: "Briefcase",
-            actionId: "briefcase-action-id",
-            id: "briefcase-id",
-            type: "hxgn.api.dialog.WorkbenchAction",
-            workbenchId: ""
-        }
     }
 
 }
