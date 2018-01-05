@@ -792,8 +792,7 @@ export abstract class PaneContext implements Dialog {
      */
     /* @TODO */
      writeBinaries(entityRec:EntityRec):Promise<Array<void>> {
-         /*
-         return Promise.all(
+         /*return Promise.all(
              entityRec.properties.filter((prop: Property) => {
                  return this.propDefAtName(prop.name).isBinaryType;
              }).map((prop: Property) => {
@@ -820,8 +819,7 @@ export abstract class PaneContext implements Dialog {
                  }
                  return writePromise;
              })
-         );
-         */
+         );*/
 
          return Promise.resolve(null);
      }
@@ -2014,6 +2012,10 @@ export interface DialogApi {
 
     putRecord(tenantId:string, sessionId:string, dialogId:string, record:Record):Promise<Record | Redirection>;
 
+    //readProperty(tenantId:string, sessionId:string, dialogId:string, propertyName:string, readSeq:number, readLength:number):Promise<>;
+
+    //writeProperty(tenantId:string, sessionId:string, dialogId:string, propertyName:string, data:string, append:boolean):Promise<>;
+
     getRecords(tenantId:string, sessionId:string, dialogId:string, queryParams:QueryParameters):Promise<RecordSet>;
 
     getMode(tenantId:string, sessionId:string, dialogId:string):Promise<ViewMode>;
@@ -2034,7 +2036,7 @@ export interface DialogApi {
 
 export class DialogService implements DialogApi {
 
-    private static SERVER:string = 'https://dialog.hxgn-api.net' ;
+    private static SERVER:string = 'https://dialog.hxgn-api.net';
 
     readonly baseUrl:string;
 
