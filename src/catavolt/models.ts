@@ -2133,6 +2133,10 @@ export class RedirectionUtil {
         ].some(n => n === o['type']);
     }
 
+    static isNullRedirection(o:any):boolean {
+        return o['type'] === TypeNames.NullRedirectionTypeName;
+    }
+
 }
 
 export interface Session {
