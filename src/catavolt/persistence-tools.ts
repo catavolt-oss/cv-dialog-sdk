@@ -16,14 +16,98 @@ export class PersistenceTools {
     public static VIEW_MODE = 'viewMode';
     public static WORKBENCHES = 'workbenches';
 
+    public static deleteAllDialogState(tenantId: string, userId: string, dialogId: string) {
+        const dialog = this.readDialogState(tenantId, userId, dialogId);
+        if (dialog) {
+            this.deleteAllDialogStateFor(tenantId, userId, dialog);
+        }
+    }
+
     public static deleteAllState(tenantId: string, userId: string) {
         const keyCount = localStorage.length;
         for (var i = keyCount - 1; i > -1; --i) {
             const key = localStorage.key(i);
             Log.debug("Removing from localStorage: " + key);
             localStorage.removeItem(key);
-            // const item = localStorage.getItem(key);
         }
+    }
+
+    public static deleteAllDialogStateFor(tenantId: string, userId: string, dialog: any) {
+        const dialogChildren = dialog.children;
+        if (dialogChildren) {
+            for (let child of dialogChildren) {
+                this.deleteAllDialogStateFor(tenantId, userId, child);
+            }
+        }
+        this.deleteRedirectionState(tenantId, userId, dialog.id);
+        this.deleteDialogState(tenantId, userId, dialog.id);
+        this.deleteRecordSetState(tenantId, userId, dialog.id);
+        this.deleteDialogParentState(tenantId, userId, dialog.id);
+    }
+
+    public static deleteDialogParentState(tenantId: string, userId: string, childId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
+    }
+
+    public static deleteDialogState(tenantId: string, userId: string, dialogId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId);
+    }
+
+    public static deleteNavigationState(tenantId: string, userId: string, navigationId: string) {
+        this.deletePersistentState(tenantId, userId, 'navigation.' + navigationId);
+    }
+
+    public static deletePersistentState(tenantId: string, userId: string, stateId: string) {
+        const key: string = tenantId + '.' + userId + '.' + stateId;
+        window.localStorage.removeItem(key);
+    }
+
+    public static deleteRecordSetState(tenantId: string, userId: string, dialogId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet');
+    }
+
+    public static deleteRedirectionState(tenantId: string, userId: string, redirectionId: string) {
+        this.deletePersistentState(tenantId, userId, 'redirection.' + redirectionId);
+    }
+
+    public static deleteSessionState(tenantId: string, userId: string) {
+        this.deletePersistentState(tenantId, userId, 'session');
+    }
+
+    public static findDialogState(tenantId: string, userId: string, dialogId: string): any {
+        const dialog = this.findRootDialogState(tenantId, userId, dialogId);
+        if (!dialog) {
+            return null;
+        }
+        return this.findDialogStateWithin(tenantId, userId, dialog, dialogId);
+    }
+
+    public static findDialogStateWithin(tenantId: string, userId: string, dialog: any, targetId: string): any {
+        if (dialog && dialog.id === targetId) {
+            return dialog;
+        }
+        const dialogChildren = dialog.children;
+        if (dialogChildren) {
+            for (let child of dialogChildren) {
+                const nestedDialog = this.findDialogStateWithin(tenantId, userId, child, targetId);
+                if (nestedDialog) {
+                    return nestedDialog;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static findRootDialogState(tenantId: string, userId: string, dialogId: string): any {
+        const dialog = this.readDialogState(tenantId, userId, dialogId);
+        if (dialog) {
+            return dialog;
+        }
+        const parentId = this.readDialogParentState(tenantId, userId, dialogId);
+        if  (parentId) {
+            return this.findRootDialogState(tenantId, userId, parentId);
+        }
+        return null;
     }
 
     public static isDeleteSession(path: string[]): boolean {
@@ -164,45 +248,34 @@ export class PersistenceTools {
             path[6] == PersistenceTools.VIEW_MODE;
     }
 
-    public static deleteDialogState(tenantId: string, userId: string, dialogId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId);
-    }
-
-    public static deleteAllDialogState(tenantId: string, userId: string, dialogId: string) {
-        const dialog = this.readDialogState(tenantId, userId, dialogId);
-        if (dialog) {
-            this.deleteAllDialogStateFor(tenantId, userId, dialog);
-        }
-    }
-
-    public static deleteAllDialogStateFor(tenantId: string, userId: string, dialog: any) {
-        const dialogChildren = dialog.children;
-        if (dialogChildren) {
-            for (let child of dialogChildren) {
-                this.deleteAllDialogStateFor(tenantId, userId, child);
-            }
-        }
-        this.deleteRedirectionState(tenantId, userId, dialog.id);
-        this.deleteDialogState(tenantId, userId, dialog.id);
-        this.deleteRecordSetState(tenantId, userId, dialog.id);
-        this.deleteDialogParentState(tenantId, userId, dialog.id);
+    public static readDialogParentState(tenantId: string, userId: string, childId: string): any {
+        return this.readPersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
     }
 
     public static readDialogState(tenantId: string, userId: string, dialogId: string): any {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId, null);
+        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId);
     }
 
-    public static readDialogParentState(tenantId: string, userId: string, childId: string): any {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + childId + '.parent', null);
+    public static readNavigationState(tenantId: string, userId: string, navigationId: string): any {
+        return this.readPersistentState(tenantId, userId, 'navigation.' + navigationId);
     }
 
-    public static writeDialogParentState(tenantId: string, userId: string, child: any, parent: any) {
-        this.writePersistentState(tenantId, userId, 'dialog.' + child.id + '.parent', parent.id);
-        this.writeAllDialogParentState(tenantId, userId, child);
+    public static readPersistentState(tenantId: string, userId: string, stateId: string): any {
+        const key: string = tenantId + '.' + userId + '.' + stateId;
+        var json: string = window.localStorage.getItem(key);
+        return json ? JSON.parse(json) : null;
     }
 
-    public static deleteDialogParentState(tenantId: string, userId: string, childId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
+    public static readRecordSetState(tenantId: string, userId: string, dialogId: string): any {
+        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet');
+    }
+
+    public static readRedirectionState(tenantId: string, userId: string, redirectionId: string): any {
+        return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId);
+    }
+
+    public static readSessionState(tenantId: string, userId: string): any {
+        return this.readPersistentState(tenantId, userId, 'session');
     }
 
     public static writeAllDialogParentState(tenantId: string, userId: string, parent: any) {
@@ -214,72 +287,34 @@ export class PersistenceTools {
         }
     }
 
+    public static writeDialogParentState(tenantId: string, userId: string, child: any, parent: any) {
+        this.writePersistentState(tenantId, userId, 'dialog.' + child.id + '.parent', parent.id);
+        this.writeAllDialogParentState(tenantId, userId, child);
+    }
+
     public static writeDialogState(tenantId: string, userId: string, dialog: any) {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialog.id, dialog);
     }
 
-    public static deleteNavigationState(tenantId: string, userId: string, navigationId: string) {
-        this.deletePersistentState(tenantId, userId, 'navigation.' + navigationId);
-    }
-
-    public static readNavigationState(tenantId: string, userId: string, navigationId: string): any {
-        return this.readPersistentState(tenantId, userId, 'navigation.' + navigationId, null);
-    }
-
-    public static writeNavigationState(tenantId: string, userId: string, navigation: any) {
-        this.writePersistentState(tenantId, userId, 'navigation.' + navigation.id, navigation);
-    }
-
-    public static readRecordSetState(tenantId: string, userId: string, dialogId: string): any {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', null);
+    public static writePersistentState(tenantId: string, userId: string, stateId: string, state: any) {
+        const key: string = tenantId + '.' + userId + '.' + stateId;
+        window.localStorage.setItem(key, JSON.stringify(state));
     }
 
     public static writeRecordSetState(tenantId: string, userId: string, dialogId: string, recordSet: any): any {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', recordSet);
     }
 
-    public static deleteRecordSetState(tenantId: string, userId: string, dialogId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet');
-    }
-
-    public static deleteRedirectionState(tenantId: string, userId: string, redirectionId: string) {
-        this.deletePersistentState(tenantId, userId, 'redirection.' + redirectionId);
-    }
-
-    public static readRedirectionState(tenantId: string, userId: string, redirectionId: string): any {
-        return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId, null);
+    public static writeNavigationState(tenantId: string, userId: string, navigation: any) {
+        this.writePersistentState(tenantId, userId, 'navigation.' + navigation.id, navigation);
     }
 
     public static writeRedirectionState(tenantId: string, userId: string, redirection: any) {
         this.writePersistentState(tenantId, userId, 'redirection.' + redirection.id, redirection);
     }
 
-    public static deleteSessionState(tenantId: string, userId: string) {
-        this.deletePersistentState(tenantId, userId, 'session');
-    }
-
-    public static readSessionState(tenantId: string, userId: string): any {
-        return this.readPersistentState(tenantId, userId, 'session', null);
-    }
-
     public static writeSessionState(session: any) {
         this.writePersistentState(session.tenantId, session.userId, 'session', session);
-    }
-
-    public static deletePersistentState(tenantId: string, userId: string, stateId: string) {
-        const key: string = tenantId + '.' + userId + '.' + stateId;
-        window.localStorage.removeItem(key);
-    }
-
-    public static readPersistentState(tenantId: string, userId: string, stateId: string, defaultValue: any): any {
-        const key: string = tenantId + '.' + userId + '.' + stateId;
-        var json: string = window.localStorage.getItem(key);
-        return json ? JSON.parse(json) : defaultValue;
-    }
-
-    public static writePersistentState(tenantId: string, userId: string, stateId: string, state: any) {
-        const key: string = tenantId + '.' + userId + '.' + stateId;
-        window.localStorage.setItem(key, JSON.stringify(state));
     }
 
 }

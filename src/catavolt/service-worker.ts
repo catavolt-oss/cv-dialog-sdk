@@ -1,7 +1,7 @@
 
 import {PersistenceTools} from "./persistence-tools";
 
-const ThisCacheName = 'v0.58';
+const ThisCacheName = 'v0.83';
 const ActiveCacheNames = [ThisCacheName];
 const MessagePrefix = `[Catavolt ServiceWorker ${ThisCacheName} ${(new Date()).toLocaleString()}]`;
 
@@ -49,11 +49,11 @@ export class ServiceWorker {
         }
         fetchCount++;
         const thisFetchId = fetchCount;
-        console.log(`${MessagePrefix} Begin fetchAndStore() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
+//        console.log(`${MessagePrefix} Begin fetchAndStore() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
         event.respondWith(
             caches.match(event.request).then(cachedResponse => {
                 if (cachedResponse) {
-                    console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response found in cache: ${event.request.url}`);
+//                    console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response found in cache: ${event.request.url}`);
                     return cachedResponse;
                 }
                 var requestToCache = event.request.clone();
@@ -71,7 +71,7 @@ export class ServiceWorker {
                 });
             })
         );
-        console.log(`${MessagePrefix} End fetchAndStore() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
+//        console.log(`${MessagePrefix} End fetchAndStore() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
     }
 
     public static fetchFromCache(event) {
