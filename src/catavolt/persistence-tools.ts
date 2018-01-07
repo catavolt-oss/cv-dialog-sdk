@@ -23,15 +23,6 @@ export class PersistenceTools {
         }
     }
 
-    public static deleteAllState(tenantId: string, userId: string) {
-        const keyCount = localStorage.length;
-        for (var i = keyCount - 1; i > -1; --i) {
-            const key = localStorage.key(i);
-            Log.debug("Removing from localStorage: " + key);
-            localStorage.removeItem(key);
-        }
-    }
-
     public static deleteAllDialogStateFor(tenantId: string, userId: string, dialog: any) {
         const dialogChildren = dialog.children;
         if (dialogChildren) {
@@ -44,6 +35,22 @@ export class PersistenceTools {
         this.deleteRecordSetState(tenantId, userId, dialog.id);
         this.deleteRecordState(tenantId, userId, dialog.id);
         this.deleteDialogParentState(tenantId, userId, dialog.id);
+    }
+
+    public static deleteAllNavigationStateFor(tenantId: string, userId: string, navigationKey: string) {
+        const previousNavigation = PersistenceTools.readNavigationState(tenantId, userId, navigationKey);
+        if (previousNavigation) {
+            PersistenceTools.deleteAllDialogState(tenantId, userId, previousNavigation.redirectionId);
+        }
+    }
+
+    public static deleteAllState(tenantId: string, userId: string) {
+        const keyCount = localStorage.length;
+        for (var i = keyCount - 1; i > -1; --i) {
+            const key = localStorage.key(i);
+            Log.debug("Removing from localStorage: " + key);
+            localStorage.removeItem(key);
+        }
     }
 
     public static deleteDialogParentState(tenantId: string, userId: string, childId: string) {

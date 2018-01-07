@@ -5,12 +5,16 @@ import {
     VoidClientResponse
 } from "./client"
 import {FetchClient} from "./ws";
+import {BriefcaseTemplate} from "./briefcase-template";
 import {PersistenceTools} from "./persistence-tools";
 
 export class PersistentClient implements Client {
 
     private static ADD_TO_BRIEFCASE_ACTION_ID = 'alias_AddToBriefcase';
     private static BRIEFCASE_ACTION_ID = 'Briefcase';
+    private static BRIEFCASE_DIALOG_ID = 'briefcase_1';
+    private static BRIEFCASE_RECORD_DIALOG_ID = 'briefcase_child_1';
+    private static BRIEFCASE_WORKPACKAGES_DIALOG_ID = 'briefcase_child_2';
     private static OPEN_ACTION_ID = 'open';
     private static ONLINE_PROPERTY_NAME = 'online';
     private static REFERRING_WORKBENCH_MODEL_TYPE = 'hxgn.api.dialog.ReferringWorkbench';
@@ -19,14 +23,20 @@ export class PersistentClient implements Client {
 
     private _clientMode: ClientMode;
     private _fetchClient: FetchClient;
+    private _sessionId: string;
     private _tenantId: string;
     private _userId: string;
 
     constructor(clientMode: ClientMode = ClientMode.ONLINE) {
         this._clientMode = clientMode;
         this._fetchClient = new FetchClient();
-        this._tenantId = undefined;
-        this._userId = undefined;
+        const PersistentClientVars = JSON.parse(window.localStorage.getItem('PersistentClientVars'));
+        if (PersistentClientVars) {
+            this._tenantId = PersistentClientVars.tenantId;
+            this._userId = PersistentClientVars.userId;
+            this._sessionId = PersistentClientVars.sessionId;
+            this._clientMode = PersistentClientVars.clientMode === 'ONLINE' ? ClientMode.ONLINE : ClientMode.OFFLINE;
+        }
     }
 
     /* Last operation happened at this time */
@@ -34,6 +44,36 @@ export class PersistentClient implements Client {
 
     get lastActivity(): Date {
         return this._lastActivity;
+    }
+
+    private writePersistentClientVars() {
+        const PersistentClientVars = {
+            tenantId: this._tenantId,
+            userId: this._userId,
+            sessionId: this._sessionId,
+            clientMode: this._clientMode === ClientMode.ONLINE ? 'ONLINE' : 'OFFLINE'
+        };
+        window.localStorage.setItem('PersistentClientVars', JSON.stringify(PersistentClientVars));
+    }
+
+    private changeClientMode(clientMode: ClientMode) {
+        this._clientMode = clientMode;
+        this.writePersistentClientVars();
+    }
+
+    private changeUserId(userId: string) {
+        this._userId = userId;
+        this.writePersistentClientVars();
+    }
+
+    private changeSessionId(sessionId: string) {
+        this._sessionId = sessionId;
+        this.writePersistentClientVars();
+    }
+
+    private changeTenantId(tenantId: string) {
+        this._tenantId = tenantId;
+        this.writePersistentClientVars();
     }
 
     private createDialogMessageModel(message: string) {
@@ -48,7 +88,7 @@ export class PersistentClient implements Client {
         return {type: 'hxgn.api.dialog.SessionId', sessionId: sessionId};
     }
 
-    private deconstructDialogPath(resourcePathElems: string[]): any {
+    private deconstructGetDialogPath(resourcePathElems: string[]): any {
         return {
             tenantId: resourcePathElems[1],
             sessionId: resourcePathElems[3],
@@ -64,7 +104,15 @@ export class PersistentClient implements Client {
         }
     }
 
-    private deconstructMenuActionPath(resourcePathElems: string[]): any {
+    private deconstructGetRedirectionPath(resourcePathElems: string[]): any {
+        return {
+            tenantId: resourcePathElems[1],
+            sessionId: resourcePathElems[3],
+            redirectionId: resourcePathElems[5]
+        }
+    }
+
+    private deconstructPostMenuActionPath(resourcePathElems: string[]): any {
         return {
             tenantId: resourcePathElems[1],
             sessionId: resourcePathElems[3],
@@ -81,7 +129,7 @@ export class PersistentClient implements Client {
         }
     }
 
-    private deconstructWorkbenchActionPath(resourcePathElems: string[]): any {
+    private deconstructPostWorkbenchActionPath(resourcePathElems: string[]): any {
         return {
             tenantId: resourcePathElems[1],
             sessionId: resourcePathElems[3],
@@ -108,8 +156,6 @@ export class PersistentClient implements Client {
             if (!session) {
                 resolve(new JsonClientResponse(this.createOfflineSessionNotFoundModel(), 404));
             } else {
-                this._tenantId = undefined;
-                this._userId = undefined;
                 const sessionIdModel = this.createSessionIdModel(session.id);
                 resolve(new JsonClientResponse(sessionIdModel, 200));
             }
@@ -124,22 +170,29 @@ export class PersistentClient implements Client {
     }
 
     private getDialog(baseUrl: string, resourcePath: string, resourcePathElems: string[], queryParams?: StringDictionary): Promise<JsonClientResponse> {
-        const pathFields = this.deconstructDialogPath(resourcePathElems);
+        const pathFields = this.deconstructGetDialogPath(resourcePathElems);
+        if (pathFields.dialogId === PersistentClient.BRIEFCASE_DIALOG_ID) {
+            var dialog = PersistenceTools.readDialogState(this._tenantId, this._userId, pathFields.dialogId);
+            if (!dialog) {
+                dialog = BriefcaseTemplate.BRIEFCASE_DIALOG;
+                dialog.sessionId = this._sessionId;
+                PersistenceTools.writeDialogState(this._tenantId, this._userId, dialog);
+                PersistenceTools.writeAllDialogParentState(this._tenantId, this._userId, dialog);
+            }
+            return Promise.resolve(new JsonClientResponse(dialog, 200));
+        }
         if (this._clientMode === ClientMode.OFFLINE) {
-            return new Promise<JsonClientResponse>((resolve, reject) => {
-                const dialog = PersistenceTools.readDialogState(this._tenantId, this._userId, pathFields.dialogId);
-                if (!dialog) {
-                    resolve(new JsonClientResponse(this.createDialogMessageModel(`Offline dialog not found ${pathFields.dialogId}`), 404));
-                } else {
-                    resolve(new JsonClientResponse(dialog, 200));
-                }
-            });
+            const dialog = PersistenceTools.readDialogState(this._tenantId, this._userId, pathFields.dialogId);
+            if (!dialog) {
+                return Promise.resolve(new JsonClientResponse(this.createDialogMessageModel(`Offline dialog not found: ${pathFields.dialogId}`), 404));
+            } else {
+                return Promise.resolve(new JsonClientResponse(dialog, 200));
+            }
         }
         let response: Promise<JsonClientResponse> = this._fetchClient.getJson(baseUrl, resourcePath, queryParams);
         return response.then(jcr => {
             if (jcr.statusCode === 200) {
                 var dialog = <StringDictionary> jcr.value;
-                const referringObject = dialog.referringObject;
                 if (this.isWorkPackagesDialog(dialog)) {
                     dialog = this.patchWorkPackagesDialog(dialog);
                 }
@@ -174,15 +227,21 @@ export class PersistentClient implements Client {
 
     private getRecord(baseUrl: string, resourcePath: string, resourcePathElems: string[], queryParams?: StringDictionary): Promise<JsonClientResponse> {
         const pathFields = this.deconstructGetRecordPath(resourcePathElems);
+        if (pathFields.dialogId === PersistentClient.BRIEFCASE_RECORD_DIALOG_ID) {
+            var record = PersistenceTools.readRecordState(this._tenantId, this._userId, pathFields.dialogId);
+            if (!record) {
+                record = BriefcaseTemplate.BRIEFCASE_RECORD;
+                PersistenceTools.writeRecordState(this._tenantId, this._userId, pathFields.dialogId, record);
+            }
+            return Promise.resolve(new JsonClientResponse(record, 200));
+        }
         if (this._clientMode === ClientMode.OFFLINE) {
-            return new Promise<JsonClientResponse>((resolve, reject) => {
-                const record = PersistenceTools.readRecordState(this._tenantId, this._userId, pathFields.dialogId);
-                if (!record) {
-                    resolve(new JsonClientResponse(this.createDialogMessageModel(`Offline record not found ${pathFields.dialogId}`), 404));
-                } else {
-                    resolve(new JsonClientResponse(record, 200));
-                }
-            });
+            const record = PersistenceTools.readRecordState(this._tenantId, this._userId, pathFields.dialogId);
+            if (!record) {
+                return Promise.resolve(new JsonClientResponse(this.createDialogMessageModel(`Offline record not found: ${pathFields.dialogId}`), 404));
+            } else {
+                return Promise.resolve(new JsonClientResponse(record, 200));
+            }
         }
         let response: Promise<JsonClientResponse> = this._fetchClient.getJson(baseUrl, resourcePath, queryParams);
         return response.then(jcr => {
@@ -201,6 +260,10 @@ export class PersistentClient implements Client {
     }
 
     private getRedirection(baseUrl: string, resourcePath: string, resourcePathElems: string[], queryParams?: StringDictionary): Promise<JsonClientResponse> {
+        const pathFields = this.deconstructGetRedirectionPath(resourcePathElems);
+        if (pathFields.redirectionId === PersistentClient.BRIEFCASE_DIALOG_ID) {
+            return Promise.resolve(new JsonClientResponse(BriefcaseTemplate.BRIEFCASE_REDIRECTION, 303));
+        }
         if (this._clientMode === ClientMode.OFFLINE) {
             return Promise.resolve(new JsonClientResponse(this.createDialogMessageModel(`GET redirection is not valid while offline: ${resourcePath}`), 400));
         }
@@ -270,8 +333,8 @@ export class PersistentClient implements Client {
     }
 
     private postAddToBriefcaseMenuAction(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
+        const pathFields = this.deconstructPostMenuActionPath(resourcePathElems);
         const redirectionId = this.makeNullRedirectionId;
-        const pathFields = this.deconstructMenuActionPath(resourcePathElems);
         if (!jsonBody || jsonBody.targets || jsonBody.targets.length === 0) {
             return Promise.resolve(new JsonClientResponse(this.createDialogMessageModel('Selection required'), 400));
         }
@@ -297,11 +360,6 @@ export class PersistentClient implements Client {
             "type": "hxgn.api.dialog.NullRedirection"
         };
 
-        // tenants/hexagonsdaop/sessions/6222484894295291067_2119522777_505_-1224984819/dialogs/4/actions/open
-        // return this._fetchClient.postJson(baseUrl, resourcePath, jsonBody);
-
-        console.log('Adding work package to briefcase - request path: ' + resourcePath);
-        console.log('Adding work package to briefcase - request body: ' + JSON.stringify(jsonBody));
         return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
     }
 
@@ -323,7 +381,7 @@ export class PersistentClient implements Client {
     }
 
     private postMenuAction(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        const pathFields = this.deconstructMenuActionPath(resourcePathElems);
+        const pathFields = this.deconstructPostMenuActionPath(resourcePathElems);
         const redirectionId = this.makeNullRedirectionId();
         const nullRedirection = {
             "tenantId": this._tenantId,
@@ -348,7 +406,8 @@ export class PersistentClient implements Client {
                     resolve(new JsonClientResponse(this.createDialogMessageModel('Briefcase not found'), 400));
                 }
                 PersistenceTools.updateRecordPropertyValue(briefcaseRecord, PersistentClient.ONLINE_PROPERTY_NAME, false);
-                this._clientMode = ClientMode.OFFLINE;
+                this.writeBriefcaseRecord(briefcaseRecord);
+                this.changeClientMode(ClientMode.OFFLINE);
                 resolve(new JsonClientResponse(nullRedirection, 303));
             } else if (pathFields.actionId === 'alias_ExitOfflineMode') {
                 const briefcaseRecord = this.readBriefcaseRecord();
@@ -356,7 +415,8 @@ export class PersistentClient implements Client {
                     resolve(new JsonClientResponse(this.createDialogMessageModel('Briefcase not found'), 400));
                 }
                 PersistenceTools.updateRecordPropertyValue(briefcaseRecord, PersistentClient.ONLINE_PROPERTY_NAME, true);
-                this._clientMode = ClientMode.ONLINE;
+                this.writeBriefcaseRecord(briefcaseRecord);
+                this.changeClientMode(ClientMode.ONLINE);
                 resolve(new JsonClientResponse(nullRedirection, 303));
             } else {
                 resolve(this._fetchClient.postJson(baseUrl, resourcePath, jsonBody));
@@ -373,6 +433,14 @@ export class PersistentClient implements Client {
 
     private postRecords(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
         const pathFields = this.deconstructPostRecordsPath(resourcePathElems);
+        if (pathFields.dialogId === PersistentClient.BRIEFCASE_WORKPACKAGES_DIALOG_ID) {
+            var recordSet = PersistenceTools.readRecordSetState(this._tenantId, this._userId, pathFields.dialogId);
+            if (!recordSet) {
+                const recordSet = BriefcaseTemplate.BRIEFCASE_WORKPACKAGES_RECORDSET;
+                PersistenceTools.writeRecordSetState(this._tenantId, this._userId, pathFields.dialogId, recordSet);
+            }
+            return Promise.resolve(new JsonClientResponse(recordSet, 200));
+        }
         if (this._clientMode === ClientMode.OFFLINE) {
             return new Promise<JsonClientResponse>((resolve, reject) => {
                 const recordSet = PersistenceTools.readRecordSetState(this._tenantId, this._userId, pathFields.dialogId);
@@ -397,6 +465,41 @@ export class PersistentClient implements Client {
                     PersistenceTools.writeRecordSetState(this._tenantId, this._userId, dialogId, recordSet);
                 }
                 return new JsonClientResponse(recordSet, 200);
+            }
+            return response;
+        });
+    }
+
+    private postSession(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
+        this.changeTenantId(resourcePathElems[1]);
+        this.changeUserId(jsonBody.userId);
+        const briefcaseRecord = this.readBriefcaseRecord();
+        if (briefcaseRecord) {
+            const onlineProperty = PersistenceTools.findRecordProperty(briefcaseRecord, PersistentClient.ONLINE_PROPERTY_NAME);
+            if (onlineProperty && !onlineProperty.value) {
+                this.changeClientMode(ClientMode.OFFLINE);
+            } else {
+                this.changeClientMode(ClientMode.ONLINE);
+            }
+        }
+        if (this._clientMode === ClientMode.OFFLINE) {
+            return new Promise<JsonClientResponse>((resolve, reject) => {
+                const session = PersistenceTools.readSessionState(this._tenantId, this._userId);
+                if (!session) {
+                    resolve(new JsonClientResponse(this.createOfflineSessionNotFoundModel(), 404));
+                } else {
+                    this.changeSessionId(session.id);
+                    resolve(new JsonClientResponse(session, 200));
+                }
+            });
+        }
+        let response: Promise<JsonClientResponse> = this._fetchClient.postJson(baseUrl, resourcePath, jsonBody);
+        return response.then(jcr => {
+            if (jcr.statusCode === 200) {
+                const session = <StringDictionary> jcr.value;
+                this.changeSessionId(session.id);
+//                PersistenceTools.deleteAllState(this._tenantId, this._userId);
+                PersistenceTools.writeSessionState(session);
             }
             return response;
         });
@@ -461,44 +564,11 @@ export class PersistentClient implements Client {
         }
     }
 
-    private postSession(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        this._tenantId = resourcePathElems[1];
-        this._userId = jsonBody.userId;
-        const briefcaseRecord = this.readBriefcaseRecord();
-        if (briefcaseRecord) {
-            const onlineProperty = PersistenceTools.findRecordProperty(briefcaseRecord, PersistentClient.ONLINE_PROPERTY_NAME);
-            if (onlineProperty && !onlineProperty.value) {
-                this._clientMode = ClientMode.OFFLINE;
-            } else {
-                this._clientMode = ClientMode.ONLINE;
-            }
-        }
-        if (this._clientMode === ClientMode.OFFLINE) {
-            return new Promise<JsonClientResponse>((resolve, reject) => {
-                const session = PersistenceTools.readSessionState(this._tenantId, this._userId);
-                if (!session) {
-                    resolve(new JsonClientResponse(this.createOfflineSessionNotFoundModel(), 404));
-                } else {
-                    resolve(new JsonClientResponse(session, 200));
-                }
-            });
-        }
-        let response: Promise<JsonClientResponse> = this._fetchClient.postJson(baseUrl, resourcePath, jsonBody);
-        return response.then(jcr => {
-            if (jcr.statusCode === 200) {
-                const session = <StringDictionary> jcr.value;
-//                PersistenceTools.deleteAllState(this._tenantId, this._userId);
-                PersistenceTools.writeSessionState(session);
-            }
-            return response;
-        });
-    }
-
     private postWorkbenchAction(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        const pathFields = this.deconstructWorkbenchActionPath(resourcePathElems);
-        if (pathFields.actionId === 'WorkPackages') {
+        const pathFields = this.deconstructPostWorkbenchActionPath(resourcePathElems);
+        if (pathFields.actionId === PersistentClient.WORK_PACKAGES_ACTION_ID) {
             return this.postWorkbenchActionWorkPackages(baseUrl, resourcePath, resourcePathElems, jsonBody);
-        } else if (pathFields.actionId === 'Briefcase') {
+        } else if (pathFields.actionId === PersistentClient.BRIEFCASE_ACTION_ID) {
             return this.postWorkbenchActionBriefcase(baseUrl, resourcePath, resourcePathElems, jsonBody);
         }
         if (this._clientMode === ClientMode.OFFLINE) {
@@ -508,11 +578,20 @@ export class PersistentClient implements Client {
     }
 
     private postWorkbenchActionBriefcase(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        return this.postWorkbenchActionFromCache(baseUrl, resourcePath, resourcePathElems, jsonBody);
+        const pathFields = this.deconstructPostWorkbenchActionPath(resourcePathElems);
+        const redirection = BriefcaseTemplate.BRIEFCASE_REDIRECTION;
+        const navigationKey = `workbench_${pathFields.workbenchId}->${pathFields.actionId}`;
+        const navigation = {
+            id: navigationKey,
+            redirectionId: redirection.id
+        };
+        PersistenceTools.writeNavigationState(this._tenantId, this._userId, navigation);
+        PersistenceTools.writeRedirectionState(this._tenantId, this._userId, redirection);
+        return Promise.resolve(new JsonClientResponse(redirection, 303));
     }
 
-    private postWorkbenchActionFromCache(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody: StringDictionary): Promise<JsonClientResponse> {
-        const pathFields = this.deconstructWorkbenchActionPath(resourcePathElems);
+    private postWorkbenchActionWorkPackages(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
+        const pathFields = this.deconstructPostWorkbenchActionPath(resourcePathElems);
         const navigationKey = `workbench_${pathFields.workbenchId}->${pathFields.actionId}`;
         if (this._clientMode === ClientMode.OFFLINE) {
             return new Promise<JsonClientResponse>((resolve, reject) => {
@@ -532,24 +611,19 @@ export class PersistentClient implements Client {
         let response: Promise<JsonClientResponse> = this._fetchClient.postJson(baseUrl, resourcePath, jsonBody);
         return response.then(jcr => {
             if (jcr.statusCode === 303) {
-                const redirection = <StringDictionary> jcr.value;
-                const previousNavigation = PersistenceTools.readNavigationState(this._tenantId, this._userId, navigationKey);
-                if (previousNavigation) {
-                    PersistenceTools.deleteAllDialogState(this._tenantId, this._userId, previousNavigation.redirectionId);
+                if (pathFields.actionId === PersistentClient.WORK_PACKAGES_ACTION_ID) {
+                    const redirection = <StringDictionary> jcr.value;
+                    PersistenceTools.deleteAllNavigationStateFor(this._tenantId, this._userId, navigationKey);
+                    const navigation = {
+                        id: navigationKey,
+                        redirectionId: redirection.id
+                    };
+                    PersistenceTools.writeNavigationState(this._tenantId, this._userId, navigation);
+                    PersistenceTools.writeRedirectionState(this._tenantId, this._userId, redirection);
                 }
-                const navigation = {
-                    id: navigationKey,
-                    redirectionId: redirection.id
-                };
-                PersistenceTools.writeNavigationState(this._tenantId, this._userId, navigation);
-                PersistenceTools.writeRedirectionState(this._tenantId, this._userId, redirection);
             }
             return response;
         });
-    }
-
-    private postWorkbenchActionWorkPackages(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        return this.postWorkbenchActionFromCache(baseUrl, resourcePath, resourcePathElems, jsonBody);
     }
 
     putJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
@@ -560,7 +634,7 @@ export class PersistentClient implements Client {
     }
 
     setClientMode(clientMode: ClientMode): void {
-        this._clientMode = clientMode;
+        this.changeClientMode(clientMode);
     }
 
 }
