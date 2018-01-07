@@ -1,5 +1,5 @@
 
-import {Log} from "./util";
+import {Log, StringDictionary} from "./util";
 
 export class PersistenceTools {
 
@@ -42,6 +42,7 @@ export class PersistenceTools {
         this.deleteRedirectionState(tenantId, userId, dialog.id);
         this.deleteDialogState(tenantId, userId, dialog.id);
         this.deleteRecordSetState(tenantId, userId, dialog.id);
+        this.deleteRecordState(tenantId, userId, dialog.id);
         this.deleteDialogParentState(tenantId, userId, dialog.id);
     }
 
@@ -64,6 +65,10 @@ export class PersistenceTools {
 
     public static deleteRecordSetState(tenantId: string, userId: string, dialogId: string) {
         this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet');
+    }
+
+    public static deleteRecordState(tenantId: string, userId: string, dialogId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.record');
     }
 
     public static deleteRedirectionState(tenantId: string, userId: string, redirectionId: string) {
@@ -96,6 +101,25 @@ export class PersistenceTools {
             }
         }
         return null;
+    }
+
+    public static findRecordProperty(record: any, propertyName: string): any {
+        for (let p of record.properties) {
+            if (p.name === propertyName) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    public static updateRecordPropertyValue(record: any, propertyName: string, value: any): boolean {
+        for (let p of record.properties) {
+            if (p.name === propertyName) {
+                p.value = value;
+                return true;
+            }
+        }
+        return false;
     }
 
     public static findRootDialogState(tenantId: string, userId: string, dialogId: string): any {
@@ -270,6 +294,10 @@ export class PersistenceTools {
         return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet');
     }
 
+    public static readRecordState(tenantId: string, userId: string, dialogId: string): any {
+        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.record');
+    }
+
     public static readRedirectionState(tenantId: string, userId: string, redirectionId: string): any {
         return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId);
     }
@@ -303,6 +331,10 @@ export class PersistenceTools {
 
     public static writeRecordSetState(tenantId: string, userId: string, dialogId: string, recordSet: any): any {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', recordSet);
+    }
+
+    public static writeRecordState(tenantId: string, userId: string, dialogId: string, record: any): any {
+        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.record', record);
     }
 
     public static writeNavigationState(tenantId: string, userId: string, navigation: any) {
