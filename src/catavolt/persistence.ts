@@ -586,9 +586,9 @@ export class PersistentClient implements Client {
     private postRecords(baseUrl: string, resourcePath: string, resourcePathElems: string[], jsonBody?: StringDictionary): Promise<JsonClientResponse> {
         const pathFields = this.deconstructPostRecordsPath(resourcePathElems);
         if (pathFields.dialogId === PersistentClient.BRIEFCASE_WORKPACKAGES_DIALOG_ID) {
-            var recordSet = PersistenceTools.readRecordSetState(this._tenantId, this._userId, pathFields.dialogId);
+            let recordSet = PersistenceTools.readRecordSetState(this._tenantId, this._userId, pathFields.dialogId);
             if (!recordSet) {
-                const recordSet = BriefcaseTemplate.BRIEFCASE_WORKPACKAGES_RECORDSET;
+                recordSet = BriefcaseTemplate.BRIEFCASE_WORKPACKAGES_RECORDSET;
                 PersistenceTools.writeRecordSetState(this._tenantId, this._userId, pathFields.dialogId, recordSet);
             }
             return Promise.resolve(new JsonClientResponse(recordSet, 200));
