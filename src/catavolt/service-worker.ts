@@ -1,7 +1,7 @@
 
 import {PersistenceTools} from "./persistence-tools";
 
-const ThisCacheName = 'v0.118';
+const ThisCacheName = 'v0.170';
 const ActiveCacheNames = [ThisCacheName];
 const MessagePrefix = `[Catavolt ServiceWorker ${ThisCacheName} ${(new Date()).toLocaleString()}]`;
 

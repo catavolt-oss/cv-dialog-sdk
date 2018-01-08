@@ -20,6 +20,8 @@ export class PersistenceTools {
         const dialog = this.readDialogState(tenantId, userId, dialogId);
         if (dialog) {
             this.deleteAllDialogStateFor(tenantId, userId, dialog);
+        } else {
+            this.deleteRedirectionState(tenantId, userId, dialogId);
         }
     }
 
@@ -35,13 +37,8 @@ export class PersistenceTools {
         this.deleteRecordSetState(tenantId, userId, dialog.id);
         this.deleteRecordState(tenantId, userId, dialog.id);
         this.deleteDialogParentState(tenantId, userId, dialog.id);
-    }
-
-    public static deleteAllNavigationStateFor(tenantId: string, userId: string, navigationKey: string) {
-        const previousNavigation = PersistenceTools.readNavigationState(tenantId, userId, navigationKey);
-        if (previousNavigation) {
-            PersistenceTools.deleteAllDialogState(tenantId, userId, previousNavigation.redirectionId);
-        }
+        this.deleteDialogAliasState(tenantId, userId, dialog.id);
+        this.deleteDialogReferringAliasState(tenantId, userId, dialog.id);
     }
 
     public static deleteAllState(tenantId: string, userId: string) {
@@ -53,8 +50,23 @@ export class PersistenceTools {
         }
     }
 
+    public static deleteAllWorkbenchNavigation(tenantId: string, userId: string, navigationKey: string) {
+        const previousNavigation = PersistenceTools.readNavigationState(tenantId, userId, navigationKey);
+        if (previousNavigation) {
+            PersistenceTools.deleteAllDialogState(tenantId, userId, previousNavigation.redirectionId);
+        }
+    }
+
+    public static deleteDialogAliasState(tenantId: string, userId: string, dialogId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias');
+    }
+
     public static deleteDialogParentState(tenantId: string, userId: string, childId: string) {
         this.deletePersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
+    }
+
+    public static deleteDialogReferringAliasState(tenantId: string, userId: string, dialogId: string) {
+        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias');
     }
 
     public static deleteDialogState(tenantId: string, userId: string, dialogId: string) {
@@ -117,16 +129,6 @@ export class PersistenceTools {
             }
         }
         return null;
-    }
-
-    public static updateRecordPropertyValue(record: any, propertyName: string, value: any): boolean {
-        for (let p of record.properties) {
-            if (p.name === propertyName) {
-                p.value = value;
-                return true;
-            }
-        }
-        return false;
     }
 
     public static findRootDialogState(tenantId: string, userId: string, dialogId: string): any {
@@ -279,8 +281,16 @@ export class PersistenceTools {
             path[6] == PersistenceTools.VIEW_MODE;
     }
 
+    public static readDialogAliasState(tenantId: string, userId: string, dialogId: string) {
+        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias');
+    }
+
     public static readDialogParentState(tenantId: string, userId: string, childId: string): any {
         return this.readPersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
+    }
+
+    public static readDialogReferringAliasState(tenantId: string, userId: string, dialogId: string) {
+        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias');
     }
 
     public static readDialogState(tenantId: string, userId: string, dialogId: string): any {
@@ -313,18 +323,39 @@ export class PersistenceTools {
         return this.readPersistentState(tenantId, userId, 'session');
     }
 
+    public static updateRecordPropertyValue(record: any, propertyName: string, value: any): boolean {
+        for (let p of record.properties) {
+            if (p.name === propertyName) {
+                p.value = value;
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static writeAllDialogParentState(tenantId: string, userId: string, parent: any) {
         const dialogChildren = parent.children;
         if (dialogChildren) {
-            for (let child of dialogChildren) {
-                this.writeDialogParentState(tenantId, userId, child, parent);
+            for (var i=0; i < dialogChildren.length; i++) {
+                const child = dialogChildren[i];
+                this.writeDialogParentState(tenantId, userId, child, i, parent);
             }
         }
     }
 
-    public static writeDialogParentState(tenantId: string, userId: string, child: any, parent: any) {
+    public static writeDialogAliasState(tenantId: string, userId: string, dialogId: string, alias: any) {
+        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias', alias);
+    }
+
+    public static writeDialogParentState(tenantId: string, userId: string, child: any, childIndex: number, parent: any) {
         this.writePersistentState(tenantId, userId, 'dialog.' + child.id + '.parent', parent.id);
+        const parentAlias = this.readDialogAliasState(tenantId, userId, parent.id);
+        this.writeDialogAliasState(tenantId, userId, child.id, parentAlias + '_' + childIndex);
         this.writeAllDialogParentState(tenantId, userId, child);
+    }
+
+    public static writeDialogReferringAliasState(tenantId: string, userId: string, dialogId: string, referringAlias: any) {
+        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias', referringAlias);
     }
 
     public static writeDialogState(tenantId: string, userId: string, dialog: any) {

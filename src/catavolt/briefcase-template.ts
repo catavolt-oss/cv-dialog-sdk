@@ -11,13 +11,13 @@ export class BriefcaseTemplate {
       },
       "sessionId": "3657114326647701194_1883665468_634_-826264471",
       "type": "hxgn.api.dialog.DialogRedirection",
-      "dialogId": "briefcase_1",
+      "dialogId": "a1",
       "viewMode": "READ",
       "dialogClassName": "com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel",
       "dialogType": "hxgn.api.dialog.EditorDialog",
       "businessClassName": "cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase",
       "tenantId": "hexagonsdaop",
-      "id": "briefcase_1",
+      "id": "a1",
       "selectedViewId": "AAABACcXAAAAAF8e",
       "dialogDescription": "Briefcase: 1"
     }
@@ -276,7 +276,7 @@ export class BriefcaseTemplate {
           "dialogMode": "READ",
           "tenantId": "hexagonsdaop",
           "description": "Briefcase: 1",
-          "id": "briefcase_child_1",
+          "id": "a11",
           "sessionId": "3657114326647701194_1883665468_634_-826264471",
           "type": "hxgn.api.dialog.EditorDialog",
           "viewMode": "READ",
@@ -494,7 +494,7 @@ export class BriefcaseTemplate {
           },
           "tenantId": "hexagonsdaop",
           "positionalQueryAbility": "FULL",
-          "id": "briefcase_child_2",
+          "id": "a12",
           "selectedViewId": "AAABACcTAAAAAF9m"
         },
         {
@@ -738,12 +738,12 @@ export class BriefcaseTemplate {
           },
           "tenantId": "hexagonsdaop",
           "positionalQueryAbility": "FULL",
-          "id": "briefcase_child_3",
+          "id": "a13",
           "selectedViewId": "AAABACcTAAAAAF-h"
         }
       ],
       "tenantId": "hexagonsdaop",
-      "id": "briefcase_1",
+      "id": "a1",
       "selectedViewId": "AAABACcXAAAAAF8e"
     };
 
@@ -783,60 +783,53 @@ export class BriefcaseTemplate {
       "type": "hxgn.api.dialog.RecordSet"
     };
 
-    public static BRIEFCASE_WORKPACKAGES_RECORDSET_EXAMPLE = {
-      "defaultActionId": null,
-      "records": [
+    public static BRIEFCASE_WORKPACKAGE_RECORD_EXAMPLE = {
+      "annotations": [],
+      "id": "6GW7000A",
+      "type": "hxgn.api.dialog.Record",
+      "properties": [
         {
+          "name": "name",
+          "format": null,
           "annotations": [],
-          "id": "6GW7000A",
-          "type": "hxgn.api.dialog.Record",
-          "properties": [
-            {
-              "name": "name",
-              "format": null,
-              "annotations": [],
-              "type": "hxgn.api.dialog.Property",
-              "value": "SDA Mobile Test Package"
-            },
-            {
-              "name": "workpackageid",
-              "format": null,
-              "annotations": [],
-              "type": "hxgn.api.dialog.Property",
-              "value": "6GW7000A"
-            },
-            {
-              "name": "description",
-              "format": null,
-              "annotations": [],
-              "type": "hxgn.api.dialog.Property",
-              "value": "SDA Mobile Test Package"
-            },
-            {
-              "name": "creation_date",
-              "format": "date",
-              "annotations": [],
-              "type": "hxgn.api.dialog.Property",
-              "value": "2017-10-11"
-            },
-            {
-              "name": "disciplines",
-              "format": null,
-              "annotations": [],
-              "type": "hxgn.api.dialog.Property",
-              "value": null
-            },
-            {
-              "name": "last_update_date",
-              "format": "date",
-              "annotations": [],
-              "type": "hxgn.api.dialog.Property",
-              "value": "2017-10-11"
-            }
-          ]
+          "type": "hxgn.api.dialog.Property",
+          "value": "SDA Mobile Test Package"
+        },
+        {
+          "name": "workpackageid",
+          "format": null,
+          "annotations": [],
+          "type": "hxgn.api.dialog.Property",
+          "value": "6GW7000A"
+        },
+        {
+          "name": "description",
+          "format": null,
+          "annotations": [],
+          "type": "hxgn.api.dialog.Property",
+          "value": "SDA Mobile Test Package"
+        },
+        {
+          "name": "creation_date",
+          "format": "date",
+          "annotations": [],
+          "type": "hxgn.api.dialog.Property",
+          "value": "2017-10-11"
+        },
+        {
+          "name": "disciplines",
+          "format": null,
+          "annotations": [],
+          "type": "hxgn.api.dialog.Property",
+          "value": null
+        },
+        {
+          "name": "last_update_date",
+          "format": "date",
+          "annotations": [],
+          "type": "hxgn.api.dialog.Property",
+          "value": "2017-10-11"
         }
-      ],
-      "hasMore": false,
-      "type": "hxgn.api.dialog.RecordSet"
+      ]
     };
 }
