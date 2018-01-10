@@ -31,7 +31,7 @@ import 'moment/locale/en-ca';
 import 'moment/locale/it';
 import 'moment/locale/ja';
 import 'moment/locale/sv';
-let supportedLocales:Array<string> = ["en-us", "zh-cn", "ru", "fr", "es", "en-gb", "de", "pt", "pt-br", "en-ca", "it", "ja", "sv-se" ];
+let supportedLocales:Array<string> = ["en", "zh-cn", "ru", "fr", "es", "en-gb", "de", "pt", "pt-br", "en-ca", "it", "ja", "sv" ];
 
 
 import {Form} from "./print";
