@@ -19,6 +19,7 @@ import * as moment from 'moment';
 // Chose the locales to load based on this list:
 // https://stackoverflow.com/questions/9711066/most-common-locales-for-worldwide-compatibility
 // Best effort for now.  Need to dynamically load these from Globalize???
+import 'moment/locale/en-us';
 import 'moment/locale/zh-cn';
 import 'moment/locale/ru';
 import 'moment/locale/fr';
@@ -30,6 +31,10 @@ import 'moment/locale/pt-br';
 import 'moment/locale/en-ca';
 import 'moment/locale/it';
 import 'moment/locale/ja';
+import 'moment/locale/sv-se';
+let supportedLocales:Array<string> = ["en-us", "zh-cn", "ru", "fr", "es", "en-gb", "de", "pt", "pt-br", "en-ca", "it", "ja", "sv-se" ];
+
+
 import {Form} from "./print";
 import * as numeral from "numeral";
 
@@ -6647,8 +6652,8 @@ export class PropFormatter {
                     lang = browserLocale.language;
                 }
             }
-            if (!lang) {
-                lang = "en";
+            if (supportedLocales.indexOf(lang) === -1) {
+                lang = null;
             }
         }
         // let test = (moment as any).locales();
