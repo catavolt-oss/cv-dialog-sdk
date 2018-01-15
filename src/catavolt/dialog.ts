@@ -870,6 +870,7 @@ export class EditorContext extends PaneContext {
         }).map((entityRec:EntityRec)=> {
             this.initBuffer(entityRec);
             this.lastRefreshTime = new Date();
+            this.clearRefreshSetting();
             return entityRec;
         });
     }
@@ -975,6 +976,7 @@ export class EditorContext extends PaneContext {
                     var now = new Date();
                     AppContext.singleton.lastMaintenanceTime = now;
                     this.lastRefreshTime = now;
+                    this.clearRefreshSetting();
                     if (successfulWrite.isLeft) {
                         this._settings = PaneContext.resolveSettingsFromNavRequest(this._settings, successfulWrite.left);
                     } else {
@@ -1072,6 +1074,11 @@ export class EditorContext extends PaneContext {
     private get isDestroyedRequestedSetting():boolean {
         var str = this._settings['requestDestroy'];
         return str && str.toLowerCase() === 'true';
+    }
+
+    private clearRefreshSetting():void {
+        this._settings['globalRefresh'] = null;
+        this._settings['localRefresh'] = null;
     }
 
     private get isGlobalRefreshSetting():boolean {
@@ -1502,6 +1509,7 @@ export class QueryContext extends PaneContext {
             fromObjectId, this.sessionContext).bind((value:XQueryResult)=> {
             var result = new QueryResult(value.entityRecs, value.hasMore);
             this.lastRefreshTime = new Date();
+            this.clearRefreshSetting();
             return Future.createSuccessfulFuture('QueryContext::query', result);
         });
     }
@@ -1586,6 +1594,11 @@ export class QueryContext extends PaneContext {
     private get isDestroyedSetting():boolean {
         var str = this._settings['destroyed'];
         return str && str.toLowerCase() === 'true';
+    }
+
+    private clearRefreshSetting():void {
+        this._settings['globalRefresh'] = null;
+        this._settings['localRefresh'] = null;
     }
 
     private get isGlobalRefreshSetting():boolean {
