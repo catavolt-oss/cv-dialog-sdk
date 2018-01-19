@@ -4,9 +4,10 @@
 
 import {
     StringDictionary, Log, ObjUtil, StringUtil, ArrayUtil, DateValue, DateTimeValue, TimeValue,
-    Dictionary
+    Dictionary, DataUrl
 } from './util'
 import moment = require("moment");
+import {Catavolt} from "./dialog";
 /*
  ************************** Dialog Models ****************************
  * These models correspond to those in the WebAPI schema specification
@@ -80,7 +81,7 @@ export abstract class CellValue {
  * A View represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
  * that is responsible for displaying a data record or records. The Pane describes 'how' and 'where' the data will be
  * displayed, as well as surrounding 'meta' data (i.e. the Pane title, the Pane's menus).  The Pane itself does not contain
- * the record or records to be displayed, but may be combined with a {@link EntityRecord}(s) to display the data.
+ * the record or records to be displayed, but may be combined with a {@link Record}(s) to display the data.
  */
 export abstract class View {
 
@@ -96,7 +97,7 @@ export abstract class View {
     /*
     readonly label:string;
     readonly viewDescs:Array<ViewDesc>;
-    readonly entityRecDef:RecordDef;
+    readonly recordDef:RecordDef;
     readonly dialogRedirection:DialogRedirection;
     readonly settings:StringDictionary;
     */
@@ -198,6 +199,85 @@ export class AttributeCellValue extends CellValue {
 export class BarcodeScan extends View {
 }
 
+
+/**
+ * ************* Binary Support ********************
+ */
+
+/**
+ * Represents a binary value
+ */
+export interface Binary {
+
+    /**
+     * Return a url resprenting this binary value
+     */
+    toUrl():string;
+}
+
+/**
+ * Represents a base64 encoded binary
+ */
+export class EncodedBinary implements Binary {
+
+    constructor(private _data:string, private _mimeType?:string) {
+    }
+
+    /**
+     * Get the base64 encoded data
+     * @returns {string}
+     */
+    get data():string {
+        return this._data;
+    }
+
+    /**
+     * Get the mime-type
+     * @returns {string|string}
+     */
+    get mimeType():string {
+        return this._mimeType || 'application/octet-stream';
+    }
+
+    /**
+     * Returns a 'data url' representation of this binary, including the encoded data
+     * @returns {string}
+     */
+    toUrl():string {
+        return DataUrl.createDataUrl(this.mimeType, this.data);
+    }
+}
+
+/**
+ * Represents a remote binary
+ */
+export class UrlBinary implements Binary {
+
+    constructor(private _url:string) {
+    }
+
+    get url():string {
+        return this._url;
+    }
+
+    /**
+     * Returns a url that 'points to' the binary data
+     * @returns {string}
+     */
+    toUrl():string {
+        return this.url;
+    }
+}
+
+
+export class Attachment {
+
+    constructor(public name:string, public attachmentData:any) {};
+
+}
+
+
+
 /**
  * An abstract visual Calendar
  */
@@ -250,26 +330,6 @@ export class Details extends View {
 }
 
 
-export interface Dialog {
-
-    readonly availableViews:Array<ViewDescriptor>;
-    readonly businessClassName:string;
-    readonly children: Array<Dialog>;
-    readonly description:string;
-    readonly dialogClassName:string;
-    dialogMode:DialogMode;
-    readonly header:View;
-    readonly id:string;
-    readonly recordDef: RecordDef;
-    readonly referringObject:ReferringObject,
-    readonly selectedViewId:string;
-    readonly sessionId:string;
-    readonly tenantId: string;
-    readonly type:DialogType;
-    readonly view: View;
-    readonly viewMode: ViewMode;
-
-}
 
 export class ReferringObject {
 
@@ -545,94 +605,22 @@ export class DataAnnotation implements Annotation{
 
 }
 
-export interface EditorDialog extends Dialog {
-
-    readonly businessId: string;
-
-}
 
 /**
- * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
+ * Utility for working with Records
  */
-export interface EntityRec extends Record {
+export class RecordUtil {
 
-    annotationsAtName(propName:string):Array<DataAnnotation>;
-
-    afterEffects(after:EntityRec):EntityRec;
-
-    backgroundColor:string;
-    backgroundColorFor(propName:string):string;
-
-    foregroundColor:string;
-    foregroundColorFor(propName:string):string;
-
-    imageName:string;
-    imageNameFor(propName:string):string;
-
-    imagePlacement:string;
-    imagePlacementFor(propName:string):string;
-
-    isBoldText:boolean;
-    isBoldTextFor(propName:string):boolean;
-
-    isItalicText:boolean;
-    isItalicTextFor(propName:string):boolean;
-
-    isPlacementCenter:boolean;
-    isPlacementCenterFor(propName:string):boolean;
-
-    isPlacementLeft:boolean;
-    isPlacementLeftFor(propName:string):boolean;
-
-    isPlacementRight:boolean;
-    isPlacementRightFor(propName:string):boolean;
-
-    isPlacementStretchUnder:boolean;
-    isPlacementStretchUnderFor(propName:string):boolean;
-
-    isPlacementUnder:boolean;
-    isPlacementUnderFor(propName:string):boolean;
-
-    isUnderline:boolean;
-    isUnderlineFor(propName:string):boolean;
-
-    overrideText:string;
-    overrideTextFor(propName:string):string;
-
-    propAtIndex(index:number):Property;
-
-    propAtName(propName:string):Property;
-
-    propCount:number;
-
-    propNames:Array<string>;
-
-    propValues:Array<any>;
-
-    tipText:string;
-    tipTextFor(propName:string):string;
-
-    toJSON();
-
-    valueAtName(propName:string):any;
-}
-
-/**
- * Utility for working with EntityRecs
- */
-export class EntityRecUtil {
-
-    static newEntityRec(id:string, properties:Array<Property>, annotations:Array<DataAnnotation>, type:string):EntityRec {
+    static newRecord(id:string, properties:Array<Property>, annotations:Array<DataAnnotation>, type:string):Record {
         return annotations ? new RecordImpl(id, ArrayUtil.copy(properties), ArrayUtil.copy(annotations), type) :
             new RecordImpl(id, ArrayUtil.copy(properties), null, type);
     }
 
-    static isEntityRec(o:any):boolean {
+    static isRecord(o:any):boolean {
 
        return (o instanceof RecordImpl)
-           || (o instanceof EntityBuffer)
-           || (o instanceof NullEntityRec);
+           || (o instanceof RecordBuffer)
+           || (o instanceof NullRecord);
     }
 
     /*
@@ -654,22 +642,22 @@ export class EntityRecUtil {
 }
 
 /**
- * An {@link EntityRec} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
- * An EntityRec Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
+ * An {@link Record} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
+ * An Record Represents a 'Record' or set of {@link Prop} (names and values).
+ * An Record may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
-export class EntityBuffer implements EntityRec {
+export class RecordBuffer implements Record {
 
-    static createEntityBuffer(id:string, before:Array<Property>, after:Array<Property>, annotations:Array<DataAnnotation>, type:string):EntityBuffer {
-        return new EntityBuffer(EntityRecUtil.newEntityRec(id, before, annotations, type), EntityRecUtil.newEntityRec(id, after, annotations, type));
+    static createRecordBuffer(id:string, before:Array<Property>, after:Array<Property>, annotations:Array<DataAnnotation>, type:string):RecordBuffer {
+        return new RecordBuffer(RecordUtil.newRecord(id, before, annotations, type), RecordUtil.newRecord(id, after, annotations, type));
     }
 
-    constructor(private _before:EntityRec, private _after?:EntityRec) {
-        if (!_before) throw new Error('_before is null in EntityBuffer');
+    constructor(private _before:Record, private _after?:Record) {
+        if (!_before) throw new Error('_before is null in RecordBuffer');
         if (!_after) this._after = _before;
     }
 
-    get after():EntityRec {
+    get after():Record {
         return this._after;
     }
 
@@ -681,7 +669,7 @@ export class EntityBuffer implements EntityRec {
         return this._after.annotationsAtName(propName);
     }
 
-    afterEffects(afterAnother?:EntityRec):EntityRec {
+    afterEffects(afterAnother?:Record):Record {
         if (afterAnother) {
             return this._after.afterEffects(afterAnother);
         } else {
@@ -697,7 +685,7 @@ export class EntityBuffer implements EntityRec {
         return this._after.backgroundColorFor(propName);
     }
 
-    get before():EntityRec {
+    get before():Record {
         return this._before;
     }
 
@@ -849,7 +837,7 @@ export class EntityBuffer implements EntityRec {
         if (!found) {
             newProps.push(new Property(name, value));
         }
-        this._after = EntityRecUtil.newEntityRec(this.id, newProps, this.annotations, this.type);
+        this._after = RecordUtil.newRecord(this.id, newProps, this.annotations, this.type);
     }
 
     get tipText():string {
@@ -860,8 +848,8 @@ export class EntityBuffer implements EntityRec {
         return this._after.tipTextFor(propName);
     }
 
-    toEntityRec():EntityRec {
-        return EntityRecUtil.newEntityRec(this.id, this.properties, this.annotations, this.type);
+    toRecord():Record {
+        return RecordUtil.newRecord(this.id, this.properties, this.annotations, this.type);
     }
 
     toJSON() {
@@ -877,11 +865,11 @@ export class EntityBuffer implements EntityRec {
  * *********************************
  */
 /**
- * The implementation of {@link EntityRec}.
+ * The implementation of {@link Record}.
  * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
+ * An Record may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
-export class RecordImpl implements EntityRec {
+export class RecordImpl implements Record {
 
     constructor(readonly id:string, readonly properties:Array<Property> = [], readonly annotations:Array<DataAnnotation> = [], readonly type:string) {
     }
@@ -891,7 +879,7 @@ export class RecordImpl implements EntityRec {
         return p ? p.annotations : [];
     }
 
-    afterEffects(after:EntityRec):EntityRec {
+    afterEffects(after:Record):Record {
         var effects = [];
         after.properties.forEach((afterProp)=> {
             var beforeProp = this.propAtName(afterProp.name);
@@ -1073,7 +1061,7 @@ export class RecordImpl implements EntityRec {
         };
     }
 
-    toEntityRec():EntityRec {
+    toRecord():Record {
         return this;
     }
 
@@ -1325,6 +1313,19 @@ export class List extends View {
     get isTabularStyle():boolean {
         return this.style && this.style === 'TABULAR';
     }
+
+    get columnHeadings():Array<string> {
+        return this.columns.map((c:Column)=> {
+            return c.heading;
+        });
+    }
+
+    rowValues(record:Record):Array<any> {
+        return this.columns.map((c:Column)=> {
+            return record.valueAtName(c.propertyName);
+        });
+    }
+
 }
 
 
@@ -1342,7 +1343,7 @@ export class Map extends View {
 
 export class Menu {
 
-    readonly children: Array<Menu>;
+    readonly children: Array<Menu> = [];
     /**
      * A special value understood by the UI, such as 'refresh'
      */
@@ -1406,19 +1407,14 @@ export class Menu {
 
 }
 
-export interface NavRequest {
-
-    readonly referringObject:ReferringObject;
-}
-
 /**
- * An empty or uninitialized {@link EntityRec}.
+ * An empty or uninitialized {@link Record}.
  * Represents a 'Record' or set of {@link Prop} (names and values).
- * An EntityRec may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
+ * An Record may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
-export class NullEntityRec implements EntityRec {
+export class NullRecord implements Record {
 
-    static singleton:NullEntityRec = new NullEntityRec();
+    static singleton:NullRecord = new NullRecord();
 
     constructor() {
     }
@@ -1431,7 +1427,7 @@ export class NullEntityRec implements EntityRec {
         return [];
     }
 
-    afterEffects(after:EntityRec):EntityRec {
+    afterEffects(after:Record):Record {
         return after;
     }
 
@@ -1583,7 +1579,7 @@ export class NullEntityRec implements EntityRec {
         return null;
     }
 
-    toEntityRec():EntityRec {
+    toRecord():Record {
         return this;
     }
 
@@ -1599,12 +1595,6 @@ export class NullEntityRec implements EntityRec {
         return null;
     }
 
-}
-
-export class NullNavRequest implements NavRequest {
-
-    constructor(readonly referringObject:ReferringObject = null) {
-    }
 }
 
 export interface NullRedirection extends Redirection {
@@ -1663,9 +1653,9 @@ export class PrintMarkup extends View {
 
 
 /**
- * Represents a 'value' or field in a row or record. See {@link EntityRec}
+ * Represents a 'value' or field in a row or record. See {@link Record}
  * A Prop has a corresponding {@link PropDef} that describes the property.
- * Like an {@link EntityRec}, a Prop may also have {@link Annotation}s (style annotations),
+ * Like an {@link Record}, a Prop may also have {@link Annotation}s (style annotations),
  * but these apply to the property only
  */
 export class Property {
@@ -2041,15 +2031,267 @@ export class PropertyDef {
     }
 }
 
+
 /**
- * Query dialog
+ * ************* Property Formatting ********************
  */
-export interface QueryDialog extends Dialog {
 
-    positionalQueryAbility:PositionalQueryAbilityType;
-    supportsColumnStatistics:boolean;
-    supportsPositionalQueries:boolean;
+/**
+ * Helper for transforming values to and from formats suitable for reading and writing to the server
+ * (i.e. object to string and string to object)
+ */
+class PrivatePropFormats {
+    static decimalFormat: string[] = ["0,0", "0,0.0", "0,0.00", "0,0.000", "0,0.0000", "0,0.00000", "0,0.000000", "0,0.0000000", "0,0.00000000", "0,0.000000000", "0,0.0000000000"];
+    static decimalFormatGeneric:string = "0,0.[0000000000000000000000000]";
+    static moneyFormat: string[] = ["$0,0", "$0,0.0", "$0,0.00", "$0,0.000", "$0,0.0000", "$0,0.00000", "$0,0.000000", "$0,0.0000000", "$0,0.00000000", "$0,0.000000000", "$0,0.0000000000"];
+    static moneyFormatGeneric:string = "$0,0.[0000000000000000000000000]";
+    static percentFormat: string[] = ["0,0%", "0,0%", "0,0%", "0,0.0%", "0,0.00%", "0,0.000%", "0,0.0000%", "0,0.00000%", "0,0.000000%", "0,0.0000000%", "0,0.00000000%"];
+    static percentFormatGeneric:string = "0,0.[0000000000000000000000000]%";
+    static wholeFormat:string = "0,0";
+}
 
+export class PropFormatter {
+    // For numeral format options, see: http://numeraljs.com/
+
+    // Default format for money at varying decimal lengths.
+    static decimalFormat: string[] = PrivatePropFormats.decimalFormat.slice(0);
+    static decimalFormatGeneric: string = PrivatePropFormats.decimalFormatGeneric;
+    static moneyFormat: string[] = PrivatePropFormats.moneyFormat.slice(0);
+    static moneyFormatGeneric: string = PrivatePropFormats.moneyFormatGeneric;
+    static percentFormat: string[] = PrivatePropFormats.percentFormat.slice(0);
+    static percentFormatGeneric: string = PrivatePropFormats.decimalFormatGeneric;
+    static wholeFormat: string = PrivatePropFormats.wholeFormat;
+
+    /**
+     * Get a string representation of this property suitable for 'reading'
+     * @param prop
+     * @param propDef
+     * @returns {string}
+     */
+    static formatForRead(prop: Property, propDef: PropertyDef): string {
+        if (prop === null || prop === undefined) {
+            return '';
+        } else {
+            return PropFormatter.formatValueForRead(prop.value, propDef);
+        }
+    }
+
+    static formatValueForRead(value: any, propDef: PropertyDef) {
+        let lang: string = null;
+        // The locale from the browser is not reliable.  The Extender server pulls the browser's locale from the
+        // agent string at logon time.  Use that with a fallback approach to find the best fit locale.
+        // var localeTest = window.navigator.userLanguage || window.navigator.language;
+        if (Catavolt.singleton.browserLocaleJson) {
+            let browserLocale = JSON.parse(Catavolt.singleton.browserLocaleJson);  // country/language/varient
+            if (browserLocale.country) {
+                let key = browserLocale.language + "-" + browserLocale.country.toLowerCase();
+                if (moment().lang(key)) {
+                    lang = key;
+                }
+            }
+            if (!lang) {
+                let x = moment().lang(browserLocale.language);
+                if (moment().lang(browserLocale.language)) {
+                    lang = browserLocale.language;
+                }
+            }
+            if (!lang) {
+                lang = "en";
+            }
+        }
+        // let test = (moment as any).locales();
+        if (value === null || value === undefined) {
+            return '';
+        } else if ((propDef && propDef.isCodeRefType) || value instanceof CodeRef) {
+            return (value as CodeRef).description;
+        } else if ((propDef && propDef.isObjRefType) || value instanceof ObjectRef) {
+            return (value as ObjectRef).description;
+        } else if ((propDef && propDef.isDateTimeType)) {
+            if (!lang) {
+                return (value as Date).toString();
+            } else {
+                return moment(value as Date).locale(lang).format("lll");
+                // return moment(value as Date).format("lll");
+            }
+        } else if ((propDef && propDef.isDateType) || value instanceof Date) {
+            if (!lang) {
+                return (value as Date).toLocaleDateString();
+            } else {
+                return moment(value as Date).locale(lang).format("L");
+                // return moment(value as Date).format("L");
+            }
+        } else if ((propDef && propDef.isTimeType) || value instanceof TimeValue) {
+            if (!lang) {
+                return moment(value as TimeValue).format("LT");
+            } else {
+                return moment(value as TimeValue).locale(lang).format("LT");
+                // return moment(value as TimeValue).format("LT");
+            }
+        } else if ((propDef && propDef.isPasswordType)) {
+            return (value as string).replace(/./g, "*");
+        } else if ((propDef && propDef.isListType) || Array.isArray(value)) {
+            return value.reduce((prev, current) => {
+                return ((prev ? prev + ', ' : '') + PropFormatter.formatValueForRead(current, null));
+            }, '');
+        } else {
+            return PropFormatter.toString(value, propDef);
+        }
+    }
+
+    /**
+     * Get a string representation of this property suitable for 'writing'
+     * @param prop
+     * @param propDef
+     * @returns {string}
+     */
+    static formatForWrite(prop: Property, propDef: PropertyDef): string {
+        if (prop === null || prop === undefined
+            || prop.value === null || prop.value === undefined) {
+            return null;
+        } else if ((propDef && propDef.isCodeRefType) || prop.value instanceof CodeRef) {
+            return (prop.value as CodeRef).description;
+        } else if ((propDef && propDef.isObjRefType) || prop.value instanceof ObjectRef) {
+            return (prop.value as ObjectRef).description;
+        } else {
+            return PropFormatter.toStringWrite(prop.value, propDef);
+        }
+    }
+
+    /**
+     * Attempt to construct (or preserve) the appropriate data type given primitive (or already constructed) value.
+     * @param value
+     * @param propDef
+     * @returns {any}
+     */
+    static parse(value: any, propDef: PropertyDef) {
+
+        var propValue: any = value;
+        if (propDef.isDecimalType) {
+            propValue = Number(value);
+        } else if (propDef.isLongType) {
+            propValue = Number(value);
+        } else if (propDef.isBooleanType) {
+            if (typeof value === 'string') {
+                propValue = value !== 'false';
+            } else {
+                propValue = !!value;
+            }
+        } else if (propDef.isDateType) {
+            //this could be a DateValue, a Date, or a string
+            if (value instanceof DateValue) {
+                propValue = value;
+            } else if (typeof value === 'object') {
+                propValue = new DateValue(value);
+            } else {
+                //parse as local time
+                propValue = new DateValue(moment(value).toDate());
+            }
+        } else if (propDef.isDateTimeType) {
+            //this could be a DateTimeValue, a Date, or a string
+            if (value instanceof DateTimeValue) {
+                propValue = value;
+            } else if (typeof value === 'object') {
+                propValue = new DateTimeValue(value);
+            } else {
+                //parse as local time
+                propValue = new DateTimeValue(moment(value).toDate());
+            }
+        } else if (propDef.isTimeType) {
+            propValue = value instanceof TimeValue ? value : TimeValue.fromString(value);
+        }
+        return propValue;
+    }
+
+    static resetFormats(): void {
+        PropFormatter.decimalFormat = PrivatePropFormats.decimalFormat.slice(0);
+        PropFormatter.decimalFormatGeneric = PrivatePropFormats.decimalFormatGeneric;
+        PropFormatter.moneyFormat = PrivatePropFormats.moneyFormat.slice(0);
+        PropFormatter.moneyFormatGeneric = PrivatePropFormats.moneyFormatGeneric;
+        PropFormatter.percentFormat = PrivatePropFormats.percentFormat.slice(0);
+        PropFormatter.percentFormatGeneric = PrivatePropFormats.decimalFormatGeneric;
+        PropFormatter.wholeFormat = PrivatePropFormats.wholeFormat;
+    }
+
+    static toString(o: any, propDef: PropertyDef): string {
+        return PropFormatter.toStringRead(o, propDef);
+    }
+
+    /**
+     * Render this value as a string
+     * @param o
+     * @param propDef
+     * @returns {any}
+     */
+    static toStringRead(o: any, propDef: PropertyDef): string {
+        if (typeof o === 'number') {
+            if (propDef && propDef.semanticType !== "DATA_UNFORMATTED_NUMBER") {
+                if (propDef.isMoneyType) {
+                    let f = propDef.displayScale < this.moneyFormat.length ? this.moneyFormat[propDef.displayScale] : this.moneyFormatGeneric;
+                    // If there is a currency symbol, remove it noting it's position pre/post
+                    // Necesary because numeral will replace $ with the symbol based on the locale of the browser.
+                    // This may be desired down the road, but for now, the server provides the symbol to use.
+                    let atStart: boolean = f.length > 0 && f[0] === '$';
+                    let atEnd: boolean = f.length > 0 && f[f.length - 1] === '$';
+                    if (Catavolt.singleton.currencySymbol) {
+                        f = f.replace("$", "");               // Format this as a number, and slam in Extender currency symbol
+                        var formatted = numeral(o).format(f);
+                        if (atStart) formatted = Catavolt.singleton.currencySymbol + formatted;
+                        if (atEnd) formatted = formatted + Catavolt.singleton.currencySymbol;
+                    } else {
+                        formatted = numeral(o).format(f);  // Should substitute browsers locale currency symbol
+                    }
+                    return formatted;
+                } else if (propDef.isPercentType) {
+                    let f = propDef.displayScale < this.percentFormat.length ? this.percentFormat[propDef.displayScale] : this.percentFormatGeneric;
+                    return numeral(o).format(f);  // numeral accomplishs * 100, relevant if we use some other symbol
+                } else if (propDef.isIntType || propDef.isLongType) {
+                    return numeral(o).format(this.wholeFormat);
+                } else if (propDef.isDecimalType || propDef.isDoubleType) {
+                    let f = propDef.displayScale < this.decimalFormat.length ? this.decimalFormat[propDef.displayScale] : this.decimalFormatGeneric;
+                    return numeral(o).format(f);
+                }
+            } else {
+                return String(o);
+            }
+        } else if (typeof o === 'object') {
+            if (o instanceof Date) {
+                return o.toISOString();
+            } else if (o instanceof DateValue) {
+                return (o as DateValue).dateObj.toISOString();
+            } else if (o instanceof DateTimeValue) {
+                return (o as DateTimeValue).dateObj.toISOString();
+            } else if (o instanceof TimeValue) {
+                return o.toString();
+            } else if (o instanceof CodeRef) {
+                return o.toString();
+            } else if (o instanceof ObjectRef) {
+                return o.toString();
+            } else if (o instanceof GpsReadingProperty) {
+                return o.toString();
+            } else if (o instanceof MapLocationProperty) {
+                return o.toString();
+            } else {
+                return String(o);
+            }
+        } else {
+            return String(o);
+        }
+    }
+
+    static toStringWrite(o: any, propDef: PropertyDef): string {
+        if (typeof o === 'number' && propDef) {
+            let s = numeral(100);
+            if (propDef.isMoneyType) {
+                return o.toFixed(2);
+            } else if (propDef.isIntType || propDef.isLongType) {
+                return o.toFixed(0);
+            } else if (propDef.isDecimalType || propDef.isDoubleType) {
+                return o.toFixed(Math.max(2, (o.toString().split('.')[1] || []).length));
+            }
+        } else {
+            return PropFormatter.toStringRead(o, propDef);
+        }
+    }
 }
 
 export interface QueryParameters {
@@ -2067,6 +2309,67 @@ export interface Record {
     readonly id: string;
     properties:Array<Property>;
     type:string;
+
+    annotationsAtName(propName:string):Array<DataAnnotation>;
+
+    afterEffects(after:Record):Record;
+
+    backgroundColor:string;
+    backgroundColorFor(propName:string):string;
+
+    foregroundColor:string;
+    foregroundColorFor(propName:string):string;
+
+    imageName:string;
+    imageNameFor(propName:string):string;
+
+    imagePlacement:string;
+    imagePlacementFor(propName:string):string;
+
+    isBoldText:boolean;
+    isBoldTextFor(propName:string):boolean;
+
+    isItalicText:boolean;
+    isItalicTextFor(propName:string):boolean;
+
+    isPlacementCenter:boolean;
+    isPlacementCenterFor(propName:string):boolean;
+
+    isPlacementLeft:boolean;
+    isPlacementLeftFor(propName:string):boolean;
+
+    isPlacementRight:boolean;
+    isPlacementRightFor(propName:string):boolean;
+
+    isPlacementStretchUnder:boolean;
+    isPlacementStretchUnderFor(propName:string):boolean;
+
+    isPlacementUnder:boolean;
+    isPlacementUnderFor(propName:string):boolean;
+
+    isUnderline:boolean;
+    isUnderlineFor(propName:string):boolean;
+
+    overrideText:string;
+    overrideTextFor(propName:string):string;
+
+    propAtIndex(index:number):Property;
+
+    propAtName(propName:string):Property;
+
+    propCount:number;
+
+    propNames:Array<string>;
+
+    propValues:Array<any>;
+
+    tipText:string;
+    tipTextFor(propName:string):string;
+
+    toJSON();
+
+    valueAtName(propName:string):any;
+
 
 }
 
@@ -2107,8 +2410,7 @@ export interface RecordSet{
 
     defaultActionId:string;
     hasMore:boolean;
-    //note: we upgrade the 'Record' to an 'EntityRec'
-    records:Array<EntityRec>;
+    records:Array<Record>;
 
 }
 
@@ -2133,8 +2435,20 @@ export class RedirectionUtil {
         ].some(n => n === o['type']);
     }
 
+    static isDialogRedirection(o:any):boolean {
+        return o['type'] === TypeNames.DialogRedirectionTypeName;
+    }
+
     static isNullRedirection(o:any):boolean {
         return o['type'] === TypeNames.NullRedirectionTypeName;
+    }
+
+    static isWebRedirection(o:any):boolean {
+        return o['type'] === TypeNames.WebRedirectionTypeName;
+    }
+
+    static isWorkbenchRedirection(o:any):boolean {
+        return o['type'] === TypeNames.WorkbenchRedirectionTypeName;
     }
 
 }
@@ -2237,7 +2551,7 @@ export class ViewDescriptor {
 
 }
 
-export interface Workbench extends NavRequest {
+export interface Workbench {
 
     readonly actions:ReadonlyArray<WorkbenchAction>;
     readonly id:string;
@@ -2264,7 +2578,7 @@ export interface WorkbenchAction {
 export interface NullRedirection extends Redirection {
 }
 
-export interface WebRedirection extends Redirection, NavRequest {
+export interface WebRedirection extends Redirection {
 
     readonly url:string;
 
@@ -2276,6 +2590,1047 @@ export interface WorkbenchRedirection extends Redirection {
 
 }
 
+
+/*
+    ***************************************************************************
+    Begin Dialog classes implementation
+    ***************************************************************************
+ */
+
+/**
+ * Top-level class, representing a Catavolt 'Dialog' definition.
+ * All Dialogs have a composite {@link View} definition along with a single record
+ * or a list of records.  See {@Record}
+ */
+export abstract class Dialog {
+
+    //statics
+    static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
+    private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
+
+    //private/protected
+    private _binaryCache:{ [index:string]:Array<Binary> } = {};
+    private _lastRefreshTime:Date = new Date(0);
+    private _catavolt:Catavolt;
+    protected _parentDialog;
+
+    readonly availableViews:Array<ViewDescriptor>;
+    readonly businessClassName:string;
+    readonly children: Array<Dialog> = [];
+    readonly description:string;
+    readonly dialogClassName:string;
+    dialogMode:DialogMode;
+    readonly header:View;
+    readonly id:string;
+    readonly recordDef: RecordDef;
+    readonly referringObject:ReferringObject;
+    readonly selectedViewId:string;
+    readonly sessionId:string;
+    readonly tenantId: string;
+    readonly type:DialogType;
+    readonly view: View;
+    readonly viewMode: ViewMode;
+
+    /* public methods */
+
+    get catavolt():Catavolt {
+        return this._catavolt;
+    }
+
+    /**
+     * Load a Binary property from a record
+     * @param propName
+     * @param record
+     * @returns {any}
+     */
+    binaryAt(propName:string, record:Record):Promise<Binary> {
+
+        const prop: Property = record.propAtName(propName)
+        if (prop) {
+            if (prop.value instanceof InlineBinaryRef) {
+                const binRef = prop.value as InlineBinaryRef;
+                return Promise.resolve(new EncodedBinary(binRef.inlineData, binRef.settings['mime-type']));
+            } else if (prop.value instanceof ObjectBinaryRef) {
+                const binRef = prop.value as ObjectBinaryRef;
+                if (binRef.settings['webURL']) {
+                    return Promise.resolve(new UrlBinary(binRef.settings['webURL']));
+                } else {
+                    return this.readBinary(propName, record);
+                }
+            } else if (typeof prop.value === 'string') {
+                return Promise.resolve(new UrlBinary(prop.value));
+            } else if (prop.value instanceof EncodedBinary) {
+                return Promise.resolve(prop.value);
+
+            } else {
+                return Promise.reject('No binary found at ' + propName);
+            }
+        } else {
+            return Promise.reject('No binary found at ' + propName);
+        }
+    }
+
+    destroy(){
+        //@TODO
+        //destroy this dialog
+    }
+
+    /**
+     * Return the error associated with this dialog, if any
+     * @returns {any}
+     */
+    get error():DialogException {
+        if(this.hasError) {
+            return (this.view as ErrorMessage).exception;
+        } else {
+            return null;
+        }
+    }
+
+
+    /**
+     * Find a menu def on this dialog with the given actionId
+     * @param actionId
+     * @returns {Menu}
+     */
+    findMenuAt(actionId:string) {
+        return this.view.findMenuAt(actionId);
+    }
+
+    /**
+     * Get a string representation of this property suitable for 'reading'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
+    formatForRead(prop:Property, propName:string):string {
+        return PropFormatter.formatForRead(prop, this.propDefAtName(propName));
+    }
+
+    /**
+     * Get a string representation of this property suitable for 'writing'
+     * @param propValue
+     * @param propName
+     * @returns {string}
+     */
+    formatForWrite(prop:Property, propName:string):string {
+        return PropFormatter.formatForWrite(prop, this.propDefAtName(propName));
+    }
+
+    /**
+     * Returns whether or not this dialog loaded properly
+     * @returns {boolean}
+     */
+    get hasError():boolean {
+        return this.view instanceof ErrorMessage;
+    }
+
+    /**
+     * Returns whether or not this Form is destroyed
+     * @returns {boolean}
+     */
+    get isDestroyed():boolean {
+        return this.dialogMode === DialogModeEnum.DESTROYED || this.isAnyChildDestroyed;
+    }
+
+    /**
+     * Returns whether or not the data in this dialog is out of date
+     * @returns {boolean}
+     */
+    get isRefreshNeeded():boolean {
+        return this._lastRefreshTime.getTime() < this.catavolt.dataLastChangedTime.getTime();
+    }
+
+    /**
+     * Get the last time this dialog's data was refreshed
+     * @returns {Date}
+     */
+    get lastRefreshTime():Date {
+        return this._lastRefreshTime;
+    }
+
+    /**
+     * @param time
+     */
+    set lastRefreshTime(time:Date) {
+        this._lastRefreshTime = time;
+    }
+
+    /**
+     * Get the all {@link Menu}'s associated with this dialog
+     * @returns {Array<Menu>}
+     */
+    get menu():Menu {
+        return this.view.menu;
+    }
+
+    openView(targetViewDescriptor:ViewDescriptor): Promise<Dialog>{
+
+        return this.catavolt.dialogApi.changeView(this.tenantId, this.sessionId, this.id, targetViewDescriptor.id)
+            .then((dialog:Dialog)=>{
+                //any new dialog needs to be initialized with the Catavolt object
+                dialog.initialize(this.catavolt);
+                this.updateSettingsWithNewDialogProperties(dialog.referringObject);
+                return dialog;
+            });
+
+    };
+
+
+    /**
+     * Get the title of this dialog
+     * @returns {string}
+     */
+    get paneTitle():string {
+        let title = this.view.findTitle();
+        if (!title) title = this.description;
+        return title;
+    }
+
+    /**
+     * Parses a value to prepare for 'writing' back to the server
+     * @param formattedValue
+     * @param propName
+     * @returns {any}
+     */
+    parseValue(formattedValue:any, propName:string):any {
+        return PropFormatter.parse(formattedValue, this.propDefAtName(propName));
+    }
+
+    /**
+     * Get the propery definition for a property name
+     * @param propName
+     * @returns {PropDef}
+     */
+    propDefAtName(propName:string):PropertyDef {
+        return this.recordDef.propDefAtName(propName);
+    }
+
+
+    /**
+     * Read all the Binary values in this {@link Record}
+     * @param record
+     * @returns {Future<Array<Try<Binary>>>}
+     */
+    readBinaries(record:Record):Promise<Array<Binary>> {
+        return Promise.all(
+            this.recordDef.propertyDefs.filter((propDef: PropertyDef) => {
+                return propDef.isBinaryType
+            }).map((propDef: PropertyDef) => {
+                return this.readBinary(propDef.propertyName, record);
+            })
+        );
+    }
+
+    get parentDialog():Dialog {
+        return this._parentDialog;
+    }
+
+    /**
+     * Get the all {@link ViewDescriptor}'s associated with this Form
+     * @returns {Array<ViewDescriptor>}
+     */
+    get viewDescs():Array<ViewDescriptor> {
+        return this.availableViews;
+    }
+
+    /* @TODO */
+    writeAttachment(attachment:Attachment):Promise<void> {
+        /*
+       return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.session);
+       */
+        return Promise.resolve(null);
+    }
+
+    writeAttachments(record:Record):Promise<Array<void>> {
+
+        return Promise.all(
+            record.properties.filter((prop: Property) => {
+                return prop.value instanceof Attachment;
+            }).map((prop: Property) => {
+                const attachment: Attachment = prop.value as Attachment;
+                return this.writeAttachment(attachment);
+            })
+        );
+
+    }
+
+
+    /**
+     * Write all Binary values in this {@link Record} back to the server
+     * @param record
+     * @returns {Future<Array<Try<XWritePropertyResult>>>}
+     */
+    /* @TODO */
+    writeBinaries(record:Record):Promise<Array<void>> {
+        /*return Promise.all(
+            record.properties.filter((prop: Property) => {
+                return this.propDefAtName(prop.name).isBinaryType;
+            }).map((prop: Property) => {
+                let writePromise:Promise<XWritePropertyResult> = Promise.resolve({} as XWritePropertyResult);
+                if (prop.value) {
+                    let ptr: number = 0;
+                    const encBin: EncodedBinary = prop.value as EncodedBinary;
+                    const data = encBin.data;
+                    while (ptr < data.length) {
+                        const boundPtr = (ptr: number) => {
+                            writePromise = writePromise.then((prevResult) => {
+                                const encSegment: string = (ptr + Dialog.CHAR_CHUNK_SIZE) <= data.length ? data.substr(ptr, Dialog.CHAR_CHUNK_SIZE) : data.substring(ptr);
+                                return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.session);
+                            });
+                        }
+                        boundPtr(ptr);
+                        ptr += Dialog.CHAR_CHUNK_SIZE;
+                    }
+                } else {
+                    // This is a delete
+                    writePromise = writePromise.then((prevResult) => {
+                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
+                    });
+                }
+                return writePromise;
+            })
+        );*/
+
+        return Promise.resolve(null);
+    }
+
+    initialize(catavolt:Catavolt) {
+        this._catavolt = catavolt;
+        if(this.children) {
+            this.children.forEach((child: Dialog) => {
+                child._parentDialog = this;
+                child.initialize(catavolt);
+            });
+        }
+    }
+
+    /**
+     * Perform this action associated with the given Menu on this dialog.
+     * The targets array is expected to be an array of object ids.
+     * @param {Menu} menu
+     * @param {ActionParameters} actionParams
+     * @returns {Promise<{actionId: string} | Redirection>}
+     */
+    protected invokeMenuAction(menu:Menu, actionParams:ActionParameters):Promise<{actionId:string} | Redirection> {
+
+        return this.catavolt.dialogApi.performAction(this.catavolt.session.tenantId, this.catavolt.session.id,
+            this.id, menu.actionId, actionParams).then((result:{actionId:string} | Redirection)=>{
+
+            if(RedirectionUtil.isRedirection(result)) {
+
+                //@TODO - update relevant referring dialog settings on 'this' dialog
+                this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
+
+                //@TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
+                if((result as Redirection).referringObject && (result as Redirection).referringObject['dialogProperties']){
+                    const dialogProps = (result as Redirection).referringObject['dialogProperties'];
+                    if((dialogProps['localRefresh'] && dialogProps['localRefresh'] === 'true' ||
+                            dialogProps['globalRefresh'] && dialogProps['globalRefresh'] === 'true')) {
+                        this.catavolt.dataLastChangedTime = new Date();
+                    }
+                } else if(RedirectionUtil.isNullRedirection(result)) {
+                    this.catavolt.dataLastChangedTime = new Date();
+                }
+            } else {
+                this.catavolt.dataLastChangedTime = new Date();
+            }
+            return result;
+        });
+    }
+
+    //@TODO
+    protected readBinary(propName:string, record:Record):Promise<Binary> {
+
+        /*
+        let seq: number = 0;
+        let encodedResult: string = '';
+        let inProgress: string = '';
+        let f: (XReadPropertyResult) => Promise<Binary> = (result: XReadPropertyResult) => {
+            if (result.hasMore) {
+                inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
+                return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+                    propName, ++seq, Dialog.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            } else {
+                if (inProgress) {
+                    inProgress += atob(result.data);
+                    encodedResult = btoa(inProgress);
+                } else {
+                    encodedResult = result.data;
+                }
+                return Promise.resolve<Binary>(new EncodedBinary(encodedResult));
+            }
+        }
+        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
+            propName, seq, Dialog.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
+            */
+        return Promise.resolve(null);
+    };
+
+
+    protected updateSettingsWithNewDialogProperties(referringObject:ReferringObject) {
+
+        if(referringObject) {
+            if (referringObject.isDialogReferrer()) {
+                //@TODO - remove the uppercase conversion once all DialogModes come back from server as uppercase
+                this.dialogMode = (referringObject as ReferringDialog).dialogMode.toUpperCase() as DialogMode;
+            }
+        }
+
+    }
+
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    private get isAnyChildDestroyed():boolean {
+        return this.children && this.children.some((dialog:Dialog)=> {
+            return dialog.isDestroyed;
+        });
+    }
+
+}
+
+/**
+ * PanContext Subtype that represents an 'Editor Dialog'.
+ * An 'Editor' represents and is backed by a single Record and Record definition.
+ * See {@link Record} and {@link RecordDef}.
+ */
+export class EditorDialog extends Dialog {
+
+    private _buffer:RecordBuffer;
+    private _isFirstReadComplete:boolean;
+
+    readonly businessId: string;
+
+    /**
+     * Get the current buffered record
+     * @returns {RecordBuffer}
+     */
+    get buffer():RecordBuffer {
+        if (!this._buffer) {
+            this._buffer = new RecordBuffer(NullRecord.singleton);
+        }
+        return this._buffer;
+    }
+
+    changeViewMode(viewMode:ViewMode):Promise<EditorDialog> {
+
+        return this.catavolt.dialogApi.changeMode(this.tenantId, this.sessionId, this.id, viewMode)
+            .then((dialog:EditorDialog)=>{
+                //any new dialog needs to be initialized with the Catavolt object
+                dialog.initialize(this.catavolt);
+                this.updateSettingsWithNewDialogProperties(dialog.referringObject);
+                return dialog;
+            });
+    }
+
+    /**
+     * Get the associated entity record
+     * @returns {Record}
+     */
+    get record():Record {
+        return this._buffer.toRecord();
+    }
+
+    /**
+     * Get the current version of the entity record, with any pending changes present
+     * @returns {Record}
+     */
+    get recordNow():Record {
+        return this.record;
+    }
+
+    /**
+     * Get the possible values for a 'constrained value' property
+     * @param propName
+     * @returns {Future<Array<any>>}
+     */
+    //@TODO
+    getAvailableValues(propName:string):Promise<Array<Object>> {
+        /*
+         return DialogService.getAvailableValues(this.paneDef.dialogHandle, propName,
+         this.buffer.afterEffects(), this.sessionContext).map((valuesResult:XGetAvailableValuesResult)=> {
+         return valuesResult.list;
+         });
+         */
+        return Promise.resolve(null);
+
+    }
+
+    /**
+     * Returns whether or not this cell definition contains a binary value
+     * @param cellValueDef
+     * @returns {PropDef|boolean}
+     */
+    isBinary(cellValue:AttributeCellValue):boolean {
+        var propDef = this.propDefAtName(cellValue.propertyName);
+        return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValue.isInlineMediaStyle));
+    }
+
+    /**
+     * Returns whether or not this EditorDialog is destroyed
+     * @returns {boolean}
+     */
+    get isDestroyed():boolean {
+        return this.dialogMode === DialogModeEnum.DESTROYED;
+    }
+
+    /**
+     * Returns whether or not the buffers contain valid data via a successful read operation.
+     * @returns {boolean}
+     */
+    get isFirstReadComplete():boolean {
+        return this._isFirstReadComplete;
+    }
+
+    /**
+     * Returns whether or not this Editor is in 'read' mode
+     * @returns {boolean}
+     */
+    get isReadMode():boolean {
+        return this.viewMode === ViewModeEnum.READ;
+    }
+
+    /**
+     * Returns whether or not this property is read-only
+     * @param propName
+     * @returns {boolean}
+     */
+    isReadModeFor(propName:string):boolean {
+        if (!this.isReadMode) {
+            var propDef = this.propDefAtName(propName);
+            return !propDef || !propDef.writeAllowed || !propDef.writeEnabled;
+        }
+        return true;
+    }
+
+    /**
+     * Returns whether or not this cell definition contains a binary value that should be treated as a signature control
+     * @param cellValueDef
+     * @returns {PropDef|boolean}
+     */
+    isSignature(cellValueDef:AttributeCellValue):boolean {
+        var propDef = this.propDefAtName(cellValueDef.propertyName);
+        return this.isBinary(cellValueDef) && propDef.isSignatureType;
+    }
+
+    /**
+     * Returns whether or not this property is 'writable'
+     * @returns {boolean}
+     */
+    get isWriteMode():boolean {
+        return this.viewMode === ViewModeEnum.WRITE;
+    }
+
+    /**
+     * Perform the action associated with the given Menu on this EditorDialog
+     * Given that the Editor could possibly be destroyed as a result of this action,
+     * any provided pending writes will be saved if present.
+     * @param {Menu} menu
+     * @param {Record} pendingWrites
+     * @returns {Promise<{actionId: string} | Redirection>}
+     */
+    performMenuAction(menu:Menu, pendingWrites:Record):Promise<{actionId:string} | Redirection> {
+
+        return this.invokeMenuAction(menu, {pendingWrites:pendingWrites, type:TypeNames.ActionParametersTypeName}).then(result=>{
+            return result;
+        });
+    }
+
+    /**
+     * Properties whose {@link PropDef.canCauseSideEffects} value is true, may change other underlying values in the model.
+     * This method will update those underlying values, given the property name that is changing, and the new value.
+     * This is frequently used with {@link EditorContext.getAvailableValues}.  When a value is seleted, other properties
+     * available values may change. (i.e. Country, State, City dropdowns)
+     * @param propertyName
+     * @param value
+     * @returns {Future<null>}
+     */
+    //@TODO
+    processSideEffects(propertyName:string, value:any):Promise<void> {
+
+        /*
+         var sideEffectsFr:Future<Record> = DialogService.processSideEffects(this.paneDef.dialogHandle,
+         this.sessionContext, propertyName, value, this.buffer.afterEffects()).map((changeResult:XPropertyChangeResult)=> {
+         return changeResult.sideEffects ? changeResult.sideEffects.record : new NullRecord();
+         });
+
+         return sideEffectsFr.map((sideEffectsRec:Record)=> {
+         var originalProps = this.buffer.before.props;
+         var userEffects = this.buffer.afterEffects().props;
+         var sideEffects = sideEffectsRec.props;
+         sideEffects = sideEffects.filter((prop:Prop)=> {
+         return prop.name !== propertyName;
+         });
+         this._buffer = RecordBuffer.createRecordBuffer(this.buffer.objectId,
+         RecordUtil.union(originalProps, sideEffects),
+         RecordUtil.union(originalProps, RecordUtil.union(userEffects, sideEffects)));
+         return null;
+         });
+         */
+        return Promise.resolve(null);
+    }
+
+    /**
+     * Read (load) the {@link Record} assocated with this Editor
+     * The record must be read at least once to initialize the Context
+     * @returns {Future<Record>}
+     */
+    read():Promise<Record> {
+
+        return this.catavolt.dialogApi.getRecord(this.tenantId, this.sessionId, this.id)
+            .then((record:Record)=>{
+                this._isFirstReadComplete = true;
+                this.initBuffer(record);
+                this.lastRefreshTime = new Date();
+                return record;
+            });
+    }
+
+
+    /**
+     * Set the value of a property in this {@link Record}.
+     * Values may be already constructed target types (CodeRef, TimeValue, Date, etc.)
+     * or primitives, in which case the values will be parsed and objects constructed as necessary.
+     * @param name
+     * @param value
+     * @returns {any}
+     */
+    setPropValue(name:string, value:any):any {
+        const propDef:PropertyDef = this.propDefAtName(name);
+        let parsedValue:any = null;
+        if (propDef) {
+            parsedValue = (value !== null && value !== undefined) ? this.parseValue(value, propDef.propertyName) : null;
+            this.buffer.setValue(propDef.propertyName, parsedValue);
+        }
+        return parsedValue;
+    }
+
+    /**
+     * Set a binary property from a string formatted as a 'data url'
+     * See {@link https://en.wikipedia.org/wiki/Data_URI_scheme}
+     * @param name
+     * @param dataUrl
+     */
+    setBinaryPropWithDataUrl(name:string, dataUrl:string) {
+        if (dataUrl) {
+            const urlObj: DataUrl = new DataUrl(dataUrl);
+            this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
+        } else {
+            this.setPropValue(name, null);  // Property is being deleted/cleared
+        }
+    }
+
+    /**
+     * Set a binary property with base64 encoded data
+     * @param name
+     * @param encodedData
+     * @param mimeType
+     */
+    setBinaryPropWithEncodedData(name:string, encodedData:string, mimeType:string) {
+        const propDef:PropertyDef = this.propDefAtName(name);
+        if (propDef) {
+            const value = new EncodedBinary(encodedData, mimeType);
+            this.buffer.setValue(propDef.propertyName, value);
+        }
+    }
+
+    /**
+     * Write this record (i.e. {@link Record}} back to the server
+     * @returns {Promise<Record | Redirection>}
+     */
+    write():Promise<Record | Redirection> {
+
+        let deltaRec: Record = this.buffer.afterEffects();
+
+        /* Write the 'special' props first */
+        return this.writeBinaries(deltaRec).then((binResult:Array<void>) => {
+            return this.writeAttachments(deltaRec).then((atResult:Array<void>) => {
+                /* Remove special property types before writing the actual record */
+                deltaRec = this.removeSpecialProps(deltaRec);
+                return this.catavolt.dialogApi.putRecord(this.tenantId, this.sessionId, this.id, deltaRec)
+                    .then((result:Record | Redirection)=>{
+                        const now = new Date();
+                        this.catavolt.dataLastChangedTime = now;
+                        this.lastRefreshTime = now;
+                        if(RedirectionUtil.isRedirection(result)) {
+                            this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
+                        } else {
+                            this.initBuffer(result as Record);
+                        }
+                        return result as Record | Redirection;
+                });
+            });
+        });
+
+    }
+
+    //Module level methods
+
+    //Private methods
+
+    /*
+        @TODO
+        Consider clone and deep copy here, to avoid potential ui side-effects
+     */
+    private removeSpecialProps(record:Record):Record {
+        record.properties = record.properties.filter((prop:Property)=>{
+            /* Remove the Binary(s) as they have been written seperately */
+            return !this.propDefAtName(prop.name).isBinaryType;
+        }).map((prop:Property)=>{
+            /*
+             Remove the Attachment(s) (as they have been written seperately) but replace
+             the property value with the file name of the attachment prior to writing
+             */
+            if(prop.value instanceof Attachment) {
+                const attachment = prop.value as Attachment;
+                return new Property(prop.name, attachment.name, prop.propertyType, prop.format, prop.annotations);
+            } else {
+                return prop;
+            }
+        });
+        return record;
+    }
+
+    private initBuffer(record:Record) {
+        this._buffer = record ? new RecordBuffer(record) : new RecordBuffer(NullRecord.singleton);
+    }
+
+}
+
+
+/**
+ * Dialog Subtype that represents a 'Query Dialog'.
+ * A 'Query' represents and is backed by a list of Records and a single Record definition.
+ * See {@link Record} and {@link RecordDef}.
+ */
+export class QueryDialog extends Dialog {
+
+    private _scroller: QueryScroller;
+    private _defaultActionId: string;
+
+    positionalQueryAbility:PositionalQueryAbilityType;
+    supportsColumnStatistics:boolean;
+    supportsPositionalQueries:boolean;
+
+    /**
+     * Returns whether or not a column is of a binary type
+     * @param columnDef
+     * @returns {PropDef|boolean}
+     */
+    isBinary(column: Column): boolean {
+        var propDef = this.propDefAtName(column.propertyName);
+        return propDef && (propDef.isBinaryType || (propDef.isURLType && propDef.isInlineMediaStyle));
+    }
+
+    get defaultActionId(): string {
+        return this._defaultActionId;
+    }
+
+    /**
+     * Perform this action associated with the given Menu on this dialog.
+     * The targets array is expected to be an array of object ids.
+     * @param {Menu} menu
+     * @param {Array<string>} targets
+     * @returns {Promise<{actionId: string} | Redirection>}
+     */
+    performMenuAction(menu: Menu, targets: Array<string>): Promise<{ actionId: string } | Redirection> {
+
+        return this.invokeMenuAction(menu, {
+            targets: targets,
+            type: TypeNames.ActionParametersTypeName
+        }).then(result => {
+            return result;
+        });
+
+    }
+
+    /**
+     * Perform a query
+     * Note: {@link QueryScroller} is the preferred way to perform a query.
+     * see {@link QueryContext.newScroller} and {@link QueryContext.setScroller}
+     * @param maxRows
+     * @param direction
+     * @param fromObjectId
+     * @returns {Future<RecordSet>}
+     */
+    query(maxRows: number, direction: QueryDirection, fromObjectId: string): Promise<RecordSet> {
+
+        const queryParams: QueryParameters = fromObjectId ?
+            {
+                fetchDirection: direction,
+                fetchMaxRecords: maxRows,
+                fromBusinessId: fromObjectId,
+                type: TypeNames.QueryParametersTypeName
+            } :
+            {fetchDirection: direction, fetchMaxRecords: maxRows, type: TypeNames.QueryParametersTypeName};
+
+        return this.catavolt.dialogApi.getRecords(this.catavolt.session.tenantId, this.catavolt.session.id, this.id, queryParams)
+            .then((recordSet: RecordSet) => {
+                this.lastRefreshTime = new Date();
+                this._defaultActionId = recordSet.defaultActionId;
+                return recordSet;
+            });
+
+    }
+
+    /**
+     * Clear the QueryScroller's buffer and perform this query
+     * @returns {Future<Array<Record>>}
+     */
+    refresh(): Promise<Array<Record>> {
+        return this._scroller.refresh();
+    }
+
+    /**
+     * Get the associated QueryScroller
+     * @returns {QueryScroller}
+     */
+    get scroller(): QueryScroller {
+        if (!this._scroller) {
+            this._scroller = this.newScroller();
+        }
+        return this._scroller;
+    }
+
+    /**
+     * Creates a new QueryScroller with the given values
+     * @param pageSize
+     * @param firstObjectId
+     * @param markerOptions
+     * @returns {QueryScroller}
+     */
+    setScroller(pageSize: number, firstObjectId: string, markerOptions: Array<QueryMarkerOption>) {
+        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
+        return this._scroller;
+    }
+
+    /**
+     * Creates a new QueryScroller with default buffer size of 50
+     * @returns {QueryScroller}
+     */
+    newScroller(): QueryScroller {
+        return this.setScroller(50, null, [QueryMarkerOption.None]);
+    }
+
+    //protected
+
+}
+
+/**
+ * *********************************
+ */
+
+
+export class HasMoreQueryMarker extends NullRecord {
+    static singleton = new HasMoreQueryMarker();
+}
+
+export class IsEmptyQueryMarker extends NullRecord {
+    static singleton = new IsEmptyQueryMarker();
+}
+
+export enum QueryMarkerOption {
+    None, IsEmpty, HasMore
+}
+
+export class QueryScroller {
+
+    private _buffer:Array<Record>;
+    private _hasMoreBackward:boolean;
+    private _hasMoreForward:boolean;
+    private _nextPagePromise:Promise<RecordSet>;
+    private _prevPagePromise:Promise<RecordSet>;
+    private _firstResultOid:string;
+
+    constructor(private _dialog:QueryDialog,
+                private _pageSize:number,
+                private _firstObjectId:string,
+                private _markerOptions:Array<QueryMarkerOption> = []) {
+
+        this.clear();
+
+    }
+
+    get buffer():Array<Record> {
+        return this._buffer;
+    }
+
+    get bufferWithMarkers():Array<Record> {
+        var result = ArrayUtil.copy(this._buffer);
+        if (this.isComplete) {
+            if (this._markerOptions.indexOf(QueryMarkerOption.IsEmpty) > -1) {
+                if (this.isEmpty) {
+                    result.push(IsEmptyQueryMarker.singleton);
+                }
+            }
+        } else if (this._markerOptions.indexOf(QueryMarkerOption.HasMore) > -1) {
+            if (result.length === 0) {
+                result.push(HasMoreQueryMarker.singleton);
+            } else {
+                if (this._hasMoreBackward) {
+                    result.unshift(HasMoreQueryMarker.singleton)
+                }
+                if (this._hasMoreForward) {
+                    result.push(HasMoreQueryMarker.singleton);
+                }
+            }
+        }
+        return result;
+    }
+
+    get dialog():QueryDialog {
+        return this._dialog;
+    }
+
+    get firstObjectId():string {
+        return this._firstObjectId;
+    }
+
+    get hasMoreBackward():boolean {
+        return this._hasMoreBackward;
+    }
+
+    get hasMoreForward():boolean {
+        return this._hasMoreForward;
+    }
+
+    get isComplete():boolean {
+        return !this._hasMoreBackward && !this._hasMoreForward;
+    }
+
+    get isCompleteAndEmpty():boolean {
+        return this.isComplete && this._buffer.length === 0;
+    }
+
+    get isEmpty():boolean {
+        return this._buffer.length === 0;
+    }
+
+    pageBackward():Promise<Array<Record>> {
+
+        if (!this._hasMoreBackward) {
+            return Promise.resolve([]);
+        }
+
+        if (this._prevPagePromise) {
+            this._prevPagePromise = this._prevPagePromise.then((recordSet: RecordSet) => {
+                const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
+                return this._dialog.query(this._pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
+            });
+        } else {
+            const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
+            this._prevPagePromise = this._dialog.query(this._pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
+        }
+
+        const beforeSize: number = this._buffer.length;
+
+        return this._prevPagePromise.then((queryResult: RecordSet) => {
+            let afterSize = beforeSize;
+            this._hasMoreBackward = queryResult.hasMore;
+            if (queryResult.records.length > 0) {
+                const newBuffer: Array<Record> = [];
+                for (let i = queryResult.records.length - 1; i > -1; i--) {
+                    newBuffer.push(queryResult.records[i]);
+                }
+                this._buffer.forEach((record: Record) => {
+                    newBuffer.push(record)
+                });
+                this._buffer = newBuffer;
+                afterSize = this._buffer.length;
+            }
+            return queryResult.records;
+        });
+
+    }
+
+    pageForward():Promise<Array<Record>> {
+
+        if (!this._hasMoreForward) {
+            return Promise.resolve([]);
+        }
+
+        if(this._nextPagePromise) {
+            this._nextPagePromise = this._nextPagePromise.then((recordSet:RecordSet)=>{
+                const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
+                return this._dialog.query(this._pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
+            });
+        } else {
+            const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
+            this._nextPagePromise = this._dialog.query(this._pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
+        }
+
+        const beforeSize: number = this._buffer.length;
+
+        return this._nextPagePromise.then((queryResult: RecordSet) => {
+            let afterSize = beforeSize;
+            this._hasMoreForward = queryResult.hasMore;
+            if (queryResult.records.length > 0) {
+                const newBuffer: Array<Record> = [];
+                this._buffer.forEach((record: Record) => {
+                    newBuffer.push(record)
+                });
+                queryResult.records.forEach((record: Record) => {
+                    newBuffer.push(record);
+                });
+                this._buffer = newBuffer;
+                afterSize = this._buffer.length;
+            }
+            return queryResult.records;
+        });
+
+    }
+
+    get pageSize():number {
+        return this._pageSize;
+    }
+
+    refresh():Promise<Array<Record>> {
+        this.clear();
+        return this.pageForward().then((recordList: Array<Record>) => {
+            if (recordList.length > 0) {
+                this._firstResultOid = recordList[0].id;
+            }
+            return recordList;
+        });
+    }
+
+    trimFirst(n:number) {
+        const newBuffer = [];
+        for (let i = n; i < this._buffer.length; i++) {
+            newBuffer.push(this._buffer[i]);
+        }
+        this._buffer = newBuffer;
+        this._hasMoreBackward = true;
+    }
+
+    trimLast(n:number) {
+        var newBuffer = [];
+        for (let i = 0; i < this._buffer.length - n; i++) {
+            newBuffer.push(this._buffer[i]);
+        }
+        this._buffer = newBuffer;
+        this._hasMoreForward = true;
+    }
+
+    private clear() {
+        this._hasMoreBackward = !!this._firstObjectId;
+        this._hasMoreForward = true;
+        this._buffer = [];
+        this._firstResultOid = null;
+    }
+
+}
+
+export class ErrorDialog extends Dialog {
+}
+
+/*
+    ***************************************************************************
+    End Dialog classes implementation
+    ***************************************************************************
+ */
 
 
 
@@ -2328,12 +3683,14 @@ export enum TypeNames {
     CodeRefTypeName = 'hxgn.api.dialog.CodeRef',
     DialogTypeName = 'hxgn.api.dialog.Dialog',
     DialogRedirectionTypeName = 'hxgn.api.dialog.DialogRedirection',
+    EditorDialogTypeName = 'hxgn.api.dialog.EditorDialog',
     GpsReadingPropertyTypeName = 'hxgn.api.dialog.GpsReadingProperty',
     LoginTypeName = 'hxgn.api.dialog.Login',
     MapLocationPropertyTypeName = 'hxgn.api.dialog.MapLocationProperty',
     NullRedirectionTypeName = 'hxgn.api.dialog.NullRedirection',
     ObjectRefTypeName = 'hxgn.api.dialog.ObjectRef',
     PropertyTypeName = 'hxgn.api.dialog.Property',
+    QueryDialogTypeName = 'hxgn.api.dialog.QueryDialog',
     QueryParametersTypeName = 'hxgn.api.dialog.QueryParameters',
     RecordTypeName = 'hxgn.api.dialog.Record',
     ReferringDialogTypeName = 'hxgn.api.dialog.ReferringDialog',
@@ -2356,6 +3713,7 @@ export class ModelUtil {
         'hxgn.api.dialog.CodeRef': CodeRef,
         'hxgn.api.dialog.Details': Details,
         'hxgn.api.dialog.DialogException': DialogException,
+        'hxgn.api.dialog.EditorDialog': EditorDialog,
         'hxgn.api.dialog.ForcedLineCellValue': ForcedLineCellValue,
         'hxgn.api.dialog.Form': Form,
         'hxgn.api.dialog.GpsReading': GpsReading,
@@ -2372,6 +3730,7 @@ export class ModelUtil {
         'hxgn.api.dialog.ObjectRef': ObjectRef,
         'hxgn.api.dialog.Property': Property,
         'hxgn.api.dialog.PropertyDef': PropertyDef,
+        'hxgn.api.dialog.QueryDialog': QueryDialog,
         'hxgn.api.dialog.Record': RecordImpl,
         'hxgn.api.dialog.RecordDef': RecordDef,
         'hxgn.api.dialog.ReferringDialog': ReferringDialog,
