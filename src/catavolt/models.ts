@@ -2929,6 +2929,7 @@ export abstract class Dialog {
                             dialogProps['globalRefresh'] && dialogProps['globalRefresh'] === 'true')) {
                         this.catavolt.dataLastChangedTime = new Date();
                     }
+                    //@TODO - also, this check should go away - we will rely on 'isLocalRefreshNeeded' exclusively
                 } else if(RedirectionUtil.isNullRedirection(result)) {
                     this.catavolt.dataLastChangedTime = new Date();
                 }
@@ -3066,14 +3067,6 @@ export class EditorDialog extends Dialog {
     isBinary(cellValue:AttributeCellValue):boolean {
         var propDef = this.propDefAtName(cellValue.propertyName);
         return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValue.isInlineMediaStyle));
-    }
-
-    /**
-     * Returns whether or not this EditorDialog is destroyed
-     * @returns {boolean}
-     */
-    get isDestroyed():boolean {
-        return this.dialogMode === DialogModeEnum.DESTROYED;
     }
 
     /**
