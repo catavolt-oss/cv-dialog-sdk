@@ -31,7 +31,8 @@
     "tape": "^4.8.0",
     "typescript": "~2.6.1",
     "watchify": "^3.9.0",
-    "react": "15.6.2"
+    "react": "15.6.2",
+    "typedoc":"*"
   },
   "scripts": {
     "prepublishOnly": "bin/gen-version-code.js && tsc",
