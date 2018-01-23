@@ -367,7 +367,7 @@ export interface DialogMessage {
      */
     readonly code:string;
 
-    readonly messageType: DialogMessageType;
+    readonly messageType: DialogMessageMessageType;
     /**
      * A human-readable informative description. If a code is provided, then this message explains the meaning of the code.
      */
@@ -3394,7 +3394,7 @@ export class QueryDialog extends Dialog {
      * @param markerOptions
      * @returns {QueryScroller}
      */
-    setScroller(pageSize: number, firstObjectId: string, markerOptions: Array<QueryMarkerOption>) {
+    setScroller(pageSize: number, firstObjectId: string=null, markerOptions: Array<QueryMarkerOption>=[QueryMarkerOption.None]) {
         this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
         return this._scroller;
     }
@@ -3633,7 +3633,7 @@ export type AttributeCellValueEntryMethod = "COMBO_BOX" | "DROP_DOWN" | "TEXT_FI
 
 export type ClientType = 'DESKTOP' | 'MOBILE';
 
-export type DialogMessageType = "CONFIRM" | "ERROR" | "INFO" | "WARN";
+export type DialogMessageMessageType = "CONFIRM" | "ERROR" | "INFO" | "WARN";
 
 /* DialogMode */
 export enum DialogModeEnum { COPY = 'COPY' , CREATE = 'CREATE', READ = 'READ', UPDATE = 'UPDATE', DESTROYED = 'DESTROYED', DELETE = 'DELETE', LIST = 'LIST'}
@@ -3673,12 +3673,22 @@ export enum TypeNames {
 
     ActionParametersTypeName = 'hxgn.api.dialog.ActionParameters',
     AppWindowTypeName = 'hxgn.api.dialog.AppWindow',
+    BarcodeScan = 'hxgn.api.dialog.BarcodeScan',
+    CalendarTypeName = 'hxgn.api.dialog.Calendar',
     CodeRefTypeName = 'hxgn.api.dialog.CodeRef',
+    DetailsTypeName = 'hxgn.api.dialog.Details',
     DialogTypeName = 'hxgn.api.dialog.Dialog',
+    DialogMessageTypeName = 'hxgn.api.dialog.DialogMessage',
     DialogRedirectionTypeName = 'hxgn.api.dialog.DialogRedirection',
     EditorDialogTypeName = 'hxgn.api.dialog.EditorDialog',
+    FormTypeName = 'hxgn.api.dialog.Form',
+    GpsReadingTypeName = 'hxgn.api.dialog.GpsReading',
     GpsReadingPropertyTypeName = 'hxgn.api.dialog.GpsReadingProperty',
+    GraphTypeName = 'hxgn.api.dialog.Graph',
+    ListTypeName = 'hxgn.api.dialog.List',
     LoginTypeName = 'hxgn.api.dialog.Login',
+    MapTypeName = 'hxgn.api.dialog.Map',
+    MapLocationTypeName = 'hxgn.api.dialog.MapLocation',
     MapLocationPropertyTypeName = 'hxgn.api.dialog.MapLocationProperty',
     NullRedirectionTypeName = 'hxgn.api.dialog.NullRedirection',
     ObjectRefTypeName = 'hxgn.api.dialog.ObjectRef',
@@ -3689,6 +3699,7 @@ export enum TypeNames {
     ReferringDialogTypeName = 'hxgn.api.dialog.ReferringDialog',
     ReferringWorkbenchTypeName = 'hxgn.api.dialog.ReferringWorkbench',
     SessionTypeName = 'hxgn.api.dialog.Session',
+    StreamTypeName = 'hxgn.api.dialog.Stream',
     WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
     WorkbenchTypeName = 'hxgn.api.dialog.Workbench',
     WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection',

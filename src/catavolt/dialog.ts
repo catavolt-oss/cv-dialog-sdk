@@ -711,7 +711,7 @@ export class DialogServiceResponse<T> implements DialogApiResponse<T> {
 
     responseValue():Promise<T> {
         return new Promise((resolve, reject)=> {
-            if(this.hasMessage) {
+            if(this.hasError) {
                 reject(<DialogMessage>this.clientResponse.value);
             } else {
                 this.fullfillJsonToModel<T>(this.clientResponse, resolve, reject);
@@ -721,7 +721,7 @@ export class DialogServiceResponse<T> implements DialogApiResponse<T> {
 
     responseValueOrRedirect():Promise<T | Redirection> {
         return new Promise((resolve, reject)=> {
-            if(this.hasMessage) {
+            if(this.hasError) {
                 reject(<DialogMessage>this.clientResponse.value);
             } else if(this.hasValue) {
                 this.fullfillJsonToModel<T>(this.clientResponse, resolve, reject);
@@ -733,7 +733,7 @@ export class DialogServiceResponse<T> implements DialogApiResponse<T> {
 
     assertNoError():Promise<void> {
         return new Promise((resolve, reject)=> {
-            if(this.hasMessage) {
+            if(this.hasError) {
                 reject(<DialogMessage>this.clientResponse.value);
             } else {
                 resolve(undefined);
@@ -749,7 +749,7 @@ export class DialogServiceResponse<T> implements DialogApiResponse<T> {
         return this.clientResponse.statusCode >= 300 && this.clientResponse.statusCode < 400;
     }
 
-    get hasMessage():boolean {
+    get hasError():boolean {
         return this.clientResponse.statusCode >= 400;
     }
 

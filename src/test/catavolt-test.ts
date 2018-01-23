@@ -8,5 +8,5 @@ Log.logLevel(LogLevel.DEBUG);
 
 export * from '../catavolt'
 export * from './ws/ws.test'
-export * from './dialog/dialog.test'
+export * from './integration/api.test'
 

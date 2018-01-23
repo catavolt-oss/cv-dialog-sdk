@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./node_modules/typedoc/bin/typedoc --mode modules --tsconfig ./tsconfig.json --theme default --out ../docs/catavolt-sdk ./src/catavolt
+./node_modules/typedoc/bin/typedoc --mode modules --tsconfig ./tsconfig.json --theme default --out ./docs/catavolt-sdk ./src/catavolt
