@@ -135,9 +135,8 @@ test("Perform Action Test", (t) => {
     const queryDialog:QueryDialog = currentDialog.children[0] as QueryDialog;
     const list:List = queryDialog.view as List;
 
-    /*
-        Get the 'default action' on this QueryDialog
-    */
+
+    //Get the 'default action' on this QueryDialog
     const defaultActionId = queryDialog.defaultActionId;
     const menu = list.menu.findAtActionId(defaultActionId);
     t.ok(menu, "The View's Menu should contain the defaultActionId");
@@ -147,13 +146,11 @@ test("Perform Action Test", (t) => {
 
     t.comment(`Navigating to actionId: ${defaultActionId}`);
 
-    /*
-        Use toDialogOrRedirection Higher-Order Function to automatically open
-        the Redirection returned by performMenuAction
-    */
+    //Use toDialogOrRedirection Higher-Order Function to automatically open
+    //the Redirection returned by performMenuAction
     return catavolt.toDialogOrRedirection(
 
-        /* Perform the action */
+        // Perform the action
         queryDialog.performMenuAction(menu, [aRecord.id])
             .then((successOrRedirection:{actionId} | Redirection)=>{
                 if(RedirectionUtil.isDialogRedirection(successOrRedirection)) currentRedirection = successOrRedirection as Redirection;
@@ -189,7 +186,7 @@ test("Read A Record From An EditorDialog Test", (t) => {
 
     t.comment(`Detail: ${editorDialog.description}`);
 
-    /* Get the Cell Layout defined for this Details Object */
+    // Get the Cell Layout defined for this Details Object
     const rowsLayout = details.rows.map((row:Array<Cell>)=>{
         return row.map((cell:Cell)=>{
             return cell.values.map((cellValue:CellValue)=>{
@@ -202,13 +199,13 @@ test("Read A Record From An EditorDialog Test", (t) => {
     rowsLayout.forEach(row=>t.comment(`>    ${row}`));
 
 
-    /* Read the Record data */
+    // Read the Record data
     //@TODO Dialog API needs a fix here for BinaryProperty
-    /*return editorDialog.read().then((record:Record)=>{
-        t.ok(record);
-        t.comment(`>  Record is: ${record.propValues.join(', ')}`);
-        return record;
-    });*/
+    //return editorDialog.read().then((record:Record)=>{
+    //    t.ok(record);
+    //    t.comment(`>  Record is: ${record.propValues.join(', ')}`);
+     //   return record;
+    //});
 
     return Promise.resolve(true);
 
@@ -224,4 +221,3 @@ test("Logout Test", (t) => {
          t.comment(`> Session Logout: ${response.sessionId}`)
      })
  });
-
