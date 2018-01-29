@@ -38,9 +38,9 @@ import {PrintForm} from "./print";
 /**
  * Top-level entry point into the Catavolt API
  */
-export class Catavolt {
+export class CatavoltApi {
 
-    private static _singleton:Catavolt;
+    private static _singleton:CatavoltApi;
 
     private static ONE_HOUR_IN_MILLIS:number = 60 * 60 * 1000;
 
@@ -65,28 +65,28 @@ export class Catavolt {
      * @returns {number}
      */
     public static get defaultTTLInMillis():number {
-        return Catavolt.ONE_HOUR_IN_MILLIS;
+        return CatavoltApi.ONE_HOUR_IN_MILLIS;
     }
 
     /**
-     * Get the singleton instance of the Catavolt
-     * @returns {Catavolt}
+     * Get the singleton instance of the CatavoltApi
+     * @returns {CatavoltApi}
      */
-    static get singleton():Catavolt {
-        if (!Catavolt._singleton) {
-            Catavolt._singleton = new Catavolt(Catavolt.SERVER_URL, Catavolt.SERVER_VERSION);
+    static get singleton():CatavoltApi {
+        if (!CatavoltApi._singleton) {
+            CatavoltApi._singleton = new CatavoltApi(CatavoltApi.SERVER_URL, CatavoltApi.SERVER_VERSION);
         }
-        return Catavolt._singleton;
+        return CatavoltApi._singleton;
     }
 
     /**
-     * Construct an Catavolt
+     * Construct an CatavoltApi
      * This should not be called directly, instead use the 'singleton' method
      * @private
      */
     private constructor(serverUrl:string, serverVersion:string) {
 
-        if (Catavolt._singleton) {
+        if (CatavoltApi._singleton) {
             throw new Error("Singleton instance already created");
         }
         this._devicePropsStatic = {};
@@ -94,7 +94,7 @@ export class Catavolt {
 
         this.initPersistentApi(serverUrl, serverVersion);
 
-        Catavolt._singleton = this;
+        CatavoltApi._singleton = this;
     }
 
 
@@ -145,7 +145,7 @@ export class Catavolt {
      */
     get clientTimeoutMillis():number {
         const mins = this.session.tenantProperties['clientTimeoutMinutes'];
-        return mins ? (Number(mins) * 60 * 1000) : Catavolt.defaultTTLInMillis;
+        return mins ? (Number(mins) * 60 * 1000) : CatavoltApi.defaultTTLInMillis;
     }
 
     /**
@@ -209,12 +209,12 @@ export class Catavolt {
 
 
     /**
-     * Initialize a dialog service implementation for use by this Catavolt
+     * Initialize a dialog service implementation for use by this CatavoltApi
      *
      * @param serverVersion
      * @param serverUrl
      */
-    initDialogApi(serverUrl:string, serverVersion:string=Catavolt.SERVER_VERSION):void {
+    initDialogApi(serverUrl:string, serverVersion:string=CatavoltApi.SERVER_VERSION):void {
 
         this._dialogApi = new DialogService(new FetchClient(this._clientMode), serverUrl, serverVersion);
 
@@ -382,7 +382,7 @@ export class Catavolt {
     }
 
     /**
-     * Refresh the Catavolt
+     * Refresh the CatavoltApi
      *
      * @returns {Promise<Session>}
      */
@@ -422,11 +422,11 @@ export class Catavolt {
     }
 
     setPersistentClient():void {
-        this.initPersistentApi(Catavolt.SERVER_URL, Catavolt.SERVER_VERSION);
+        this.initPersistentApi(CatavoltApi.SERVER_URL, CatavoltApi.SERVER_VERSION);
     }
 
     setOnlineClient():void {
-        this.initDialogApi(Catavolt.SERVER_URL, Catavolt.SERVER_VERSION);
+        this.initDialogApi(CatavoltApi.SERVER_URL, CatavoltApi.SERVER_VERSION);
     }
 
     setOfflineMode():void {
@@ -440,8 +440,6 @@ export class Catavolt {
     }
 
 }
-
-
 
 /*
  ************************** Dialog API ****************************
@@ -811,3 +809,8 @@ const FeatureVersionMap:{[featureSet:string]:AppVersion} = {
 };
 
 /* End Feature Versioning */
+
+/*
+    Export the Catavolt Object
+ */
+export const Catavolt = CatavoltApi.singleton;

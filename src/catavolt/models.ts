@@ -7,7 +7,7 @@ import {
     Dictionary, DataUrl
 } from './util'
 import moment = require("moment");
-import {Catavolt} from "./dialog";
+import {CatavoltApi} from "./dialog";
 /*
  ************************** Dialog Models ****************************
  * These models correspond to those in the WebAPI schema specification
@@ -1708,10 +1708,11 @@ export class Property {
 
     /**
      *
-     * @private
-     * @param _name
-     * @param _value
-     * @param _annotations
+     * @param {string} name
+     * @param value
+     * @param {string} propertyType
+     * @param {string} format
+     * @param {Array<DataAnnotation>} annotations
      */
     constructor(readonly name:string, readonly value:any, readonly propertyType?:string, readonly format?:string,
                 readonly annotations:Array<DataAnnotation> = []) {
@@ -2081,8 +2082,8 @@ export class PropFormatter {
         // The locale from the browser is not reliable.  The Extender server pulls the browser's locale from the
         // agent string at logon time.  Use that with a fallback approach to find the best fit locale.
         // var localeTest = window.navigator.userLanguage || window.navigator.language;
-        if (Catavolt.singleton.browserLocaleJson) {
-            let browserLocale = JSON.parse(Catavolt.singleton.browserLocaleJson);  // country/language/varient
+        if (CatavoltApi.singleton.browserLocaleJson) {
+            let browserLocale = JSON.parse(CatavoltApi.singleton.browserLocaleJson);  // country/language/varient
             if (browserLocale.country) {
                 let key = browserLocale.language + "-" + browserLocale.country.toLowerCase();
                 if (moment().lang(key)) {
@@ -2232,11 +2233,11 @@ export class PropFormatter {
                     // This may be desired down the road, but for now, the server provides the symbol to use.
                     let atStart: boolean = f.length > 0 && f[0] === '$';
                     let atEnd: boolean = f.length > 0 && f[f.length - 1] === '$';
-                    if (Catavolt.singleton.currencySymbol) {
+                    if (CatavoltApi.singleton.currencySymbol) {
                         f = f.replace("$", "");               // Format this as a number, and slam in Extender currency symbol
                         var formatted = numeral(o).format(f);
-                        if (atStart) formatted = Catavolt.singleton.currencySymbol + formatted;
-                        if (atEnd) formatted = formatted + Catavolt.singleton.currencySymbol;
+                        if (atStart) formatted = CatavoltApi.singleton.currencySymbol + formatted;
+                        if (atEnd) formatted = formatted + CatavoltApi.singleton.currencySymbol;
                     } else {
                         formatted = numeral(o).format(f);  // Should substitute browsers locale currency symbol
                     }
@@ -2611,7 +2612,7 @@ export abstract class Dialog {
     //private/protected
     private _binaryCache:{ [index:string]:Array<Binary> } = {};
     private _lastRefreshTime:Date = new Date(0);
-    private _catavolt:Catavolt;
+    private _catavolt:CatavoltApi;
     protected _parentDialog;
 
     readonly availableViews:Array<ViewDescriptor>;
@@ -2633,7 +2634,7 @@ export abstract class Dialog {
 
     /* public methods */
 
-    get catavolt():Catavolt {
+    get catavolt():CatavoltApi {
         return this._catavolt;
     }
 
@@ -2895,7 +2896,7 @@ export abstract class Dialog {
         return Promise.resolve(null);
     }
 
-    initialize(catavolt:Catavolt) {
+    initialize(catavolt:CatavoltApi) {
         this._catavolt = catavolt;
         if(this.children) {
             this.children.forEach((child: Dialog) => {
@@ -3000,6 +3001,8 @@ export abstract class Dialog {
 export class EditorDialog extends Dialog {
 
     private _buffer:RecordBuffer;
+
+    //@TODO - remove this
     private _isFirstReadComplete:boolean;
 
     readonly businessId: string;

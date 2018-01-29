@@ -18,8 +18,6 @@ import {Log, LogLevel} from "../../catavolt/util";
 /*
     Get a reference to the SDK instance
  */
-const catavolt = Catavolt.singleton;
-
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
     ['***REMOVED***', '***REMOVED***', '***REMOVED***', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
@@ -31,7 +29,7 @@ Log.logLevel(LogLevel.DEBUG);
 
 test("Invalid Login Test", (t) => {
 
-    return t.shouldFail(catavolt.login(tenantId, 'DESKTOP', userId, 'not a valid password')
+    return t.shouldFail(Catavolt.login(tenantId, 'DESKTOP', userId, 'not a valid password')
         .catch(error=>{
             //show the error we are expecting
             t.comment(`> ${JSON.stringify(error)}`)
@@ -41,7 +39,7 @@ test("Invalid Login Test", (t) => {
 
 test("Login Test", (t) => {
 
-    return catavolt.login(tenantId, 'DESKTOP', userId, password).then((session:Session)=>{
+    return Catavolt.login(tenantId, 'DESKTOP', userId, password).then((session:Session)=>{
 
         t.ok(session, 'Expecting a non-null result');
         t.ok(session.id, 'Expecting a session id');
@@ -55,7 +53,7 @@ test("Login Test", (t) => {
 
 test("Get All Workbenches Test", (t) => {
 
-    return catavolt.getWorkbenches().then((workbenches:Array<Workbench>)=>{
+    return Catavolt.getWorkbenches().then((workbenches:Array<Workbench>)=>{
 
         t.ok(workbenches && workbenches.length > 0, 'Expecting a non-null result');
         currentWorkbenches = workbenches;
@@ -66,13 +64,11 @@ test("Get All Workbenches Test", (t) => {
         return workbenches;
 
     })
-
-
 });
 
 test("Launch Workbench By id Test", (t) => {
 
-    return catavolt.performWorkbenchActionForId(workbenchId, workbenchLaunchId)
+    return Catavolt.performWorkbenchActionForId(workbenchId, workbenchLaunchId)
         .then((successOrRedirection:{actionId} | Redirection)=>{
 
             t.ok(successOrRedirection, 'Expecting a non-null result');
@@ -87,7 +83,7 @@ test("Launch Workbench By id Test", (t) => {
 
 test("Open A DialogRedirection Test", (t) => {
 
-    return catavolt.openDialog(currentRedirection as DialogRedirection).then((dialog:Dialog)=>{
+    return Catavolt.openDialog(currentRedirection as DialogRedirection).then((dialog:Dialog)=>{
 
         t.ok(dialog, 'Expecting a non-null result');
         t.ok(dialog.id, 'Expecting a dialog id');
@@ -148,7 +144,7 @@ test("Perform Action Test", (t) => {
 
     //Use toDialogOrRedirection Higher-Order Function to automatically open
     //the Redirection returned by performMenuAction
-    return catavolt.toDialogOrRedirection(
+    return Catavolt.toDialogOrRedirection(
 
         // Perform the action
         queryDialog.performMenuAction(menu, [aRecord.id])
@@ -214,7 +210,7 @@ test("Read A Record From An EditorDialog Test", (t) => {
 
 test("Logout Test", (t) => {
 
-    return catavolt.logout().then((response:{sessionId:string})=>{
+    return Catavolt.logout().then((response:{sessionId:string})=>{
          t.ok(response);
          t.ok(response.sessionId);
          t.equal(sessionId, response.sessionId)
