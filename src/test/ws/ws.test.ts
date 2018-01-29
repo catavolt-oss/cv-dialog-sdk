@@ -7,7 +7,7 @@ import * as test from "tape";
 import {Client, FetchClient} from "../catavolt-test"
 
 let [tenantId, userId, password, baseUrl, sessionId] =
-    ['***REMOVED***', 'rburson', '***REMOVED***', 'https://dialog.hxgn-api.net/v0', null];
+    ['', '', '', 'https://dialog.hxgn-api.net/v0', null];
 
 test("POST Test", (t) => {
 

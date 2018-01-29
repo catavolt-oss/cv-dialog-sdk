@@ -19,7 +19,7 @@ import {Log, LogLevel} from "../../catavolt/util";
     Get a reference to the SDK instance
  */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['***REMOVED***', '***REMOVED***', '***REMOVED***', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 let currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;
