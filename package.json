@@ -1,6 +1,6 @@
 {
   "name": "cv-dialog-sdk",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Catavolt Dialog Javascript API",
   "main": "./src/js/catavolt.js",
   "typings": "./src/tsd/catavolt.d.ts",
@@ -48,7 +48,7 @@
     "commit": "git-cz",
     "gen-version-code": "bin/gen-version-code.js",
     "prepublishOnly": "bin/gen-version-code.js && tsc",
-    "release":"standard-version",
+    "release": "standard-version",
     "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -b electron | ./node_modules/.bin/faucet",
     "test-browser": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet"
   },
