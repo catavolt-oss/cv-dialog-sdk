@@ -92,7 +92,7 @@ export class CatavoltApi {
         this._devicePropsStatic = {};
         this._devicePropsDynamic = {};
 
-        this.initPersistentApi(serverUrl, serverVersion);
+        this.initDialogApi(serverUrl, serverVersion);
 
         CatavoltApi._singleton = this;
     }
@@ -180,35 +180,6 @@ export class CatavoltApi {
     }
 
     /**
-     * Get a Workbench by workbenchId
-     * @param workbenchId
-     * @returns {Promise<Workbench>}
-     */
-    getWorkbench(workbenchId:string):Promise<Workbench> {
-
-        if (!this.isLoggedIn) {
-            return Promise.reject(new Error('User is not logged in'));
-        }
-
-        return this.dialogApi.getWorkbench(this.session.tenantId, this.session.id, workbenchId);
-    }
-
-    /**
-     * Get the list of Workbenches
-     *
-     * @returns {Array<Workbench>}
-     */
-    getWorkbenches():Promise<Array<Workbench>> {
-
-        if (!this.isLoggedIn) {
-            return Promise.reject(new Error('User is not logged in'));
-        }
-
-        return this.dialogApi.getWorkbenches(this.session.tenantId, this.session.id);
-    }
-
-
-    /**
      * Initialize a dialog service implementation for use by this CatavoltApi
      *
      * @param serverVersion
@@ -273,8 +244,6 @@ export class CatavoltApi {
      * @param clientType
      * @param userId
      * @param password
-     * @param serverUrl
-     * @param serverVersion
      *
      * @returns {Promise<Session | Redirection>}
      */
@@ -321,9 +290,9 @@ export class CatavoltApi {
         });
     }
 
-    openDialog(redirection:DialogRedirection):Promise<Dialog> {
+    openDialogWithId(dialogId:string):Promise<Dialog> {
 
-        return this.dialogApi.getDialog(this.session.tenantId, this.session.id, redirection.dialogId)
+        return this.dialogApi.getDialog(this.session.tenantId, this.session.id, dialogId)
             .then((dialog:Dialog)=>{
                 dialog.initialize(this);
                 if(dialog.view instanceof Form) {
@@ -332,6 +301,12 @@ export class CatavoltApi {
                     throw new Error(`Unexpected top-level dialog view type: ${dialog.view.type}`);
                 }
             });
+    }
+
+    openDialog(redirection:DialogRedirection):Promise<Dialog> {
+
+        return this.openDialogWithId(redirection.dialogId);
+
     }
 
     toDialogOrRedirection(resultPr:Promise<{}>):Promise<Dialog | Redirection> {

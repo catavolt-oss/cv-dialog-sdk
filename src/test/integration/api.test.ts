@@ -51,21 +51,6 @@ test("Login Test", (t) => {
 
 });
 
-test("Get All Workbenches Test", (t) => {
-
-    return Catavolt.getWorkbenches().then((workbenches:Array<Workbench>)=>{
-
-        t.ok(workbenches && workbenches.length > 0, 'Expecting a non-null result');
-        currentWorkbenches = workbenches;
-        workbenches.forEach((workbench:Workbench, i:number)=> {
-            t.comment(`> Workbench ${i}: ${workbench.name}`);
-            workbench.actions.forEach((action: WorkbenchAction, i:number) => t.comment(`>   Action ${i}: ${action.name}`));
-        });
-        return workbenches;
-
-    })
-});
-
 test("Launch Workbench By id Test", (t) => {
 
     return Catavolt.performWorkbenchActionForId(workbenchId, workbenchLaunchId)

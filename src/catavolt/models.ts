@@ -2765,18 +2765,19 @@ export abstract class Dialog {
         return this.view.menu;
     }
 
-    openView(targetViewDescriptor:ViewDescriptor): Promise<Dialog>{
-
-        return this.catavolt.dialogApi.changeView(this.tenantId, this.sessionId, this.id, targetViewDescriptor.id)
+    openViewWithId(viewId:string): Promise<Dialog> {
+        return this.catavolt.dialogApi.changeView(this.tenantId, this.sessionId, this.id, viewId)
             .then((dialog:Dialog)=>{
                 //any new dialog needs to be initialized with the Catavolt object
                 dialog.initialize(this.catavolt);
                 this.updateSettingsWithNewDialogProperties(dialog.referringObject);
                 return dialog;
             });
+    }
 
+    openView(targetViewDescriptor:ViewDescriptor): Promise<Dialog>{
+        return this.openViewWithId(targetViewDescriptor.id);
     };
-
 
     /**
      * Get the title of this dialog
@@ -2906,17 +2907,9 @@ export abstract class Dialog {
         }
     }
 
-    /**
-     * Perform this action associated with the given Menu on this dialog.
-     * The targets array is expected to be an array of object ids.
-     * @param {Menu} menu
-     * @param {ActionParameters} actionParams
-     * @returns {Promise<{actionId: string} | Redirection>}
-     */
-    protected invokeMenuAction(menu:Menu, actionParams:ActionParameters):Promise<{actionId:string} | Redirection> {
-
+    protected invokeMenuActionWithId(actionId:string, actionParams:ActionParameters):Promise<{actionId:string} | Redirection> {
         return this.catavolt.dialogApi.performAction(this.catavolt.session.tenantId, this.catavolt.session.id,
-            this.id, menu.actionId, actionParams).then((result:{actionId:string} | Redirection)=>{
+            this.id, actionId, actionParams).then((result:{actionId:string} | Redirection)=>{
 
             if(RedirectionUtil.isRedirection(result)) {
 
@@ -2939,6 +2932,17 @@ export abstract class Dialog {
             }
             return result;
         });
+    }
+
+    /**
+     * Perform this action associated with the given Menu on this dialog.
+     * The targets array is expected to be an array of object ids.
+     * @param {Menu} menu
+     * @param {ActionParameters} actionParams
+     * @returns {Promise<{actionId: string} | Redirection>}
+     */
+    protected invokeMenuAction(menu:Menu, actionParams:ActionParameters):Promise<{actionId:string} | Redirection> {
+        return this.invokeMenuActionWithId(menu.actionId, actionParams);
     }
 
     //@TODO
@@ -3119,6 +3123,12 @@ export class EditorDialog extends Dialog {
         return this.viewMode === ViewModeEnum.WRITE;
     }
 
+    performMenuActionWithId(actionId:string, pendingWrites:Record):Promise<{actionId:string} | Redirection> {
+        return this.invokeMenuActionWithId(actionId, {pendingWrites:pendingWrites, type:TypeNames.ActionParametersTypeName})
+            .then(result=>{
+                return result;
+            });
+    }
     /**
      * Perform the action associated with the given Menu on this EditorDialog
      * Given that the Editor could possibly be destroyed as a result of this action,
@@ -3128,10 +3138,10 @@ export class EditorDialog extends Dialog {
      * @returns {Promise<{actionId: string} | Redirection>}
      */
     performMenuAction(menu:Menu, pendingWrites:Record):Promise<{actionId:string} | Redirection> {
-
-        return this.invokeMenuAction(menu, {pendingWrites:pendingWrites, type:TypeNames.ActionParametersTypeName}).then(result=>{
-            return result;
-        });
+        return this.invokeMenuAction(menu, {pendingWrites:pendingWrites, type:TypeNames.ActionParametersTypeName})
+            .then(result=>{
+                return result;
+            });
     }
 
     /**
@@ -3324,6 +3334,14 @@ export class QueryDialog extends Dialog {
         return this._defaultActionId;
     }
 
+    performMenuActionWithId(actionId:string, targets: Array<string>): Promise<{ actionId: string } | Redirection> {
+        return this.invokeMenuActionWithId(actionId, {
+            targets: targets,
+            type: TypeNames.ActionParametersTypeName
+        }).then(result => {
+            return result;
+        });
+    }
     /**
      * Perform this action associated with the given Menu on this dialog.
      * The targets array is expected to be an array of object ids.
@@ -3332,7 +3350,6 @@ export class QueryDialog extends Dialog {
      * @returns {Promise<{actionId: string} | Redirection>}
      */
     performMenuAction(menu: Menu, targets: Array<string>): Promise<{ actionId: string } | Redirection> {
-
         return this.invokeMenuAction(menu, {
             targets: targets,
             type: TypeNames.ActionParametersTypeName
