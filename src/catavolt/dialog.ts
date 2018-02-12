@@ -43,7 +43,6 @@ export class CatavoltApi {
     private static _singleton:CatavoltApi;
 
     private static ONE_HOUR_IN_MILLIS:number = 60 * 60 * 1000;
-
     //defaults
     private static SERVER_URL:string = 'https://dialog.hxgn-api.net' ;
     private static SERVER_VERSION = 'v0';
