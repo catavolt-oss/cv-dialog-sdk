@@ -19,7 +19,7 @@ import {Log, LogLevel} from "../../catavolt/util";
     Get a reference to the SDK instance
  */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['cvtutorial', 'wsmith', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 let currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;
@@ -93,18 +93,24 @@ test("Load And Page A List Test", (t) => {
     t.comment(`List: ${queryDialog.description}`);
     t.comment(`>   List Columns: ${list.columnHeadings.join(',')}`);
 
-    queryDialog.setScroller(5);
+    queryDialog.initScroller(5);
+    //scroll forward with the specified number of records
     return queryDialog.scroller.refresh().then((records:Array<Record>)=>{
-
         const rows = records.map((record:Record)=> record.propValues.join(',') );
         t.comment(`>   First 5 Records:`)
         rows.forEach(row=>t.comment(`>      ${row}`));
-
-        return queryDialog.scroller.pageForward().then((records:Array<Record>)=>{
+        //scroll forward with a specific number of records (override)
+        return queryDialog.scroller.pageForward(10).then((records:Array<Record>)=>{
             const rows = records.map((record:Record)=> record.propValues.join(',') );
-            t.comment(`>   Next 5 Records:`)
+            t.comment(`>   Next 10 Records:`)
             rows.forEach(row=>t.comment(`>      ${row}`));
-            return records;
+            //scroll forward with the previously specified default number of records
+            return queryDialog.scroller.pageForward().then((records:Array<Record>)=>{
+                const rows = records.map((record:Record)=> record.propValues.join(',') );
+                t.comment(`>   Next 5 Records:`)
+                rows.forEach(row=>t.comment(`>      ${row}`));
+                return records;
+            });
         });
 
 

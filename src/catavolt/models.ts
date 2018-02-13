@@ -3313,7 +3313,7 @@ export class EditorDialog extends Dialog {
  */
 export class QueryDialog extends Dialog {
 
-    private _scroller: QueryScroller;
+    private _scroller:QueryScroller;
     private _defaultActionId: string;
 
     positionalQueryAbility:PositionalQueryAbilityType;
@@ -3325,14 +3325,20 @@ export class QueryDialog extends Dialog {
      * @param columnDef
      * @returns {PropDef|boolean}
      */
+    get defaultActionId(): string {
+        return this._defaultActionId;
+    }
+
+    initScroller(pageSize: number, firstObjectId: string=null, markerOptions: Array<QueryMarkerOption>=[QueryMarkerOption.None]) {
+        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
+    }
+
     isBinary(column: Column): boolean {
         var propDef = this.propDefAtName(column.propertyName);
         return propDef && (propDef.isBinaryType || (propDef.isURLType && propDef.isInlineMediaStyle));
     }
 
-    get defaultActionId(): string {
-        return this._defaultActionId;
-    }
+
 
     performMenuActionWithId(actionId:string, targets: Array<string>): Promise<{ actionId: string } | Redirection> {
         return this.invokeMenuActionWithId(actionId, {
@@ -3361,8 +3367,6 @@ export class QueryDialog extends Dialog {
 
     /**
      * Perform a query
-     * Note: {@link QueryScroller} is the preferred way to perform a query.
-     * see {@link QueryContext.newScroller} and {@link QueryContext.setScroller}
      * @param maxRows
      * @param direction
      * @param fromObjectId
@@ -3389,33 +3393,13 @@ export class QueryDialog extends Dialog {
     }
 
     /**
-     * Clear the QueryScroller's buffer and perform this query
-     * @returns {Future<Array<Record>>}
-     */
-    refresh(): Promise<Array<Record>> {
-        return this._scroller.refresh();
-    }
-
-    /**
      * Get the associated QueryScroller
      * @returns {QueryScroller}
      */
     get scroller(): QueryScroller {
         if (!this._scroller) {
-            this._scroller = this.newScroller();
+            this._scroller = this.defaultScroller();
         }
-        return this._scroller;
-    }
-
-    /**
-     * Creates a new QueryScroller with the given values
-     * @param pageSize
-     * @param firstObjectId
-     * @param markerOptions
-     * @returns {QueryScroller}
-     */
-    setScroller(pageSize: number, firstObjectId: string=null, markerOptions: Array<QueryMarkerOption>=[QueryMarkerOption.None]) {
-        this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
         return this._scroller;
     }
 
@@ -3423,11 +3407,9 @@ export class QueryDialog extends Dialog {
      * Creates a new QueryScroller with default buffer size of 50
      * @returns {QueryScroller}
      */
-    newScroller(): QueryScroller {
-        return this.setScroller(50, null, [QueryMarkerOption.None]);
+    private defaultScroller(): QueryScroller {
+        return new QueryScroller(this, 50, null, [QueryMarkerOption.None]);
     }
-
-    //protected
 
 }
 
@@ -3458,7 +3440,7 @@ export class QueryScroller {
     private _firstResultOid:string;
 
     constructor(private _dialog:QueryDialog,
-                private _pageSize:number,
+                private _defaultPageSize:number,
                 private _firstObjectId:string,
                 private _markerOptions:Array<QueryMarkerOption> = []) {
 
@@ -3521,7 +3503,7 @@ export class QueryScroller {
         return this._buffer.length === 0;
     }
 
-    pageBackward():Promise<Array<Record>> {
+    pageBackward(pageSize:number = this.pageSize):Promise<Array<Record>> {
 
         if (!this._hasMoreBackward) {
             return Promise.resolve([]);
@@ -3530,11 +3512,11 @@ export class QueryScroller {
         if (this._prevPagePromise) {
             this._prevPagePromise = this._prevPagePromise.then((recordSet: RecordSet) => {
                 const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
-                return this._dialog.query(this._pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
+                return this._dialog.query(pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
             });
         } else {
             const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
-            this._prevPagePromise = this._dialog.query(this._pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
+            this._prevPagePromise = this._dialog.query(pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
         }
 
         const beforeSize: number = this._buffer.length;
@@ -3558,7 +3540,7 @@ export class QueryScroller {
 
     }
 
-    pageForward():Promise<Array<Record>> {
+    pageForward(pageSize:number = this.pageSize):Promise<Array<Record>> {
 
         if (!this._hasMoreForward) {
             return Promise.resolve([]);
@@ -3567,11 +3549,11 @@ export class QueryScroller {
         if(this._nextPagePromise) {
             this._nextPagePromise = this._nextPagePromise.then((recordSet:RecordSet)=>{
                 const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
-                return this._dialog.query(this._pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
+                return this._dialog.query(pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
             });
         } else {
             const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
-            this._nextPagePromise = this._dialog.query(this._pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
+            this._nextPagePromise = this._dialog.query(pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
         }
 
         const beforeSize: number = this._buffer.length;
@@ -3596,12 +3578,12 @@ export class QueryScroller {
     }
 
     get pageSize():number {
-        return this._pageSize;
+        return this._defaultPageSize;
     }
 
-    refresh():Promise<Array<Record>> {
+    refresh(numRows:number = this.pageSize):Promise<Array<Record>> {
         this.clear();
-        return this.pageForward().then((recordList: Array<Record>) => {
+        return this.pageForward(numRows).then((recordList: Array<Record>) => {
             if (recordList.length > 0) {
                 this._firstResultOid = recordList[0].id;
             }
