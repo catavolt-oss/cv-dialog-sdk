@@ -35,6 +35,9 @@
 bin/
 .settings/
 
+# this seems to be necessary
+.git/
+
 # Intellij
 #out/
 .idea/
