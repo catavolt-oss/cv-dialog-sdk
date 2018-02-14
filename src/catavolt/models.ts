@@ -2613,7 +2613,7 @@ export abstract class Dialog {
     private _binaryCache:{ [index:string]:Array<Binary> } = {};
     private _lastRefreshTime:Date = new Date(0);
     private _catavolt:CatavoltApi;
-    protected _parentDialog;
+    //protected _parentDialog;
 
     readonly availableViews:Array<ViewDescriptor>;
     readonly businessClassName:string;
@@ -2824,9 +2824,11 @@ export abstract class Dialog {
         );
     }
 
+    /*
     get parentDialog():Dialog {
         return this._parentDialog;
     }
+    */
 
     /**
      * Get the all {@link ViewDescriptor}'s associated with this Form
@@ -2901,7 +2903,8 @@ export abstract class Dialog {
         this._catavolt = catavolt;
         if(this.children) {
             this.children.forEach((child: Dialog) => {
-                child._parentDialog = this;
+                //@TODO add this if needed
+                //child._parentDialog = this;
                 child.initialize(catavolt);
             });
         }
