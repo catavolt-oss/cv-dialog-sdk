@@ -37,6 +37,7 @@ bin/
 
 # this seems to be necessary
 .git/
+.git
 
 # Intellij
 #out/

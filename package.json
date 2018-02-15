@@ -6,7 +6,7 @@
   "typings": "./src/tsd/catavolt.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://git.catavolt.com/javascript/sdk.git"
+    "url": "https://github.com/catavolt-oss/cv-dialog-sdk"
   },
   "keywords": [
     "catavolt",

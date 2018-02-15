@@ -1,7 +1,7 @@
 import {CatavoltApi} from "./dialog"
 import * as moment from 'moment-timezone';
 
-export const CATAVOLT_SDK_VERSION:string = '3.1.0';
+export const CATAVOLT_SDK_VERSION:string = '3.1.2';
 
 (()=>{
     CatavoltApi.singleton.addStaticDeviceProp('catavoltSdkVersion', CATAVOLT_SDK_VERSION);
