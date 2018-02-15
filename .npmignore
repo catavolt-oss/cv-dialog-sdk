@@ -36,11 +36,10 @@ bin/
 .settings/
 
 # this seems to be necessary
-.git/
-.git
+./.git
 
-#docs
-docs/
+# docs
+./docs
 
 # Intellij
 #out/
