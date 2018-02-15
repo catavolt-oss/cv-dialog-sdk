@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.2.0"></a>
+# [3.2.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v3.1.4...v3.2.0) (2018-02-15)
+
+
+### Features
+
+* **storage api:** Added the Storage interface ([9605eeb](https://github.com/catavolt-oss/cv-dialog-sdk/commit/9605eeb))
+
+
+
 <a name="3.1.4"></a>
 ## [3.1.4](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v3.1.2...v3.1.4) (2018-02-15)
 
