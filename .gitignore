@@ -40,6 +40,8 @@
 *.iml
 *.iws
 
+docs/
+
 # Mac
 .DS_Store
 

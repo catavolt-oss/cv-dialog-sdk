@@ -39,6 +39,9 @@ bin/
 .git/
 .git
 
+#docs
+docs/
+
 # Intellij
 #out/
 .idea/
