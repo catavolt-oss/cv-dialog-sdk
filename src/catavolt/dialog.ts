@@ -131,20 +131,22 @@ export class CatavoltApi {
 
         if(!this._locale) {
             const defaultLocale = this.session.tenantProperties['browserLocale'];
-            if(defaultLocale) {
+            if (defaultLocale) {
                 try {
                     const localeJson = JSON.parse(defaultLocale);
-                    this._locale = new CvLocale(localeJson['language'], localeJson['country']);
+                    if (localeJson['language']) {
+                        this._locale = new CvLocale(localeJson['language'], localeJson['country']);
+                    }
                 } catch (err) {
-                    this._locale = CatavoltApi.DEFAULT_LOCALE;
                 }
-            } else {
-               this._locale = CatavoltApi.DEFAULT_LOCALE;
             }
         }
 
-        return this._locale;
+        if(!this._locale) {
+            this._locale = CatavoltApi.DEFAULT_LOCALE;
+        }
 
+        return this._locale;
     }
 
     set locale(locale:CvLocale) {
