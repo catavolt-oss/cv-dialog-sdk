@@ -3,42 +3,41 @@
  */
 
 import {Client, ClientMode, JsonClientResponse} from "./client";
-import {ArrayUtil, DataUrl, DateTimeValue, DateValue, Log, ObjUtil, StringDictionary, TimeValue} from "./util";
+import {Log, ObjUtil, StringDictionary, CvLocale} from "./util";
 import {
-    ClientType, DialogMessage, DialogRedirection, Login, Menu, PropertyDef, Property, Redirection,
-    Session, Tenant, WebRedirection, Workbench, WorkbenchAction, WorkbenchRedirection, CodeRef, ObjectRef,
-    MapLocation, GpsReading, MapLocationProperty, GpsReadingProperty, RecordDef,
-    DialogMode, View, ViewMode, Form, ErrorMessage, DialogException, ViewDescriptor, RecordBuffer,
-    NullRecord, Record, AttributeCellValue, Column, Details, List, Map, TypeNames, ModelUtil, QueryDirection,
-    Filter, Sort, ReferringObject, Graph, Calendar, PrintMarkup, BarcodeScan, ImagePicker,
-    RedirectionUtil, DialogType, NullRedirection, ActionParameters, RecordSet, QueryParameters, QueryDirectionEnum,
-    InlineBinaryRef, ObjectBinaryRef, ViewModeEnum, DialogModeEnum, ReferringDialog, PositionalQueryAbilityType, Dialog,
-    EditorDialog
+    ActionParameters,
+    ClientType,
+    Dialog,
+    DialogMessage,
+    DialogRedirection,
+    EditorDialog,
+    Form,
+    Login,
+    Menu,
+    ModelUtil,
+    NullRedirection,
+    QueryParameters,
+    Record,
+    RecordSet,
+    Redirection,
+    RedirectionUtil,
+    Session,
+    TypeNames,
+    View,
+    ViewDescriptor,
+    ViewMode,
+    Workbench,
+    WorkbenchAction
 } from "./models";
 import {FetchClient} from "./ws";
 import {PersistentClient} from "./persistence";
-import * as moment from 'moment';
-// Chose the locales to load based on this list:
-// https://stackoverflow.com/questions/9711066/most-common-locales-for-worldwide-compatibility
-// Best effort for now.  Need to dynamically load these from Globalize???
-import 'moment/locale/zh-cn';
-import 'moment/locale/ru';
-import 'moment/locale/fr';
-import 'moment/locale/es';
-import 'moment/locale/en-gb';
-import 'moment/locale/de';
-import 'moment/locale/pt';
-import 'moment/locale/pt-br';
-import 'moment/locale/en-ca';
-import 'moment/locale/it';
-import 'moment/locale/ja';
-import * as numeral from "numeral";
-import {PrintForm} from "./print";
 
 /**
  * Top-level entry point into the Catavolt API
  */
 export class CatavoltApi {
+
+    static DEFAULT_LOCALE:CvLocale = new CvLocale('en', 'US');
 
     private static _singleton:CatavoltApi;
 
@@ -53,6 +52,10 @@ export class CatavoltApi {
     private _session:Session;
     private _devicePropsDynamic:{[index:string]:()=>string;};
     private _devicePropsStatic:{[index:string]:string};
+
+    private _locale:CvLocale = null;
+
+
 
 
     /* ********************
@@ -121,13 +124,31 @@ export class CatavoltApi {
     }
 
     /**
-     * Get the json representation of this client's locale.  The server pulls this value from the agent string
-     * and returns it to the client.
-     * @returns {string}
+     * Get the preferred locale
+     * @returns {CvLocale}
      */
-    get browserLocaleJson():string {
+    get locale():CvLocale {
 
-        return this.session.tenantProperties['browserLocale'];
+        if(!this._locale) {
+            const defaultLocale = this.session.tenantProperties['browserLocale'];
+            if(defaultLocale) {
+                try {
+                    const localeJson = JSON.parse(defaultLocale);
+                    this._locale = new CvLocale(localeJson['language'], localeJson['country']);
+                } catch (err) {
+                    this._locale = CatavoltApi.DEFAULT_LOCALE;
+                }
+            } else {
+               this._locale = CatavoltApi.DEFAULT_LOCALE;
+            }
+        }
+
+        return this._locale;
+
+    }
+
+    set locale(locale:CvLocale) {
+        this._locale = locale;
     }
 
     /*@TODO*/
@@ -456,6 +477,8 @@ export interface DialogApi {
 
     getRecords(tenantId:string, sessionId:string, dialogId:string, queryParams:QueryParameters):Promise<RecordSet>;
 
+    getAvailableValues(tenantId:string, sessionId:string, dialogId:string, propertyName:string):Promise<Array<any>>;
+
     getMode(tenantId:string, sessionId:string, dialogId:string):Promise<ViewMode>;
 
     changeMode(tenantId:string, sessionId:string, dialogId:string, mode:ViewMode):Promise<EditorDialog>;
@@ -600,6 +623,13 @@ export class DialogService implements DialogApi {
         return this.post(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records`, queryParams).then(
                 jsonClientResponse=>(new DialogServiceResponse<RecordSet>(jsonClientResponse)).responseValue()
          );
+    }
+
+    getAvailableValues(tenantId:string, sessionId:string, dialogId:string, propertyName:string):Promise<Array<any>> {
+
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record/${propertyName}/availableValues`).then(
+            jsonClientResponse=>(new DialogServiceResponse<Array<any>>(jsonClientResponse)).responseValue()
+        );
     }
 
     getMode(tenantId:string, sessionId:string, dialogId:string):Promise<ViewMode> {
@@ -787,4 +817,4 @@ const FeatureVersionMap:{[featureSet:string]:AppVersion} = {
 /*
     Export the Catavolt Object
  */
-export const Catavolt = CatavoltApi.singleton;
+export const Catavolt:CatavoltApi = CatavoltApi.singleton;

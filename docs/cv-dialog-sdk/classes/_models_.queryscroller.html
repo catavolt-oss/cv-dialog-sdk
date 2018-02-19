@@ -91,6 +91,7 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_buffer" class="tsd-kind-icon">_buffer</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_defaultpagesize" class="tsd-kind-icon">_default<wbr>Page<wbr>Size</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_dialog" class="tsd-kind-icon">_dialog</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_firstobjectid" class="tsd-kind-icon">_first<wbr>Object<wbr>Id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_firstresultoid" class="tsd-kind-icon">_first<wbr>Result<wbr>Oid</a></li>
@@ -98,7 +99,6 @@
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_hasmoreforward" class="tsd-kind-icon">_has<wbr>More<wbr>Forward</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_markeroptions" class="tsd-kind-icon">_marker<wbr>Options</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_nextpagepromise" class="tsd-kind-icon">_next<wbr>Page<wbr>Promise</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_pagesize" class="tsd-kind-icon">_page<wbr>Size</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_models_.queryscroller.html#_prevpagepromise" class="tsd-kind-icon">_prev<wbr>Page<wbr>Promise</a></li>
 							</ul>
 						</section>
@@ -137,13 +137,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Query<wbr>Scroller<span class="tsd-signature-symbol">(</span>_dialog<span class="tsd-signature-symbol">: </span><a href="_models_.querydialog.html" class="tsd-signature-type">QueryDialog</a>, _pageSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, _firstObjectId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, _markerOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../enums/_models_.querymarkeroption.html" class="tsd-signature-type">QueryMarkerOption</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_models_.queryscroller.html" class="tsd-signature-type">QueryScroller</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Query<wbr>Scroller<span class="tsd-signature-symbol">(</span>_dialog<span class="tsd-signature-symbol">: </span><a href="_models_.querydialog.html" class="tsd-signature-type">QueryDialog</a>, _defaultPageSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, _firstObjectId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, _markerOptions<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../enums/_models_.querymarkeroption.html" class="tsd-signature-type">QueryMarkerOption</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_models_.queryscroller.html" class="tsd-signature-type">QueryScroller</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3458">models.ts:3458</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3416">models.ts:3416</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -152,7 +152,7 @@
 									<h5>_dialog: <a href="_models_.querydialog.html" class="tsd-signature-type">QueryDialog</a></h5>
 								</li>
 								<li>
-									<h5>_pageSize: <span class="tsd-signature-type">number</span></h5>
+									<h5>_defaultPageSize: <span class="tsd-signature-type">number</span></h5>
 								</li>
 								<li>
 									<h5>_firstObjectId: <span class="tsd-signature-type">string</span></h5>
@@ -174,7 +174,17 @@
 					<div class="tsd-signature tsd-kind-icon">_buffer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3453">models.ts:3453</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3411">models.ts:3411</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="_defaultpagesize" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _default<wbr>Page<wbr>Size</h3>
+					<div class="tsd-signature tsd-kind-icon">_default<wbr>Page<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3419">models.ts:3419</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -184,7 +194,7 @@
 					<div class="tsd-signature tsd-kind-icon">_dialog<span class="tsd-signature-symbol">:</span> <a href="_models_.querydialog.html" class="tsd-signature-type">QueryDialog</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3460">models.ts:3460</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3418">models.ts:3418</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -194,7 +204,7 @@
 					<div class="tsd-signature tsd-kind-icon">_first<wbr>Object<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3462">models.ts:3462</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3420">models.ts:3420</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -204,7 +214,7 @@
 					<div class="tsd-signature tsd-kind-icon">_first<wbr>Result<wbr>Oid<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3458">models.ts:3458</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3416">models.ts:3416</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -214,7 +224,7 @@
 					<div class="tsd-signature tsd-kind-icon">_has<wbr>More<wbr>Backward<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3454">models.ts:3454</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3412">models.ts:3412</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -224,7 +234,7 @@
 					<div class="tsd-signature tsd-kind-icon">_has<wbr>More<wbr>Forward<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3455">models.ts:3455</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3413">models.ts:3413</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -234,7 +244,7 @@
 					<div class="tsd-signature tsd-kind-icon">_marker<wbr>Options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../enums/_models_.querymarkeroption.html" class="tsd-signature-type">QueryMarkerOption</a><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3463">models.ts:3463</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3421">models.ts:3421</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -244,17 +254,7 @@
 					<div class="tsd-signature tsd-kind-icon">_next<wbr>Page<wbr>Promise<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.recordset.html" class="tsd-signature-type">RecordSet</a><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3456">models.ts:3456</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_pagesize" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _page<wbr>Size</h3>
-					<div class="tsd-signature tsd-kind-icon">_page<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3461">models.ts:3461</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3414">models.ts:3414</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -264,7 +264,7 @@
 					<div class="tsd-signature tsd-kind-icon">_prev<wbr>Page<wbr>Promise<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.recordset.html" class="tsd-signature-type">RecordSet</a><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3457">models.ts:3457</a></li>
+							<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3415">models.ts:3415</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -281,7 +281,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3469">models.ts:3469</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3427">models.ts:3427</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -298,7 +298,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3473">models.ts:3473</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3431">models.ts:3431</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -315,7 +315,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3496">models.ts:3496</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3454">models.ts:3454</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="_models_.querydialog.html" class="tsd-signature-type">QueryDialog</a></h4>
@@ -332,7 +332,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3500">models.ts:3500</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3458">models.ts:3458</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -349,7 +349,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3504">models.ts:3504</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3462">models.ts:3462</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -366,7 +366,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3508">models.ts:3508</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3466">models.ts:3466</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -383,7 +383,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3512">models.ts:3512</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3470">models.ts:3470</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -400,7 +400,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3516">models.ts:3516</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3474">models.ts:3474</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -417,7 +417,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3520">models.ts:3520</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3478">models.ts:3478</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -434,7 +434,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3598">models.ts:3598</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3556">models.ts:3556</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
@@ -454,7 +454,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3630">models.ts:3630</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3588">models.ts:3588</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -465,15 +465,21 @@
 					<a name="pagebackward" class="tsd-anchor"></a>
 					<h3>page<wbr>Backward</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">page<wbr>Backward<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">page<wbr>Backward<span class="tsd-signature-symbol">(</span>pageSize<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3524">models.ts:3524</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3482">models.ts:3482</a></li>
 								</ul>
 							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> pageSize: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;this.pageSize</span></h5>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
@@ -482,15 +488,21 @@
 					<a name="pageforward" class="tsd-anchor"></a>
 					<h3>page<wbr>Forward</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">page<wbr>Forward<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">page<wbr>Forward<span class="tsd-signature-symbol">(</span>pageSize<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3561">models.ts:3561</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3519">models.ts:3519</a></li>
 								</ul>
 							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> pageSize: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;this.pageSize</span></h5>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
@@ -499,15 +511,21 @@
 					<a name="refresh" class="tsd-anchor"></a>
 					<h3>refresh</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">refresh<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">refresh<span class="tsd-signature-symbol">(</span>numRows<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3602">models.ts:3602</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3560">models.ts:3560</a></li>
 								</ul>
 							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> numRows: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;this.pageSize</span></h5>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_models_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
@@ -522,7 +540,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3612">models.ts:3612</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3570">models.ts:3570</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -545,7 +563,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/732b058/src/catavolt/models.ts#L3621">models.ts:3621</a></li>
+									<li>Defined in <a href="https://github.com/catavolt-oss/cv-dialog-sdk/blob/b8cd2db/src/catavolt/models.ts#L3579">models.ts:3579</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -591,6 +609,9 @@
 						<a href="../modules/_service_worker_.html">"service-<wbr>worker"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
+						<a href="../modules/_storage_.html">"storage"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
 						<a href="../modules/_util_.html">"util"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
@@ -615,6 +636,9 @@
 								<a href="_models_.queryscroller.html#_buffer" class="tsd-kind-icon">_buffer</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="_models_.queryscroller.html#_defaultpagesize" class="tsd-kind-icon">_default<wbr>Page<wbr>Size</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 								<a href="_models_.queryscroller.html#_dialog" class="tsd-kind-icon">_dialog</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
@@ -634,9 +658,6 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 								<a href="_models_.queryscroller.html#_nextpagepromise" class="tsd-kind-icon">_next<wbr>Page<wbr>Promise</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="_models_.queryscroller.html#_pagesize" class="tsd-kind-icon">_page<wbr>Size</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 								<a href="_models_.queryscroller.html#_prevpagepromise" class="tsd-kind-icon">_prev<wbr>Page<wbr>Promise</a>

@@ -8,7 +8,8 @@ import {Catavolt} from "../../catavolt/dialog";
 import {
     Cell, CellValue,
     Details,
-    Dialog, DialogRedirection, EditorDialog, List, QueryDialog, Record, Redirection, RedirectionUtil, Session,
+    Dialog, DialogRedirection, EditorDialog, List, Property, PropFormatter, QueryDialog, Record, Redirection,
+    RedirectionUtil, Session,
     TypeNames, View,
     Workbench,
     WorkbenchAction
@@ -96,13 +97,17 @@ test("Load And Page A List Test", (t) => {
     queryDialog.initScroller(5);
     //scroll forward with the specified number of records
     return queryDialog.scroller.refresh().then((records:Array<Record>)=>{
-        const rows = records.map((record:Record)=> record.propValues.join(',') );
+        const rows = records.map((record:Record)=> {
+            return record.properties.map((property:Property) => {
+               return PropFormatter.formatForRead(property, queryDialog.recordDef.propDefAtName(property.name));
+            }).join(',');
+        });
         t.comment(`>   First 5 Records:`)
         rows.forEach(row=>t.comment(`>      ${row}`));
         //scroll forward with a specific number of records (override)
-        return queryDialog.scroller.pageForward(10).then((records:Array<Record>)=>{
+        return queryDialog.scroller.pageForward(20).then((records:Array<Record>)=>{
             const rows = records.map((record:Record)=> record.propValues.join(',') );
-            t.comment(`>   Next 10 Records:`)
+            t.comment(`>   Next 20 Records:`)
             rows.forEach(row=>t.comment(`>      ${row}`));
             //scroll forward with the previously specified default number of records
             return queryDialog.scroller.pageForward().then((records:Array<Record>)=>{

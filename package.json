@@ -15,8 +15,8 @@
   "author": "Rob Burson <rob.burson@catavolt.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "moment": "~2.14.1",
-    "moment-timezone": "^0.5.13",
+    "moment": "^2.20.1",
+    "moment-timezone": "^0.5.14",
     "numeral": "^2.0.6"
   },
   "devDependencies": {

@@ -429,7 +429,19 @@ export class StringUtil {
  */
 
 export interface StringDictionary{ [index: string]: any; }
+
 export interface Dictionary<T>{ [index: string]: T; }
+
+export class CvLocale {
+
+    constructor(readonly language:string,
+                readonly country:string) {}
+
+    get langCountryString():string {
+       return `${this.language}-${this.country.toLowerCase()}`;
+    }
+
+}
 /**
  * *****************************************************
  */

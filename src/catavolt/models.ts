@@ -4,10 +4,26 @@
 
 import {
     StringDictionary, Log, ObjUtil, StringUtil, ArrayUtil, DateValue, DateTimeValue, TimeValue,
-    Dictionary, DataUrl
+    Dictionary, DataUrl, CvLocale
 } from './util'
-import moment = require("moment");
-import {CatavoltApi} from "./dialog";
+import {Catavolt, CatavoltApi} from "./dialog";
+import * as moment from 'moment';
+// Chose the locales to load based on this list:
+// https://stackoverflow.com/questions/9711066/most-common-locales-for-worldwide-compatibility
+// Best effort for now.  Need to dynamically load these from Globalize???
+import 'moment/locale/zh-cn';
+import 'moment/locale/ru';
+import 'moment/locale/fr';
+import 'moment/locale/es';
+import 'moment/locale/en-gb';
+import 'moment/locale/de';
+import 'moment/locale/pt';
+import 'moment/locale/pt-br';
+import 'moment/locale/en-ca';
+import 'moment/locale/it';
+import 'moment/locale/ja';
+import * as numeral from "numeral";
+
 /*
  ************************** Dialog Models ****************************
  * These models correspond to those in the WebAPI schema specification
@@ -940,7 +956,7 @@ export class RecordImpl implements Record {
     }
 
     isItalicTextFor(propName:string):boolean {
-        var p = this.propAtName(propName);
+        const p = this.propAtName(propName);
         return p && p.isItalicText ? p.isItalicText : this.isItalicText;
 
     }
@@ -1608,8 +1624,6 @@ export class ObjectBinaryRef extends BinaryRef {
 
 }
 
-
-
 export class ObjectRef {
 
     constructor(readonly objectId:string, readonly description:string, readonly type:string) {
@@ -2043,12 +2057,12 @@ export class PropertyDef {
  */
 class PrivatePropFormats {
     static decimalFormat: string[] = ["0,0", "0,0.0", "0,0.00", "0,0.000", "0,0.0000", "0,0.00000", "0,0.000000", "0,0.0000000", "0,0.00000000", "0,0.000000000", "0,0.0000000000"];
-    static decimalFormatGeneric:string = "0,0.[0000000000000000000000000]";
+    static decimalFormatGeneric: string = "0,0.[0000000000000000000000000]";
     static moneyFormat: string[] = ["$0,0", "$0,0.0", "$0,0.00", "$0,0.000", "$0,0.0000", "$0,0.00000", "$0,0.000000", "$0,0.0000000", "$0,0.00000000", "$0,0.000000000", "$0,0.0000000000"];
-    static moneyFormatGeneric:string = "$0,0.[0000000000000000000000000]";
+    static moneyFormatGeneric: string = "$0,0.[0000000000000000000000000]";
     static percentFormat: string[] = ["0,0%", "0,0%", "0,0%", "0,0.0%", "0,0.00%", "0,0.000%", "0,0.0000%", "0,0.00000%", "0,0.000000%", "0,0.0000000%", "0,0.00000000%"];
-    static percentFormatGeneric:string = "0,0.[0000000000000000000000000]%";
-    static wholeFormat:string = "0,0";
+    static percentFormatGeneric: string = "0,0.[0000000000000000000000000]%";
+    static wholeFormat: string = "0,0";
 }
 
 export class PropFormatter {
@@ -2078,29 +2092,13 @@ export class PropFormatter {
     }
 
     static formatValueForRead(value: any, propDef: PropertyDef) {
-        let lang: string = null;
-        // The locale from the browser is not reliable.  The Extender server pulls the browser's locale from the
-        // agent string at logon time.  Use that with a fallback approach to find the best fit locale.
-        // var localeTest = window.navigator.userLanguage || window.navigator.language;
-        if (CatavoltApi.singleton.browserLocaleJson) {
-            let browserLocale = JSON.parse(CatavoltApi.singleton.browserLocaleJson);  // country/language/varient
-            if (browserLocale.country) {
-                let key = browserLocale.language + "-" + browserLocale.country.toLowerCase();
-                if (moment().lang(key)) {
-                    lang = key;
-                }
-            }
-            if (!lang) {
-                let x = moment().lang(browserLocale.language);
-                if (moment().lang(browserLocale.language)) {
-                    lang = browserLocale.language;
-                }
-            }
-            if (!lang) {
-                lang = "en";
-            }
-        }
-        // let test = (moment as any).locales();
+
+        const locale:CvLocale = Catavolt.locale;
+        const lang:Array<string> = [];
+        locale.country && lang.push(locale.langCountryString);
+        lang.push(locale.language);
+        lang.push(CatavoltApi.DEFAULT_LOCALE.language);
+
         if (value === null || value === undefined) {
             return '';
         } else if ((propDef && propDef.isCodeRefType) || value instanceof CodeRef) {
@@ -2108,26 +2106,11 @@ export class PropFormatter {
         } else if ((propDef && propDef.isObjRefType) || value instanceof ObjectRef) {
             return (value as ObjectRef).description;
         } else if ((propDef && propDef.isDateTimeType)) {
-            if (!lang) {
-                return (value as Date).toString();
-            } else {
-                return moment(value as Date).locale(lang).format("lll");
-                // return moment(value as Date).format("lll");
-            }
+            return moment(value as Date).locale(lang).format("lll");
         } else if ((propDef && propDef.isDateType) || value instanceof Date) {
-            if (!lang) {
-                return (value as Date).toLocaleDateString();
-            } else {
-                return moment(value as Date).locale(lang).format("L");
-                // return moment(value as Date).format("L");
-            }
+            return moment(value as Date).locale(lang).format("L");
         } else if ((propDef && propDef.isTimeType) || value instanceof TimeValue) {
-            if (!lang) {
-                return moment(value as TimeValue).format("LT");
-            } else {
-                return moment(value as TimeValue).locale(lang).format("LT");
-                // return moment(value as TimeValue).format("LT");
-            }
+            return moment(value as TimeValue).locale(lang).format("LT");
         } else if ((propDef && propDef.isPasswordType)) {
             return (value as string).replace(/./g, "*");
         } else if ((propDef && propDef.isListType) || Array.isArray(value)) {
@@ -2229,15 +2212,15 @@ export class PropFormatter {
                 if (propDef.isMoneyType) {
                     let f = propDef.displayScale < this.moneyFormat.length ? this.moneyFormat[propDef.displayScale] : this.moneyFormatGeneric;
                     // If there is a currency symbol, remove it noting it's position pre/post
-                    // Necesary because numeral will replace $ with the symbol based on the locale of the browser.
+                    // Necessary because numeral will replace $ with the symbol based on the locale of the browser.
                     // This may be desired down the road, but for now, the server provides the symbol to use.
                     let atStart: boolean = f.length > 0 && f[0] === '$';
                     let atEnd: boolean = f.length > 0 && f[f.length - 1] === '$';
-                    if (CatavoltApi.singleton.currencySymbol) {
+                    if (Catavolt.currencySymbol) {
                         f = f.replace("$", "");               // Format this as a number, and slam in Extender currency symbol
                         var formatted = numeral(o).format(f);
-                        if (atStart) formatted = CatavoltApi.singleton.currencySymbol + formatted;
-                        if (atEnd) formatted = formatted + CatavoltApi.singleton.currencySymbol;
+                        if (atStart) formatted = Catavolt.currencySymbol + formatted;
+                        if (atEnd) formatted = formatted + Catavolt.currencySymbol;
                     } else {
                         formatted = numeral(o).format(f);  // Should substitute browsers locale currency symbol
                     }
@@ -3027,13 +3010,15 @@ export class EditorDialog extends Dialog {
 
     changeViewMode(viewMode:ViewMode):Promise<EditorDialog> {
 
-        return this.catavolt.dialogApi.changeMode(this.tenantId, this.sessionId, this.id, viewMode)
-            .then((dialog:EditorDialog)=>{
-                //any new dialog needs to be initialized with the Catavolt object
-                dialog.initialize(this.catavolt);
-                this.updateSettingsWithNewDialogProperties(dialog.referringObject);
-                return dialog;
-            });
+        if (this.viewMode !== viewMode) {
+            return this.catavolt.dialogApi.changeMode(this.tenantId, this.sessionId, this.id, viewMode)
+                .then((dialog: EditorDialog) => {
+                    //any new dialog needs to be initialized with the Catavolt object
+                    dialog.initialize(this.catavolt);
+                    this.updateSettingsWithNewDialogProperties(dialog.referringObject);
+                    return dialog;
+                });
+        }
     }
 
     /**
@@ -3052,21 +3037,8 @@ export class EditorDialog extends Dialog {
         return this.record;
     }
 
-    /**
-     * Get the possible values for a 'constrained value' property
-     * @param propName
-     * @returns {Future<Array<any>>}
-     */
-    //@TODO
-    getAvailableValues(propName:string):Promise<Array<Object>> {
-        /*
-         return DialogService.getAvailableValues(this.paneDef.dialogHandle, propName,
-         this.buffer.afterEffects(), this.sessionContext).map((valuesResult:XGetAvailableValuesResult)=> {
-         return valuesResult.list;
-         });
-         */
-        return Promise.resolve(null);
-
+    getAvailableValues(propName:string):Promise<Array<any>> {
+      return this.catavolt.dialogApi.getAvailableValues(this.tenantId, this.sessionId, this.id, propName);
     }
 
     /**
@@ -3160,24 +3132,25 @@ export class EditorDialog extends Dialog {
     processSideEffects(propertyName:string, value:any):Promise<void> {
 
         /*
-         var sideEffectsFr:Future<Record> = DialogService.processSideEffects(this.paneDef.dialogHandle,
-         this.sessionContext, propertyName, value, this.buffer.afterEffects()).map((changeResult:XPropertyChangeResult)=> {
-         return changeResult.sideEffects ? changeResult.sideEffects.record : new NullRecord();
-         });
+        var sideEffectsFr: Future<Record> = DialogService.processSideEffects(this.paneDef.dialogHandle,
+            this.sessionContext, propertyName, value, this.buffer.afterEffects()).map((changeResult: XPropertyChangeResult) => {
+            return changeResult.sideEffects ? changeResult.sideEffects.record : new NullRecord();
+        });
 
-         return sideEffectsFr.map((sideEffectsRec:Record)=> {
-         var originalProps = this.buffer.before.props;
-         var userEffects = this.buffer.afterEffects().props;
-         var sideEffects = sideEffectsRec.props;
-         sideEffects = sideEffects.filter((prop:Prop)=> {
-         return prop.name !== propertyName;
-         });
-         this._buffer = RecordBuffer.createRecordBuffer(this.buffer.objectId,
-         RecordUtil.union(originalProps, sideEffects),
-         RecordUtil.union(originalProps, RecordUtil.union(userEffects, sideEffects)));
-         return null;
-         });
-         */
+        return sideEffectsFr.map((sideEffectsRec: Record) => {
+            var originalProps = this.buffer.before.props;
+            var userEffects = this.buffer.afterEffects().props;
+            var sideEffects = sideEffectsRec.props;
+            sideEffects = sideEffects.filter((prop: Prop) => {
+                return prop.name !== propertyName;
+            });
+            this._buffer = RecordBuffer.createRecordBuffer(this.buffer.objectId,
+                RecordUtil.union(originalProps, sideEffects),
+                RecordUtil.union(originalProps, RecordUtil.union(userEffects, sideEffects)));
+            return null;
+        });
+        */
+
         return Promise.resolve(null);
     }
 
@@ -3193,7 +3166,7 @@ export class EditorDialog extends Dialog {
                 this._isFirstReadComplete = true;
                 this.initBuffer(record);
                 this.lastRefreshTime = new Date();
-                return record;
+                return this.record;
             });
     }
 
