@@ -102,12 +102,16 @@ test("Load And Page A List Test", (t) => {
                return PropFormatter.formatForRead(property, queryDialog.recordDef.propDefAtName(property.name));
             }).join(',');
         });
-        t.comment(`>   First 5 Records:`)
+        t.comment(`>   First 5 Records (formatted for 'read mode'): `)
         rows.forEach(row=>t.comment(`>      ${row}`));
         //scroll forward with a specific number of records (override)
         return queryDialog.scroller.pageForward(20).then((records:Array<Record>)=>{
-            const rows = records.map((record:Record)=> record.propValues.join(',') );
-            t.comment(`>   Next 20 Records:`)
+            const rows = records.map((record:Record)=> {
+                return record.properties.map((property:Property) => {
+                    return PropFormatter.formatForWrite(property, queryDialog.recordDef.propDefAtName(property.name));
+                }).join(',');
+        });
+            t.comment(`>   Next 20 Records (formatted for 'write mode'):`)
             rows.forEach(row=>t.comment(`>      ${row}`));
             //scroll forward with the previously specified default number of records
             return queryDialog.scroller.pageForward().then((records:Array<Record>)=>{
