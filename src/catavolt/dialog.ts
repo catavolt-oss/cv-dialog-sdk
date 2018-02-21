@@ -499,11 +499,9 @@ export interface DialogApi {
 
 export class DialogService implements DialogApi {
 
-    private static SERVER:string = 'https://dialog.hxgn-api.net';
-
     readonly baseUrl:string;
 
-    constructor(readonly client:Client, serverUrl:string=DialogService.SERVER, readonly apiVersion:string='v0') {
+    constructor(readonly client:Client, serverUrl:string, readonly apiVersion) {
         this.baseUrl = `${serverUrl}/${apiVersion}`;
     }
 
@@ -684,19 +682,19 @@ export class DialogService implements DialogApi {
     /* Private methods */
 
     private get(path:string, queryParams?:StringDictionary):Promise<JsonClientResponse> {
-        return this.client.getJson(`${DialogService.SERVER}/${this.apiVersion}`, path, queryParams);
+        return this.client.getJson(`${this.baseUrl}`, path, queryParams);
     }
 
     private post<T>(path:string, body?:T):Promise<JsonClientResponse> {
-        return this.client.postJson(`${DialogService.SERVER}/${this.apiVersion}`, path, body);
+        return this.client.postJson(`${this.baseUrl}`, path, body);
     }
 
     private d3lete(path:string):Promise<JsonClientResponse> {
-        return this.client.deleteJson(`${DialogService.SERVER}/${this.apiVersion}`, path);
+        return this.client.deleteJson(`${this.baseUrl}`, path);
     }
 
     private put<T>(path:string, body?:T):Promise<JsonClientResponse> {
-        return this.client.putJson(`${DialogService.SERVER}/${this.apiVersion}`, path, body);
+        return this.client.putJson(`${this.baseUrl}`, path, body);
     }
 
 }
