@@ -39,16 +39,11 @@
     "typedoc": "*",
     "typescript": "~2.6.2"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "echo test",
-      "commit-msg": "commitlint -e $GIT_PARAMS"
-    }
-  },
   "scripts": {
     "commit": "git-cz",
+    "precommit": "./makeDocs && git add .",
+    "commitmsg": "commitlint -e $GIT_PARAMS",
     "gen-version-code": "bin/gen-version-code.js",
-    "prepublishOnly": "bin/gen-version-code.js && tsc",
     "release": "standard-version",
     "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -b electron | ./node_modules/.bin/faucet",
     "test-browser": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet"
@@ -56,6 +51,11 @@
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "standard-version": {
+    "scripts": {
+      "postbump": "bin/gen-version-code.js && tsc"
     }
   }
 }
