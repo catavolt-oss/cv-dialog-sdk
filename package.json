@@ -33,7 +33,7 @@
     "commitizen": "*",
     "cz-conventional-changelog": "^2.1.0",
     "faucet": "0.0.1",
-    "husky": "^0.14.3",
+    "husky": "^0.15.0-rc.8",
     "standard-version": "^4.3.0",
     "tslint": "^5.9.1",
     "typedoc": "*",
@@ -41,8 +41,6 @@
   },
   "scripts": {
     "commit": "git-cz",
-    "precommit": "./makeDocs && git add .",
-    "commitmsg": "commitlint -e $GIT_PARAMS",
     "gen-version-code": "bin/gen-version-code.js",
     "release": "standard-version",
     "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -b electron | ./node_modules/.bin/faucet",
@@ -56,6 +54,12 @@
   "standard-version": {
     "scripts": {
       "postbump": "bin/gen-version-code.js && tsc"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "./makeDocs && git add .",
+      "commit-msg": "commitlint -e $GIT_PARAMS"
     }
   }
 }
