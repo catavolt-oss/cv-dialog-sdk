@@ -41,6 +41,7 @@
   },
   "husky": {
     "hooks": {
+      "pre-commit": "echo test",
       "commit-msg": "commitlint -e $GIT_PARAMS"
     }
   },
