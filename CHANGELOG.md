@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.2.3"></a>
+## [3.2.3](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v3.2.2...v3.2.3) (2018-02-21)
+
+
+### Bug Fixes
+
+* **dialogservice:** removed url constant for dialog api target ([7de57d7](https://github.com/catavolt-oss/cv-dialog-sdk/commit/7de57d7))
+
+
 
 <a name="3.2.0"></a>
 # [3.2.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v3.1.4...v3.2.0) (2018-02-15)
