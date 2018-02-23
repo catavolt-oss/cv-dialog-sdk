@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.0.0"></a>
+# [4.0.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v3.2.3...v4.0.0) (2018-02-23)
+
+
+### Code Refactoring
+
+* **modules:** moved all to single class modules (where possible) ([e8e6fae](https://github.com/catavolt-oss/cv-dialog-sdk/commit/e8e6fae))
+
+
+### BREAKING CHANGES
+
+* **modules:** PropFormatter is no longer a static class.  It should be imported as
+propertyFormatter from the Catavolt module
+
+
+
 <a name="3.2.3"></a>
 ## [3.2.3](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v3.2.2...v3.2.3) (2018-02-21)
 
