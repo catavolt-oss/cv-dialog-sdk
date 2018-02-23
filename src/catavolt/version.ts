@@ -1,11 +1,11 @@
-import {CatavoltApi} from "./dialog"
-import * as moment from 'moment-timezone';
+import {Catavolt} from "./dialog/Catavolt"
+import moment from 'moment-timezone';
 
 export const CATAVOLT_SDK_VERSION:string = '3.2.2';
 
 (()=>{
-    CatavoltApi.singleton.addStaticDeviceProp('catavoltSdkVersion', CATAVOLT_SDK_VERSION);
-    CatavoltApi.singleton.addDynamicDeviceProp('platform', ()=>'browser');
-    CatavoltApi.singleton.addDynamicDeviceProp('deviceTime', ()=>moment(new Date()).format());
-    CatavoltApi.singleton.addDynamicDeviceProp('deviceTimeZone', ()=>moment.tz.guess());
+    Catavolt.addStaticDeviceProp('catavoltSdkVersion', CATAVOLT_SDK_VERSION);
+    Catavolt.addDynamicDeviceProp('platform', ()=>'browser');
+    Catavolt.addDynamicDeviceProp('deviceTime', ()=>moment(new Date()).format());
+    Catavolt.addDynamicDeviceProp('deviceTimeZone', ()=>moment.tz.guess());
 })();

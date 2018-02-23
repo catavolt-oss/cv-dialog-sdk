@@ -4,17 +4,28 @@
 
 import * as test from "blue-tape";
 
-import {Catavolt} from "../../catavolt/dialog";
+import {Catavolt} from "../../catavolt/dialog/Catavolt";
 import {
-    Cell, CellValue,
-    Details,
-    Dialog, DialogRedirection, EditorDialog, List, Property, PropFormatter, QueryDialog, Record, Redirection,
-    RedirectionUtil, Session,
-    TypeNames, View,
-    Workbench,
-    WorkbenchAction
-} from "../../catavolt/models";
-import {Log, LogLevel} from "../../catavolt/util";
+    TypeNames} from "../../catavolt/models/types";
+import {Log} from "../../catavolt/util/Log";
+import {CellValue} from "../../catavolt/models/CellValue";
+import {View} from "../../catavolt/models/View";
+import {Cell} from "../../catavolt/models/Cell";
+import {Details} from "../../catavolt/models/Details";
+import {DialogRedirection} from "../../catavolt/models/DialogRedirection";
+import {List} from "../../catavolt/models/List";
+import {Property} from "../../catavolt/models/Property";
+import {Record} from "../../catavolt/models/Record";
+import {Redirection} from "../../catavolt/models/Redirection";
+import {RedirectionUtil} from "../../catavolt/models/RedirectionUtil";
+import {Session} from "../../catavolt/models/Session";
+import {Workbench} from "../../catavolt/models/Workbench";
+import {WorkbenchAction} from "../../catavolt/models/WorkbenchAction";
+import {Dialog} from "../../catavolt/models/Dialog";
+import {EditorDialog} from "../../catavolt/models/EditorDialog";
+import {QueryDialog} from "../../catavolt/models/QueryDialog";
+import {LogLevel} from "../../catavolt/util/Log";
+import {propertyFormatter} from "../../catavolt/dialog";
 
 /*
     Get a reference to the SDK instance
@@ -99,7 +110,7 @@ test("Load And Page A List Test", (t) => {
     return queryDialog.scroller.refresh().then((records:Array<Record>)=>{
         const rows = records.map((record:Record)=> {
             return record.properties.map((property:Property) => {
-               return PropFormatter.formatForRead(property, queryDialog.recordDef.propDefAtName(property.name));
+               return propertyFormatter.formatForRead(property, queryDialog.recordDef.propDefAtName(property.name));
             }).join(',');
         });
         t.comment(`>   First 5 Records (formatted for 'read mode'): `)
@@ -108,7 +119,7 @@ test("Load And Page A List Test", (t) => {
         return queryDialog.scroller.pageForward(20).then((records:Array<Record>)=>{
             const rows = records.map((record:Record)=> {
                 return record.properties.map((property:Property) => {
-                    return PropFormatter.formatForWrite(property, queryDialog.recordDef.propDefAtName(property.name));
+                    return propertyFormatter.formatForWrite(property, queryDialog.recordDef.propDefAtName(property.name));
                 }).join(',');
         });
             t.comment(`>   Next 20 Records (formatted for 'write mode'):`)

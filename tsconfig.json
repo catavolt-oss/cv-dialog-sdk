@@ -2,13 +2,14 @@
     "compileOnSave": true,
     "compilerOptions": {
         "target": "es6",
-	    "module": "commonjs",
+	    "module": "es6",
         "moduleResolution": "node",
         "sourceMap": false,
         "rootDir": "src",
         "outDir": "src/js",
         "declarationDir": "src/tsd",
-        "declaration": true
+        "declaration": true,
+        "allowSyntheticDefaultImports": true
     },
     "include":[
       "./src/**/*.ts"
