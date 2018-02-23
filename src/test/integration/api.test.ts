@@ -4,12 +4,10 @@
 
 import * as test from "blue-tape";
 
-import {Catavolt} from "../../catavolt/dialog/Catavolt";
-import {
-    TypeNames} from "../../catavolt/models/types";
+import {Catavolt, propertyFormatter} from "../../catavolt/dialog/Catavolt";
+import {TypeNames} from "../../catavolt/models/types";
 import {Log} from "../../catavolt/util/Log";
 import {CellValue} from "../../catavolt/models/CellValue";
-import {View} from "../../catavolt/models/View";
 import {Cell} from "../../catavolt/models/Cell";
 import {Details} from "../../catavolt/models/Details";
 import {DialogRedirection} from "../../catavolt/models/DialogRedirection";
@@ -20,18 +18,16 @@ import {Redirection} from "../../catavolt/models/Redirection";
 import {RedirectionUtil} from "../../catavolt/models/RedirectionUtil";
 import {Session} from "../../catavolt/models/Session";
 import {Workbench} from "../../catavolt/models/Workbench";
-import {WorkbenchAction} from "../../catavolt/models/WorkbenchAction";
 import {Dialog} from "../../catavolt/models/Dialog";
 import {EditorDialog} from "../../catavolt/models/EditorDialog";
 import {QueryDialog} from "../../catavolt/models/QueryDialog";
 import {LogLevel} from "../../catavolt/util/Log";
-import {propertyFormatter} from "../../catavolt/dialog";
 
 /*
     Get a reference to the SDK instance
  */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['cvtutorial', 'wsmith', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['cvtutorial', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 let currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;
