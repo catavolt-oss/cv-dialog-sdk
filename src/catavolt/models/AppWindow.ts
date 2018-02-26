@@ -1,5 +1,5 @@
-import {WorkbenchAction} from "./WorkbenchAction";
 import {Workbench} from "./Workbench";
+import {WorkbenchAction} from "./WorkbenchAction";
 
 export interface AppWindow {
 

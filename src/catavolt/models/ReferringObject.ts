@@ -1,5 +1,5 @@
-import {DialogModeEnum, TypeNames} from "./types";
 import {ReferringDialog} from "./ReferringDialog";
+import {DialogModeEnum, TypeNames} from "./types";
 
 export class ReferringObject {
 

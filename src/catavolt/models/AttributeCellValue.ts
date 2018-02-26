@@ -1,6 +1,6 @@
 import {CellValue} from "./CellValue";
-import {AttributeCellValueEntryMethod} from "./types";
 import {Menu} from "./Menu";
+import {AttributeCellValueEntryMethod} from "./types";
 
 /**
  * Defines how to present a business-value in a UI component

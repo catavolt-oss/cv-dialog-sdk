@@ -21,8 +21,8 @@ export class Menu {
             return md;
         }
         if (md.children) {
-            for (let i = 0; i < md.children.length; i++) {
-                const result = Menu.findSubMenu(md.children[i], matcher);
+            for (const child of md.children) {
+                const result = Menu.findSubMenu(child, matcher);
                 if (result) {
                     return result;
                 }

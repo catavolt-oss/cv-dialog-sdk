@@ -1,5 +1,5 @@
-import {Annotation} from "./Annotation";
 import {ArrayUtil} from "../util/ArrayUtil";
+import {Annotation} from "./Annotation";
 
 export class DataAnnotation implements Annotation {
 

@@ -1,8 +1,8 @@
+import {ArrayUtil} from "../util/ArrayUtil";
 import {NullRecord} from "./NullRecord";
+import {QueryDialog} from "./QueryDialog";
 import {Record} from "./Record";
 import {RecordSet} from "./RecordSet";
-import {QueryDialog} from "./QueryDialog";
-import {ArrayUtil} from "../util/ArrayUtil";
 import {QueryDirectionEnum} from "./types";
 
 /**

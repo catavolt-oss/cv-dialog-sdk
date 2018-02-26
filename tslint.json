@@ -1,9 +1,36 @@
 {
     "defaultSeverity": "error",
     "extends": [
-        "tslint:recommended"
+        "tslint:recommended",
+        "tslint-config-prettier"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+      "variable-name": [true, "check-format", "allow-leading-underscore", "allow-pascal-case"],
+      "object-literal-sort-keys": false,
+      "max-classes-per-file": false,
+      "interface-name": false,
+      "array-type": false,
+      "no-shadowed-variable": [true, {"typeParameter": false}],
+      "no-string-literal": false,
+      "no-empty-interface": false,
+      "no-unused-expression": [true, "allow-fast-null-checks"],
+      "member-ordering": [
+        true,
+        {
+          "order": [
+            "public-static-field",
+            "private-static-field",
+            "public-instance-field",
+            "private-instance-field",
+            "public-constructor",
+            "private-constructor",
+            "public-instance-method",
+            "protected-instance-method",
+            "private-instance-method"
+          ]
+        }
+      ]
+    },
     "rulesDirectory": []
 }

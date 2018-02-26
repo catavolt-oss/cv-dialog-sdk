@@ -27,7 +27,7 @@ export class PersistenceTools {
     public static deleteAllDialogStateFor(tenantId: string, userId: string, dialog: any) {
         const dialogChildren = dialog.children;
         if (dialogChildren) {
-            for (let child of dialogChildren) {
+            for (const child of dialogChildren) {
                 this.deleteAllDialogStateFor(tenantId, userId, child);
             }
         }
@@ -42,7 +42,7 @@ export class PersistenceTools {
 
     public static deleteAllState(tenantId: string, userId: string) {
         const keyCount = localStorage.length;
-        for (var i = keyCount - 1; i > -1; --i) {
+        for (let i = keyCount - 1; i > -1; --i) {
             const key = localStorage.key(i);
             Log.debug("Removing from localStorage: " + key);
             localStorage.removeItem(key);
@@ -111,7 +111,7 @@ export class PersistenceTools {
         }
         const dialogChildren = dialog.children;
         if (dialogChildren) {
-            for (let child of dialogChildren) {
+            for (const child of dialogChildren) {
                 const nestedDialog = this.findDialogStateWithin(tenantId, userId, child, targetId);
                 if (nestedDialog) {
                     return nestedDialog;
@@ -122,7 +122,7 @@ export class PersistenceTools {
     }
 
     public static findRecordProperty(record: any, propertyName: string): any {
-        for (let p of record.properties) {
+        for (const p of record.properties) {
             if (p.name === propertyName) {
                 return p;
             }
@@ -302,7 +302,7 @@ export class PersistenceTools {
 
     public static readPersistentState(tenantId: string, userId: string, stateId: string): any {
         const key: string = tenantId + '.' + userId + '.' + stateId;
-        var json: string = window.localStorage.getItem(key);
+        const json: string = window.localStorage.getItem(key);
         return json ? JSON.parse(json) : null;
     }
 
@@ -323,7 +323,7 @@ export class PersistenceTools {
     }
 
     public static updateRecordPropertyValue(record: any, propertyName: string, value: any): boolean {
-        for (let p of record.properties) {
+        for (const p of record.properties) {
             if (p.name === propertyName) {
                 p.value = value;
                 return true;
@@ -335,7 +335,7 @@ export class PersistenceTools {
     public static writeAllDialogParentState(tenantId: string, userId: string, parent: any) {
         const dialogChildren = parent.children;
         if (dialogChildren) {
-            for (var i = 0; i < dialogChildren.length; i++) {
+            for (let i = 0; i < dialogChildren.length; i++) {
                 const child = dialogChildren[i];
                 this.writeDialogParentState(tenantId, userId, child, i, parent);
             }

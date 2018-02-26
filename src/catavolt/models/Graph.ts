@@ -1,5 +1,5 @@
-import {View} from "./View";
 import {GraphDataPoint} from "./GraphDataPoint";
+import {View} from "./View";
 
 /**
  * A view describing how to display a collection of data as a line graph, pie chart, bar chart, etc.

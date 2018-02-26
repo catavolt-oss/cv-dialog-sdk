@@ -1,28 +1,28 @@
-import {Binary} from "./Binary";
 import {CatavoltApi} from "../dialog/CatavoltApi";
-import {ViewDescriptor} from "./ViewDescriptor";
-import {View} from "./View";
-import {RecordDef} from "./RecordDef";
-import {ReferringObject} from "./ReferringObject";
-import {Record} from "./Record";
-import {Property} from "./Property";
-import {InlineBinaryRef} from "./InlineBinaryRef";
-import {EncodedBinary} from "./EncodedBinary";
-import {ObjectBinaryRef} from "./ObjectBinaryRef";
-import {UrlBinary} from "./UrlBinary";
-import {DialogException} from "./DialogException";
-import {ErrorMessage} from "./ErrorMessage";
-import {Menu} from "./Menu";
-import {PropertyDef} from "./PropertyDef";
-import {Attachment} from "./Attachment";
 import {ActionParameters} from "./ActionParameters";
+import {Attachment} from "./Attachment";
+import {Binary} from "./Binary";
+import {DialogException} from "./DialogException";
+import {EncodedBinary} from "./EncodedBinary";
+import {ErrorMessage} from "./ErrorMessage";
+import {InlineBinaryRef} from "./InlineBinaryRef";
+import {Menu} from "./Menu";
+import {ObjectBinaryRef} from "./ObjectBinaryRef";
+import {Property} from "./Property";
+import {PropertyDef} from "./PropertyDef";
+import {PropertyFormatter} from "./PropertyFormatter";
+import {Record} from "./Record";
+import {RecordDef} from "./RecordDef";
 import {Redirection} from "./Redirection";
 import {RedirectionUtil} from "./RedirectionUtil";
 import {ReferringDialog} from "./ReferringDialog";
+import {ReferringObject} from "./ReferringObject";
 import {ViewMode} from "./types";
 import {DialogType} from "./types";
 import {DialogMode, DialogModeEnum} from "./types";
-import {PropertyFormatter} from "./PropertyFormatter";
+import {UrlBinary} from "./UrlBinary";
+import {View} from "./View";
+import {ViewDescriptor} from "./ViewDescriptor";
 
 /**
  * Top-level class, representing a Catavolt 'Dialog' definition.
@@ -31,15 +31,9 @@ import {PropertyFormatter} from "./PropertyFormatter";
  */
 export abstract class Dialog {
 
-    //statics
-    public static BINARY_CHUNK_SIZE = 256 * 1024; //size in  byes for 'read' operation
-    private static CHAR_CHUNK_SIZE = 128 * 1000; //size in chars for encoded 'write' operation
-
-    //private/protected
-    private _binaryCache: { [index: string]: Binary[] } = {};
-    private _lastRefreshTime: Date = new Date(0);
-    private _catavolt: CatavoltApi;
-    //protected _parentDialog;
+    // statics
+    public static BINARY_CHUNK_SIZE = 256 * 1024; // size in  byes for 'read' operation
+    private static CHAR_CHUNK_SIZE = 128 * 1000; // size in chars for encoded 'write' operation
 
     public readonly availableViews: ViewDescriptor[];
     public readonly businessClassName: string;
@@ -57,6 +51,12 @@ export abstract class Dialog {
     public readonly type: DialogType;
     public readonly view: View;
     public readonly viewMode: ViewMode;
+
+    // private/protected
+    private _binaryCache: { [index: string]: Binary[] } = {};
+    private _lastRefreshTime: Date = new Date(0);
+    private _catavolt: CatavoltApi;
+    // protected _parentDialog;
 
     /* public methods */
 
@@ -98,8 +98,8 @@ export abstract class Dialog {
     }
 
     public destroy() {
-        //@TODO
-        //destroy this dialog
+        // @TODO
+        // destroy this dialog
     }
 
     /**
@@ -196,7 +196,7 @@ export abstract class Dialog {
     public openViewWithId(viewId: string): Promise<Dialog> {
         return this.catavolt.dialogApi.changeView(this.tenantId, this.sessionId, this.id, viewId)
             .then((dialog: Dialog) => {
-                //any new dialog needs to be initialized with the Catavolt object
+                // any new dialog needs to be initialized with the Catavolt object
                 dialog.initialize(this.catavolt);
                 this.updateSettingsWithNewDialogProperties(dialog.referringObject);
                 return dialog;
@@ -334,8 +334,8 @@ export abstract class Dialog {
         this._catavolt = catavolt;
         if (this.children) {
             this.children.forEach((child: Dialog) => {
-                //@TODO add this if needed
-                //child._parentDialog = this;
+                // @TODO add this if needed
+                // child._parentDialog = this;
                 child.initialize(catavolt);
             });
         }
@@ -347,17 +347,17 @@ export abstract class Dialog {
 
             if (RedirectionUtil.isRedirection(result)) {
 
-                //@TODO - update relevant referring dialog settings on 'this' dialog
+                // @TODO - update relevant referring dialog settings on 'this' dialog
                 this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
 
-                //@TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
+                // @TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
                 if ((result as Redirection).referringObject && (result as Redirection).referringObject['dialogProperties']) {
                     const dialogProps = (result as Redirection).referringObject['dialogProperties'];
                     if ((dialogProps.localRefresh && dialogProps.localRefresh === "true" ||
                             dialogProps.globalRefresh && dialogProps.globalRefresh === "true")) {
                         this.catavolt.dataLastChangedTime = new Date();
                     }
-                    //@TODO - also, this check should go away - we will rely on 'isLocalRefreshNeeded' exclusively
+                // @TODO - also, this check should go away - we will rely on 'isLocalRefreshNeeded' exclusively
                 } else if (RedirectionUtil.isNullRedirection(result)) {
                     this.catavolt.dataLastChangedTime = new Date();
                 }
@@ -379,7 +379,7 @@ export abstract class Dialog {
         return this.invokeMenuActionWithId(menu.actionId, actionParams);
     }
 
-    //@TODO
+    // @TODO
     /**
      *
      * @param {string} propName
@@ -417,7 +417,7 @@ export abstract class Dialog {
 
         if (referringObject) {
             if (referringObject.isDialogReferrer()) {
-                //@TODO - remove the uppercase conversion once all DialogModes come back from server as uppercase
+                // @TODO - remove the uppercase conversion once all DialogModes come back from server as uppercase
                 this.dialogMode = (referringObject as ReferringDialog).dialogMode.toUpperCase() as DialogMode;
             }
         }

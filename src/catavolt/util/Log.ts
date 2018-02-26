@@ -11,7 +11,7 @@ export class Log {
 
     private static _logLevel: LogLevel;
 
-    static logLevel(level: LogLevel) {
+    public static logLevel(level: LogLevel) {
 
         if (level >= LogLevel.DEBUG) {
             Log.debug = (message, method?: string, clz?: string) => {
@@ -57,16 +57,16 @@ export class Log {
         Log._logLevel = level;
     }
 
-    static isEnabled(level: LogLevel): boolean {
+    public static isEnabled(level: LogLevel): boolean {
         return Log._logLevel >= level;
     }
 
     //set default log level here
-    static init = Log.logLevel(LogLevel.INFO);
+    public static init = Log.logLevel(LogLevel.INFO);
 
     private static log(logger, message, method?: string, clz?: string) {
 
-        var m: string = typeof message !== 'string' ? Log.formatRecString(message) : message;
+        const m: string = typeof message !== 'string' ? Log.formatRecString(message) : message;
 
         if (clz || method) {
             logger(clz + "::" + method + " : " + m);
@@ -75,11 +75,11 @@ export class Log {
         }
     }
 
-    static prettyPrint(o): string {
+    public static prettyPrint(o): string {
         return ObjUtil.formatRecAttr(o, true);
     }
 
-    static formatRecString(o): string {
+    public static formatRecString(o): string {
         return ObjUtil.formatRecAttr(o);
     }
 

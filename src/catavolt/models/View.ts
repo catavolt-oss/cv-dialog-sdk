@@ -1,5 +1,5 @@
-import {ViewType} from "./types";
 import {Menu} from "./Menu";
+import {ViewType} from "./types";
 
 /**
  * A View represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
@@ -35,9 +35,9 @@ export abstract class View {
         let result: string = this.title ? this.title.trim() : "";
         result = result === "null" ? "" : result;
         if (result === "") {
-            //@TODO put this back when label is resolved
-            //result = this.label ? this.label.trim() : '';
-            //result = result === 'null' ? '' : result;
+            // @TODO put this back when label is resolved
+            // result = this.label ? this.label.trim() : '';
+            // result = result === 'null' ? '' : result;
         }
         return result;
     }

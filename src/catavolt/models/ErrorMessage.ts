@@ -1,5 +1,5 @@
-import {View} from "./View";
 import {DialogException} from "./DialogException";
+import {View} from "./View";
 
 /**
  * *********************************

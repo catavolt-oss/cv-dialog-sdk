@@ -1,10 +1,12 @@
 import {StringDictionary} from "../util";
-import {VoidClientResponse} from "./VoidClientResponse";
-import {JsonClientResponse} from "./JsonClientResponse";
 import {BlobClientResponse} from "./BlobClientResponse";
+import {JsonClientResponse} from "./JsonClientResponse";
 import {TextClientResponse} from "./TextClientResponse";
+import {VoidClientResponse} from "./VoidClientResponse";
 
 export interface Client {
+
+    lastActivity: Date;
 
     getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse>;
 
@@ -21,8 +23,6 @@ export interface Client {
     deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse>;
 
     setClientMode(clientMode: ClientMode);
-
-    lastActivity: Date;
 
 }
 

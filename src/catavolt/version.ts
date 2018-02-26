@@ -1,5 +1,5 @@
-import {Catavolt} from "./dialog/Catavolt"
 import moment from 'moment-timezone';
+import {Catavolt} from "./dialog/Catavolt"
 
 export const CATAVOLT_SDK_VERSION:string = '3.2.3';
 

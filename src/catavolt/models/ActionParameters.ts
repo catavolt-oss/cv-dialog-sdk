@@ -1,7 +1,5 @@
 import {Record} from "./Record";
 
-/** ************************** Subclasses *******************************************************/
-
 export interface ActionParameters {
 
     readonly pendingWrites?: Record;

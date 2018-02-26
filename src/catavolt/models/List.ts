@@ -1,8 +1,8 @@
-import {View} from "./View";
 import {Column} from "./Column";
 import {Filter} from "./Filter";
-import {Sort} from "./Sort";
 import {Record} from "./Record";
+import {Sort} from "./Sort";
+import {View} from "./View";
 
 /**
  * Columns, filter and sorts for a UI list component.

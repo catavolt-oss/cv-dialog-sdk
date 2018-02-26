@@ -1,9 +1,9 @@
-import {DataAnnotation} from "./DataAnnotation";
-import {Record} from "./Record";
-import {Property} from "./Property";
-import {RecordImpl} from "./RecordImpl";
 import {ArrayUtil} from "../util";
+import {DataAnnotation} from "./DataAnnotation";
 import {NullRecord} from "./NullRecord";
+import {Property} from "./Property";
+import {Record} from "./Record";
+import {RecordImpl} from "./RecordImpl";
 
 /**
  * An {@link Record} that manages two copies internally, a before and after, for 'undo' and comparison purposes.

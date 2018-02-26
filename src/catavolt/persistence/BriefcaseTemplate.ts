@@ -19,7 +19,7 @@ export class BriefcaseTemplate {
         "id": "a1",
         "selectedViewId": "AAABACcXAAAAAF8e",
         "dialogDescription": "Briefcase: 1"
-    }
+    };
 
     public static BRIEFCASE_DIALOG = {
         "recordDef": {

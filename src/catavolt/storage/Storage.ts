@@ -15,7 +15,7 @@ export class Storage {
         this.initStorageApi();
     }
 
-    getItem(key: string) {
+    public getItem(key: string) {
         if (this._type === ApiType.ASYNC_STORAGE) {
             return this.getItemAsyncStorage(key, Storage._storageApi);
         } else if (this._type === ApiType.LOCAL_STORAGE) {
@@ -23,7 +23,7 @@ export class Storage {
         }
     }
 
-    setItem(key: string, value: any) {
+    public setItem(key: string, value: any) {
         if (this._type === ApiType.ASYNC_STORAGE) {
             return this.setItemAsyncStorage(key, value, Storage._storageApi);
         } else if (this._type === ApiType.LOCAL_STORAGE) {
@@ -31,7 +31,7 @@ export class Storage {
         }
     }
 
-    removeItem(key: string) {
+    public removeItem(key: string) {
         if (this._type === ApiType.ASYNC_STORAGE) {
             return this.removeItemAsyncStorage(key, Storage._storageApi);
         } else if (this._type === ApiType.LOCAL_STORAGE) {
@@ -39,7 +39,7 @@ export class Storage {
         }
     }
 
-    clearAll() {
+    public clearAll() {
         if (this._type === ApiType.ASYNC_STORAGE) {
             return this.clearAllAsyncStorage(Storage._storageApi);
         } else if (this._type === ApiType.LOCAL_STORAGE) {
@@ -47,7 +47,7 @@ export class Storage {
         }
     }
 
-    getAllKeys() {
+    public getAllKeys() {
         if (this._type === ApiType.ASYNC_STORAGE) {
             return this.getAllKeysAsyncStorage(Storage._storageApi);
         } else if (this._type === ApiType.LOCAL_STORAGE) {
@@ -55,7 +55,7 @@ export class Storage {
         }
     }
 
-    multiRemove(keys: Array<string>) {
+    public multiRemove(keys: Array<string>) {
 
         if (this._type === ApiType.ASYNC_STORAGE) {
             return this.multiRemoveAsyncStorage(keys, Storage._storageApi);

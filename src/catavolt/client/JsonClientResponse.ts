@@ -1,5 +1,5 @@
-import {ClientResponse} from "./ClientResponse";
 import {Log, StringDictionary} from "../util";
+import {ClientResponse} from "./ClientResponse";
 
 export class JsonClientResponse extends ClientResponse<StringDictionary | Array<any>> {
 

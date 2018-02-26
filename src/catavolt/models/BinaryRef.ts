@@ -1,15 +1,11 @@
 import {StringDictionary} from "../util/StringDictionary";
 
-/**
- ************** Base classes have to be defined first i.e. Order matters *******************
- */
-
 export abstract class BinaryRef {
 
     constructor(private _settings: StringDictionary) {
     }
 
-    //@TODO
+    // @TODO
     /*
      static fromWSValue(encodedValue:string, settings:StringDictionary):Try<BinaryRef> {
 

@@ -1,15 +1,15 @@
+import moment from "moment";
+import {DateTimeValue} from "../util/DateTimeValue";
+import {DateValue} from "../util/DateValue";
 import {StringDictionary} from "../util/StringDictionary";
+import {TimeValue} from "../util/TimeValue";
 import {CodeRef} from "./CodeRef";
-import {ObjectRef} from "./ObjectRef";
+import {DataAnnotation} from "./DataAnnotation";
 import {GpsReading} from "./GpsReading";
 import {MapLocation} from "./MapLocation";
-import {DataAnnotation} from "./DataAnnotation";
-import moment from "moment";
-import {TypeNames} from "./types";
+import {ObjectRef} from "./ObjectRef";
 import {PropertyDef} from "./PropertyDef";
-import {TimeValue} from "../util/TimeValue";
-import {DateValue} from "../util/DateValue";
-import {DateTimeValue} from "../util/DateTimeValue";
+import {TypeNames} from "./types";
 
 /**
  * Represents a 'value' or field in a row or record. See {@link Record}
@@ -143,20 +143,20 @@ export class Property {
             return String(o);
         } else if (typeof o === "object") {
             if (o instanceof Date) {
-                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                // remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
                 return o.toISOString().slice(0, -1);
             } else if (o instanceof DateTimeValue) {
-                //remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
+                // remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
                 return o.dateObj.toISOString().slice(0, -1);
             } else if (o instanceof DateValue) {
-                //remove all Time information from the end of the ISO string from the 'T' to the end...
+                // remove all Time information from the end of the ISO string from the 'T' to the end...
                 const isoString = o.dateObj.toISOString();
                 return isoString.slice(0, isoString.indexOf("T"));
             } else if (o instanceof TimeValue) {
                 return o.toString();
             } else {
-                //for any other type of value, return the object itself
-                //this could include string, Array, CodeRef, ObjectRef, GpsReadingProperty, MapLocationProperty, InlineBinaryRef
+                // for any other type of value, return the object itself
+                // this could include string, Array, CodeRef, ObjectRef, GpsReadingProperty, MapLocationProperty, InlineBinaryRef
                 return o;
             }
         } else {
@@ -169,12 +169,14 @@ export class Property {
             name: this.name,
             value: this.valueForWrite,
             type: TypeNames.PropertyTypeName,
+            propertyType: null,
+            format: null
         };
         if (this.propertyType) {
-            jsonObject['propertyType'] = this.propertyType;
+            jsonObject.propertyType = this.propertyType;
         }
         if (this.format) {
-            jsonObject['format'] = this.format;
+            jsonObject.format = this.format;
         }
 
         return jsonObject;
@@ -186,11 +188,11 @@ export class Property {
             if (["integer", "decimal", "int32", "int64", "float", "double"].some((v) => format === v)) {
                 return Number(value);
             } else if (format === "date") {
-                //parse as ISO - no offset specified by server right now, so we assume local time
+                // parse as ISO - no offset specified by server right now, so we assume local time
                 return moment(value, "YYYY-M-D").toDate();
             } else if (format === "date-time") {
-                //parse as ISO - no offset specified by server right now, so we assume local time
-                //strip invalid suffix (sometimes) provided by server
+                // parse as ISO - no offset specified by server right now, so we assume local time
+                // strip invalid suffix (sometimes) provided by server
                 const i = value.indexOf("T0:");
                 return moment((i > -1) ? value.substring(0, i) : value).toDate();
             } else if (format === "time") {

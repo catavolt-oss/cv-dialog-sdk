@@ -1,16 +1,16 @@
-import {Dialog} from "./Dialog";
-import {RecordBuffer} from "./RecordBuffer";
-import {NullRecord} from "./NullRecord";
-import {Record} from "./Record";
-import {AttributeCellValue} from "./AttributeCellValue";
-import {Redirection} from "./Redirection";
-import {Menu} from "./Menu";
-import {PropertyDef} from "./PropertyDef";
 import {DataUrl} from "../util/DataUrl";
-import {EncodedBinary} from "./EncodedBinary";
-import {RedirectionUtil} from "./RedirectionUtil";
-import {Property} from "./Property";
 import {Attachment} from "./Attachment";
+import {AttributeCellValue} from "./AttributeCellValue";
+import {Dialog} from "./Dialog";
+import {EncodedBinary} from "./EncodedBinary";
+import {Menu} from "./Menu";
+import {NullRecord} from "./NullRecord";
+import {Property} from "./Property";
+import {PropertyDef} from "./PropertyDef";
+import {Record} from "./Record";
+import {RecordBuffer} from "./RecordBuffer";
+import {Redirection} from "./Redirection";
+import {RedirectionUtil} from "./RedirectionUtil";
 import {TypeNames} from "./types";
 import {ViewMode} from "./types";
 import {ViewModeEnum} from "./types";
@@ -22,12 +22,12 @@ import {ViewModeEnum} from "./types";
  */
 export class EditorDialog extends Dialog {
 
+    public readonly businessId: string;
+
     private _buffer: RecordBuffer;
 
-    //@TODO - remove this
+    // @TODO - remove this
     private _isFirstReadComplete: boolean;
-
-    public readonly businessId: string;
 
     /**
      * Get the current buffered record
@@ -45,7 +45,7 @@ export class EditorDialog extends Dialog {
         if (this.viewMode !== viewMode) {
             return this.catavolt.dialogApi.changeMode(this.tenantId, this.sessionId, this.id, viewMode)
                 .then((dialog: EditorDialog) => {
-                    //any new dialog needs to be initialized with the Catavolt object
+                    // any new dialog needs to be initialized with the Catavolt object
                     dialog.initialize(this.catavolt);
                     this.updateSettingsWithNewDialogProperties(dialog.referringObject);
                     return dialog;
@@ -162,7 +162,7 @@ export class EditorDialog extends Dialog {
      * @param value
      * @returns {Future<null>}
      */
-    //@TODO
+    // @TODO
     public processSideEffects(propertyName: string, value: any): Promise<void> {
 
         /*
@@ -281,10 +281,7 @@ export class EditorDialog extends Dialog {
 
     }
 
-    //Module level methods
-
-    //Private methods
-
+    // Private methods
     /*
         @TODO
         Consider clone and deep copy here, to avoid potential ui side-effects

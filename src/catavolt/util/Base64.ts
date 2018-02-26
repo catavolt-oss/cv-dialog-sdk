@@ -7,10 +7,10 @@ export class Base64 {
 
     private static _keyStr: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
-    static encode(input) {
-        var output = "";
-        var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-        var i = 0;
+    public static encode(input) {
+        let output = "";
+        let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+        let i = 0;
         input = Base64._utf8_encode(input);
         while (i < input.length) {
             chr1 = input.charCodeAt(i++);
@@ -33,11 +33,11 @@ export class Base64 {
         return output;
     }
 
-    static decode(input) {
-        var output = "";
-        var chr1, chr2, chr3;
-        var enc1, enc2, enc3, enc4;
-        var i = 0;
+    public static decode(input) {
+        let output = "";
+        let chr1, chr2, chr3;
+        let enc1, enc2, enc3, enc4;
+        let i = 0;
         input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
         while (i < input.length) {
             enc1 = Base64._keyStr.indexOf(input.charAt(i++));
@@ -62,9 +62,9 @@ export class Base64 {
 
     private static _utf8_encode(s) {
         s = s.replace(/\r\n/g, "\n");
-        var utftext = "";
-        for (var n = 0; n < s.length; n++) {
-            var c = s.charCodeAt(n);
+        let utftext = "";
+        for (let n = 0; n < s.length; n++) {
+            const c = s.charCodeAt(n);
             if (c < 128) {
                 utftext += String.fromCharCode(c);
             }
@@ -83,10 +83,10 @@ export class Base64 {
         return utftext;
     }
 
-    static _utf8_decode(utftext) {
-        var s = "";
-        var i = 0;
-        var c = 0, c1 = 0, c2 = 0, c3 = 0;
+    public static _utf8_decode(utftext) {
+        let s = "";
+        let i = 0;
+        let c = 0, c1 = 0, c2 = 0, c3 = 0;
         while (i < utftext.length) {
             c = utftext.charCodeAt(i);
             if (c < 128) {

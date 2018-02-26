@@ -12,7 +12,7 @@ let [tenantId, userId, password, baseUrl, sessionId] =
 test("POST Test", (t) => {
 
     t.plan(3);
-    const login = {userId:userId, password:password, clientType:'DESKTOP', deviceProperties:{}}
+    const login = {userId, password, clientType:'DESKTOP', deviceProperties:{}};
     new FetchClient().postJson(baseUrl, `tenants/${tenantId}/sessions`, login).then(
         jsonClientResponse=>{
             t.ok(jsonClientResponse);

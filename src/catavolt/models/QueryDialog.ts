@@ -1,11 +1,11 @@
-import {Dialog} from "./Dialog";
 import {Column} from "./Column";
-import {Redirection} from "./Redirection";
+import {Dialog} from "./Dialog";
 import {Menu} from "./Menu";
-import {RecordSet} from "./RecordSet";
 import {QueryParameters} from "./QueryParameters";
-import {TypeNames} from "./types";
 import {QueryMarkerOption, QueryScroller} from "./QueryScroller";
+import {RecordSet} from "./RecordSet";
+import {Redirection} from "./Redirection";
+import {TypeNames} from "./types";
 import {QueryDirection} from "./types";
 import {PositionalQueryAbilityType} from "./types";
 
@@ -16,12 +16,12 @@ import {PositionalQueryAbilityType} from "./types";
  */
 export class QueryDialog extends Dialog {
 
-    private _scroller: QueryScroller;
-    private _defaultActionId: string;
-
     public positionalQueryAbility: PositionalQueryAbilityType;
     public supportsColumnStatistics: boolean;
     public supportsPositionalQueries: boolean;
+
+    private _scroller: QueryScroller;
+    private _defaultActionId: string;
 
     get defaultActionId(): string {
         return this._defaultActionId;

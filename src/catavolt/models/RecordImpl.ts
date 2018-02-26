@@ -1,7 +1,7 @@
 import {DataAnnotation} from "./DataAnnotation";
-import {TypeNames} from "./types";
 import {Property} from "./Property";
 import {Record} from "./Record";
+import {TypeNames} from "./types";
 
 /**
  * The implementation of {@link Record}.

@@ -1,3 +1,4 @@
+import {ClientMode} from "../client/Client";
 import {
     ActionParameters,
     Dialog,
@@ -13,11 +14,12 @@ import {
     ViewDescriptor,
     ViewMode,
     Workbench,
-    WorkbenchAction
+    WorkbenchAction,
 } from "../models";
-import {ClientMode} from "../client/Client";
 
 export interface DialogApi {
+
+    lastServiceActivity: Date;
 
     createSession(tenantId: string, login: Login): Promise<Session | Redirection>;
 
@@ -46,11 +48,13 @@ export interface DialogApi {
 
     getRecord(tenantId: string, sessionId: string, dialogId: string): Promise<Record>;
 
+    // readProperty(tenantId:string, sessionId:string, dialogId:string, propertyName:string, readSeq:number,
+    // readLength:number):Promise<>;
+
+    // writeProperty(tenantId:string, sessionId:string, dialogId:string, propertyName:string, data:string,
+    // append:boolean):Promise<>;
+
     putRecord(tenantId: string, sessionId: string, dialogId: string, record: Record): Promise<Record | Redirection>;
-
-    //readProperty(tenantId:string, sessionId:string, dialogId:string, propertyName:string, readSeq:number, readLength:number):Promise<>;
-
-    //writeProperty(tenantId:string, sessionId:string, dialogId:string, propertyName:string, data:string, append:boolean):Promise<>;
 
     getRecords(tenantId: string, sessionId: string, dialogId: string, queryParams: QueryParameters): Promise<RecordSet>;
 
@@ -67,7 +71,5 @@ export interface DialogApi {
     getViews(tenantId: string, sessionId: string, dialogId: string): Promise<Array<ViewDescriptor>>;
 
     setClientMode(clientMode: ClientMode): void;
-
-    lastServiceActivity: Date;
 
 }

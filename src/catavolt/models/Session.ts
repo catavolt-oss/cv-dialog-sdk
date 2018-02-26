@@ -1,5 +1,5 @@
-import {AppWindow} from "./AppWindow";
 import {StringDictionary} from "../util/StringDictionary";
+import {AppWindow} from "./AppWindow";
 
 export interface Session {
 

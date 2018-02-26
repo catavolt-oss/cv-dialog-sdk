@@ -1,18 +1,18 @@
 
-import
-{
-    StringDictionary,
-    TimeValue,
-    DateValue,
-    DateTimeValue,
-    Log,
-    ObjUtil,
-    StringUtil,
-    ArrayUtil,
-    DataUrl
-} from "../util/index";
 //import {SessionContext, SystemContext, Call, Get} from "./ws";
 import moment from 'moment';
+import
+{
+    ArrayUtil,
+    DataUrl,
+    DateTimeValue,
+    DateValue,
+    Log,
+    ObjUtil,
+    StringDictionary,
+    StringUtil,
+    TimeValue
+} from "../util/index";
 
 /*
  IMPORTANT!
@@ -90,12 +90,12 @@ const XML_X = "X";
 const XML_Y = "Y";
 
 export class TextAttributes {
-    bold:boolean=false;
-    italic:boolean=false;
-    underline:boolean=false;
-    numberOfLines:number=1;
-    textAlignment:TextAlignment;
-    textColor:Color;
+    public bold:boolean=false;
+    public italic:boolean=false;
+    public underline:boolean=false;
+    public numberOfLines:number=1;
+    public textAlignment:TextAlignment;
+    public textColor:Color;
 }
 
 export interface Textish {
@@ -106,7 +106,7 @@ export interface Textish {
 /**
  * *********************************
  */
-var GenID=1;  //  Generate a unique number if need be for IDs
+let GenID=1;  //  Generate a unique number if need be for IDs
 
 export abstract class Spec {
     protected nodeChildDict:Object = {};
@@ -177,13 +177,13 @@ export abstract class Component extends Spec {
 }
 
 export abstract class Container extends Component {
-    private _children:Array<Component> = new Array();
+    private _children:Array<Component> = [];
     private _containerWidth:number;
     constructor(parentContainer:Container, node?:Node, overrideContainerWidth?:number) {
         super(parentContainer, node);
         if (this.nodeChildDict[XML_CHILDREN]) {
             PrintUtil.forEachChildNode(this.nodeChildDict[XML_CHILDREN], (n: Node)=> {
-                let c: Component = ComponentFactory.fromNode(n, this);
+                const c: Component = ComponentFactory.fromNode(n, this);
                 if (c) {
                     this._children.push(c);
                 }
@@ -208,13 +208,13 @@ export abstract class Container extends Component {
     }
     protected calcAndAssignContainerWidth(parentContainer:Container) {
         // Overriden by Form and Cell for altered behavior
-        let parentWidth=parentContainer.containerWidth;
+        const parentWidth=parentContainer.containerWidth;
         if (this.layout == null) {
             throw Error("Bogus");
         }
         this.assignContainerWidth(this.layout.sumOfWidths(parentWidth));
     }
-    initContainerWith(overrideLayout?:Layout, overideChildren?:Array<Component>) {
+    public initContainerWith(overrideLayout?:Layout, overideChildren?:Array<Component>) {
         this.initComponentWith(overrideLayout);
         if (overideChildren) { this.assignChildren(overideChildren) }
     }
@@ -224,16 +224,20 @@ export abstract class PrintProperty extends Spec {
     constructor(node:Node) {
         super(node);
     }
-};
+}
 
 /**
  * *********************************
  */
 
-export enum AspectMode { None, Fit, Fill };
+export enum AspectMode { None, Fit, Fill }
+
 export enum BindingType { Data, Meta }
-export enum FormMode { Display, Edit };
-export enum ResizeMode { Stretch, Tile };
+
+export enum FormMode { Display, Edit }
+
+export enum ResizeMode { Stretch, Tile }
+
 export enum RichNumUsage { Undefined, Absolute, FillParent, PercentOfParent }
 export enum RichNumUsageRef { Undefined, Absolute, FillParent, HorizontalCenter, HorizontalLeft, HorizontalRight,
     PercentOfParent, Remainder, VerticalBottom, VerticalCenter, VerticalTop }  // Just for reference
@@ -253,8 +257,8 @@ export class Binding extends PrintProperty {
         // Constants are of the form propName[c], where c is the constant
         let w = null;
         if (this.hasConstant) {
-            let left = this.path.indexOf("[");
-            let right = this.path.indexOf("]");
+            const left = this.path.indexOf("[");
+            const right = this.path.indexOf("]");
             w = this.path.substr(left+1, right - left -1);
         }
         return w;
@@ -264,8 +268,8 @@ export class Binding extends PrintProperty {
     }
     get hasConstant():boolean {
         // Constants are of the form propName[c], where c is the constant
-        let left = this.path.indexOf("[");
-        let right = this.path.indexOf("]");
+        const left = this.path.indexOf("[");
+        const right = this.path.indexOf("]");
         return (left > -1 && right > -1 && (right - left > 0));
     }
     get path():string { return this._path }
@@ -294,10 +298,10 @@ export class Button extends Component {
     private _enabledInReadMode:boolean ;
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
-        PrintUtil.ifChild(this.nodeChildDict[XML_ASPECT_MODE], (n:Node)=>{ this._aspectMode = PrintUtil.enumValue(n, AspectMode) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_CAP_INSETS], (n:Node)=>{ this._capInsets = new Edges(node) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_RESIZE_MODE], (n:Node)=>{ this._resizeMode = PrintUtil.enumValue(n, ResizeMode) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_URL], (n:Node)=>{ this._urlString = PrintUtil.singleChildText(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_ASPECT_MODE], (n:Node)=>{ this._aspectMode = PrintUtil.enumValue(n, AspectMode) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_CAP_INSETS], (n:Node)=>{ this._capInsets = new Edges(node) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_RESIZE_MODE], (n:Node)=>{ this._resizeMode = PrintUtil.enumValue(n, ResizeMode) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_URL], (n:Node)=>{ this._urlString = PrintUtil.singleChildText(n) });
         PrintUtil.ifChild(this.nodeChildDict[XML_ENABLED_IN_READ_MODE], (n:Node)=>{ this._enabledInReadMode = PrintUtil.singleChildBoolean(n)})
     }
     get aspectMode():AspectMode { return this._aspectMode }
@@ -308,10 +312,10 @@ export class Button extends Component {
 }
 
 export class CaptureBounds extends PrintProperty {
-    private _height:RichNum; _width:RichNum;
+    private _height:RichNum; public _width:RichNum;
     constructor(node:Node) {
         super(node);
-        PrintUtil.ifChild(this.nodeChildDict[XML_HEIGHT], (n:Node)=>{ this._height = PrintUtil.singleChildRichNum(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_HEIGHT], (n:Node)=>{ this._height = PrintUtil.singleChildRichNum(n) });
         PrintUtil.ifChild(this.nodeChildDict[XML_WIDTH], (n:Node)=>{ this._width= PrintUtil.singleChildRichNum(n) })
     }
     get height():RichNum { return this._height }
@@ -325,7 +329,7 @@ export class PrintCell extends Container {
     constructor(parentContainer:Container, node?:Node) {
         super(parentContainer, node);
         this._grid = parentContainer as Grid;
-        PrintUtil.ifChild(this.nodeChildDict[XML_BORDER_COLOR], (n:Node)=>{ this._borderColor = new Color(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_BORDER_COLOR], (n:Node)=>{ this._borderColor = new Color(n) });
         PrintUtil.ifChild(this.nodeChildDict[XML_BORDER_WIDTHS], (n:Node)=>{ this._borderWidths = new Edges(n) })
     }
     get borderColor():Color { return this._borderColor }
@@ -333,7 +337,7 @@ export class PrintCell extends Container {
     get cellHeight():number { return this._grid.layout.heights[this.layout.row].value }
     get cellWidth():number { return this._grid.layout.widths[this.layout.column].resolveWithFill(this._grid.containerWidth) }
     get componentChildren():Array<Component> {
-        let answer:Array<Component>=[];
+        const answer:Array<Component>=[];
         this.children.map((c)=>{
             if (!(c instanceof Grid)) {
                 answer.push(c as Component);
@@ -342,7 +346,7 @@ export class PrintCell extends Container {
         return answer;
     }
     get gridChildren():Array<Grid> {
-        let answer:Array<Grid>=[];
+        const answer:Array<Grid>=[];
         this.children.map((c)=>{
             if (c instanceof Grid) {
                 answer.push(c as Grid);
@@ -350,7 +354,7 @@ export class PrintCell extends Container {
         });
         return answer;
     }
-    initCellWith(overrideLayout?:Layout, overrideChildren?:Array<Component>):void {
+    public initCellWith(overrideLayout?:Layout, overrideChildren?:Array<Component>):void {
         let ol = overrideLayout;
         if (!this.layout && !overrideLayout) {
             ol = new Layout(null, NaN, NaN, NaN, NaN, 0, 0);
@@ -365,7 +369,7 @@ export class PrintCell extends Container {
         if ((parentContainer as Grid).layout == null) {
             throw Error("bogus");
         }
-        let cw = (parentContainer as Grid).layout.widths[this.layout.column].resolveWithFill(parentContainer.containerWidth);
+        const cw = (parentContainer as Grid).layout.widths[this.layout.column].resolveWithFill(parentContainer.containerWidth);
         this.assignContainerWidth(cw);
     }
 
@@ -380,11 +384,11 @@ export class Checkbox extends Component {
     private _uncheckedColor:Color;
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
-        PrintUtil.ifChild(this.nodeChildDict[XML_CHECKED_COLOR], (n:Node)=>{ this._checkedColor = new Color(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_LINE_COLOR], (n:Node)=>{ this._lineColor = new Color(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_LINE_WIDTH], (n:Node)=>{ this._lineWidth = PrintUtil.singleChildFloat(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_RADIO_GROUP], (n:Node)=>{ this._radioGroup = PrintUtil.singleChildText(n)})
+        PrintUtil.ifChild(this.nodeChildDict[XML_CHECKED_COLOR], (n:Node)=>{ this._checkedColor = new Color(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_LINE_COLOR], (n:Node)=>{ this._lineColor = new Color(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_LINE_WIDTH], (n:Node)=>{ this._lineWidth = PrintUtil.singleChildFloat(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_RADIO_GROUP], (n:Node)=>{ this._radioGroup = PrintUtil.singleChildText(n)});
         PrintUtil.ifChild(this.nodeChildDict[XML_UNCHECKED_COLOR], (n:Node)=>{ this._uncheckedColor = new Color(n)})
     }
     get checkedColor():Color { return this._checkedColor }
@@ -396,15 +400,15 @@ export class Checkbox extends Component {
 }
 
 export class Color extends Spec {
-    public static WHITE():Color {let c:Color = new Color(null); c._red = 255; c._green = 255; c._blue = 255; c._alpha = 255; return c; }
-    public static BLACK():Color {let c:Color = new Color(null); c._red = 0; c._green = 0; c._blue = 0; c._alpha = 255; return c; }
-    private _red:number; _green:number; _blue:number; _alpha:number;
+    public static WHITE():Color {const c:Color = new Color(null); c._red = 255; c._green = 255; c._blue = 255; c._alpha = 255; return c; }
+    public static BLACK():Color {const c:Color = new Color(null); c._red = 0; c._green = 0; c._blue = 0; c._alpha = 255; return c; }
+    private _red:number; public _green:number; public _blue:number; public _alpha:number;
     constructor(node:Node, red?:number, green?:number, blue?:number, alpha?:number) {
         super(node);
-        PrintUtil.ifChild(this.nodeChildDict[XML_RED], (n:Node)=>{ this._red = PrintUtil.singleChildInt(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_BLUE], (n:Node)=>{ this._blue = PrintUtil.singleChildInt(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_GREEN], (n:Node)=>{ this._green = PrintUtil.singleChildInt(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_ALPHA], (n:Node)=>{ this._alpha = PrintUtil.singleChildFloat(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_RED], (n:Node)=>{ this._red = PrintUtil.singleChildInt(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_BLUE], (n:Node)=>{ this._blue = PrintUtil.singleChildInt(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_GREEN], (n:Node)=>{ this._green = PrintUtil.singleChildInt(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_ALPHA], (n:Node)=>{ this._alpha = PrintUtil.singleChildFloat(n) });
         if (red !== undefined) { this._red = red }
         if (green !== undefined) { this._green = green }
         if (blue !== undefined) { this._blue = blue }
@@ -421,25 +425,25 @@ export class DatePicker extends Component implements Textish {
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
         this._textAttributes = new TextAttributes();
-        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) });
         PrintUtil.importTextAttributes(this.nodeChildDict, this.textAttributes);
     }
-    getTextAttributes():TextAttributes { return this.textAttributes }
+    public getTextAttributes():TextAttributes { return this.textAttributes }
     get entrySeq():number { return this._entrySeq }
 }
 
 export class Edges extends Spec {
-    private _top:number; _left:number; _bottom:number; _right:number;
+    private _top:number; public _left:number; public _bottom:number; public _right:number;
     constructor(node?:Node) {
         super(node);
         if (node) {
-            PrintUtil.ifChild(this.nodeChildDict[XML_TOP], (n:Node)=>{ this._top = PrintUtil.singleChildFloat(n) })
-            PrintUtil.ifChild(this.nodeChildDict[XML_LEFT], (n:Node)=>{ this._left = PrintUtil.singleChildFloat(n) })
-            PrintUtil.ifChild(this.nodeChildDict[XML_BOTTOM], (n:Node)=>{ this._bottom = PrintUtil.singleChildFloat(n) })
+            PrintUtil.ifChild(this.nodeChildDict[XML_TOP], (n:Node)=>{ this._top = PrintUtil.singleChildFloat(n) });
+            PrintUtil.ifChild(this.nodeChildDict[XML_LEFT], (n:Node)=>{ this._left = PrintUtil.singleChildFloat(n) });
+            PrintUtil.ifChild(this.nodeChildDict[XML_BOTTOM], (n:Node)=>{ this._bottom = PrintUtil.singleChildFloat(n) });
             PrintUtil.ifChild(this.nodeChildDict[XML_RIGHT], (n:Node)=>{ this._right = PrintUtil.singleChildFloat(n) })
         }
     }
-    initEdgesWith(top?:number, left?:number, bottom?:number, right?:number):void {
+    public initEdgesWith(top?:number, left?:number, bottom?:number, right?:number):void {
         this._top = top;
         this._left = left;
         this._bottom = bottom;
@@ -452,8 +456,8 @@ export class Edges extends Spec {
 }
 
 export class PrintForm extends Container {
-    static fromXMLString(xmlString:string):PrintForm {
-        let xml:Document=(new DOMParser()).parseFromString(xmlString, 'text/xml');
+    public static fromXMLString(xmlString:string):PrintForm {
+        const xml:Document=(new DOMParser()).parseFromString(xmlString, 'text/xml');
         return new PrintForm(xml.childNodes[0]);
     }
     private _hideControlFraming:boolean;
@@ -464,7 +468,7 @@ export class PrintForm extends Container {
             // Because super fluffs children, we need to pre-get the Layout to know this Form's width
             PrintUtil.forEachChildNode(node, (n: Node)=> {
                 if (n.nodeName == "Layout") {
-                    let tempLayout:Layout = new Layout(n);
+                    const tempLayout:Layout = new Layout(n);
                     this.assignContainerWidth(tempLayout.singleWidthNum());
                 }
             })
@@ -477,9 +481,9 @@ export class PrintForm extends Container {
         //       Doctor up the children such that there are always Pages.  If no pages exist, then
         //       create a Page and a Grid and add these children as the content.
         if (this.children && this.children.length && (this.children[0] instanceof Grid)) {
-            let p:Page=new Page(this);
-            let g:Grid=new Grid(p);
-            let c:PrintCell=new PrintCell(g);
+            const p:Page=new Page(this);
+            const g:Grid=new Grid(p);
+            const c:PrintCell=new PrintCell(g);
             c.initCellWith(new Layout(null,0,0,0,0,0,0), this.children);
             g.initGridWith(new Layout(null,0,0,this.layout.singleWidthNum(),this.layout.singleHeightNum()), [c]);
             p.initPageWith(g);
@@ -504,19 +508,19 @@ export class Grid extends Container {
     }
     get gridLines():GridLine[] {
         if (!this._gridLines) {
-            this._gridLines=new Array<GridLine>();
+            this._gridLines=[];
             let hasHLines=false;
             let hasVLines=false;
-            let cols = this.layout.widths.length;
-            let rows = this.layout.heights.length;
-            let vLines=new Array<GridLine>(rows*cols+rows);  // Distinct vertical lines
-            let hLines=new Array<GridLine>(rows*cols+cols);  // Distinct horizointal lines
+            const cols = this.layout.widths.length;
+            const rows = this.layout.heights.length;
+            const vLines=new Array<GridLine>(rows*cols+rows);  // Distinct vertical lines
+            const hLines=new Array<GridLine>(rows*cols+cols);  // Distinct horizointal lines
             let colStart = 0;
             for (let c = 0; c < cols; c++) {
                 let rowStart=0;
-                let colWidth=this.layout.widths[c].resolveWithFill(this.parentContainer.containerWidth);
+                const colWidth=this.layout.widths[c].resolveWithFill(this.parentContainer.containerWidth);
                 for (let r = 0; r < rows; r++) {
-                    let rowHeight=this.layout.heights[r].resolveWithFill(this.parentContainer.containerWidth);
+                    const rowHeight=this.layout.heights[r].resolveWithFill(this.parentContainer.containerWidth);
 
                     // Vertical lines
                     let lineWidth=0;
@@ -575,7 +579,7 @@ export class Grid extends Container {
             let lastLineWidth = NaN;
             let lastPush=this._gridLines.length -1;
             if (hasVLines) {
-                for (let gl of vLines) {
+                for (const gl of vLines) {
                     if (gl) {
                         if (isNaN(lastEndY)) {
                             lastEndY = gl.end.y;
@@ -602,7 +606,7 @@ export class Grid extends Container {
                 let lastY = NaN;
                 lastLineWidth = NaN;
                 lastPush=this._gridLines.length -1;
-                for (let gl of hLines) {
+                for (const gl of hLines) {
                     if (gl) {
                         if (isNaN(lastEndX)) {
                             lastEndX = gl.end.x;
@@ -630,7 +634,7 @@ export class Grid extends Container {
     private initCells():void {
         // Structure the cells so that they can be retrieved
         this._cellChildren = new Array(this.layout.heights.length);
-        for (var i = 0; i < this.layout.heights.length; i++) {
+        for (let i = 0; i < this.layout.heights.length; i++) {
             this._cellChildren[i] = new Array(this.layout.widths.length);
         }
         this.children.map((c: PrintCell)=> {
@@ -643,16 +647,16 @@ export class Grid extends Container {
         }
         return this._cellChildren;
     }
-    initGridWith(overrideLayout?:Layout, overrideChildren?:Array<Component>):void {
+    public initGridWith(overrideLayout?:Layout, overrideChildren?:Array<Component>):void {
         super.initContainerWith(overrideLayout, overrideChildren);
         this.initCells();
     }
 }
 
 export class GridLine {
-    start:Point;
-    end:Point;
-    lineWidth:number;
+    public start:Point;
+    public end:Point;
+    public lineWidth:number;
     constructor(start:Point, end:Point, lineWidth:number) {
         this.start=start;
         this.end=end;
@@ -660,8 +664,8 @@ export class GridLine {
     }
 }
 export class Point {
-    x:number;
-    y:number;
+    public x:number;
+    public y:number;
     constructor(x:number, y:number) {
         this.x=x;
         this.y=y;
@@ -679,13 +683,13 @@ export class Image extends Component {
     private _captureBounds:CaptureBounds;
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
-        PrintUtil.ifChild(this.nodeChildDict[XML_ALLOW_ANNOTATIONS], (n:Node)=>{ this._allowAnnotations=PrintUtil.singleChildBoolean(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_ALLOW_PICKER], (n:Node)=>{ this._allowPicker=PrintUtil.singleChildBoolean(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_ALLOW_PICK_OPTIONS], (n:Node)=>{ this._allowPickOptions=PrintUtil.singleChildBoolean(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_ASPECT_MODE], (n:Node)=>{ this._aspectMode=PrintUtil.enumValue(n, AspectMode) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_CAP_INSETS], (n:Node)=>{ this._capInsets=new Edges(n) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_RESIZE_MODE], (n:Node)=>{ this._resizeMode=PrintUtil.enumValue(n, ResizeMode) })
-        PrintUtil.ifChild(this.nodeChildDict[XML_URL], (n:Node)=>{ this._urlString=PrintUtil.singleChildText(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_ALLOW_ANNOTATIONS], (n:Node)=>{ this._allowAnnotations=PrintUtil.singleChildBoolean(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_ALLOW_PICKER], (n:Node)=>{ this._allowPicker=PrintUtil.singleChildBoolean(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_ALLOW_PICK_OPTIONS], (n:Node)=>{ this._allowPickOptions=PrintUtil.singleChildBoolean(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_ASPECT_MODE], (n:Node)=>{ this._aspectMode=PrintUtil.enumValue(n, AspectMode) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_CAP_INSETS], (n:Node)=>{ this._capInsets=new Edges(n) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_RESIZE_MODE], (n:Node)=>{ this._resizeMode=PrintUtil.enumValue(n, ResizeMode) });
+        PrintUtil.ifChild(this.nodeChildDict[XML_URL], (n:Node)=>{ this._urlString=PrintUtil.singleChildText(n) });
         PrintUtil.ifChild(this.nodeChildDict[XML_CAPTURE_BOUNDS], (n:Node)=>{ this._captureBounds=new CaptureBounds(n) })
     }
     get allowAnnotations():boolean { return this._allowAnnotations }
@@ -722,21 +726,21 @@ export class Layout extends Spec {
         if (node) {
             PrintUtil.ifChild(this.nodeChildDict[XML_UOM], (n: Node)=> {
                 this._uom = PrintUtil.singleChildText(n)
-            })
+            });
             PrintUtil.ifChild(this.nodeChildDict[XML_COLUMN], (n: Node)=> {
                 this._column = PrintUtil.singleChildInt(n)
-            })
+            });
             PrintUtil.ifChild(this.nodeChildDict[XML_ROW], (n: Node)=> {
                 this._row = PrintUtil.singleChildInt(n)
-            })
+            });
             PrintUtil.ifChild(this.nodeChildDict[XML_SIZE], (n: Node)=> {
                 this._heights = PrintUtil.arrayOfRichNums(n, "Height");
                 this._widths = PrintUtil.arrayOfRichNums(n, "Width");
-            })
+            });
             PrintUtil.ifChild(this.nodeChildDict[XML_FILL_PARENT], (n: Node)=> {
                 this._heights = [new RichNum(NaN, RichNumUsage.FillParent)];
                 this._widths = [new RichNum(NaN, RichNumUsage.FillParent)];
-            })
+            });
             PrintUtil.ifChild(this.nodeChildDict[XML_ORIGIN], (n: Node)=> {
                 PrintUtil.forEachChildNode(n, (n2: Node)=> {
                     switch (n2.nodeName) {
@@ -766,14 +770,14 @@ export class Layout extends Spec {
     get column():number { return this._column }
     get row():number { return this._row }
 
-    singleHeightNum():number {
-        let rn=this.singleHeightRichNum();
+    public singleHeightNum():number {
+        const rn=this.singleHeightRichNum();
         if (!rn.isNumber) {
             throw Error("Expecting number on height layout")
         }
         return rn.value;
     }
-    singleHeightRichNum():RichNum{
+    public singleHeightRichNum():RichNum{
         if (!this.heights) {
             throw Error("No height values on Layout");
         } else if (this.heights.length != 1) {
@@ -782,14 +786,14 @@ export class Layout extends Spec {
             return this.heights[0];
         }
     }
-    singleWidthNum():number {
-        let rn=this.singleWidthRichNum();
+    public singleWidthNum():number {
+        const rn=this.singleWidthRichNum();
         if (!rn.isNumber) {
             throw Error("Expecting number on width layout")
         }
         return rn.value;
     }
-    singleWidthRichNum():RichNum{
+    public singleWidthRichNum():RichNum{
         if (!this.widths) {
             throw Error("No width values on Layout");
         } else if (this.widths.length != 1) {
@@ -798,7 +802,7 @@ export class Layout extends Spec {
             return this.widths[0];
         }
     }
-    sumOfHeights():number {
+    public sumOfHeights():number {
         let answer:number=0.0;
         if (!this.heights) {
             throw Error("No height values on Layout");
@@ -811,10 +815,10 @@ export class Layout extends Spec {
                 throw Error("Expecting number on layout.heights")
             }
             answer+=rn.value;
-        })
+        });
         return answer;
     }
-    sumOfWidths(parentSize:number):number {
+    public sumOfWidths(parentSize:number):number {
         let answer:number=0.0;
         if (!this.widths) {
             throw Error("No width values on Layout");
@@ -835,7 +839,7 @@ export class Layout extends Spec {
             } else {
                 throw Error("Unknown RichNum usage on layout.widths")
             }
-        })
+        });
         return answer;
     }
 
@@ -846,7 +850,7 @@ export class Page extends Container {
         super(parentContainer, node);
     }
     get gridChildren():Grid[] { return this.children as Grid[] }
-    initPageWith(grid:Grid):void {
+    public initPageWith(grid:Grid):void {
         this.initContainerWith(null, [grid]);
     }
     protected calcAndAssignContainerWidth(parentContainer:Container) {
@@ -865,7 +869,7 @@ export class Settings extends Spec {
 }
 
 export class RichNum {
-    static ZERO:RichNum = new RichNum(0);
+    public static ZERO:RichNum = new RichNum(0);
     constructor(private _value:number, private _usage:RichNumUsage=RichNumUsage.Absolute) { }
     get value():number {
         if (!this.isNumber) { throw Error("RichNum is not a raw number.")}
@@ -878,7 +882,7 @@ export class RichNum {
     get isNumber():boolean { return this._usage == RichNumUsage.Absolute }
     get isFillParent():boolean { return this._usage == RichNumUsage.FillParent }
     get isPercentOfParent():boolean { return this._usage == RichNumUsage.PercentOfParent }
-    resolveWithFill(n:number) {
+    public resolveWithFill(n:number) {
         let answer:number;
         if (this.isNumber) {
             answer = this._value;
@@ -898,7 +902,7 @@ export class SignatureCapture extends Component {
     private _lineColor:Color;
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
-        PrintUtil.ifChild(this.nodeChildDict[XML_CAPTURE_BOUNDS], (n:Node)=>{ this._captureBounds=new CaptureBounds(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_CAPTURE_BOUNDS], (n:Node)=>{ this._captureBounds=new CaptureBounds(n) });
         PrintUtil.ifChild(this.nodeChildDict[XML_LINE_COLOR], (n:Node)=>{ this._lineColor=new Color(n) })
     }
     get captureBounds():CaptureBounds { return this._captureBounds }
@@ -917,7 +921,7 @@ export class TextArea extends Component implements Textish {
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
         this._textAttributes = new TextAttributes();
-        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) });
         PrintUtil.importTextAttributes(this.nodeChildDict, this._textAttributes);
     }
     get entrySeq():number { return this._entrySeq }
@@ -928,7 +932,7 @@ export class TextField extends Component implements Textish {
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
         this._textAttributes = new TextAttributes();
-        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) });
         PrintUtil.importTextAttributes(this.nodeChildDict, this._textAttributes);
     }
     get entrySeq():number { return this._entrySeq }
@@ -939,7 +943,7 @@ export class TimePicker extends Component implements Textish {
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
         this._textAttributes = new TextAttributes();
-        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) });
         PrintUtil.importTextAttributes(this.nodeChildDict, this._textAttributes);
     }
     get entrySeq():number { return this._entrySeq }
@@ -950,7 +954,7 @@ export class ValuePicker extends Component implements Textish {
     constructor(parentContainer:Container, node:Node) {
         super(parentContainer, node);
         this._textAttributes = new TextAttributes();
-        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) })
+        PrintUtil.ifChild(this.nodeChildDict[XML_ENTRY_SEQ], (n:Node)=>{ this._entrySeq = PrintUtil.singleChildInt(n) });
         PrintUtil.importTextAttributes(this.nodeChildDict, this._textAttributes);
     }
     get entrySeq():number { return this._entrySeq }
@@ -971,8 +975,8 @@ export class ValuePicker extends Component implements Textish {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ComponentFactory {
-    static fromNode(node:Node, parentContainer:Container):Component {
-        var answer:Component = null;
+    public static fromNode(node:Node, parentContainer:Container):Component {
+        let answer:Component = null;
         switch(node.nodeName) {
             case XML_BUTTON: answer = new Button(parentContainer, node); break;
             case XML_CHECKBOX: answer = new Checkbox(parentContainer, node); break;
@@ -997,33 +1001,33 @@ class ComponentFactory {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class PrintUtil {
-    static arrayOfRichNums(node:Node, name:string):Array<RichNum> {
-        let answer:Array<RichNum>=[];
+    public static arrayOfRichNums(node:Node, name:string):Array<RichNum> {
+        const answer:Array<RichNum>=[];
         PrintUtil.forEachChildNode(node, (n:Node)=>{
             if (n.nodeName == name) { answer.push(PrintUtil.singleChildRichNum(n))}
         });
         return answer;
     }
-    static enumValue(node:Node, e:Object):number {
-        let answer = null;
-        let sv: string = PrintUtil.singleChildText(node);
+    public static enumValue(node:Node, e:Object):number {
+        const answer = null;
+        const sv: string = PrintUtil.singleChildText(node);
         let nv: number;
         if (sv) {
             nv = e[sv];
         }
         return nv;
     }
-    static forEachChildNode(node:Node, f:(n:Node)=>void):void {
+    public static forEachChildNode(node:Node, f:(n:Node)=>void):void {
         for (let i:number=0; i < node.childNodes.length; i++) {
             f(node.childNodes[i]);
         }
     }
-    static ifChild(node:Node, f:(n:Node)=>void):void {
+    public static ifChild(node:Node, f:(n:Node)=>void):void {
         if (node) {
             f(node);
         }
     }
-    static importTextAttributes(nodeChildDict:Object, textAttributes:TextAttributes):void {
+    public static importTextAttributes(nodeChildDict:Object, textAttributes:TextAttributes):void {
         PrintUtil.ifChild(nodeChildDict[XML_BOLD], (n:Node)=>{ textAttributes.bold=PrintUtil.singleChildBoolean(n) });
         PrintUtil.ifChild(nodeChildDict[XML_ITALIC], (n:Node)=>{ textAttributes.italic=PrintUtil.singleChildBoolean(n) });
         PrintUtil.ifChild(nodeChildDict[XML_UNDERLINE], (n:Node)=>{ textAttributes.underline=PrintUtil.singleChildBoolean(n) });
@@ -1031,16 +1035,16 @@ class PrintUtil {
         PrintUtil.ifChild(nodeChildDict[XML_TEXT_COLOR], (n:Node)=>{ textAttributes.textColor=new Color(n) });
         PrintUtil.ifChild(nodeChildDict[XML_NUMBER_OF_LINES], (n:Node)=>{ textAttributes.numberOfLines=PrintUtil.singleChildInt(n) });
     }
-    static singleChildBoolean(node:Node):boolean {
-        let text:string=PrintUtil.singleChildText(node);
+    public static singleChildBoolean(node:Node):boolean {
+        const text:string=PrintUtil.singleChildText(node);
         if (text) {
             return text.toLocaleLowerCase() == "true";
         } else {
             return false;
         }
     }
-    static singleChildInt(node:Node):number {
-        var answer:number;
+    public static singleChildInt(node:Node):number {
+        let answer:number;
         if (node.childNodes.length != 1) {
             Log.error("XML error with " + node.nodeName + ".  Expected exactly one child node.");
         } else if (node.childNodes[0].nodeName != "#text") {
@@ -1050,8 +1054,8 @@ class PrintUtil {
         }
         return answer;
     }
-    static singleChildFloat(node:Node):number {
-        var answer:number;
+    public static singleChildFloat(node:Node):number {
+        let answer:number;
         if (node.childNodes.length != 1) {
             Log.error("XML error with " + node.nodeName + ".  Expected exactly one child node.");
         } else if (node.childNodes[0].nodeName != "#text") {
@@ -1061,19 +1065,19 @@ class PrintUtil {
         }
         return answer;
     }
-    static singleChildRichNum(node:Node):RichNum {
+    public static singleChildRichNum(node:Node):RichNum {
         // Either there is a FillParent entry with surrounding white space, or a single text entry
-        var answer:RichNum;
+        let answer:RichNum;
         for (let i:number=0; i < node.childNodes.length; i++) {
             if (node.childNodes[i].nodeName == RichNumUsage[RichNumUsage.PercentOfParent].toString()) {
-                let v = this.singleChildFloat(node.childNodes[i]);
+                const v = this.singleChildFloat(node.childNodes[i]);
                 answer = new RichNum(v, RichNumUsage.PercentOfParent);
                 break;
             } else if (node.childNodes[i].nodeName == RichNumUsage[RichNumUsage.FillParent].toString()) {
                 answer = new RichNum(NaN, RichNumUsage.FillParent);
                 break;
             } else if (node.childNodes[i].nodeName == "#text") {
-                let v:number = parseFloat(node.childNodes[i].textContent.trim());
+                const v:number = parseFloat(node.childNodes[i].textContent.trim());
                 if (!isNaN(v)) {
                     answer = new RichNum(v);
                 }
@@ -1082,9 +1086,10 @@ class PrintUtil {
         }
         return answer;
     }
-    static singleChildText(node:Node):string {
+    public static singleChildText(node:Node):string {
+        let text = null;
         if (node.childNodes.length != 1) {
-            var text:string = "ExpectedExactlyOneNode";
+            text = "ExpectedExactlyOneNode";
             Log.error("XML error with " + node.nodeName + ".  Expected exactly one child node.");
         } else if (node.childNodes[0].nodeName != "#text") {
             text = "ExpectedNodeText";
@@ -1094,9 +1099,9 @@ class PrintUtil {
         }
         return text;
     }
-    static singleChildTextAlignmentUsage(node:Node):TextAlignmentUsage {
+    public static singleChildTextAlignmentUsage(node:Node):TextAlignmentUsage {
         // Either there is a FillParent entry with surrounding white space, or a single text entry
-        var answer:TextAlignmentUsage = TextAlignmentUsage.Left;
+        let answer:TextAlignmentUsage = TextAlignmentUsage.Left;
         if (node.childNodes.length != 1) {
             Log.error("XML error with " + node.nodeName + ".  Expected exactly one child node.");
         } else if (node.childNodes[0].nodeName != "#text") {

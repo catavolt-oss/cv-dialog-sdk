@@ -1,5 +1,5 @@
-import {Binary} from "./Binary";
 import {DataUrl} from "../util/DataUrl";
+import {Binary} from "./Binary";
 
 /**
  * Represents a base64 encoded binary

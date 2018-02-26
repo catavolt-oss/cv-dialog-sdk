@@ -2,7 +2,6 @@ import {CellValue} from "./CellValue";
 import {TypeNames} from "./types";
 
 /**
- /**
  * A property definition describes a particular value of a business entity. Business entities are transacted as records,
  * therefore properties and lists of properties are referred to as fields and records. Moreover, a list of property definitions
  * is referred to as a record definition and is the metadata describing the read/write capabilities of a specific dialog model
@@ -83,7 +82,7 @@ export class PropertyDef {
         return this.semanticType === "DATA_HTML";
     }
 
-    //@TODO
+    // @TODO
     get isInlineMediaStyle(): boolean {
         return (this.semanticType === CellValue.STYLE_INLINE_MEDIA || this.semanticType === CellValue.STYLE_INLINE_MEDIA2);
     }

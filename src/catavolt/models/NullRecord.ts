@@ -1,7 +1,7 @@
 import {DataAnnotation} from "./DataAnnotation";
-import {TypeNames} from "./types";
 import {Property} from "./Property";
 import {Record} from "./Record";
+import {TypeNames} from "./types";
 
 /**
  * An empty or uninitialized {@link Record}.
@@ -11,9 +11,6 @@ import {Record} from "./Record";
 export class NullRecord implements Record {
 
     public static singleton: NullRecord = new NullRecord();
-
-    constructor() {
-    }
 
     get annotations(): DataAnnotation[] {
         return [];

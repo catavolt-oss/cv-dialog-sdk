@@ -1,5 +1,5 @@
-import {View} from "./View";
 import {Cell} from "./Cell";
+import {View} from "./View";
 
 /**
  * A abstract definition for small visual area populated with labels and values. Labels are typically presented as simple text phrases.

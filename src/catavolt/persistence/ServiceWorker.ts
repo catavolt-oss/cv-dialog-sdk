@@ -2,7 +2,7 @@ import {PersistenceTools} from "./PersistenceTools";
 const ThisCacheName = 'v0.170';
 const ActiveCacheNames = [ThisCacheName];
 const MessagePrefix = `[Catavolt ServiceWorker ${ThisCacheName} ${(new Date()).toLocaleString()}]`;
-var fetchCount = 0;
+let fetchCount = 0;
 
 console.log(`${MessagePrefix} Begin "service-worker" script at: ${self}`);
 self.addEventListener('install', event => ServiceWorker.install(event));
@@ -15,7 +15,7 @@ export class ServiceWorker {
     public static activate(event) {
         console.log(`${MessagePrefix} Begin activate() method`);
         console.log(`${MessagePrefix} activate() begin active cache names:`);
-        for (var i = 0; i < ActiveCacheNames.length; i++) {
+        for (let i = 0; i < ActiveCacheNames.length; i++) {
             console.log(`${MessagePrefix} activate() active cache name: ${ActiveCacheNames[i]}`);
         }
         console.log(`${MessagePrefix} activate() end active cache names`);
@@ -53,13 +53,13 @@ export class ServiceWorker {
 //                    console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response found in cache: ${event.request.url}`);
                     return cachedResponse;
                 }
-                var requestToCache = event.request.clone();
+                const requestToCache = event.request.clone();
                 return fetch(requestToCache).then(fetchResponse => {
                     if (!fetchResponse) {
                         console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response NOT valid and NOT cached: ${requestToCache.url}`);
                         return fetchResponse;
                     }
-                    var responseToCache = fetchResponse.clone();
+                    const responseToCache = fetchResponse.clone();
                     caches.open(ThisCacheName).then(cache => {
                         cache.put(requestToCache, responseToCache);
                         console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response cached for request: ${requestToCache.url}`);

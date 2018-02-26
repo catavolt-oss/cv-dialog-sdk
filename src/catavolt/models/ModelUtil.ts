@@ -1,9 +1,11 @@
-import {DataAnnotation} from "./DataAnnotation";
+import {Log} from "../util/Log";
+import {ObjUtil} from "../util/ObjUtil";
+import {StringDictionary} from "../util/StringDictionary";
 import {AttributeCellValue} from "./AttributeCellValue";
-import {TabCellValue} from "./TabCellValue";
 import {BarcodeScan} from "./BarcodeScan";
 import {Calendar} from "./Calendar";
 import {CodeRef} from "./CodeRef";
+import {DataAnnotation} from "./DataAnnotation";
 import {Details} from "./Details";
 import {DialogException} from "./DialogException";
 import {EditorDialog} from "./EditorDialog";
@@ -11,29 +13,27 @@ import {ForcedLineCellValue} from "./ForcedLineCellValue";
 import {Form} from "./Form";
 import {GpsReading} from "./GpsReading";
 import {GpsReadingProperty} from "./GpsReadingProperty";
-import {MapLocation} from "./MapLocation";
-import {MapLocationProperty} from "./MapLocationProperty";
 import {Graph} from "./Graph";
 import {InlineBinaryRef} from "./InlineBinaryRef";
 import {LabelCellValue} from "./LabelCellValue";
 import {List} from "./List";
 import {Map} from "./Map";
+import {MapLocation} from "./MapLocation";
+import {MapLocationProperty} from "./MapLocationProperty";
 import {Menu} from "./Menu";
 import {ObjectBinaryRef} from "./ObjectBinaryRef";
 import {ObjectRef} from "./ObjectRef";
 import {Property} from "./Property";
 import {PropertyDef} from "./PropertyDef";
 import {QueryDialog} from "./QueryDialog";
-import {RecordImpl} from "./RecordImpl";
 import {RecordDef} from "./RecordDef";
+import {RecordImpl} from "./RecordImpl";
 import {ReferringDialog} from "./ReferringDialog";
 import {ReferringWorkbench} from "./ReferringWorkbench";
 import {Stream} from "./Stream";
 import {SubstitutionCellValue} from "./SubstitutionCellValue";
+import {TabCellValue} from "./TabCellValue";
 import {ViewDescriptor} from "./ViewDescriptor";
-import {StringDictionary} from "../util/StringDictionary";
-import {Log} from "../util/Log";
-import {ObjUtil} from "../util/ObjUtil";
 
 export class ModelUtil {
 
@@ -87,13 +87,13 @@ export class ModelUtil {
         const indent = n * 4;
 
         if (Array.isArray(obj)) {
-            //Log.debug(`${' '.repeat(indent)}=> Deserializing Array....`);
+            // Log.debug(`${' '.repeat(indent)}=> Deserializing Array....`);
             return ModelUtil.deserializeArray(obj);
         } else {
             const objType = obj.type;
-            //Log.debug(`${' '.repeat(indent)}=> Deserializing ${objType}`);
+            // Log.debug(`${' '.repeat(indent)}=> Deserializing ${objType}`);
             return new Promise<A>((resolve, reject) => {
-                //if the class has a fromJSON method, use it
+                // if the class has a fromJSON method, use it
                 const classType = ModelUtil.classType(objType);
                 if (classType && typeof classType.fromJSON === "function") {
                     resolve(classType.fromJSON(obj));
@@ -101,13 +101,13 @@ export class ModelUtil {
                     let newObj = ModelUtil.typeInstance(objType);
                     if (!newObj) {
                         // const message = `ModelUtil::jsonToModel: no type constructor found for ${objType}: assuming interface`;
-                        //Log.debug(message);
-                        newObj = {};  //assume it's an interface
+                        // Log.debug(message);
+                        newObj = {};  // assume it's an interface
                     }
-                    //otherwise, copy field values
+                    // otherwise, copy field values
                     Promise.all(Object.keys(obj).map((prop) => {
                         const value = obj[prop];
-                        //Log.debug(`${' '.repeat(indent)}prop: ${prop} is type ${typeof value}`);
+                        // Log.debug(`${' '.repeat(indent)}prop: ${prop} is type ${typeof value}`);
                         if (value && typeof value === "object") {
                             if (Array.isArray(value) || "type" in value) {
                                 return ModelUtil.jsonToModel(value, ++n).then((model) => {
@@ -151,15 +151,15 @@ export class ModelUtil {
         try {
             if ("_" + prop in target) {
                 target["_" + prop] = value;
-                //Log.debug(`${' '.repeat(n)}Assigning private prop _${prop} = ${value}`);
+                // Log.debug(`${' '.repeat(n)}Assigning private prop _${prop} = ${value}`);
             } else {
-                //it may be public prop
+                // it may be public prop
                 if (prop in target) {
-                    //Log.debug(`${' '.repeat(n)}Assigning public prop ${prop} = ${value}`);
+                    // Log.debug(`${' '.repeat(n)}Assigning public prop ${prop} = ${value}`);
                 } else {
-                    //it's either a readonly prop or defined in an interface
-                    //in which case it's will not already exist on the target object
-                    //Log.debug(`${' '.repeat(n)}Defining ${prop} on target for ${type}`);
+                    // it's either a readonly prop or defined in an interface
+                    // in which case it's will not already exist on the target object
+                    // Log.debug(`${' '.repeat(n)}Defining ${prop} on target for ${type}`);
                 }
                 target[prop] = value;
             }

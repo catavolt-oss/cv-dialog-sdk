@@ -2,34 +2,34 @@
  * Created by rburson on 9/1/17.
  */
 
-import * as test from "blue-tape";
+import test from "blue-tape";
 
 import {Catavolt, propertyFormatter} from "../../catavolt/dialog/Catavolt";
-import {TypeNames} from "../../catavolt/models/types";
-import {Log} from "../../catavolt/util/Log";
-import {CellValue} from "../../catavolt/models/CellValue";
 import {Cell} from "../../catavolt/models/Cell";
+import {CellValue} from "../../catavolt/models/CellValue";
 import {Details} from "../../catavolt/models/Details";
+import {Dialog} from "../../catavolt/models/Dialog";
 import {DialogRedirection} from "../../catavolt/models/DialogRedirection";
+import {EditorDialog} from "../../catavolt/models/EditorDialog";
 import {List} from "../../catavolt/models/List";
 import {Property} from "../../catavolt/models/Property";
+import {QueryDialog} from "../../catavolt/models/QueryDialog";
 import {Record} from "../../catavolt/models/Record";
 import {Redirection} from "../../catavolt/models/Redirection";
 import {RedirectionUtil} from "../../catavolt/models/RedirectionUtil";
 import {Session} from "../../catavolt/models/Session";
+import {TypeNames} from "../../catavolt/models/types";
 import {Workbench} from "../../catavolt/models/Workbench";
-import {Dialog} from "../../catavolt/models/Dialog";
-import {EditorDialog} from "../../catavolt/models/EditorDialog";
-import {QueryDialog} from "../../catavolt/models/QueryDialog";
+import {Log} from "../../catavolt/util/Log";
 import {LogLevel} from "../../catavolt/util/Log";
 
 /*
     Get a reference to the SDK instance
  */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['cvtutorial', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['cvtutorial', 'wsmith', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
-let currentWorkbenches:Array<Workbench> = null;
+const currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;
 let currentDialog:Dialog = null;
 
@@ -40,7 +40,7 @@ test("Invalid Login Test", (t) => {
     return t.shouldFail(Catavolt.login(tenantId, 'DESKTOP', userId, 'not a valid password')
         .catch(error=>{
             //show the error we are expecting
-            t.comment(`> ${JSON.stringify(error)}`)
+            t.comment(`> ${JSON.stringify(error)}`);
             throw error;
         }));
 });
@@ -67,7 +67,7 @@ test("Launch Workbench By id Test", (t) => {
             t.ok(successOrRedirection, 'Expecting a non-null result');
             t.ok(RedirectionUtil.isDialogRedirection(successOrRedirection), 'Expecting a DialogRedirection type');
             currentRedirection = successOrRedirection as DialogRedirection;
-            t.comment(`> DialogRedirection: {id: ${currentRedirection.id}, description: ${(currentRedirection as DialogRedirection).dialogDescription}}`)
+            t.comment(`> DialogRedirection: {id: ${currentRedirection.id}, description: ${(currentRedirection as DialogRedirection).dialogDescription}}`);
             return successOrRedirection;
 
         });
@@ -109,7 +109,7 @@ test("Load And Page A List Test", (t) => {
                return propertyFormatter.formatForRead(property, queryDialog.recordDef.propDefAtName(property.name));
             }).join(',');
         });
-        t.comment(`>   First 5 Records (formatted for 'read mode'): `)
+        t.comment(`>   First 5 Records (formatted for 'read mode'): `);
         rows.forEach(row=>t.comment(`>      ${row}`));
         //scroll forward with a specific number of records (override)
         return queryDialog.scroller.pageForward(20).then((records:Array<Record>)=>{
@@ -118,12 +118,12 @@ test("Load And Page A List Test", (t) => {
                     return propertyFormatter.formatForWrite(property, queryDialog.recordDef.propDefAtName(property.name));
                 }).join(',');
         });
-            t.comment(`>   Next 20 Records (formatted for 'write mode'):`)
+            t.comment(`>   Next 20 Records (formatted for 'write mode'):`);
             rows.forEach(row=>t.comment(`>      ${row}`));
             //scroll forward with the previously specified default number of records
             return queryDialog.scroller.pageForward().then((records:Array<Record>)=>{
                 const rows = records.map((record:Record)=> record.propValues.join(',') );
-                t.comment(`>   Next 5 Records:`)
+                t.comment(`>   Next 5 Records:`);
                 rows.forEach(row=>t.comment(`>      ${row}`));
                 return records;
             });
@@ -156,7 +156,7 @@ test("Perform Action Test", (t) => {
         // Perform the action
         queryDialog.performMenuAction(menu, [aRecord.id])
             .then((successOrRedirection:{actionId} | Redirection)=>{
-                if(RedirectionUtil.isDialogRedirection(successOrRedirection)) currentRedirection = successOrRedirection as Redirection;
+                if(RedirectionUtil.isDialogRedirection(successOrRedirection)) { currentRedirection = successOrRedirection as Redirection; }
                 return successOrRedirection;
         })
 
@@ -220,7 +220,7 @@ test("Logout Test", (t) => {
     return Catavolt.logout().then((response:{sessionId:string})=>{
          t.ok(response);
          t.ok(response.sessionId);
-         t.equal(sessionId, response.sessionId)
+         t.equal(sessionId, response.sessionId);
          t.comment(`> Session Logout: ${response.sessionId}`)
      })
  });

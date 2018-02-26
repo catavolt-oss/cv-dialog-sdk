@@ -34,8 +34,10 @@
     "cz-conventional-changelog": "^2.1.0",
     "faucet": "0.0.1",
     "husky": "^0.15.0-rc.8",
+    "prettier": "1.10.2",
     "standard-version": "^4.3.0",
     "tslint": "^5.9.1",
+    "tslint-config-prettier": "^1.9.0",
     "typedoc": "*",
     "typescript": "~2.6.2"
   },

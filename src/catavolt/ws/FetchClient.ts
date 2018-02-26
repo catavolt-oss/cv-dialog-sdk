@@ -1,11 +1,11 @@
+import {BlobClientResponse} from "../client/BlobClientResponse";
+import {Client, ClientMode} from "../client/Client";
+import {JsonClientResponse} from "../client/JsonClientResponse";
+import {TextClientResponse} from "../client/TextClientResponse";
 import {
     VoidClientResponse
 } from "../client/VoidClientResponse";
 import {Log, StringDictionary} from "../util";
-import {Client, ClientMode} from "../client/Client";
-import {JsonClientResponse} from "../client/JsonClientResponse";
-import {BlobClientResponse} from "../client/BlobClientResponse";
-import {TextClientResponse} from "../client/TextClientResponse";
 
 type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
@@ -18,21 +18,21 @@ export class FetchClient implements Client {
         this._clientMode = clientMode;
     }
 
-    getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {
+    public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return this.processRequest(url, 'GET').then((response: Response) => {
             return response.blob().then(blob => new BlobClientResponse(blob, response.status));
         });
     }
 
-    getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> {
+    public getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return this.processRequest(url, 'GET').then((response: Response) => {
             return response.text().then(text => new TextClientResponse(text, response.status));
         });
     }
 
-    postMultipart(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse> {
+    public postMultipart(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return this.processRequest(url, 'POST', formData).then((response: Response) => {
             return new VoidClientResponse(response.status);
@@ -40,7 +40,7 @@ export class FetchClient implements Client {
     }
 
 
-    getJson(baseUrl: string, resourcePath?: string, queryParams?: StringDictionary): Promise<JsonClientResponse> {
+    public getJson(baseUrl: string, resourcePath?: string, queryParams?: StringDictionary): Promise<JsonClientResponse> {
 
         const headers = {'Accept': 'application/json'};
         const queryString = this.encodeQueryParams(queryParams);
@@ -57,7 +57,7 @@ export class FetchClient implements Client {
         return this._lastActivity;
     }
 
-    postJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
+    public postJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
 
         const headers = {'Accept': 'application/json', 'Content-Type': 'application/json;charset=UTF-8'};
         const body = jsonBody && JSON.stringify(jsonBody);
@@ -70,7 +70,7 @@ export class FetchClient implements Client {
 
     }
 
-    putJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
+    public putJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
 
         const headers = {'Accept': 'application/json', 'Content-Type': 'application/json;charset=UTF-8'};
         const body = jsonBody && JSON.stringify(jsonBody);
@@ -83,7 +83,7 @@ export class FetchClient implements Client {
 
     }
 
-    deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse> {
+    public deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse> {
 
         const headers = {'Accept': 'application/json'};
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
@@ -95,7 +95,7 @@ export class FetchClient implements Client {
 
     }
 
-    setClientMode(clientMode: ClientMode) {
+    public setClientMode(clientMode: ClientMode) {
         this._clientMode = clientMode;
     }
 
@@ -136,9 +136,9 @@ export class FetchClient implements Client {
 
             const requestHeaders: Headers = new Headers(headers);
             requestHeaders.append('Accept', 'gzip');
-            const init: RequestInit = {method: method, mode: 'cors'};
-            if (body) init.body = body;
-            if (headers) init.headers = new Headers(headers);
+            const init: RequestInit = {method, mode: 'cors'};
+            if (body) { init.body = body; }
+            if (headers) { init.headers = new Headers(headers); }
 
             if (!['GET', 'POST', 'PUT', 'DELETE'].some(v => method === v)) {
                 reject(new Error(`FetchClient::processRequest: Unsupported method: ${method}`))

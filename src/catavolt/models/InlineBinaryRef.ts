@@ -1,5 +1,5 @@
-import {BinaryRef} from "./BinaryRef";
 import {StringDictionary} from "../util/StringDictionary";
+import {BinaryRef} from "./BinaryRef";
 
 export class InlineBinaryRef extends BinaryRef {
 

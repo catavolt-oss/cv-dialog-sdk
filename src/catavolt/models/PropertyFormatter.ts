@@ -1,13 +1,13 @@
-import {Property} from "./Property";
-import {PropertyDef} from "./PropertyDef";
-import {CvLocale} from "../util/CvLocale";
-import {CatavoltApi} from "../dialog/CatavoltApi";
-import {CodeRef} from "./CodeRef";
-import {ObjectRef} from "./ObjectRef";
 import moment from "moment";
 import numeral from "numeral";
+import {CatavoltApi} from "../dialog/CatavoltApi";
+import {CvLocale} from "../util/CvLocale";
+import {CodeRef} from "./CodeRef";
 import {GpsReadingProperty} from "./GpsReadingProperty";
 import {MapLocationProperty} from "./MapLocationProperty";
+import {ObjectRef} from "./ObjectRef";
+import {Property} from "./Property";
+import {PropertyDef} from "./PropertyDef";
 
 import "moment/locale/de";
 import "moment/locale/en-ca";
@@ -23,9 +23,9 @@ import "moment/locale/ru";
 // https://stackoverflow.com/questions/9711066/most-common-locales-for-worldwide-compatibility
 // Best effort for now.  Need to dynamically load these from Globalize???
 import "moment/locale/zh-cn";
-import {TimeValue} from "../util/TimeValue";
-import {DateValue} from "../util/DateValue";
 import {DateTimeValue} from "../util/DateTimeValue";
+import {DateValue} from "../util/DateValue";
+import {TimeValue} from "../util/TimeValue";
 /**
  * Helper for transforming values to and from formats suitable for reading and writing to the server
  * (i.e. object to string and string to object)
@@ -42,6 +42,7 @@ class PrivatePropFormats {
 
 export class PropertyFormatter {
 
+    private static _singleton: PropertyFormatter;
     // Default format for money at varying decimal lengths.
     // For numeral format options, see: http://numeraljs.com/
     public decimalFormat: string[];
@@ -52,9 +53,7 @@ export class PropertyFormatter {
     public percentFormatGeneric: string;
     public wholeFormat: string;
 
-    private static _singleton: PropertyFormatter;
-
-    static singleton(catavoltApi:CatavoltApi): PropertyFormatter {
+    public static singleton(catavoltApi:CatavoltApi): PropertyFormatter {
         if (!PropertyFormatter._singleton) {
             PropertyFormatter._singleton = new PropertyFormatter(catavoltApi);
         }
@@ -153,23 +152,23 @@ export class PropertyFormatter {
                 propValue = !!value;
             }
         } else if (propDef.isDateType) {
-            //this could be a DateValue, a Date, or a string
+            // this could be a DateValue, a Date, or a string
             if (value instanceof DateValue) {
                 propValue = value;
             } else if (typeof value === "object") {
                 propValue = new DateValue(value);
             } else {
-                //parse as local time
+                // parse as local time
                 propValue = new DateValue(moment(value).toDate());
             }
         } else if (propDef.isDateTimeType) {
-            //this could be a DateTimeValue, a Date, or a string
+            // this could be a DateTimeValue, a Date, or a string
             if (value instanceof DateTimeValue) {
                 propValue = value;
             } else if (typeof value === "object") {
                 propValue = new DateTimeValue(value);
             } else {
-                //parse as local time
+                // parse as local time
                 propValue = new DateTimeValue(moment(value).toDate());
             }
         } else if (propDef.isTimeType) {

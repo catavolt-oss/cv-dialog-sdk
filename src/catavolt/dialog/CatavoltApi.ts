@@ -1,6 +1,6 @@
+import {ClientType, Dialog, DialogRedirection, Redirection, Session, WorkbenchAction} from "../models";
 import {CvLocale} from "../util";
 import {FeatureSet} from "./Catavolt";
-import {ClientType, Dialog, DialogRedirection, Redirection, Session, WorkbenchAction} from "../models";
 import {DialogApi} from "./DialogApi";
 
 export interface CatavoltApi {
@@ -106,7 +106,8 @@ export interface CatavoltApi {
      * @param workbenchActionId
      * @returns {Promise<{actionId:string} | Redirection>}
      */
-    performWorkbenchActionForId(workbenchId: string, workbenchActionId: string): Promise<{ actionId: string } | Redirection>;
+    performWorkbenchActionForId(workbenchId: string, workbenchActionId: string):
+        Promise<{ actionId: string } | Redirection>;
 
     /**
      * Refresh the CatavoltApiImpl
