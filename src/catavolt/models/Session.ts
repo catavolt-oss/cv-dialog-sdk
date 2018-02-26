@@ -1,8 +1,7 @@
-import {StringDictionary} from "../util/StringDictionary";
-import {AppWindow} from "./AppWindow";
+import { StringDictionary } from '../util/StringDictionary';
+import { AppWindow } from './AppWindow';
 
 export interface Session {
-
     readonly appVendors: ReadonlyArray<string>;
     /**
      * Current version of the underlying application (business) logic. This is not the middleware version.
@@ -34,5 +33,4 @@ export interface Session {
     readonly type: string;
 
     readonly userId: string;
-
 }

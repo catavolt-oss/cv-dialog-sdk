@@ -1,7 +1,6 @@
-import {View} from "./View";
+import { View } from './View';
 
 /**
  * A purely declarative type. This object has no additional properties.
  */
-export class BarcodeScan extends View {
-}
+export class BarcodeScan extends View {}

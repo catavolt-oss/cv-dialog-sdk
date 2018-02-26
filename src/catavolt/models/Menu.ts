@@ -1,5 +1,4 @@
 export class Menu {
-
     public readonly children: Menu[] = [];
     /**
      * A special value understood by the UI, such as 'refresh'
@@ -47,24 +46,23 @@ export class Menu {
 
     public findContextMenu(): Menu {
         return Menu.findSubMenu(this, (md: Menu) => {
-            return md.id === "CONTEXT_MENU";
+            return md.id === 'CONTEXT_MENU';
         });
     }
 
     get isPresaveDirective(): boolean {
-        return this.directive && this.directive === "PRESAVE";
+        return this.directive && this.directive === 'PRESAVE';
     }
 
     get isRead(): boolean {
-        return this.modes && this.modes.indexOf("R") > -1;
+        return this.modes && this.modes.indexOf('R') > -1;
     }
 
     get isSeparator(): boolean {
-        return this.type && this.type === "separator";
+        return this.type && this.type === 'separator';
     }
 
     get isWrite(): boolean {
-        return this.modes && this.modes.indexOf("W") > -1;
+        return this.modes && this.modes.indexOf('W') > -1;
     }
-
 }

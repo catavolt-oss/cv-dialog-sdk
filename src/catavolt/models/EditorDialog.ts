@@ -1,19 +1,19 @@
-import {DataUrl} from "../util/DataUrl";
-import {Attachment} from "./Attachment";
-import {AttributeCellValue} from "./AttributeCellValue";
-import {Dialog} from "./Dialog";
-import {EncodedBinary} from "./EncodedBinary";
-import {Menu} from "./Menu";
-import {NullRecord} from "./NullRecord";
-import {Property} from "./Property";
-import {PropertyDef} from "./PropertyDef";
-import {Record} from "./Record";
-import {RecordBuffer} from "./RecordBuffer";
-import {Redirection} from "./Redirection";
-import {RedirectionUtil} from "./RedirectionUtil";
-import {TypeNames} from "./types";
-import {ViewMode} from "./types";
-import {ViewModeEnum} from "./types";
+import { DataUrl } from '../util/DataUrl';
+import { Attachment } from './Attachment';
+import { AttributeCellValue } from './AttributeCellValue';
+import { Dialog } from './Dialog';
+import { EncodedBinary } from './EncodedBinary';
+import { Menu } from './Menu';
+import { NullRecord } from './NullRecord';
+import { Property } from './Property';
+import { PropertyDef } from './PropertyDef';
+import { Record } from './Record';
+import { RecordBuffer } from './RecordBuffer';
+import { Redirection } from './Redirection';
+import { RedirectionUtil } from './RedirectionUtil';
+import { TypeNames } from './types';
+import { ViewMode } from './types';
+import { ViewModeEnum } from './types';
 
 /**
  * PanContext Subtype that represents an 'Editor Dialog'.
@@ -21,7 +21,6 @@ import {ViewModeEnum} from "./types";
  * See {@link Record} and {@link RecordDef}.
  */
 export class EditorDialog extends Dialog {
-
     public readonly businessId: string;
 
     private _buffer: RecordBuffer;
@@ -41,9 +40,9 @@ export class EditorDialog extends Dialog {
     }
 
     public changeViewMode(viewMode: ViewMode): Promise<EditorDialog> {
-
         if (this.viewMode !== viewMode) {
-            return this.catavolt.dialogApi.changeMode(this.tenantId, this.sessionId, this.id, viewMode)
+            return this.catavolt.dialogApi
+                .changeMode(this.tenantId, this.sessionId, this.id, viewMode)
                 .then((dialog: EditorDialog) => {
                     // any new dialog needs to be initialized with the Catavolt object
                     dialog.initialize(this.catavolt);
@@ -70,7 +69,12 @@ export class EditorDialog extends Dialog {
     }
 
     public getAvailableValues(propName: string): Promise<any[]> {
-        return this.catavolt.dialogApi.getAvailableValues(this.tenantId, this.sessionId, this.id, propName);
+        return this.catavolt.dialogApi.getAvailableValues(
+            this.tenantId,
+            this.sessionId,
+            this.id,
+            propName
+        );
     }
 
     /**
@@ -81,7 +85,9 @@ export class EditorDialog extends Dialog {
      */
     public isBinary(cellValue: AttributeCellValue): boolean {
         const propDef = this.propDefAtName(cellValue.propertyName);
-        return propDef && (propDef.isBinaryType || (propDef.isURLType && cellValue.isInlineMediaStyle));
+        return (
+            propDef && (propDef.isBinaryType || (propDef.isURLType && cellValue.isInlineMediaStyle))
+        );
     }
 
     /**
@@ -131,11 +137,16 @@ export class EditorDialog extends Dialog {
         return this.viewMode === ViewModeEnum.WRITE;
     }
 
-    public performMenuActionWithId(actionId: string, pendingWrites: Record): Promise<{ actionId: string } | Redirection> {
-        return this.invokeMenuActionWithId(actionId, {pendingWrites, type: TypeNames.ActionParametersTypeName})
-            .then((result) => {
-                return result;
-            });
+    public performMenuActionWithId(
+        actionId: string,
+        pendingWrites: Record
+    ): Promise<{ actionId: string } | Redirection> {
+        return this.invokeMenuActionWithId(actionId, {
+            pendingWrites,
+            type: TypeNames.ActionParametersTypeName
+        }).then(result => {
+            return result;
+        });
     }
 
     /**
@@ -146,11 +157,16 @@ export class EditorDialog extends Dialog {
      * @param {Record} pendingWrites
      * @returns {Promise<{actionId: string} | Redirection>}
      */
-    public performMenuAction(menu: Menu, pendingWrites: Record): Promise<{ actionId: string } | Redirection> {
-        return this.invokeMenuAction(menu, {pendingWrites, type: TypeNames.ActionParametersTypeName})
-            .then((result) => {
-                return result;
-            });
+    public performMenuAction(
+        menu: Menu,
+        pendingWrites: Record
+    ): Promise<{ actionId: string } | Redirection> {
+        return this.invokeMenuAction(menu, {
+            pendingWrites,
+            type: TypeNames.ActionParametersTypeName
+        }).then(result => {
+            return result;
+        });
     }
 
     /**
@@ -164,7 +180,6 @@ export class EditorDialog extends Dialog {
      */
     // @TODO
     public processSideEffects(propertyName: string, value: any): Promise<void> {
-
         /*
         var sideEffectsFr: Future<Record> = DialogService.processSideEffects(this.paneDef.dialogHandle,
             this.sessionContext, propertyName, value, this.buffer.afterEffects()).map((changeResult: XPropertyChangeResult) => {
@@ -194,8 +209,8 @@ export class EditorDialog extends Dialog {
      * @returns {Future<Record>}
      */
     public read(): Promise<Record> {
-
-        return this.catavolt.dialogApi.getRecord(this.tenantId, this.sessionId, this.id)
+        return this.catavolt.dialogApi
+            .getRecord(this.tenantId, this.sessionId, this.id)
             .then((record: Record) => {
                 this._isFirstReadComplete = true;
                 this.initBuffer(record);
@@ -216,7 +231,10 @@ export class EditorDialog extends Dialog {
         const propDef: PropertyDef = this.propDefAtName(name);
         let parsedValue: any = null;
         if (propDef) {
-            parsedValue = (value !== null && value !== undefined) ? this.parseValue(value, propDef.propertyName) : null;
+            parsedValue =
+                value !== null && value !== undefined
+                    ? this.parseValue(value, propDef.propertyName)
+                    : null;
             this.buffer.setValue(propDef.propertyName, parsedValue);
         }
         return parsedValue;
@@ -233,7 +251,7 @@ export class EditorDialog extends Dialog {
             const urlObj: DataUrl = new DataUrl(dataUrl);
             this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
         } else {
-            this.setPropValue(name, null);  // Property is being deleted/cleared
+            this.setPropValue(name, null); // Property is being deleted/cleared
         }
     }
 
@@ -256,7 +274,6 @@ export class EditorDialog extends Dialog {
      * @returns {Promise<Record | Redirection>}
      */
     public write(): Promise<Record | Redirection> {
-
         let deltaRec: Record = this.buffer.afterEffects();
 
         /* Write the 'special' props first */
@@ -264,13 +281,16 @@ export class EditorDialog extends Dialog {
             return this.writeAttachments(deltaRec).then((atResult: void[]) => {
                 /* Remove special property types before writing the actual record */
                 deltaRec = this.removeSpecialProps(deltaRec);
-                return this.catavolt.dialogApi.putRecord(this.tenantId, this.sessionId, this.id, deltaRec)
+                return this.catavolt.dialogApi
+                    .putRecord(this.tenantId, this.sessionId, this.id, deltaRec)
                     .then((result: Record | Redirection) => {
                         const now = new Date();
                         this.catavolt.dataLastChangedTime = now;
                         this.lastRefreshTime = now;
                         if (RedirectionUtil.isRedirection(result)) {
-                            this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
+                            this.updateSettingsWithNewDialogProperties(
+                                (result as Redirection).referringObject
+                            );
                         } else {
                             this.initBuffer(result as Record);
                         }
@@ -278,7 +298,6 @@ export class EditorDialog extends Dialog {
                     });
             });
         });
-
     }
 
     // Private methods
@@ -287,26 +306,33 @@ export class EditorDialog extends Dialog {
         Consider clone and deep copy here, to avoid potential ui side-effects
      */
     private removeSpecialProps(record: Record): Record {
-        record.properties = record.properties.filter((prop: Property) => {
-            /* Remove the Binary(s) as they have been written seperately */
-            return !this.propDefAtName(prop.name).isBinaryType;
-        }).map((prop: Property) => {
-            /*
+        record.properties = record.properties
+            .filter((prop: Property) => {
+                /* Remove the Binary(s) as they have been written seperately */
+                return !this.propDefAtName(prop.name).isBinaryType;
+            })
+            .map((prop: Property) => {
+                /*
              Remove the Attachment(s) (as they have been written seperately) but replace
              the property value with the file name of the attachment prior to writing
              */
-            if (prop.value instanceof Attachment) {
-                const attachment = prop.value as Attachment;
-                return new Property(prop.name, attachment.name, prop.propertyType, prop.format, prop.annotations);
-            } else {
-                return prop;
-            }
-        });
+                if (prop.value instanceof Attachment) {
+                    const attachment = prop.value as Attachment;
+                    return new Property(
+                        prop.name,
+                        attachment.name,
+                        prop.propertyType,
+                        prop.format,
+                        prop.annotations
+                    );
+                } else {
+                    return prop;
+                }
+            });
         return record;
     }
 
     private initBuffer(record: Record) {
         this._buffer = record ? new RecordBuffer(record) : new RecordBuffer(NullRecord.singleton);
     }
-
 }

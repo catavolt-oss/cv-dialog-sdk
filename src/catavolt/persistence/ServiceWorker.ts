@@ -1,7 +1,7 @@
-import {PersistenceTools} from "./PersistenceTools";
+import { PersistenceTools } from './PersistenceTools';
 const ThisCacheName = 'v0.170';
 const ActiveCacheNames = [ThisCacheName];
-const MessagePrefix = `[Catavolt ServiceWorker ${ThisCacheName} ${(new Date()).toLocaleString()}]`;
+const MessagePrefix = `[Catavolt ServiceWorker ${ThisCacheName} ${new Date().toLocaleString()}]`;
 let fetchCount = 0;
 
 console.log(`${MessagePrefix} Begin "service-worker" script at: ${self}`);
@@ -11,7 +11,6 @@ self.addEventListener('fetch', event => ServiceWorker.fetchAndStore(event));
 console.log(`${MessagePrefix} End "service-worker" script at: ${self}`);
 
 export class ServiceWorker {
-
     public static activate(event) {
         console.log(`${MessagePrefix} Begin activate() method`);
         console.log(`${MessagePrefix} activate() begin active cache names:`);
@@ -21,12 +20,16 @@ export class ServiceWorker {
         console.log(`${MessagePrefix} activate() end active cache names`);
         event.waitUntil(
             caches.keys().then(keyList => {
-                return Promise.all(keyList.map(key => {
-                    if (ActiveCacheNames.indexOf(key) === -1) {
-                        console.log(`${MessagePrefix} activate() deleting expired cache: ${key}`);
-                        return caches.delete(key);
-                    }
-                }));
+                return Promise.all(
+                    keyList.map(key => {
+                        if (ActiveCacheNames.indexOf(key) === -1) {
+                            console.log(
+                                `${MessagePrefix} activate() deleting expired cache: ${key}`
+                            );
+                            return caches.delete(key);
+                        }
+                    })
+                );
             })
         );
         console.log(`${MessagePrefix} End activate() method`);
@@ -46,29 +49,37 @@ export class ServiceWorker {
         }
         fetchCount++;
         const thisFetchId = fetchCount;
-//        console.log(`${MessagePrefix} Begin fetchAndStore() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
+        //        console.log(`${MessagePrefix} Begin fetchAndStore() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
         event.respondWith(
             caches.match(event.request).then(cachedResponse => {
                 if (cachedResponse) {
-//                    console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response found in cache: ${event.request.url}`);
+                    //                    console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response found in cache: ${event.request.url}`);
                     return cachedResponse;
                 }
                 const requestToCache = event.request.clone();
                 return fetch(requestToCache).then(fetchResponse => {
                     if (!fetchResponse) {
-                        console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response NOT valid and NOT cached: ${requestToCache.url}`);
+                        console.log(
+                            `${MessagePrefix} fetchAndStore() ${thisFetchId} response NOT valid and NOT cached: ${
+                                requestToCache.url
+                            }`
+                        );
                         return fetchResponse;
                     }
                     const responseToCache = fetchResponse.clone();
                     caches.open(ThisCacheName).then(cache => {
                         cache.put(requestToCache, responseToCache);
-                        console.log(`${MessagePrefix} fetchAndStore() ${thisFetchId} response cached for request: ${requestToCache.url}`);
+                        console.log(
+                            `${MessagePrefix} fetchAndStore() ${thisFetchId} response cached for request: ${
+                                requestToCache.url
+                            }`
+                        );
                     });
                     return fetchResponse;
                 });
             })
         );
-//        console.log(`${MessagePrefix} End fetchAndStore() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
+        //        console.log(`${MessagePrefix} End fetchAndStore() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
     }
 
     public static fetchFromCache(event) {
@@ -85,17 +96,29 @@ export class ServiceWorker {
         }
         fetchCount++;
         const thisFetchId = fetchCount;
-        console.log(`${MessagePrefix} Begin fetchFromCache() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
+        console.log(
+            `${MessagePrefix} Begin fetchFromCache() ${thisFetchId} request: ${
+                event.request.method
+            } ${event.request.url}`
+        );
         event.respondWith(
             caches.match(event.request).then(cachedResponse => {
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-                console.log(`${MessagePrefix} fetchFromCache() ${thisFetchId} response NOT found in cache: ${event.request.url}`);
+                console.log(
+                    `${MessagePrefix} fetchFromCache() ${thisFetchId} response NOT found in cache: ${
+                        event.request.url
+                    }`
+                );
                 return fetch(event.request.clone());
             })
         );
-        console.log(`${MessagePrefix} End fetchFromCache() ${thisFetchId} request: ${event.request.method} ${event.request.url}`);
+        console.log(
+            `${MessagePrefix} End fetchFromCache() ${thisFetchId} request: ${
+                event.request.method
+            } ${event.request.url}`
+        );
     }
 
     /*
@@ -103,7 +126,6 @@ export class ServiceWorker {
     *       policy to just lookup resources, not fetch-and-cache.
     */
     public static install(event) {
-
         /*
         index.html?_ijt=q2qt7grsg7hlalpl1ucuiikgha
         index.html?_ijt=q2qt7grsg7hlalpl1ucuiikgha#/?_k=4yjrco
@@ -144,9 +166,11 @@ export class ServiceWorker {
                     'img/top-bar.jpg',
                     'lib/bootstrap.min.js',
                     'lib/toastr.min.js',
-                    'react-widgets/css/react-widgets.css',
+                    'react-widgets/css/react-widgets.css'
                 ];
-                console.log(`${MessagePrefix} install() adding resources to cache: ${resourceList}`);
+                console.log(
+                    `${MessagePrefix} install() adding resources to cache: ${resourceList}`
+                );
                 return cache.addAll(resourceList);
             })
         );
@@ -154,9 +178,10 @@ export class ServiceWorker {
     }
 
     public static isDialogRequest(path: string[]): boolean {
-        return path.length > 3 &&
+        return (
+            path.length > 3 &&
             path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS;
+            path[2] == PersistenceTools.SESSIONS
+        );
     }
-
 }

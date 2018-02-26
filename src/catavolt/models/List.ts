@@ -1,14 +1,13 @@
-import {Column} from "./Column";
-import {Filter} from "./Filter";
-import {Record} from "./Record";
-import {Sort} from "./Sort";
-import {View} from "./View";
+import { Column } from './Column';
+import { Filter } from './Filter';
+import { Record } from './Record';
+import { Sort } from './Sort';
+import { View } from './View';
 
 /**
  * Columns, filter and sorts for a UI list component.
  */
 export class List extends View {
-
     public readonly style: string;
     public readonly columnStyle: string;
     public readonly gmlMarkup: string;
@@ -18,19 +17,19 @@ export class List extends View {
     public readonly sort: Sort[];
 
     get isDefaultStyle(): boolean {
-        return this.style && this.style === "DEFAULT";
+        return this.style && this.style === 'DEFAULT';
     }
 
     get isDetailsFormStyle(): boolean {
-        return this.style && this.style === "DETAILS_FORM";
+        return this.style && this.style === 'DETAILS_FORM';
     }
 
     get isFormStyle(): boolean {
-        return this.style && this.style === "FORM";
+        return this.style && this.style === 'FORM';
     }
 
     get isTabularStyle(): boolean {
-        return this.style && this.style === "TABULAR";
+        return this.style && this.style === 'TABULAR';
     }
 
     get columnHeadings(): string[] {
@@ -44,5 +43,4 @@ export class List extends View {
             return record.valueAtName(c.propertyName);
         });
     }
-
 }

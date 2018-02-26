@@ -1,7 +1,7 @@
-import {DataAnnotation} from "./DataAnnotation";
-import {Property} from "./Property";
-import {Record} from "./Record";
-import {TypeNames} from "./types";
+import { DataAnnotation } from './DataAnnotation';
+import { Property } from './Property';
+import { Record } from './Record';
+import { TypeNames } from './types';
 
 /**
  * The implementation of {@link Record}.
@@ -9,9 +9,12 @@ import {TypeNames} from "./types";
  * An Record may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
 export class RecordImpl implements Record {
-
-    constructor(readonly id: string, readonly properties: Property[] = [], readonly annotations: DataAnnotation[] = [], readonly type: string) {
-    }
+    constructor(
+        readonly id: string,
+        readonly properties: Property[] = [],
+        readonly annotations: DataAnnotation[] = [],
+        readonly type: string
+    ) {}
 
     public annotationsAtName(propName: string): DataAnnotation[] {
         const p = this.propAtName(propName);
@@ -20,7 +23,7 @@ export class RecordImpl implements Record {
 
     public afterEffects(after: Record): Record {
         const effects = [];
-        after.properties.forEach((afterProp) => {
+        after.properties.forEach(afterProp => {
             const beforeProp = this.propAtName(afterProp.name);
             if (!afterProp.equals(beforeProp)) {
                 effects.push(afterProp);
@@ -81,7 +84,6 @@ export class RecordImpl implements Record {
     public isItalicTextFor(propName: string): boolean {
         const p = this.propAtName(propName);
         return p && p.isItalicText ? p.isItalicText : this.isItalicText;
-
     }
 
     get isPlacementCenter(): boolean {
@@ -100,7 +102,6 @@ export class RecordImpl implements Record {
     public isPlacementLeftFor(propName: string): boolean {
         const p = this.propAtName(propName);
         return p && p.isPlacementLeft ? p.isPlacementLeft : this.isPlacementLeft;
-
     }
 
     get isPlacementRight(): boolean {
@@ -118,7 +119,9 @@ export class RecordImpl implements Record {
 
     public isPlacementStretchUnderFor(propName: string): boolean {
         const p = this.propAtName(propName);
-        return p && p.isPlacementStretchUnder ? p.isPlacementStretchUnder : this.isPlacementStretchUnder;
+        return p && p.isPlacementStretchUnder
+            ? p.isPlacementStretchUnder
+            : this.isPlacementStretchUnder;
     }
 
     get isPlacementUnder(): boolean {
@@ -137,7 +140,6 @@ export class RecordImpl implements Record {
     public isUnderlineFor(propName: string): boolean {
         const p = this.propAtName(propName);
         return p && p.isUnderline ? p.isUnderline : this.isUnderline;
-
     }
 
     get overrideText(): string {
@@ -147,7 +149,6 @@ export class RecordImpl implements Record {
     public overrideTextFor(propName: string): string {
         const p = this.propAtName(propName);
         return p && p.overrideText ? p.overrideText : this.overrideText;
-
     }
 
     public propAtIndex(index: number): Property {
@@ -156,7 +157,7 @@ export class RecordImpl implements Record {
 
     public propAtName(propName: string): Property {
         let prop: Property = null;
-        this.properties.some((p) => {
+        this.properties.some(p => {
             if (p.name === propName) {
                 prop = p;
                 return true;
@@ -171,13 +172,13 @@ export class RecordImpl implements Record {
     }
 
     get propNames(): string[] {
-        return this.properties.map((p) => {
+        return this.properties.map(p => {
             return p.name;
         });
     }
 
     get propValues(): any[] {
-        return this.properties.map((p) => {
+        return this.properties.map(p => {
             return p.value;
         });
     }
@@ -189,14 +190,13 @@ export class RecordImpl implements Record {
     public tipTextFor(propName: string): string {
         const p = this.propAtName(propName);
         return p && p.tipText ? p.tipText : this.tipText;
-
     }
 
     public toJSON() {
         return {
             id: this.id,
             properties: this.properties,
-            type: TypeNames.RecordTypeName,
+            type: TypeNames.RecordTypeName
         };
     }
 
@@ -206,7 +206,7 @@ export class RecordImpl implements Record {
 
     public valueAtName(propName: string): any {
         let value = null;
-        this.properties.some((p) => {
+        this.properties.some(p => {
             if (p.name === propName) {
                 value = p.value;
                 return true;
@@ -215,5 +215,4 @@ export class RecordImpl implements Record {
         });
         return value;
     }
-
 }

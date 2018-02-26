@@ -3,7 +3,6 @@
  */
 
 export class DataUrl {
-
     private static PROTO_TOKEN: string = 'data:';
     private static ENCODING_TOKEN: string = ';base64,';
 
@@ -41,6 +40,4 @@ export class DataUrl {
     get data(): string {
         return this._data;
     }
-
-
 }

@@ -1,8 +1,7 @@
-import {StringDictionary} from "../util/StringDictionary";
-import {BinaryRef} from "./BinaryRef";
+import { StringDictionary } from '../util/StringDictionary';
+import { BinaryRef } from './BinaryRef';
 
 export class InlineBinaryRef extends BinaryRef {
-
     constructor(private _inlineData: string, settings: StringDictionary) {
         super(settings);
     }
@@ -15,5 +14,4 @@ export class InlineBinaryRef extends BinaryRef {
     public toString(): string {
         return this._inlineData;
     }
-
 }

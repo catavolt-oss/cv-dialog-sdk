@@ -1,10 +1,16 @@
-import {ClientType, Dialog, DialogRedirection, Redirection, Session, WorkbenchAction} from "../models";
-import {CvLocale} from "../util";
-import {FeatureSet} from "./Catavolt";
-import {DialogApi} from "./DialogApi";
+import {
+    ClientType,
+    Dialog,
+    DialogRedirection,
+    Redirection,
+    Session,
+    WorkbenchAction
+} from '../models';
+import { CvLocale } from '../util';
+import { FeatureSet } from './Catavolt';
+import { DialogApi } from './DialogApi';
 
 export interface CatavoltApi {
-
     dataLastChangedTime: Date;
     locale: CvLocale;
     readonly clientTimeoutMillis: number;
@@ -33,8 +39,13 @@ export interface CatavoltApi {
      */
     addStaticDeviceProp(propName: string, propValue: string): void;
 
-    changePasswordAndLogin(tenantId: string, clientType: ClientType, userId: string,
-                           existingPassword: string, newPassword: string): Promise<Session | Redirection>;
+    changePasswordAndLogin(
+        tenantId: string,
+        clientType: ClientType,
+        userId: string,
+        existingPassword: string,
+        newPassword: string
+    ): Promise<Session | Redirection>;
 
     /**
      * Initialize a dialog service implementation for use by this CatavoltApiImpl
@@ -74,10 +85,12 @@ export interface CatavoltApi {
      *
      * @returns {Promise<Session | Redirection>}
      */
-    login(tenantId: string,
-          clientType: ClientType,
-          userId: string,
-          password: string): Promise<Session | Redirection>;
+    login(
+        tenantId: string,
+        clientType: ClientType,
+        userId: string,
+        password: string
+    ): Promise<Session | Redirection>;
 
     /**
      * Logout and destroy the session
@@ -98,7 +111,9 @@ export interface CatavoltApi {
      * @param workbenchAction
      * @returns {Promise<{actionId:string} | Redirection>}
      */
-    performWorkbenchAction(workbenchAction: WorkbenchAction): Promise<{ actionId: string } | Redirection>;
+    performWorkbenchAction(
+        workbenchAction: WorkbenchAction
+    ): Promise<{ actionId: string } | Redirection>;
 
     /**
      * Open a {@link WorkbenchWorkbenchAction}
@@ -106,16 +121,17 @@ export interface CatavoltApi {
      * @param workbenchActionId
      * @returns {Promise<{actionId:string} | Redirection>}
      */
-    performWorkbenchActionForId(workbenchId: string, workbenchActionId: string):
-        Promise<{ actionId: string } | Redirection>;
+    performWorkbenchActionForId(
+        workbenchId: string,
+        workbenchActionId: string
+    ): Promise<{ actionId: string } | Redirection>;
 
     /**
      * Refresh the CatavoltApiImpl
      *
      * @returns {Promise<Session>}
      */
-    refreshSession(tenantId: string,
-                   sessionId: string): Promise<Session>;
+    refreshSession(tenantId: string, sessionId: string): Promise<Session>;
 
     setPersistentClient(): void;
 

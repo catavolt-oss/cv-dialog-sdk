@@ -1,9 +1,9 @@
 enum ApiType {
-    LOCAL_STORAGE, ASYNC_STORAGE
+    LOCAL_STORAGE,
+    ASYNC_STORAGE
 }
 
 export class Storage {
-
     private static _storageApi;
     private _type: ApiType;
 
@@ -56,7 +56,6 @@ export class Storage {
     }
 
     public multiRemove(keys: Array<string>) {
-
         if (this._type === ApiType.ASYNC_STORAGE) {
             return this.multiRemoveAsyncStorage(keys, Storage._storageApi);
         } else if (this._type === ApiType.LOCAL_STORAGE) {
@@ -78,13 +77,13 @@ export class Storage {
             if (window.localStorage) {
                 this._type = ApiType.LOCAL_STORAGE;
             } else {
-                throw new Error("No Storage Api specified for Storage");
+                throw new Error('No Storage Api specified for Storage');
             }
         }
     }
 
     private getItemAsyncStorage(key: string, api) {
-        return api.getItem(key).then((value) => {
+        return api.getItem(key).then(value => {
             try {
                 return JSON.parse(value);
             } catch (err) {
@@ -98,7 +97,9 @@ export class Storage {
         try {
             stringVal = JSON.stringify(value);
         } catch (err) {
-            return Promise.reject(new Error(`Storage::setItem(${key}) failed to stringify JSON value`))
+            return Promise.reject(
+                new Error(`Storage::setItem(${key}) failed to stringify JSON value`)
+            );
         }
         return api.setItem(key, stringVal);
     }

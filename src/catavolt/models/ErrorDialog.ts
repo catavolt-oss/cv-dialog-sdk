@@ -1,4 +1,3 @@
-import {Dialog} from "./Dialog";
+import { Dialog } from './Dialog';
 
-export class ErrorDialog extends Dialog {
-}
+export class ErrorDialog extends Dialog {}

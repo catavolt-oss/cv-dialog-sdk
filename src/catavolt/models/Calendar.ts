@@ -1,10 +1,9 @@
-import {View} from "./View";
+import { View } from './View';
 
 /**
  * An abstract visual Calendar
  */
 export class Calendar extends View {
-
     public readonly descriptionPropertyName: string;
     public readonly initialStyle: string;
     public readonly endDatePropertyName: string;

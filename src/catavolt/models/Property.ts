@@ -1,15 +1,15 @@
-import moment from "moment";
-import {DateTimeValue} from "../util/DateTimeValue";
-import {DateValue} from "../util/DateValue";
-import {StringDictionary} from "../util/StringDictionary";
-import {TimeValue} from "../util/TimeValue";
-import {CodeRef} from "./CodeRef";
-import {DataAnnotation} from "./DataAnnotation";
-import {GpsReading} from "./GpsReading";
-import {MapLocation} from "./MapLocation";
-import {ObjectRef} from "./ObjectRef";
-import {PropertyDef} from "./PropertyDef";
-import {TypeNames} from "./types";
+import moment from 'moment';
+import { DateTimeValue } from '../util/DateTimeValue';
+import { DateValue } from '../util/DateValue';
+import { StringDictionary } from '../util/StringDictionary';
+import { TimeValue } from '../util/TimeValue';
+import { CodeRef } from './CodeRef';
+import { DataAnnotation } from './DataAnnotation';
+import { GpsReading } from './GpsReading';
+import { MapLocation } from './MapLocation';
+import { ObjectRef } from './ObjectRef';
+import { PropertyDef } from './PropertyDef';
+import { TypeNames } from './types';
 
 /**
  * Represents a 'value' or field in a row or record. See {@link Record}
@@ -18,7 +18,6 @@ import {TypeNames} from "./types";
  * but these apply to the property only
  */
 export class Property {
-
     /**
      * Produce an unique string that can be used for comparison purposes
      * Props considered 'equal' should produce the same identity string
@@ -28,9 +27,9 @@ export class Property {
      * @returns {string}
      */
     public static identity(o: any, propDef: PropertyDef): string {
-        if (typeof o === "number") {
+        if (typeof o === 'number') {
             return String(o);
-        } else if (typeof o === "object") {
+        } else if (typeof o === 'object') {
             if (o instanceof Date) {
                 return String(o.getTime());
             } else if (o instanceof DateValue) {
@@ -61,7 +60,7 @@ export class Property {
             Property.parseJSONValue(jsonObject.value, jsonObject.format),
             jsonObject.propertyType,
             jsonObject.format,
-            jsonObject.annotations,
+            jsonObject.annotations
         );
     }
 
@@ -73,9 +72,13 @@ export class Property {
      * @param {string} format
      * @param {Array<DataAnnotation>} annotations
      */
-    constructor(readonly name: string, readonly value: any, readonly propertyType?: string, readonly format?: string,
-                readonly annotations: DataAnnotation[] = []) {
-    }
+    constructor(
+        readonly name: string,
+        readonly value: any,
+        readonly propertyType?: string,
+        readonly format?: string,
+        readonly annotations: DataAnnotation[] = []
+    ) {}
 
     public equals(prop: Property): boolean {
         return this.name === prop.name && this.value === prop.value;
@@ -139,9 +142,9 @@ export class Property {
 
     get valueForWrite() {
         const o = this.value;
-        if (typeof o === "number") {
+        if (typeof o === 'number') {
             return String(o);
-        } else if (typeof o === "object") {
+        } else if (typeof o === 'object') {
             if (o instanceof Date) {
                 // remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
                 return o.toISOString().slice(0, -1);
@@ -151,7 +154,7 @@ export class Property {
             } else if (o instanceof DateValue) {
                 // remove all Time information from the end of the ISO string from the 'T' to the end...
                 const isoString = o.dateObj.toISOString();
-                return isoString.slice(0, isoString.indexOf("T"));
+                return isoString.slice(0, isoString.indexOf('T'));
             } else if (o instanceof TimeValue) {
                 return o.toString();
             } else {
@@ -183,19 +186,20 @@ export class Property {
     }
 
     private static parseJSONValue(value: any, format: string): any {
-
-        if (typeof value === "string" && format) {
-            if (["integer", "decimal", "int32", "int64", "float", "double"].some((v) => format === v)) {
+        if (typeof value === 'string' && format) {
+            if (
+                ['integer', 'decimal', 'int32', 'int64', 'float', 'double'].some(v => format === v)
+            ) {
                 return Number(value);
-            } else if (format === "date") {
+            } else if (format === 'date') {
                 // parse as ISO - no offset specified by server right now, so we assume local time
-                return moment(value, "YYYY-M-D").toDate();
-            } else if (format === "date-time") {
+                return moment(value, 'YYYY-M-D').toDate();
+            } else if (format === 'date-time') {
                 // parse as ISO - no offset specified by server right now, so we assume local time
                 // strip invalid suffix (sometimes) provided by server
-                const i = value.indexOf("T0:");
-                return moment((i > -1) ? value.substring(0, i) : value).toDate();
-            } else if (format === "time") {
+                const i = value.indexOf('T0:');
+                return moment(i > -1 ? value.substring(0, i) : value).toDate();
+            } else if (format === 'time') {
                 TimeValue.fromString(value);
             } else {
                 return value;

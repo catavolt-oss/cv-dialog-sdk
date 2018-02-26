@@ -1,14 +1,13 @@
-import {TypeNames} from "./types";
+import { TypeNames } from './types';
 
 export class RedirectionUtil {
-
     public static isRedirection(o: any): boolean {
-
-        return [TypeNames.DialogRedirectionTypeName,
+        return [
+            TypeNames.DialogRedirectionTypeName,
             TypeNames.NullRedirectionTypeName,
             TypeNames.WebRedirectionTypeName,
-            TypeNames.WorkbenchRedirectionTypeName,
-        ].some((n) => n === o.type);
+            TypeNames.WorkbenchRedirectionTypeName
+        ].some(n => n === o.type);
     }
 
     public static isDialogRedirection(o: any): boolean {
@@ -26,5 +25,4 @@ export class RedirectionUtil {
     public static isWorkbenchRedirection(o: any): boolean {
         return o.type === TypeNames.WorkbenchRedirectionTypeName;
     }
-
 }

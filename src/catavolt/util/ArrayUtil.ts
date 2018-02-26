@@ -3,10 +3,9 @@
  */
 
 export class ArrayUtil {
-
     public static copy<T>(source: Array<T>): Array<T> {
         return source.map((e: T) => {
-            return e
+            return e;
         });
     }
 

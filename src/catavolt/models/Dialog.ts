@@ -1,28 +1,28 @@
-import {CatavoltApi} from "../dialog/CatavoltApi";
-import {ActionParameters} from "./ActionParameters";
-import {Attachment} from "./Attachment";
-import {Binary} from "./Binary";
-import {DialogException} from "./DialogException";
-import {EncodedBinary} from "./EncodedBinary";
-import {ErrorMessage} from "./ErrorMessage";
-import {InlineBinaryRef} from "./InlineBinaryRef";
-import {Menu} from "./Menu";
-import {ObjectBinaryRef} from "./ObjectBinaryRef";
-import {Property} from "./Property";
-import {PropertyDef} from "./PropertyDef";
-import {PropertyFormatter} from "./PropertyFormatter";
-import {Record} from "./Record";
-import {RecordDef} from "./RecordDef";
-import {Redirection} from "./Redirection";
-import {RedirectionUtil} from "./RedirectionUtil";
-import {ReferringDialog} from "./ReferringDialog";
-import {ReferringObject} from "./ReferringObject";
-import {ViewMode} from "./types";
-import {DialogType} from "./types";
-import {DialogMode, DialogModeEnum} from "./types";
-import {UrlBinary} from "./UrlBinary";
-import {View} from "./View";
-import {ViewDescriptor} from "./ViewDescriptor";
+import { CatavoltApi } from '../dialog/CatavoltApi';
+import { ActionParameters } from './ActionParameters';
+import { Attachment } from './Attachment';
+import { Binary } from './Binary';
+import { DialogException } from './DialogException';
+import { EncodedBinary } from './EncodedBinary';
+import { ErrorMessage } from './ErrorMessage';
+import { InlineBinaryRef } from './InlineBinaryRef';
+import { Menu } from './Menu';
+import { ObjectBinaryRef } from './ObjectBinaryRef';
+import { Property } from './Property';
+import { PropertyDef } from './PropertyDef';
+import { PropertyFormatter } from './PropertyFormatter';
+import { Record } from './Record';
+import { RecordDef } from './RecordDef';
+import { Redirection } from './Redirection';
+import { RedirectionUtil } from './RedirectionUtil';
+import { ReferringDialog } from './ReferringDialog';
+import { ReferringObject } from './ReferringObject';
+import { ViewMode } from './types';
+import { DialogType } from './types';
+import { DialogMode, DialogModeEnum } from './types';
+import { UrlBinary } from './UrlBinary';
+import { View } from './View';
+import { ViewDescriptor } from './ViewDescriptor';
 
 /**
  * Top-level class, representing a Catavolt 'Dialog' definition.
@@ -30,7 +30,6 @@ import {ViewDescriptor} from "./ViewDescriptor";
  * or a list of records.  See {@Record}
  */
 export abstract class Dialog {
-
     // statics
     public static BINARY_CHUNK_SIZE = 256 * 1024; // size in  byes for 'read' operation
     private static CHAR_CHUNK_SIZE = 128 * 1000; // size in chars for encoded 'write' operation
@@ -71,12 +70,13 @@ export abstract class Dialog {
      * @returns {}
      */
     public binaryAt(propName: string, record: Record): Promise<Binary> {
-
         const prop: Property = record.propAtName(propName);
         if (prop) {
             if (prop.value instanceof InlineBinaryRef) {
                 const binRef = prop.value as InlineBinaryRef;
-                return Promise.resolve(new EncodedBinary(binRef.inlineData, binRef.settings["mime-type"]));
+                return Promise.resolve(
+                    new EncodedBinary(binRef.inlineData, binRef.settings['mime-type'])
+                );
             } else if (prop.value instanceof ObjectBinaryRef) {
                 const binRef = prop.value as ObjectBinaryRef;
                 if (binRef.settings.webURL) {
@@ -84,16 +84,15 @@ export abstract class Dialog {
                 } else {
                     return this.readBinary(propName, record);
                 }
-            } else if (typeof prop.value === "string") {
+            } else if (typeof prop.value === 'string') {
                 return Promise.resolve(new UrlBinary(prop.value));
             } else if (prop.value instanceof EncodedBinary) {
                 return Promise.resolve(prop.value);
-
             } else {
-                return Promise.reject("No binary found at " + propName);
+                return Promise.reject('No binary found at ' + propName);
             }
         } else {
-            return Promise.reject("No binary found at " + propName);
+            return Promise.reject('No binary found at ' + propName);
         }
     }
 
@@ -132,7 +131,10 @@ export abstract class Dialog {
      */
 
     public formatForRead(prop: Property, propName: string): string {
-        return PropertyFormatter.singleton(this._catavolt).formatForRead(prop, this.propDefAtName(propName));
+        return PropertyFormatter.singleton(this._catavolt).formatForRead(
+            prop,
+            this.propDefAtName(propName)
+        );
     }
 
     /**
@@ -143,7 +145,10 @@ export abstract class Dialog {
      * @returns {string}
      */
     public formatForWrite(prop: Property, propName: string): string {
-        return PropertyFormatter.singleton(this.catavolt).formatForWrite(prop, this.propDefAtName(propName));
+        return PropertyFormatter.singleton(this.catavolt).formatForWrite(
+            prop,
+            this.propDefAtName(propName)
+        );
     }
 
     /**
@@ -194,7 +199,8 @@ export abstract class Dialog {
     }
 
     public openViewWithId(viewId: string): Promise<Dialog> {
-        return this.catavolt.dialogApi.changeView(this.tenantId, this.sessionId, this.id, viewId)
+        return this.catavolt.dialogApi
+            .changeView(this.tenantId, this.sessionId, this.id, viewId)
             .then((dialog: Dialog) => {
                 // any new dialog needs to be initialized with the Catavolt object
                 dialog.initialize(this.catavolt);
@@ -226,7 +232,10 @@ export abstract class Dialog {
      * @returns {}
      */
     public parseValue(formattedValue: any, propName: string): any {
-        return PropertyFormatter.singleton(this._catavolt).parse(formattedValue, this.propDefAtName(propName));
+        return PropertyFormatter.singleton(this._catavolt).parse(
+            formattedValue,
+            this.propDefAtName(propName)
+        );
     }
 
     /**
@@ -246,11 +255,13 @@ export abstract class Dialog {
      */
     public readBinaries(record: Record): Promise<Binary[]> {
         return Promise.all(
-            this.recordDef.propertyDefs.filter((propDef: PropertyDef) => {
-                return propDef.isBinaryType;
-            }).map((propDef: PropertyDef) => {
-                return this.readBinary(propDef.propertyName, record);
-            }),
+            this.recordDef.propertyDefs
+                .filter((propDef: PropertyDef) => {
+                    return propDef.isBinaryType;
+                })
+                .map((propDef: PropertyDef) => {
+                    return this.readBinary(propDef.propertyName, record);
+                })
         );
     }
 
@@ -277,16 +288,16 @@ export abstract class Dialog {
     }
 
     public writeAttachments(record: Record): Promise<void[]> {
-
         return Promise.all(
-            record.properties.filter((prop: Property) => {
-                return prop.value instanceof Attachment;
-            }).map((prop: Property) => {
-                const attachment: Attachment = prop.value as Attachment;
-                return this.writeAttachment(attachment);
-            }),
+            record.properties
+                .filter((prop: Property) => {
+                    return prop.value instanceof Attachment;
+                })
+                .map((prop: Property) => {
+                    const attachment: Attachment = prop.value as Attachment;
+                    return this.writeAttachment(attachment);
+                })
         );
-
     }
 
     /**
@@ -341,31 +352,48 @@ export abstract class Dialog {
         }
     }
 
-    protected invokeMenuActionWithId(actionId: string, actionParams: ActionParameters): Promise<{ actionId: string } | Redirection> {
-        return this.catavolt.dialogApi.performAction(this.catavolt.session.tenantId, this.catavolt.session.id,
-            this.id, actionId, actionParams).then((result: { actionId: string } | Redirection) => {
+    protected invokeMenuActionWithId(
+        actionId: string,
+        actionParams: ActionParameters
+    ): Promise<{ actionId: string } | Redirection> {
+        return this.catavolt.dialogApi
+            .performAction(
+                this.catavolt.session.tenantId,
+                this.catavolt.session.id,
+                this.id,
+                actionId,
+                actionParams
+            )
+            .then((result: { actionId: string } | Redirection) => {
+                if (RedirectionUtil.isRedirection(result)) {
+                    // @TODO - update relevant referring dialog settings on 'this' dialog
+                    this.updateSettingsWithNewDialogProperties(
+                        (result as Redirection).referringObject
+                    );
 
-            if (RedirectionUtil.isRedirection(result)) {
-
-                // @TODO - update relevant referring dialog settings on 'this' dialog
-                this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
-
-                // @TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
-                if ((result as Redirection).referringObject && (result as Redirection).referringObject['dialogProperties']) {
-                    const dialogProps = (result as Redirection).referringObject['dialogProperties'];
-                    if ((dialogProps.localRefresh && dialogProps.localRefresh === "true" ||
-                            dialogProps.globalRefresh && dialogProps.globalRefresh === "true")) {
+                    // @TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
+                    if (
+                        (result as Redirection).referringObject &&
+                        (result as Redirection).referringObject['dialogProperties']
+                    ) {
+                        const dialogProps = (result as Redirection).referringObject[
+                            'dialogProperties'
+                        ];
+                        if (
+                            (dialogProps.localRefresh && dialogProps.localRefresh === 'true') ||
+                            (dialogProps.globalRefresh && dialogProps.globalRefresh === 'true')
+                        ) {
+                            this.catavolt.dataLastChangedTime = new Date();
+                        }
+                        // @TODO - also, this check should go away - we will rely on 'isLocalRefreshNeeded' exclusively
+                    } else if (RedirectionUtil.isNullRedirection(result)) {
                         this.catavolt.dataLastChangedTime = new Date();
                     }
-                // @TODO - also, this check should go away - we will rely on 'isLocalRefreshNeeded' exclusively
-                } else if (RedirectionUtil.isNullRedirection(result)) {
+                } else {
                     this.catavolt.dataLastChangedTime = new Date();
                 }
-            } else {
-                this.catavolt.dataLastChangedTime = new Date();
-            }
-            return result;
-        });
+                return result;
+            });
     }
 
     /**
@@ -375,7 +403,10 @@ export abstract class Dialog {
      * @param {ActionParameters} actionParams
      * @returns {Promise<{actionId: string} | Redirection>}
      */
-    protected invokeMenuAction(menu: Menu, actionParams: ActionParameters): Promise<{ actionId: string } | Redirection> {
+    protected invokeMenuAction(
+        menu: Menu,
+        actionParams: ActionParameters
+    ): Promise<{ actionId: string } | Redirection> {
         return this.invokeMenuActionWithId(menu.actionId, actionParams);
     }
 
@@ -387,7 +418,6 @@ export abstract class Dialog {
      * @returns {Promise<Binary>}
      */
     protected readBinary(propName: string, record: Record): Promise<Binary> {
-
         /*
         let seq: number = 0;
         let encodedResult: string = '';
@@ -414,14 +444,12 @@ export abstract class Dialog {
     }
 
     protected updateSettingsWithNewDialogProperties(referringObject: ReferringObject) {
-
         if (referringObject) {
             if (referringObject.isDialogReferrer()) {
                 // @TODO - remove the uppercase conversion once all DialogModes come back from server as uppercase
                 this.dialogMode = (referringObject as ReferringDialog).dialogMode.toUpperCase() as DialogMode;
             }
         }
-
     }
 
     /**
@@ -429,9 +457,11 @@ export abstract class Dialog {
      * @returns {boolean}
      */
     private get isAnyChildDestroyed(): boolean {
-        return this.children && this.children.some((dialog: Dialog) => {
-            return dialog.isDestroyed;
-        });
+        return (
+            this.children &&
+            this.children.some((dialog: Dialog) => {
+                return dialog.isDestroyed;
+            })
+        );
     }
-
 }

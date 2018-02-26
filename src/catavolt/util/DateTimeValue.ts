@@ -3,6 +3,5 @@
  */
 
 export class DateTimeValue {
-    constructor(public dateObj: Date) {
-    }
+    constructor(public dateObj: Date) {}
 }

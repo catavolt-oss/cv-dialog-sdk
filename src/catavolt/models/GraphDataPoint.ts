@@ -1,5 +1,4 @@
 export interface GraphDataPoint {
-
     readonly propertyName: string;
     readonly legendKey: string;
     readonly plotType: string;
@@ -9,5 +8,4 @@ export interface GraphDataPoint {
     readonly seriesColor: string;
     readonly xAxisName: string;
     readonly xAxisType: string;
-
 }

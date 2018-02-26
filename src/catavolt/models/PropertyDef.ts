@@ -1,5 +1,5 @@
-import {CellValue} from "./CellValue";
-import {TypeNames} from "./types";
+import { CellValue } from './CellValue';
+import { TypeNames } from './types';
 
 /**
  * A property definition describes a particular value of a business entity. Business entities are transacted as records,
@@ -11,23 +11,23 @@ import {TypeNames} from "./types";
  */
 
 export class PropertyDef {
-
-    constructor(readonly canCauseSideEffects: boolean,
-                readonly contentType: string,
-                readonly displayLength: number,
-                readonly displayScale: number,
-                readonly format: string,
-                readonly length: number,
-                readonly propertyName: string,
-                readonly scale: number,
-                readonly semanticType: string,
-                readonly propertyType: string,
-                readonly writeAllowed: boolean,
-                readonly writeEnabled: boolean) {
-    }
+    constructor(
+        readonly canCauseSideEffects: boolean,
+        readonly contentType: string,
+        readonly displayLength: number,
+        readonly displayScale: number,
+        readonly format: string,
+        readonly length: number,
+        readonly propertyName: string,
+        readonly scale: number,
+        readonly semanticType: string,
+        readonly propertyType: string,
+        readonly writeAllowed: boolean,
+        readonly writeEnabled: boolean
+    ) {}
 
     get isBarcodeType(): boolean {
-        return this.semanticType === "BARCODE";
+        return this.semanticType === 'BARCODE';
     }
 
     get isBinaryType(): boolean {
@@ -35,7 +35,7 @@ export class PropertyDef {
     }
 
     get isBooleanType(): boolean {
-        return this.propertyType === "boolean";
+        return this.propertyType === 'boolean';
     }
 
     get isCodeRefType(): boolean {
@@ -43,31 +43,31 @@ export class PropertyDef {
     }
 
     get isDateType(): boolean {
-        return this.format === "date";
+        return this.format === 'date';
     }
 
     get isDateTimeType(): boolean {
-        return this.format === "date-time";
+        return this.format === 'date-time';
     }
 
     get isDecimalType(): boolean {
-        return this.format === "decimal";
+        return this.format === 'decimal';
     }
 
     get isDoubleType(): boolean {
-        return this.format === "double";
+        return this.format === 'double';
     }
 
     get isEmailType(): boolean {
-        return this.semanticType === "EMAIL";
+        return this.semanticType === 'EMAIL';
     }
 
     get isFileAttachment(): boolean {
-        return this.semanticType === "FILE_UPLOAD";
+        return this.semanticType === 'FILE_UPLOAD';
     }
 
     get isFloatType(): boolean {
-        return this.format === "float";
+        return this.format === 'float';
     }
 
     get isGpsReadingType(): boolean {
@@ -79,36 +79,45 @@ export class PropertyDef {
     }
 
     get isHTMLType(): boolean {
-        return this.semanticType === "DATA_HTML";
+        return this.semanticType === 'DATA_HTML';
     }
 
     // @TODO
     get isInlineMediaStyle(): boolean {
-        return (this.semanticType === CellValue.STYLE_INLINE_MEDIA || this.semanticType === CellValue.STYLE_INLINE_MEDIA2);
+        return (
+            this.semanticType === CellValue.STYLE_INLINE_MEDIA ||
+            this.semanticType === CellValue.STYLE_INLINE_MEDIA2
+        );
     }
 
     get isListType(): boolean {
-        return this.propertyType === "array";
+        return this.propertyType === 'array';
     }
 
     get isIntType(): boolean {
-        return ["integer", "int32", "int64"].some((v) => this.propertyType === v);
+        return ['integer', 'int32', 'int64'].some(v => this.propertyType === v);
     }
 
     get isLargeBinaryType(): boolean {
-        return this.semanticType === "LARGE_BINARY";
+        return this.semanticType === 'LARGE_BINARY';
     }
 
     get isLongType(): boolean {
-        return this.format === "int64";
+        return this.format === 'int64';
     }
 
     get isMoneyType(): boolean {
-        return this.semanticType === "MONEY";
+        return this.semanticType === 'MONEY';
     }
 
     get isNumericType(): boolean {
-        return this.isDecimalType || this.isIntType || this.isDoubleType || this.isLongType || this.isFloatType;
+        return (
+            this.isDecimalType ||
+            this.isIntType ||
+            this.isDoubleType ||
+            this.isLongType ||
+            this.isFloatType
+        );
     }
 
     get isObjRefType(): boolean {
@@ -116,38 +125,38 @@ export class PropertyDef {
     }
 
     get isPasswordType(): boolean {
-        return this.format === "password" || this.semanticType === "PASSWORD";
+        return this.format === 'password' || this.semanticType === 'PASSWORD';
     }
 
     get isPercentType(): boolean {
-        return this.semanticType === "PERCENT";
+        return this.semanticType === 'PERCENT';
     }
 
     get isSignatureType(): boolean {
-        return this.semanticType === "USER_SIGNATURE";
+        return this.semanticType === 'USER_SIGNATURE';
     }
 
     get isStringType(): boolean {
-        return this.propertyType === "string";
+        return this.propertyType === 'string';
     }
 
     get isTelephoneType(): boolean {
-        return this.semanticType === "TELEPHONE";
+        return this.semanticType === 'TELEPHONE';
     }
 
     get isTextBlock(): boolean {
-        return this.semanticType === "TEXT_BLOCK";
+        return this.semanticType === 'TEXT_BLOCK';
     }
 
     get isTimeType(): boolean {
-        return this.format === "time";
+        return this.format === 'time';
     }
 
     get isUnformattedNumericType(): boolean {
-        return this.semanticType === "UNFORMATTED";
+        return this.semanticType === 'UNFORMATTED';
     }
 
     get isURLType(): boolean {
-        return this.semanticType === "URL";
+        return this.semanticType === 'URL';
     }
 }

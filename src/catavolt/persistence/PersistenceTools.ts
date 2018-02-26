@@ -1,7 +1,6 @@
-import {Log} from "../util";
+import { Log } from '../util';
 
 export class PersistenceTools {
-
     public static ACTIONS = 'actions';
     public static AVAILABLE_VALUES = 'availableValues';
     public static AVAILABLE_VIEWS = 'availableViews';
@@ -44,15 +43,27 @@ export class PersistenceTools {
         const keyCount = localStorage.length;
         for (let i = keyCount - 1; i > -1; --i) {
             const key = localStorage.key(i);
-            Log.debug("Removing from localStorage: " + key);
+            Log.debug('Removing from localStorage: ' + key);
             localStorage.removeItem(key);
         }
     }
 
-    public static deleteAllWorkbenchNavigation(tenantId: string, userId: string, navigationKey: string) {
-        const previousNavigation = PersistenceTools.readNavigationState(tenantId, userId, navigationKey);
+    public static deleteAllWorkbenchNavigation(
+        tenantId: string,
+        userId: string,
+        navigationKey: string
+    ) {
+        const previousNavigation = PersistenceTools.readNavigationState(
+            tenantId,
+            userId,
+            navigationKey
+        );
         if (previousNavigation) {
-            PersistenceTools.deleteAllDialogState(tenantId, userId, previousNavigation.redirectionId);
+            PersistenceTools.deleteAllDialogState(
+                tenantId,
+                userId,
+                previousNavigation.redirectionId
+            );
         }
     }
 
@@ -64,7 +75,11 @@ export class PersistenceTools {
         this.deletePersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
     }
 
-    public static deleteDialogReferringAliasState(tenantId: string, userId: string, dialogId: string) {
+    public static deleteDialogReferringAliasState(
+        tenantId: string,
+        userId: string,
+        dialogId: string
+    ) {
         this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias');
     }
 
@@ -105,7 +120,12 @@ export class PersistenceTools {
         return this.findDialogStateWithin(tenantId, userId, dialog, dialogId);
     }
 
-    public static findDialogStateWithin(tenantId: string, userId: string, dialog: any, targetId: string): any {
+    public static findDialogStateWithin(
+        tenantId: string,
+        userId: string,
+        dialog: any,
+        targetId: string
+    ): any {
         if (dialog && dialog.id === targetId) {
             return dialog;
         }
@@ -143,141 +163,173 @@ export class PersistenceTools {
     }
 
     public static isDeleteSession(path: string[]): boolean {
-        return path.length == 4 &&
+        return (
+            path.length == 4 &&
             path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS;
+            path[2] == PersistenceTools.SESSIONS
+        );
     }
 
     public static isGetAvailableViews(path: string[]): boolean {
-        return path.length == 7 &&
+        return (
+            path.length == 7 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.AVAILABLE_VIEWS;
+            path[6] == PersistenceTools.AVAILABLE_VIEWS
+        );
     }
 
     public static isGetDialog(path: string[]): boolean {
-        return path.length == 6 &&
+        return (
+            path.length == 6 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS;
+            path[4] == PersistenceTools.DIALOGS
+        );
     }
 
     public static isGetRecord(path: string[]): boolean {
-        return path.length == 7 &&
+        return (
+            path.length == 7 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.RECORD;
+            path[6] == PersistenceTools.RECORD
+        );
     }
 
     public static isGetRedirection(path: string[]): boolean {
-        return path.length == 6 &&
+        return (
+            path.length == 6 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.REDIRECTIONS;
+            path[4] == PersistenceTools.REDIRECTIONS
+        );
     }
 
     public static isGetSelectedView(path: string[]): boolean {
-        return path.length == 7 &&
+        return (
+            path.length == 7 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.SELECTED_VIEW;
+            path[6] == PersistenceTools.SELECTED_VIEW
+        );
     }
 
     public static isGetSession(path: string[]): boolean {
-        return path.length == 4 &&
+        return (
+            path.length == 4 &&
             path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS;
+            path[2] == PersistenceTools.SESSIONS
+        );
     }
 
     public static isGetTenant(path: string[]): boolean {
-        return path.length == 2 &&
-            path[0] == PersistenceTools.TENANTS;
+        return path.length == 2 && path[0] == PersistenceTools.TENANTS;
     }
 
     public static isGetTenants(path: string[]): boolean {
-        return path.length == 1 &&
-            path[0] == PersistenceTools.TENANTS;
+        return path.length == 1 && path[0] == PersistenceTools.TENANTS;
     }
 
     public static isGetViewMode(path: string[]): boolean {
-        return path.length == 7 &&
+        return (
+            path.length == 7 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.VIEW_MODE;
+            path[6] == PersistenceTools.VIEW_MODE
+        );
     }
 
     public static isGetWorkbenches(path: string[]): boolean {
-        return path.length == 5 &&
+        return (
+            path.length == 5 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.WORKBENCHES;
+            path[4] == PersistenceTools.WORKBENCHES
+        );
     }
 
     public static isPostAvailableValues(path: string[]): boolean {
-        return path.length == 9 &&
+        return (
+            path.length == 9 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
             path[6] == PersistenceTools.RECORD &&
-            path[8] == PersistenceTools.AVAILABLE_VALUES;
+            path[8] == PersistenceTools.AVAILABLE_VALUES
+        );
     }
 
     public static isPostMenuAction(path: string[]): boolean {
-        return path.length == 8 &&
+        return (
+            path.length == 8 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.ACTIONS;
+            path[6] == PersistenceTools.ACTIONS
+        );
     }
 
     public static isPostRecords(path: string[]): boolean {
-        return path.length == 7 &&
+        return (
+            path.length == 7 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.RECORDS;
+            path[6] == PersistenceTools.RECORDS
+        );
     }
 
     public static isPostSession(path: string[]): boolean {
-        return path.length == 3 &&
+        return (
+            path.length == 3 &&
             path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS;
+            path[2] == PersistenceTools.SESSIONS
+        );
     }
 
     public static isPostWorkbenchAction(path: string[]): boolean {
-        return path.length == 8 &&
+        return (
+            path.length == 8 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.WORKBENCHES &&
-            path[6] == PersistenceTools.ACTIONS;
+            path[6] == PersistenceTools.ACTIONS
+        );
     }
 
     public static isPutRecord(path: string[]): boolean {
-        return path.length == 7 &&
+        return (
+            path.length == 7 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.RECORD;
+            path[6] == PersistenceTools.RECORD
+        );
     }
 
     public static isPutSelectedView(path: string[]): boolean {
-        return path.length == 8 &&
+        return (
+            path.length == 8 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.SELECTED_VIEW;
+            path[6] == PersistenceTools.SELECTED_VIEW
+        );
     }
 
     public static isPutViewMode(path: string[]): boolean {
-        return path.length == 8 &&
+        return (
+            path.length == 8 &&
             path[0] == PersistenceTools.TENANTS &&
             path[2] == PersistenceTools.SESSIONS &&
             path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.VIEW_MODE;
+            path[6] == PersistenceTools.VIEW_MODE
+        );
     }
 
     public static readDialogAliasState(tenantId: string, userId: string, dialogId: string) {
@@ -288,7 +340,11 @@ export class PersistenceTools {
         return this.readPersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
     }
 
-    public static readDialogReferringAliasState(tenantId: string, userId: string, dialogId: string) {
+    public static readDialogReferringAliasState(
+        tenantId: string,
+        userId: string,
+        dialogId: string
+    ) {
         return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias');
     }
 
@@ -314,7 +370,11 @@ export class PersistenceTools {
         return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.record');
     }
 
-    public static readRedirectionState(tenantId: string, userId: string, redirectionId: string): any {
+    public static readRedirectionState(
+        tenantId: string,
+        userId: string,
+        redirectionId: string
+    ): any {
         return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId);
     }
 
@@ -322,7 +382,11 @@ export class PersistenceTools {
         return this.readPersistentState(tenantId, userId, 'session');
     }
 
-    public static updateRecordPropertyValue(record: any, propertyName: string, value: any): boolean {
+    public static updateRecordPropertyValue(
+        record: any,
+        propertyName: string,
+        value: any
+    ): boolean {
         for (const p of record.properties) {
             if (p.name === propertyName) {
                 p.value = value;
@@ -342,35 +406,71 @@ export class PersistenceTools {
         }
     }
 
-    public static writeDialogAliasState(tenantId: string, userId: string, dialogId: string, alias: any) {
+    public static writeDialogAliasState(
+        tenantId: string,
+        userId: string,
+        dialogId: string,
+        alias: any
+    ) {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias', alias);
     }
 
-    public static writeDialogParentState(tenantId: string, userId: string, child: any, childIndex: number, parent: any) {
+    public static writeDialogParentState(
+        tenantId: string,
+        userId: string,
+        child: any,
+        childIndex: number,
+        parent: any
+    ) {
         this.writePersistentState(tenantId, userId, 'dialog.' + child.id + '.parent', parent.id);
         const parentAlias = this.readDialogAliasState(tenantId, userId, parent.id);
         this.writeDialogAliasState(tenantId, userId, child.id, parentAlias + '_' + childIndex);
         this.writeAllDialogParentState(tenantId, userId, child);
     }
 
-    public static writeDialogReferringAliasState(tenantId: string, userId: string, dialogId: string, referringAlias: any) {
-        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias', referringAlias);
+    public static writeDialogReferringAliasState(
+        tenantId: string,
+        userId: string,
+        dialogId: string,
+        referringAlias: any
+    ) {
+        this.writePersistentState(
+            tenantId,
+            userId,
+            'dialog.' + dialogId + '.referringAlias',
+            referringAlias
+        );
     }
 
     public static writeDialogState(tenantId: string, userId: string, dialog: any) {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialog.id, dialog);
     }
 
-    public static writePersistentState(tenantId: string, userId: string, stateId: string, state: any) {
+    public static writePersistentState(
+        tenantId: string,
+        userId: string,
+        stateId: string,
+        state: any
+    ) {
         const key: string = tenantId + '.' + userId + '.' + stateId;
         window.localStorage.setItem(key, JSON.stringify(state));
     }
 
-    public static writeRecordSetState(tenantId: string, userId: string, dialogId: string, recordSet: any): any {
+    public static writeRecordSetState(
+        tenantId: string,
+        userId: string,
+        dialogId: string,
+        recordSet: any
+    ): any {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', recordSet);
     }
 
-    public static writeRecordState(tenantId: string, userId: string, dialogId: string, record: any): any {
+    public static writeRecordState(
+        tenantId: string,
+        userId: string,
+        dialogId: string,
+        record: any
+    ): any {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.record', record);
     }
 
@@ -385,5 +485,4 @@ export class PersistenceTools {
     public static writeSessionState(session: any) {
         this.writePersistentState(session.tenantId, session.userId, 'session', session);
     }
-
 }

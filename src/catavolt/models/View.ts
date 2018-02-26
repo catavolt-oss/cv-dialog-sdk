@@ -1,5 +1,5 @@
-import {Menu} from "./Menu";
-import {ViewType} from "./types";
+import { Menu } from './Menu';
+import { ViewType } from './types';
 
 /**
  * A View represents a Catavolt 'Pane' definition.  A Pane can be thought of as a 'panel' or UI component
@@ -8,7 +8,6 @@ import {ViewType} from "./types";
  * the record or records to be displayed, but may be combined with a {@link Record}(s) to display the data.
  */
 export abstract class View {
-
     /* From View */
     public readonly alias: string;
     public readonly id: string;
@@ -32,9 +31,9 @@ export abstract class View {
      * @returns {string}
      */
     public findTitle(): string {
-        let result: string = this.title ? this.title.trim() : "";
-        result = result === "null" ? "" : result;
-        if (result === "") {
+        let result: string = this.title ? this.title.trim() : '';
+        result = result === 'null' ? '' : result;
+        if (result === '') {
             // @TODO put this back when label is resolved
             // result = this.label ? this.label.trim() : '';
             // result = result === 'null' ? '' : result;
@@ -57,5 +56,4 @@ export abstract class View {
         }
         return result;
     }
-
 }

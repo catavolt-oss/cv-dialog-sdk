@@ -1,12 +1,11 @@
-import {Dictionary} from "../util/Dictionary";
-import {StringDictionary} from "../util/StringDictionary";
-import {AttributeCellValue} from "./AttributeCellValue";
-import {Cell} from "./Cell";
-import {CellValue} from "./CellValue";
-import {View} from "./View";
+import { Dictionary } from '../util/Dictionary';
+import { StringDictionary } from '../util/StringDictionary';
+import { AttributeCellValue } from './AttributeCellValue';
+import { Cell } from './Cell';
+import { CellValue } from './CellValue';
+import { View } from './View';
 
 export class PrintMarkup extends View {
-
     public readonly cancelButtonText: string;
     public readonly commitButtonText: string;
     public readonly editable: boolean;
@@ -24,7 +23,9 @@ export class PrintMarkup extends View {
                     cell.values.forEach((cellValue: CellValue) => {
                         if (cellValue instanceof AttributeCellValue) {
                             const attributeCellValue = cellValue as AttributeCellValue;
-                            this._orderedCellValue[attributeCellValue.propertyName] = attributeCellValue;
+                            this._orderedCellValue[
+                                attributeCellValue.propertyName
+                            ] = attributeCellValue;
                         }
                     });
                 });
@@ -32,5 +33,4 @@ export class PrintMarkup extends View {
         }
         return this._orderedCellValue;
     }
-
 }

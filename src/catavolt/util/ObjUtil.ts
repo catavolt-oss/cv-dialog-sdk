@@ -3,10 +3,13 @@
  */
 
 export class ObjUtil {
-
     public static addAllProps(sourceObj, targetObj): any {
-        if (null == sourceObj || "object" !== typeof sourceObj) { return targetObj; }
-        if (null == targetObj || "object" !== typeof targetObj) { return targetObj; }
+        if (null == sourceObj || 'object' !== typeof sourceObj) {
+            return targetObj;
+        }
+        if (null == targetObj || 'object' !== typeof targetObj) {
+            return targetObj;
+        }
         for (const attr in sourceObj) {
             if (sourceObj.hasOwnProperty(attr)) {
                 targetObj[attr] = sourceObj[attr];
@@ -16,7 +19,9 @@ export class ObjUtil {
     }
 
     public static cloneOwnProps(sourceObj): any {
-        if (null == sourceObj || "object" !== typeof sourceObj) { return sourceObj; }
+        if (null == sourceObj || 'object' !== typeof sourceObj) {
+            return sourceObj;
+        }
         const copy = sourceObj.constructor();
         for (const attr in sourceObj) {
             if (sourceObj.hasOwnProperty(attr)) {
@@ -51,7 +56,6 @@ export class ObjUtil {
     }
 
     public static newInstance(type) {
-        return new type;
+        return new type();
     }
-
 }

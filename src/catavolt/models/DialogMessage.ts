@@ -1,7 +1,6 @@
-import {DialogMessageMessageType} from "./types";
+import { DialogMessageMessageType } from './types';
 
 export interface DialogMessage {
-
     /**
      * A short language-independent identifier
      */
@@ -31,5 +30,4 @@ export interface DialogMessage {
     readonly stackTrace: string;
 
     readonly type: string;
-
 }

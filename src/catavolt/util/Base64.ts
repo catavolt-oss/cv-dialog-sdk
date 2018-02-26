@@ -1,15 +1,13 @@
-
 /* tslint:disable */
 /*
  This implementation supports our ECMA 5.1 browser set, including IE9
  If we no longer need to support IE9, a TypedArray implementaion would be more efficient...
  */
 export class Base64 {
-
-    private static _keyStr: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    private static _keyStr: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 
     public static encode(input) {
-        let output = "";
+        let output = '';
         let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
         let i = 0;
         input = Base64._utf8_encode(input);
@@ -26,20 +24,22 @@ export class Base64 {
             } else if (isNaN(chr3)) {
                 enc4 = 64;
             }
-            output = output +
-                Base64._keyStr.charAt(enc1) + Base64._keyStr.charAt(enc2) +
-                Base64._keyStr.charAt(enc3) + Base64._keyStr.charAt(enc4);
-
+            output =
+                output +
+                Base64._keyStr.charAt(enc1) +
+                Base64._keyStr.charAt(enc2) +
+                Base64._keyStr.charAt(enc3) +
+                Base64._keyStr.charAt(enc4);
         }
         return output;
     }
 
     public static decode(input) {
-        let output = "";
+        let output = '';
         let chr1, chr2, chr3;
         let enc1, enc2, enc3, enc4;
         let i = 0;
-        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
         while (i < input.length) {
             enc1 = Base64._keyStr.indexOf(input.charAt(i++));
             enc2 = Base64._keyStr.indexOf(input.charAt(i++));
@@ -62,44 +62,42 @@ export class Base64 {
     }
 
     private static _utf8_encode(s) {
-        s = s.replace(/\r\n/g, "\n");
-        let utftext = "";
+        s = s.replace(/\r\n/g, '\n');
+        let utftext = '';
         for (let n = 0; n < s.length; n++) {
             const c = s.charCodeAt(n);
             if (c < 128) {
                 utftext += String.fromCharCode(c);
-            }
-            else if ((c > 127) && (c < 2048)) {
+            } else if (c > 127 && c < 2048) {
                 utftext += String.fromCharCode((c >> 6) | 192);
                 utftext += String.fromCharCode((c & 63) | 128);
-            }
-            else {
+            } else {
                 utftext += String.fromCharCode((c >> 12) | 224);
                 utftext += String.fromCharCode(((c >> 6) & 63) | 128);
                 utftext += String.fromCharCode((c & 63) | 128);
             }
-
         }
 
         return utftext;
     }
 
     public static _utf8_decode(utftext) {
-        let s = "";
+        let s = '';
         let i = 0;
-        let c = 0, c1 = 0, c2 = 0, c3 = 0;
+        let c = 0,
+            c1 = 0,
+            c2 = 0,
+            c3 = 0;
         while (i < utftext.length) {
             c = utftext.charCodeAt(i);
             if (c < 128) {
                 s += String.fromCharCode(c);
                 i++;
-            }
-            else if ((c > 191) && (c < 224)) {
+            } else if (c > 191 && c < 224) {
                 c2 = utftext.charCodeAt(i + 1);
                 s += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
                 i += 2;
-            }
-            else {
+            } else {
                 c2 = utftext.charCodeAt(i + 1);
                 c3 = utftext.charCodeAt(i + 2);
                 s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
@@ -108,5 +106,4 @@ export class Base64 {
         }
         return s;
     }
-
 }

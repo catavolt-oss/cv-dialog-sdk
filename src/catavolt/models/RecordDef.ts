@@ -1,4 +1,4 @@
-import {PropertyDef} from "./PropertyDef";
+import { PropertyDef } from './PropertyDef';
 
 /**
  * In the same way that a {@link PropertyDef} describes a {@link Property}, a RecordDef describes an {@link Record}.
@@ -7,7 +7,6 @@ import {PropertyDef} from "./PropertyDef";
  * The corresponding {@link Record} contains the actual values.
  */
 export class RecordDef {
-
     public readonly propertyDefs: PropertyDef[];
 
     get propCount(): number {
@@ -16,7 +15,7 @@ export class RecordDef {
 
     public propDefAtName(name: string): PropertyDef {
         let propDef: PropertyDef = null;
-        this.propertyDefs.some((p) => {
+        this.propertyDefs.some(p => {
             if (p.propertyName === name) {
                 propDef = p;
                 return true;
@@ -27,7 +26,7 @@ export class RecordDef {
     }
 
     get propNames(): string[] {
-        return this.propertyDefs.map((p) => {
+        return this.propertyDefs.map(p => {
             return p.propertyName;
         });
     }

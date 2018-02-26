@@ -1,7 +1,7 @@
-import {DataAnnotation} from "./DataAnnotation";
-import {Property} from "./Property";
-import {Record} from "./Record";
-import {TypeNames} from "./types";
+import { DataAnnotation } from './DataAnnotation';
+import { Property } from './Property';
+import { Record } from './Record';
+import { TypeNames } from './types';
 
 /**
  * An empty or uninitialized {@link Record}.
@@ -9,7 +9,6 @@ import {TypeNames} from "./types";
  * An Record may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
 export class NullRecord implements Record {
-
     public static singleton: NullRecord = new NullRecord();
 
     get annotations(): DataAnnotation[] {
@@ -180,12 +179,11 @@ export class NullRecord implements Record {
         return {
             id: this.id,
             properties: this.properties,
-            type: TypeNames.RecordTypeName,
+            type: TypeNames.RecordTypeName
         };
     }
 
     public valueAtName(propName: string): any {
         return null;
     }
-
 }

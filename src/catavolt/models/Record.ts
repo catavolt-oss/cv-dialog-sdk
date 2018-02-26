@@ -1,8 +1,7 @@
-import {DataAnnotation} from "./DataAnnotation";
-import {Property} from "./Property";
+import { DataAnnotation } from './DataAnnotation';
+import { Property } from './Property';
 
 export interface Record {
-
     readonly annotations?: DataAnnotation[];
     readonly id: string;
     properties: Property[];
@@ -65,5 +64,4 @@ export interface Record {
     toJSON();
 
     valueAtName(propName: string): any;
-
 }

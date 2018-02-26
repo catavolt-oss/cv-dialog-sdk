@@ -1,4 +1,4 @@
-import {ClientResponse} from "./ClientResponse";
+import { ClientResponse } from './ClientResponse';
 
 export class VoidClientResponse extends ClientResponse<void> {
     constructor(statusCode: number) {

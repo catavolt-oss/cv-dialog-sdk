@@ -1,7 +1,6 @@
-import {View} from "./View";
+import { View } from './View';
 
 /**
  * A purely declarative type. This object has no additional properties.
  */
-export class MapLocation extends View {
-}
+export class MapLocation extends View {}

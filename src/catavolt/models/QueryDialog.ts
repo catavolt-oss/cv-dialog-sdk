@@ -1,13 +1,13 @@
-import {Column} from "./Column";
-import {Dialog} from "./Dialog";
-import {Menu} from "./Menu";
-import {QueryParameters} from "./QueryParameters";
-import {QueryMarkerOption, QueryScroller} from "./QueryScroller";
-import {RecordSet} from "./RecordSet";
-import {Redirection} from "./Redirection";
-import {TypeNames} from "./types";
-import {QueryDirection} from "./types";
-import {PositionalQueryAbilityType} from "./types";
+import { Column } from './Column';
+import { Dialog } from './Dialog';
+import { Menu } from './Menu';
+import { QueryParameters } from './QueryParameters';
+import { QueryMarkerOption, QueryScroller } from './QueryScroller';
+import { RecordSet } from './RecordSet';
+import { Redirection } from './Redirection';
+import { TypeNames } from './types';
+import { QueryDirection } from './types';
+import { PositionalQueryAbilityType } from './types';
 
 /**
  * Dialog Subtype that represents a 'Query Dialog'.
@@ -15,7 +15,6 @@ import {PositionalQueryAbilityType} from "./types";
  * See {@link Record} and {@link RecordDef}.
  */
 export class QueryDialog extends Dialog {
-
     public positionalQueryAbility: PositionalQueryAbilityType;
     public supportsColumnStatistics: boolean;
     public supportsPositionalQueries: boolean;
@@ -27,20 +26,29 @@ export class QueryDialog extends Dialog {
         return this._defaultActionId;
     }
 
-    public initScroller(pageSize: number, firstObjectId: string = null, markerOptions: QueryMarkerOption[] = [QueryMarkerOption.None]) {
+    public initScroller(
+        pageSize: number,
+        firstObjectId: string = null,
+        markerOptions: QueryMarkerOption[] = [QueryMarkerOption.None]
+    ) {
         this._scroller = new QueryScroller(this, pageSize, firstObjectId, markerOptions);
     }
 
     public isBinary(column: Column): boolean {
         const propDef = this.propDefAtName(column.propertyName);
-        return propDef && (propDef.isBinaryType || (propDef.isURLType && propDef.isInlineMediaStyle));
+        return (
+            propDef && (propDef.isBinaryType || (propDef.isURLType && propDef.isInlineMediaStyle))
+        );
     }
 
-    public performMenuActionWithId(actionId: string, targets: string[]): Promise<{ actionId: string } | Redirection> {
+    public performMenuActionWithId(
+        actionId: string,
+        targets: string[]
+    ): Promise<{ actionId: string } | Redirection> {
         return this.invokeMenuActionWithId(actionId, {
             targets,
-            type: TypeNames.ActionParametersTypeName,
-        }).then((result) => {
+            type: TypeNames.ActionParametersTypeName
+        }).then(result => {
             return result;
         });
     }
@@ -52,14 +60,16 @@ export class QueryDialog extends Dialog {
      * @param {Array<string>} targets
      * @returns {Promise<{actionId: string} | Redirection>}
      */
-    public performMenuAction(menu: Menu, targets: string[]): Promise<{ actionId: string } | Redirection> {
+    public performMenuAction(
+        menu: Menu,
+        targets: string[]
+    ): Promise<{ actionId: string } | Redirection> {
         return this.invokeMenuAction(menu, {
             targets,
-            type: TypeNames.ActionParametersTypeName,
-        }).then((result) => {
+            type: TypeNames.ActionParametersTypeName
+        }).then(result => {
             return result;
         });
-
     }
 
     /**
@@ -70,24 +80,36 @@ export class QueryDialog extends Dialog {
      * @param {string} fromObjectId
      * @returns {Promise<RecordSet>}
      */
-    public query(maxRows: number, direction: QueryDirection, fromObjectId: string): Promise<RecordSet> {
+    public query(
+        maxRows: number,
+        direction: QueryDirection,
+        fromObjectId: string
+    ): Promise<RecordSet> {
+        const queryParams: QueryParameters = fromObjectId
+            ? {
+                  fetchDirection: direction,
+                  fetchMaxRecords: maxRows,
+                  fromBusinessId: fromObjectId,
+                  type: TypeNames.QueryParametersTypeName
+              }
+            : {
+                  fetchDirection: direction,
+                  fetchMaxRecords: maxRows,
+                  type: TypeNames.QueryParametersTypeName
+              };
 
-        const queryParams: QueryParameters = fromObjectId ?
-            {
-                fetchDirection: direction,
-                fetchMaxRecords: maxRows,
-                fromBusinessId: fromObjectId,
-                type: TypeNames.QueryParametersTypeName,
-            } :
-            {fetchDirection: direction, fetchMaxRecords: maxRows, type: TypeNames.QueryParametersTypeName};
-
-        return this.catavolt.dialogApi.getRecords(this.catavolt.session.tenantId, this.catavolt.session.id, this.id, queryParams)
+        return this.catavolt.dialogApi
+            .getRecords(
+                this.catavolt.session.tenantId,
+                this.catavolt.session.id,
+                this.id,
+                queryParams
+            )
             .then((recordSet: RecordSet) => {
                 this.lastRefreshTime = new Date();
                 this._defaultActionId = recordSet.defaultActionId;
                 return recordSet;
             });
-
     }
 
     /**
@@ -108,5 +130,4 @@ export class QueryDialog extends Dialog {
     private defaultScroller(): QueryScroller {
         return new QueryScroller(this, 50, null, [QueryMarkerOption.None]);
     }
-
 }

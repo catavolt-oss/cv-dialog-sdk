@@ -1,7 +1,5 @@
-import {Redirection} from "./Redirection";
+import { Redirection } from './Redirection';
 
 export interface WebRedirection extends Redirection {
-
     readonly url: string;
-
 }

@@ -1,4 +1,3 @@
-import {View} from "./View";
+import { View } from './View';
 
-export class ImagePicker extends View {
-}
+export class ImagePicker extends View {}

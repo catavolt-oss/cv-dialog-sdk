@@ -1,1 +1,1 @@
-export * from "./FetchClient";
+export * from './FetchClient';

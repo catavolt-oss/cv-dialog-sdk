@@ -1,9 +1,7 @@
-import {StringDictionary} from "../util/StringDictionary";
+import { StringDictionary } from '../util/StringDictionary';
 
 export abstract class BinaryRef {
-
-    constructor(private _settings: StringDictionary) {
-    }
+    constructor(private _settings: StringDictionary) {}
 
     // @TODO
     /*
@@ -20,5 +18,4 @@ export abstract class BinaryRef {
     get settings(): StringDictionary {
         return this._settings;
     }
-
 }

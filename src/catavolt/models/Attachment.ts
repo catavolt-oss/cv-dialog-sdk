@@ -3,8 +3,5 @@
  */
 
 export class Attachment {
-
-    constructor(public name: string, public attachmentData: any) {
-    }
-
+    constructor(public name: string, public attachmentData: any) {}
 }

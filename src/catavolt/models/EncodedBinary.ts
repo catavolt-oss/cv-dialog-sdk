@@ -1,13 +1,11 @@
-import {DataUrl} from "../util/DataUrl";
-import {Binary} from "./Binary";
+import { DataUrl } from '../util/DataUrl';
+import { Binary } from './Binary';
 
 /**
  * Represents a base64 encoded binary
  */
 export class EncodedBinary implements Binary {
-
-    constructor(private _data: string, private _mimeType?: string) {
-    }
+    constructor(private _data: string, private _mimeType?: string) {}
 
     /**
      * Get the base64 encoded data
@@ -22,7 +20,7 @@ export class EncodedBinary implements Binary {
      * @returns {string|string}
      */
     get mimeType(): string {
-        return this._mimeType || "application/octet-stream";
+        return this._mimeType || 'application/octet-stream';
     }
 
     /**

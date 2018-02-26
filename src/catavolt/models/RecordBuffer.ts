@@ -1,9 +1,9 @@
-import {ArrayUtil} from "../util";
-import {DataAnnotation} from "./DataAnnotation";
-import {NullRecord} from "./NullRecord";
-import {Property} from "./Property";
-import {Record} from "./Record";
-import {RecordImpl} from "./RecordImpl";
+import { ArrayUtil } from '../util';
+import { DataAnnotation } from './DataAnnotation';
+import { NullRecord } from './NullRecord';
+import { Property } from './Property';
+import { Record } from './Record';
+import { RecordImpl } from './RecordImpl';
 
 /**
  * An {@link Record} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
@@ -11,14 +11,22 @@ import {RecordImpl} from "./RecordImpl";
  * An Record may also have {@link Annotation}s (style annotations) that apply to the whole 'record'
  */
 export class RecordBuffer implements Record {
-
-    public static createRecordBuffer(id: string, before: Property[], after: Property[], annotations: DataAnnotation[], type: string): RecordBuffer {
-        return new RecordBuffer(RecordUtil.newRecord(id, before, annotations, type), RecordUtil.newRecord(id, after, annotations, type));
+    public static createRecordBuffer(
+        id: string,
+        before: Property[],
+        after: Property[],
+        annotations: DataAnnotation[],
+        type: string
+    ): RecordBuffer {
+        return new RecordBuffer(
+            RecordUtil.newRecord(id, before, annotations, type),
+            RecordUtil.newRecord(id, after, annotations, type)
+        );
     }
 
     constructor(private _before: Record, private _after?: Record) {
         if (!_before) {
-            throw new Error("_before is null in RecordBuffer");
+            throw new Error('_before is null in RecordBuffer');
         }
         if (!_after) {
             this._after = _before;
@@ -92,7 +100,7 @@ export class RecordBuffer implements Record {
     public isChanged(name: string): boolean {
         const before = this._before.propAtName(name);
         const after = this._after.propAtName(name);
-        return (before && after) ? !before.equals(after) : !(!before && !after);
+        return before && after ? !before.equals(after) : !(!before && !after);
     }
 
     get isItalicText(): boolean {
@@ -196,7 +204,9 @@ export class RecordBuffer implements Record {
         let found = false;
         this.properties.forEach((prop: Property) => {
             if (prop.name === name) {
-                newProps.push(new Property(name, value, prop.propertyType, prop.format, prop.annotations));
+                newProps.push(
+                    new Property(name, value, prop.propertyType, prop.format, prop.annotations)
+                );
                 found = true;
             } else {
                 newProps.push(prop);
@@ -227,24 +237,25 @@ export class RecordBuffer implements Record {
     public valueAtName(propName: string): any {
         return this._after.valueAtName(propName);
     }
-
 }
 
 /**
  * Utility for working with Records
  */
 class RecordUtil {
-
-    public static newRecord(id: string, properties: Property[], annotations: DataAnnotation[], type: string): Record {
-        return annotations ? new RecordImpl(id, ArrayUtil.copy(properties), ArrayUtil.copy(annotations), type) :
-            new RecordImpl(id, ArrayUtil.copy(properties), null, type);
+    public static newRecord(
+        id: string,
+        properties: Property[],
+        annotations: DataAnnotation[],
+        type: string
+    ): Record {
+        return annotations
+            ? new RecordImpl(id, ArrayUtil.copy(properties), ArrayUtil.copy(annotations), type)
+            : new RecordImpl(id, ArrayUtil.copy(properties), null, type);
     }
 
     public static isRecord(o: any): boolean {
-
-        return (o instanceof RecordImpl)
-            || (o instanceof RecordBuffer)
-            || (o instanceof NullRecord);
+        return o instanceof RecordImpl || o instanceof RecordBuffer || o instanceof NullRecord;
     }
 
     /*
@@ -264,4 +275,3 @@ class RecordUtil {
      return result;
      }*/
 }
-

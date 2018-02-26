@@ -1,4 +1,3 @@
-import {Redirection} from "./Redirection";
+import { Redirection } from './Redirection';
 
-export interface NullRedirection extends Redirection {
-}
+export interface NullRedirection extends Redirection {}

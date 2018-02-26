@@ -1,9 +1,9 @@
-import {ArrayUtil} from "../util/ArrayUtil";
-import {NullRecord} from "./NullRecord";
-import {QueryDialog} from "./QueryDialog";
-import {Record} from "./Record";
-import {RecordSet} from "./RecordSet";
-import {QueryDirectionEnum} from "./types";
+import { ArrayUtil } from '../util/ArrayUtil';
+import { NullRecord } from './NullRecord';
+import { QueryDialog } from './QueryDialog';
+import { Record } from './Record';
+import { RecordSet } from './RecordSet';
+import { QueryDirectionEnum } from './types';
 
 /**
  * *********************************
@@ -18,11 +18,12 @@ class IsEmptyQueryMarker extends NullRecord {
 }
 
 export enum QueryMarkerOption {
-    None, IsEmpty, HasMore,
+    None,
+    IsEmpty,
+    HasMore
 }
 
 export class QueryScroller {
-
     private _buffer: Record[];
     private _hasMoreBackward: boolean;
     private _hasMoreForward: boolean;
@@ -30,13 +31,13 @@ export class QueryScroller {
     private _prevPagePromise: Promise<RecordSet>;
     private _firstResultOid: string;
 
-    constructor(private _dialog: QueryDialog,
-                private _defaultPageSize: number,
-                private _firstObjectId: string,
-                private _markerOptions: QueryMarkerOption[] = []) {
-
+    constructor(
+        private _dialog: QueryDialog,
+        private _defaultPageSize: number,
+        private _firstObjectId: string,
+        private _markerOptions: QueryMarkerOption[] = []
+    ) {
         this.clear();
-
     }
 
     get buffer(): Record[] {
@@ -95,7 +96,6 @@ export class QueryScroller {
     }
 
     public pageBackward(pageSize: number = this.pageSize): Promise<Record[]> {
-
         if (!this._hasMoreBackward) {
             return Promise.resolve([]);
         }
@@ -107,7 +107,11 @@ export class QueryScroller {
             });
         } else {
             const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
-            this._prevPagePromise = this._dialog.query(pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
+            this._prevPagePromise = this._dialog.query(
+                pageSize,
+                QueryDirectionEnum.BACKWARD,
+                fromObjectId
+            );
         }
 
         return this._prevPagePromise.then((queryResult: RecordSet) => {
@@ -124,23 +128,27 @@ export class QueryScroller {
             }
             return queryResult.records;
         });
-
     }
 
     public pageForward(pageSize: number = this.pageSize): Promise<Record[]> {
-
         if (!this._hasMoreForward) {
             return Promise.resolve([]);
         }
 
         if (this._nextPagePromise) {
             this._nextPagePromise = this._nextPagePromise.then((recordSet: RecordSet) => {
-                const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
+                const fromObjectId =
+                    this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
                 return this._dialog.query(pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
             });
         } else {
-            const fromObjectId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
-            this._nextPagePromise = this._dialog.query(pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
+            const fromObjectId =
+                this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
+            this._nextPagePromise = this._dialog.query(
+                pageSize,
+                QueryDirectionEnum.FORWARD,
+                fromObjectId
+            );
         }
 
         return this._nextPagePromise.then((queryResult: RecordSet) => {
@@ -157,7 +165,6 @@ export class QueryScroller {
             }
             return queryResult.records;
         });
-
     }
 
     get pageSize(): number {
@@ -198,5 +205,4 @@ export class QueryScroller {
         this._buffer = [];
         this._firstResultOid = null;
     }
-
 }

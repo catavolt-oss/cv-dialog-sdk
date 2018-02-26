@@ -1,3 +1,3 @@
-export * from "./PersistentClient";
-export * from "./PersistenceTools";
-export * from "./BriefcaseTemplate";
+export * from './PersistentClient';
+export * from './PersistenceTools';
+export * from './BriefcaseTemplate';
