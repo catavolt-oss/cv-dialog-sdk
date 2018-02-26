@@ -4,11 +4,11 @@
 
 export class DataUrl {
 
-    private _mimeType: string;
-    private _data: string;
-
     private static PROTO_TOKEN: string = 'data:';
     private static ENCODING_TOKEN: string = ';base64,';
+
+    private _mimeType: string;
+    private _data: string;
 
     public static createDataUrl(mimeType: string, encodedData: string): string {
         return DataUrl.PROTO_TOKEN + mimeType + DataUrl.ENCODING_TOKEN + encodedData;

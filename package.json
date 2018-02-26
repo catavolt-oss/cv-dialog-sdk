@@ -44,6 +44,7 @@
   "scripts": {
     "commit": "git-cz",
     "gen-version-code": "bin/gen-version-code.js",
+    "lint": "./node_modules/tslint/bin/tslint -c tslint.json --fix -e 'src/**/*.d.ts' 'src/**/*.ts'",
     "release": "standard-version",
     "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -b electron | ./node_modules/.bin/faucet",
     "test-browser": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet"

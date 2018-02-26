@@ -16,6 +16,7 @@ export class StringUtil {
         return [code, desc];
     }
 
+    /* tslint:disable no-bitwise */
     public static hashCode(s: string) {
         let hash = 0, i, chr, len;
         if (s.length === 0) { return hash; }

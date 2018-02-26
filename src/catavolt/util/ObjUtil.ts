@@ -5,16 +5,18 @@
 export class ObjUtil {
 
     public static addAllProps(sourceObj, targetObj): any {
-        if (null == sourceObj || "object" != typeof sourceObj) { return targetObj; }
-        if (null == targetObj || "object" != typeof targetObj) { return targetObj; }
+        if (null == sourceObj || "object" !== typeof sourceObj) { return targetObj; }
+        if (null == targetObj || "object" !== typeof targetObj) { return targetObj; }
         for (const attr in sourceObj) {
-            targetObj[attr] = sourceObj[attr];
+            if (sourceObj.hasOwnProperty(attr)) {
+                targetObj[attr] = sourceObj[attr];
+            }
         }
         return targetObj;
     }
 
     public static cloneOwnProps(sourceObj): any {
-        if (null == sourceObj || "object" != typeof sourceObj) { return sourceObj; }
+        if (null == sourceObj || "object" !== typeof sourceObj) { return sourceObj; }
         const copy = sourceObj.constructor();
         for (const attr in sourceObj) {
             if (sourceObj.hasOwnProperty(attr)) {
@@ -40,7 +42,7 @@ export class ObjUtil {
     }
 
     public static formatRecAttr(o, prettyPrint?: true): string {
-        //@TODO - add a filter here to build a cache and detect (and skip) circular references
+        // @TODO - add a filter here to build a cache and detect (and skip) circular references
         if (prettyPrint) {
             return JSON.stringify(o, null, 2);
         } else {

@@ -26,8 +26,9 @@ import {LogLevel} from "../../catavolt/util/Log";
 /*
     Get a reference to the SDK instance
  */
+/* tslint:disable */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['cvtutorial', 'wsmith', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['', '', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 const currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;

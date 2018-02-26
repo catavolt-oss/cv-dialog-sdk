@@ -115,7 +115,9 @@ export class FetchClient implements Client {
         let result = '';
         if (queryParams) {
             for (const name in queryParams) {
-                result += `${encodeURIComponent(name)}=${encodeURIComponent(queryParams[name])}&`
+                if (queryParams.hasOwnProperty(name)) {
+                    result += `${encodeURIComponent(name)}=${encodeURIComponent(queryParams[name])}&`
+                }
             }
         }
 

@@ -2,6 +2,7 @@ import {ObjUtil} from "./ObjUtil";
 
 export enum LogLevel { ERROR, WARN, INFO, DEBUG }
 
+/* tslint:disable */
 export class Log {
 
     public static debug: (message, method?: string, clz?: string) => void;

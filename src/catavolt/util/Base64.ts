@@ -1,4 +1,5 @@
 
+/* tslint:disable */
 /*
  This implementation supports our ECMA 5.1 browser set, including IE9
  If we no longer need to support IE9, a TypedArray implementaion would be more efficient...

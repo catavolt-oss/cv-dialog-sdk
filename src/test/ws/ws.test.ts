@@ -6,6 +6,8 @@ import * as test from "tape";
 
 import {Client, FetchClient} from "../catavolt-test"
 
+/* tslint:disable */
+
 let [tenantId, userId, password, baseUrl, sessionId] =
     ['', '', '', 'https://dialog.hxgn-api.net/v0', null];
 
