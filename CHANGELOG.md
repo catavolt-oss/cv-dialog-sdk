@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.1.0"></a>
+# [4.1.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.0.0...v4.1.0) (2018-03-01)
+
+
+### Bug Fixes
+
+* fix small TS bug ([79eb5ca](https://github.com/catavolt-oss/cv-dialog-sdk/commit/79eb5ca))
+
+
+### Features
+
+* implement read/write binary ([87cd62e](https://github.com/catavolt-oss/cv-dialog-sdk/commit/87cd62e))
+
+
+
 <a name="4.0.0"></a>
 # [4.0.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v3.2.3...v4.0.0) (2018-02-23)
 
