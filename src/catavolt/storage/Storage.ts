@@ -97,9 +97,7 @@ export class Storage {
         try {
             stringVal = JSON.stringify(value);
         } catch (err) {
-            return Promise.reject(
-                new Error(`Storage::setItem(${key}) failed to stringify JSON value`)
-            );
+            return Promise.reject(new Error(`Storage::setItem(${key}) failed to stringify JSON value`));
         }
         return api.setItem(key, stringVal);
     }

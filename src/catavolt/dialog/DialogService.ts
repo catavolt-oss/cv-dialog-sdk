@@ -2,13 +2,16 @@ import { Client, ClientMode } from '../client/Client';
 import { JsonClientResponse } from '../client/JsonClientResponse';
 import {
     ActionParameters,
+    Attachment,
     Dialog,
     DialogMessage,
     EditorDialog,
+    LargeProperty,
     Login,
     Menu,
     ModelUtil,
     QueryParameters,
+    ReadLargePropertyParameters,
     Record,
     RecordSet,
     Redirection,
@@ -17,8 +20,10 @@ import {
     ViewDescriptor,
     ViewMode,
     Workbench,
-    WorkbenchAction
+    WorkbenchAction,
+    WriteLargePropertyParameters
 } from '../models';
+import { Base64 } from '../util';
 import { StringDictionary } from '../util/StringDictionary';
 import { DialogApi } from './DialogApi';
 
@@ -27,6 +32,11 @@ export class DialogService implements DialogApi {
 
     constructor(readonly client: Client, serverUrl: string, readonly apiVersion) {
         this.baseUrl = `${serverUrl}/${apiVersion}`;
+    }
+
+    // @TODO
+    public addAttachment(tenantId: string, sessionId: string, dialogId: string, attachment: Attachment): Promise<void> {
+        return Promise.resolve(null);
     }
 
     public createSession(tenantId: string, login: Login): Promise<Session | Redirection> {
@@ -48,59 +58,38 @@ export class DialogService implements DialogApi {
     }
 
     public getWorkbenches(tenantId: string, sessionId: string): Promise<Array<Workbench>> {
-        return this.get(`tenants/${tenantId}/sessions/${sessionId}/workbenches`).then(
-            jsonClientResponse =>
-                new DialogServiceResponse<Array<Workbench>>(jsonClientResponse).responseValue()
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/workbenches`).then(jsonClientResponse =>
+            new DialogServiceResponse<Array<Workbench>>(jsonClientResponse).responseValue()
         );
     }
 
-    public getWorkbench(
-        tenantId: string,
-        sessionId: string,
-        workbenchId: string
-    ): Promise<Workbench> {
-        return this.get(
-            `tenants/{$tenantId}/sessions/{$sessionId}/workbenches/{$workbenchId}`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Workbench>(jsonClientResponse).responseValue()
+    public getWorkbench(tenantId: string, sessionId: string, workbenchId: string): Promise<Workbench> {
+        return this.get(`tenants/{$tenantId}/sessions/{$sessionId}/workbenches/{$workbenchId}`).then(
+            jsonClientResponse => new DialogServiceResponse<Workbench>(jsonClientResponse).responseValue()
         );
     }
 
-    public getRedirection(
-        tenantId: string,
-        sessionId: string,
-        redirectionId: string
-    ): Promise<Redirection> {
-        return this.get(
-            `tenants/${tenantId}/sessions/${sessionId}/redirections/${redirectionId}`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Redirection>(jsonClientResponse).responseValue()
+    public getRedirection(tenantId: string, sessionId: string, redirectionId: string): Promise<Redirection> {
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/redirections/${redirectionId}`).then(
+            jsonClientResponse => new DialogServiceResponse<Redirection>(jsonClientResponse).responseValue()
         );
     }
 
     public getDialog(tenantId: string, sessionId: string, dialogId: string): Promise<Dialog> {
-        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}`).then(
-            jsonClientResponse =>
-                new DialogServiceResponse<Dialog>(jsonClientResponse).responseValue()
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}`).then(jsonClientResponse =>
+            new DialogServiceResponse<Dialog>(jsonClientResponse).responseValue()
         );
     }
 
-    public deleteDialog(
-        tenantId: string,
-        sessionId: string,
-        dialogId: string
-    ): Promise<{ dialogId: string }> {
-        return this.d3lete(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}`).then(
-            jsonClientResponse =>
-                new DialogServiceResponse<{ dialogId: string }>(jsonClientResponse).responseValue()
+    public deleteDialog(tenantId: string, sessionId: string, dialogId: string): Promise<{ dialogId: string }> {
+        return this.d3lete(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}`).then(jsonClientResponse =>
+            new DialogServiceResponse<{ dialogId: string }>(jsonClientResponse).responseValue()
         );
     }
 
     public getActions(tenantId: string, sessionId: string, dialogId: string): Promise<Array<Menu>> {
-        return this.get(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Array<Menu>>(jsonClientResponse).responseValue()
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions`).then(
+            jsonClientResponse => new DialogServiceResponse<Array<Menu>>(jsonClientResponse).responseValue()
         );
     }
 
@@ -110,16 +99,12 @@ export class DialogService implements DialogApi {
         dialogId: string,
         actionId: string,
         actionParameters: ActionParameters
-    ): Promise<{ actionId: string } | Redirection> {
+    ): Promise<Redirection> {
         const encodedActionId = encodeURIComponent(actionId);
         return this.post(
             `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions/${encodedActionId}`,
             actionParameters
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<{ actionId: string }>(
-                jsonClientResponse
-            ).responseValueOrRedirect()
-        );
+        ).then(jsonClientResponse => new DialogServiceResponse<Redirection>(jsonClientResponse).responseValue());
     }
 
     public getWorkbenchActions(
@@ -127,10 +112,8 @@ export class DialogService implements DialogApi {
         sessionId: string,
         workbenchId: string
     ): Promise<Array<WorkbenchAction>> {
-        return this.get(
-            `tenants/${tenantId}/sessions/${sessionId}/workbenches/${workbenchId}/actions`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Array<WorkbenchAction>>(jsonClientResponse).responseValue()
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/workbenches/${workbenchId}/actions`).then(
+            jsonClientResponse => new DialogServiceResponse<Array<WorkbenchAction>>(jsonClientResponse).responseValue()
         );
     }
 
@@ -139,22 +122,16 @@ export class DialogService implements DialogApi {
         sessionId: string,
         workbenchId: string,
         actionId: string
-    ): Promise<{ actionId: string } | Redirection> {
+    ): Promise<Redirection> {
         return this.post(
             `tenants/${tenantId}/sessions/${sessionId}/workbenches/${workbenchId}/actions/${actionId}`,
             {}
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<{ actionId: string }>(
-                jsonClientResponse
-            ).responseValueOrRedirect()
-        );
+        ).then(jsonClientResponse => new DialogServiceResponse<Redirection>(jsonClientResponse).responseValue());
     }
 
     public getRecord(tenantId: string, sessionId: string, dialogId: string): Promise<Record> {
-        return this.get(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Record>(jsonClientResponse).responseValue()
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record`).then(
+            jsonClientResponse => new DialogServiceResponse<Record>(jsonClientResponse).responseValue()
         );
     }
 
@@ -164,13 +141,9 @@ export class DialogService implements DialogApi {
         dialogId: string,
         record: Record
     ): Promise<Record | Redirection> {
-        return this.put(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record`,
-            record
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Record | Redirection>(
-                jsonClientResponse
-            ).responseValueOrRedirect()
+        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record`, record).then(
+            jsonClientResponse =>
+                new DialogServiceResponse<Record | Redirection>(jsonClientResponse).responseValueOrRedirect()
         );
     }
 
@@ -180,12 +153,67 @@ export class DialogService implements DialogApi {
         dialogId: string,
         queryParams: QueryParameters
     ): Promise<RecordSet> {
-        return this.post(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records`,
-            queryParams
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<RecordSet>(jsonClientResponse).responseValue()
+        return this.post(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records`, queryParams).then(
+            jsonClientResponse => new DialogServiceResponse<RecordSet>(jsonClientResponse).responseValue()
         );
+    }
+
+    public getEditorProperty(
+        tenantId: string,
+        sessionId: string,
+        dialogId: string,
+        propertyName: string,
+        readLargePropertyParams: ReadLargePropertyParameters
+    ): Promise<LargeProperty> {
+        return this.post(
+            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record/${propertyName}`,
+            readLargePropertyParams
+        ).then(jsonClientResponse => new DialogServiceResponse<LargeProperty>(jsonClientResponse).responseValue());
+    }
+
+    public getQueryProperty(
+        tenantId: string,
+        sessionId: string,
+        dialogId: string,
+        propertyName: string,
+        readLargePropertyParams: ReadLargePropertyParameters
+    ): Promise<LargeProperty> {
+        return this.post(
+            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records/${propertyName}`,
+            readLargePropertyParams
+        ).then(jsonClientResponse => new DialogServiceResponse<LargeProperty>(jsonClientResponse).responseValue());
+    }
+
+    public writeProperty(
+        tenantId: string,
+        sessionId: string,
+        dialogId: string,
+        propertyName: string,
+        writeLargePropertyParams: WriteLargePropertyParameters
+    ): Promise<{ propertyName: string }> {
+        return this.put(
+            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record/${propertyName}`,
+            writeLargePropertyParams
+        ).then(jsonClientResponse =>
+            new DialogServiceResponse<{ propertyName: string }>(jsonClientResponse).responseValue()
+        );
+    }
+
+    // @TODO
+    public propertyChange(
+        tenantId: string,
+        sessionId: string,
+        dialogId: string,
+        propertyName: string,
+        propertyValue: any,
+        pendingWrites: Record
+    ): Promise<Record> {
+        /*
+        return this.post(
+            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records/${propertyName}`, propertyChangeParams
+        ).then(jsonClientResponse => new DialogServiceResponse<LargeProperty>(jsonClientResponse).responseValue());
+        */
+        return Promise.resolve(null);
     }
 
     public getAvailableValues(
@@ -196,62 +224,36 @@ export class DialogService implements DialogApi {
     ): Promise<Array<any>> {
         return this.get(
             `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record/${propertyName}/availableValues`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Array<any>>(jsonClientResponse).responseValue()
-        );
+        ).then(jsonClientResponse => new DialogServiceResponse<Array<any>>(jsonClientResponse).responseValue());
     }
 
     public getMode(tenantId: string, sessionId: string, dialogId: string): Promise<ViewMode> {
-        return this.get(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/viewMode`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<ViewMode>(jsonClientResponse).responseValue()
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/viewMode`).then(
+            jsonClientResponse => new DialogServiceResponse<ViewMode>(jsonClientResponse).responseValue()
         );
     }
 
-    public changeMode(
-        tenantId: string,
-        sessionId: string,
-        dialogId: string,
-        mode: ViewMode
-    ): Promise<EditorDialog> {
-        return this.put(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/viewMode/${mode}`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<EditorDialog>(jsonClientResponse).responseValue()
+    public changeMode(tenantId: string, sessionId: string, dialogId: string, mode: ViewMode): Promise<EditorDialog> {
+        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/viewMode/${mode}`).then(
+            jsonClientResponse => new DialogServiceResponse<EditorDialog>(jsonClientResponse).responseValue()
         );
     }
 
     public getView(tenantId: string, sessionId: string, dialogId: string): Promise<View> {
-        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/view`).then(
-            jsonClientResponse =>
-                new DialogServiceResponse<View>(jsonClientResponse).responseValue()
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/view`).then(jsonClientResponse =>
+            new DialogServiceResponse<View>(jsonClientResponse).responseValue()
         );
     }
 
-    public changeView(
-        tenantId: string,
-        sessionId: string,
-        dialogId: string,
-        viewId: string
-    ): Promise<Dialog> {
-        return this.put(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/selectedView/{viewId}`,
-            {}
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Dialog>(jsonClientResponse).responseValue()
+    public changeView(tenantId: string, sessionId: string, dialogId: string, viewId: string): Promise<Dialog> {
+        return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/selectedView/{viewId}`, {}).then(
+            jsonClientResponse => new DialogServiceResponse<Dialog>(jsonClientResponse).responseValue()
         );
     }
 
-    public getViews(
-        tenantId: string,
-        sessionId: string,
-        dialogId: string
-    ): Promise<Array<ViewDescriptor>> {
-        return this.get(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/availableViews`
-        ).then(jsonClientResponse =>
-            new DialogServiceResponse<Array<View>>(jsonClientResponse).responseValue()
+    public getViews(tenantId: string, sessionId: string, dialogId: string): Promise<Array<ViewDescriptor>> {
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/availableViews`).then(
+            jsonClientResponse => new DialogServiceResponse<Array<View>>(jsonClientResponse).responseValue()
         );
     }
 

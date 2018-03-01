@@ -1,28 +1,28 @@
+import { DialogService } from '../dialog';
 import { CatavoltApi } from '../dialog/CatavoltApi';
+import { Base64 } from '../util/Base64';
 import { ActionParameters } from './ActionParameters';
 import { Attachment } from './Attachment';
-import { Binary } from './Binary';
 import { DialogException } from './DialogException';
-import { EncodedBinary } from './EncodedBinary';
 import { ErrorMessage } from './ErrorMessage';
-import { InlineBinaryRef } from './InlineBinaryRef';
+import { LargeProperty } from './LargeProperty';
 import { Menu } from './Menu';
-import { ObjectBinaryRef } from './ObjectBinaryRef';
 import { Property } from './Property';
 import { PropertyDef } from './PropertyDef';
 import { PropertyFormatter } from './PropertyFormatter';
+import { ReadLargePropertyParameters } from './ReadLargePropertyParameters';
 import { Record } from './Record';
 import { RecordDef } from './RecordDef';
 import { Redirection } from './Redirection';
 import { RedirectionUtil } from './RedirectionUtil';
 import { ReferringDialog } from './ReferringDialog';
 import { ReferringObject } from './ReferringObject';
-import { ViewMode } from './types';
 import { DialogType } from './types';
 import { DialogMode, DialogModeEnum } from './types';
-import { UrlBinary } from './UrlBinary';
+import { TypeNames, ViewMode } from './types';
 import { View } from './View';
 import { ViewDescriptor } from './ViewDescriptor';
+import { WriteLargePropertyParameters } from './WriteLargePropertyParams';
 
 /**
  * Top-level class, representing a Catavolt 'Dialog' definition.
@@ -35,7 +35,7 @@ export abstract class Dialog {
     private static CHAR_CHUNK_SIZE = 128 * 1000; // size in chars for encoded 'write' operation
 
     public readonly availableViews: ViewDescriptor[];
-    public readonly businessClassName: string;
+    public readonly domainClassName: string;
     public readonly children: Dialog[] = [];
     public readonly description: string;
     public readonly dialogClassName: string;
@@ -52,7 +52,6 @@ export abstract class Dialog {
     public readonly viewMode: ViewMode;
 
     // private/protected
-    private _binaryCache: { [index: string]: Binary[] } = {};
     private _lastRefreshTime: Date = new Date(0);
     private _catavolt: CatavoltApi;
     // protected _parentDialog;
@@ -61,39 +60,6 @@ export abstract class Dialog {
 
     get catavolt(): CatavoltApi {
         return this._catavolt;
-    }
-
-    /**
-     * Load a Binary property from a record
-     * @param propName
-     * @param record
-     * @returns {}
-     */
-    public binaryAt(propName: string, record: Record): Promise<Binary> {
-        const prop: Property = record.propAtName(propName);
-        if (prop) {
-            if (prop.value instanceof InlineBinaryRef) {
-                const binRef = prop.value as InlineBinaryRef;
-                return Promise.resolve(
-                    new EncodedBinary(binRef.inlineData, binRef.settings['mime-type'])
-                );
-            } else if (prop.value instanceof ObjectBinaryRef) {
-                const binRef = prop.value as ObjectBinaryRef;
-                if (binRef.settings.webURL) {
-                    return Promise.resolve(new UrlBinary(binRef.settings.webURL));
-                } else {
-                    return this.readBinary(propName, record);
-                }
-            } else if (typeof prop.value === 'string') {
-                return Promise.resolve(new UrlBinary(prop.value));
-            } else if (prop.value instanceof EncodedBinary) {
-                return Promise.resolve(prop.value);
-            } else {
-                return Promise.reject('No binary found at ' + propName);
-            }
-        } else {
-            return Promise.reject('No binary found at ' + propName);
-        }
     }
 
     public destroy() {
@@ -131,10 +97,7 @@ export abstract class Dialog {
      */
 
     public formatForRead(prop: Property, propName: string): string {
-        return PropertyFormatter.singleton(this._catavolt).formatForRead(
-            prop,
-            this.propDefAtName(propName)
-        );
+        return PropertyFormatter.singleton(this._catavolt).formatForRead(prop, this.propDefAtName(propName));
     }
 
     /**
@@ -145,10 +108,7 @@ export abstract class Dialog {
      * @returns {string}
      */
     public formatForWrite(prop: Property, propName: string): string {
-        return PropertyFormatter.singleton(this.catavolt).formatForWrite(
-            prop,
-            this.propDefAtName(propName)
-        );
+        return PropertyFormatter.singleton(this.catavolt).formatForWrite(prop, this.propDefAtName(propName));
     }
 
     /**
@@ -232,10 +192,7 @@ export abstract class Dialog {
      * @returns {}
      */
     public parseValue(formattedValue: any, propName: string): any {
-        return PropertyFormatter.singleton(this._catavolt).parse(
-            formattedValue,
-            this.propDefAtName(propName)
-        );
+        return PropertyFormatter.singleton(this._catavolt).parse(formattedValue, this.propDefAtName(propName));
     }
 
     /**
@@ -248,21 +205,61 @@ export abstract class Dialog {
     }
 
     /**
-     * Read all the Binary values in this {@link Record}
+     * Read all the large property values in this {@link Record}
      *
-     * @param {Record} record
-     * @returns {Promise<Binary[]>}
+     * @param {string} recordId
+     * @returns {Promise<LargeProperty[]>}
      */
-    public readBinaries(record: Record): Promise<Binary[]> {
+    public readLargeProperties(recordId: string): Promise<LargeProperty[]> {
         return Promise.all(
             this.recordDef.propertyDefs
                 .filter((propDef: PropertyDef) => {
-                    return propDef.isBinaryType;
+                    return propDef.isLargePropertyType;
                 })
                 .map((propDef: PropertyDef) => {
-                    return this.readBinary(propDef.propertyName, record);
+                    return this.readLargeProperty(propDef.propertyName, recordId);
                 })
         );
+    }
+
+    /**
+     * Read a large property and return it
+     *
+     * @param {string} propertyName
+     * @param {string} recordId
+     * @returns {Promise<LargeProperty>}
+     */
+    public readLargeProperty(propertyName: string, recordId?: string): Promise<LargeProperty> {
+        let sequence: number = 0;
+        let resultBuffer: string = '';
+        const f: (largeProperty: LargeProperty) => Promise<LargeProperty> = (largeProperty: LargeProperty) => {
+            if (largeProperty.hasMore) {
+                resultBuffer += Base64.decode(largeProperty.encodedData); // If data is in multiple loads, it must be decoded/built/encoded
+                const params: ReadLargePropertyParameters = {
+                    maxBytes: Dialog.BINARY_CHUNK_SIZE,
+                    sequence: ++sequence,
+                    recordId,
+                    type: TypeNames.ReadLargePropertyParameters
+                };
+                return this.getProperty(propertyName, params).then(f);
+            } else {
+                if (resultBuffer) {
+                    resultBuffer += Base64.decode(largeProperty.encodedData);
+                    return Promise.resolve<LargeProperty>(
+                        largeProperty.asNewLargeProperty(Base64.encode(resultBuffer))
+                    );
+                } else {
+                    return Promise.resolve<LargeProperty>(largeProperty.asNewLargeProperty(largeProperty.encodedData));
+                }
+            }
+        };
+        const initParams: ReadLargePropertyParameters = {
+            maxBytes: Dialog.BINARY_CHUNK_SIZE,
+            sequence,
+            recordId,
+            type: TypeNames.ReadLargePropertyParameters
+        };
+        return this.getProperty(propertyName, initParams).then(f);
     }
 
     /*
@@ -307,38 +304,53 @@ export abstract class Dialog {
      * @returns {Promise<void[]>}
      */
 
-    /* @TODO */
-    public writeBinaries(record: Record): Promise<void[]> {
-        /*return Promise.all(
-            record.properties.filter((prop: Property) => {
-                return this.propDefAtName(prop.name).isBinaryType;
-            }).map((prop: Property) => {
-                let writePromise:Promise<XWritePropertyResult> = Promise.resolve({} as XWritePropertyResult);
-                if (prop.value) {
-                    let ptr: number = 0;
-                    const encBin: EncodedBinary = prop.value as EncodedBinary;
-                    const data = encBin.data;
-                    while (ptr < data.length) {
-                        const boundPtr = (ptr: number) => {
-                            writePromise = writePromise.then((prevResult) => {
-                                const encSegment: string = (ptr + Dialog.CHAR_CHUNK_SIZE) <= data.length ? data.substr(ptr, Dialog.CHAR_CHUNK_SIZE) : data.substring(ptr);
-                                return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, encSegment, ptr != 0, this.session);
-                            });
-                        }
-                        boundPtr(ptr);
-                        ptr += Dialog.CHAR_CHUNK_SIZE;
-                    }
-                } else {
-                    // This is a delete
-                    writePromise = writePromise.then((prevResult) => {
-                        return DialogService.writeProperty(this.paneDef.dialogRedirection.dialogHandle, prop.name, null, false, this.sessionContext);
-                    });
-                }
-                return writePromise;
-            })
-        );*/
+    public writeLargeProperties(record: Record): Promise<void[]> {
+        return Promise.all(
+            record.properties
+                .filter((prop: Property) => {
+                    return this.propDefAtName(prop.name).isLargePropertyType;
+                })
+                .map((prop: Property) => {
+                    return this.writeLargeProperty(prop.name, prop.value as LargeProperty);
+                })
+        );
+    }
 
-        return Promise.resolve(null);
+    public writeLargeProperty(propertyName: string, largeProperty: LargeProperty): Promise<void> {
+        const data = largeProperty.encodedData;
+        const f: (prt: number) => Promise<void> = (ptr: number) => {
+            if (ptr < data.length) {
+                const encSegment: string =
+                    ptr + Dialog.CHAR_CHUNK_SIZE <= data.length
+                        ? data.substr(ptr, Dialog.CHAR_CHUNK_SIZE)
+                        : data.substring(ptr);
+                const params: WriteLargePropertyParameters = {
+                    append: ptr !== 0,
+                    encodedData: encSegment,
+                    type: TypeNames.WriteLargePropertyParameters
+                };
+                return this.catavolt.dialogApi
+                    .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, params)
+                    .then(() => {
+                        f(ptr + Dialog.CHAR_CHUNK_SIZE);
+                    });
+            } else {
+                return Promise.resolve();
+            }
+        };
+
+        // This is a delete
+        if (!largeProperty || !largeProperty.encodedData) {
+            return this.catavolt.dialogApi
+                .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, {
+                    append: false,
+                    encodedData: null,
+                    type: TypeNames.WriteLargePropertyParameters
+                })
+                .then(() => Promise.resolve());
+        }
+
+        return f(0);
     }
 
     public initialize(catavolt: CatavoltApi) {
@@ -352,44 +364,23 @@ export abstract class Dialog {
         }
     }
 
-    protected invokeMenuActionWithId(
-        actionId: string,
-        actionParams: ActionParameters
-    ): Promise<{ actionId: string } | Redirection> {
+    protected invokeMenuActionWithId(actionId: string, actionParams: ActionParameters): Promise<Redirection> {
         return this.catavolt.dialogApi
-            .performAction(
-                this.catavolt.session.tenantId,
-                this.catavolt.session.id,
-                this.id,
-                actionId,
-                actionParams
-            )
-            .then((result: { actionId: string } | Redirection) => {
-                if (RedirectionUtil.isRedirection(result)) {
-                    // @TODO - update relevant referring dialog settings on 'this' dialog
-                    this.updateSettingsWithNewDialogProperties(
-                        (result as Redirection).referringObject
-                    );
-
-                    // @TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
+            .performAction(this.tenantId, this.sessionId, this.id, actionId, actionParams)
+            .then((result: Redirection) => {
+                // @TODO - update relevant referring dialog settings on 'this' dialog
+                this.updateSettingsWithNewDialogProperties(result.referringObject);
+                // @TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
+                if (result.referringObject && result.referringObject['dialogProperties']) {
+                    const dialogProps = result.referringObject['dialogProperties'];
                     if (
-                        (result as Redirection).referringObject &&
-                        (result as Redirection).referringObject['dialogProperties']
+                        (dialogProps.localRefresh && dialogProps.localRefresh === 'true') ||
+                        (dialogProps.globalRefresh && dialogProps.globalRefresh === 'true')
                     ) {
-                        const dialogProps = (result as Redirection).referringObject[
-                            'dialogProperties'
-                        ];
-                        if (
-                            (dialogProps.localRefresh && dialogProps.localRefresh === 'true') ||
-                            (dialogProps.globalRefresh && dialogProps.globalRefresh === 'true')
-                        ) {
-                            this.catavolt.dataLastChangedTime = new Date();
-                        }
-                        // @TODO - also, this check should go away - we will rely on 'isLocalRefreshNeeded' exclusively
-                    } else if (RedirectionUtil.isNullRedirection(result)) {
                         this.catavolt.dataLastChangedTime = new Date();
                     }
-                } else {
+                    // @TODO - remove this - we will rely on 'isLocalRefreshNeeded' exclusively
+                } else if (RedirectionUtil.isNullRedirection(result)) {
                     this.catavolt.dataLastChangedTime = new Date();
                 }
                 return result;
@@ -403,44 +394,8 @@ export abstract class Dialog {
      * @param {ActionParameters} actionParams
      * @returns {Promise<{actionId: string} | Redirection>}
      */
-    protected invokeMenuAction(
-        menu: Menu,
-        actionParams: ActionParameters
-    ): Promise<{ actionId: string } | Redirection> {
+    protected invokeMenuAction(menu: Menu, actionParams: ActionParameters): Promise<Redirection> {
         return this.invokeMenuActionWithId(menu.actionId, actionParams);
-    }
-
-    // @TODO
-    /**
-     *
-     * @param {string} propName
-     * @param {Record} record
-     * @returns {Promise<Binary>}
-     */
-    protected readBinary(propName: string, record: Record): Promise<Binary> {
-        /*
-        let seq: number = 0;
-        let encodedResult: string = '';
-        let inProgress: string = '';
-        let f: (XReadPropertyResult) => Promise<Binary> = (result: XReadPropertyResult) => {
-            if (result.hasMore) {
-                inProgress += atob(result.data);  // If data is in multiple loads, it must be decoded/built/encoded
-                return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
-                    propName, ++seq, Dialog.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-            } else {
-                if (inProgress) {
-                    inProgress += atob(result.data);
-                    encodedResult = btoa(inProgress);
-                } else {
-                    encodedResult = result.data;
-                }
-                return Promise.resolve<Binary>(new EncodedBinary(encodedResult));
-            }
-        }
-        return DialogService.readEditorProperty(this.paneDef.dialogRedirection.dialogHandle,
-            propName, seq, Dialog.BINARY_CHUNK_SIZE, this.sessionContext).bind(f);
-            */
-        return Promise.resolve(null);
     }
 
     protected updateSettingsWithNewDialogProperties(referringObject: ReferringObject) {
@@ -451,6 +406,10 @@ export abstract class Dialog {
             }
         }
     }
+
+    // protected abstract
+
+    protected abstract getProperty(propertyName: string, params: ReadLargePropertyParameters): Promise<LargeProperty>;
 
     /**
      * @private

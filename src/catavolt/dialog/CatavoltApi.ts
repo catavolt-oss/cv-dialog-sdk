@@ -1,11 +1,4 @@
-import {
-    ClientType,
-    Dialog,
-    DialogRedirection,
-    Redirection,
-    Session,
-    WorkbenchAction
-} from '../models';
+import { ClientType, Dialog, DialogRedirection, Redirection, Session, WorkbenchAction } from '../models';
 import { CvLocale } from '../util';
 import { FeatureSet } from './Catavolt';
 import { DialogApi } from './DialogApi';
@@ -85,12 +78,7 @@ export interface CatavoltApi {
      *
      * @returns {Promise<Session | Redirection>}
      */
-    login(
-        tenantId: string,
-        clientType: ClientType,
-        userId: string,
-        password: string
-    ): Promise<Session | Redirection>;
+    login(tenantId: string, clientType: ClientType, userId: string, password: string): Promise<Session | Redirection>;
 
     /**
      * Logout and destroy the session
@@ -111,9 +99,7 @@ export interface CatavoltApi {
      * @param workbenchAction
      * @returns {Promise<{actionId:string} | Redirection>}
      */
-    performWorkbenchAction(
-        workbenchAction: WorkbenchAction
-    ): Promise<{ actionId: string } | Redirection>;
+    performWorkbenchAction(workbenchAction: WorkbenchAction): Promise<{ actionId: string } | Redirection>;
 
     /**
      * Open a {@link WorkbenchWorkbenchAction}

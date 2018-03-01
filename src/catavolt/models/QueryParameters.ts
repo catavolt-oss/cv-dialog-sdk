@@ -7,6 +7,6 @@ import { QueryDirection } from './types';
 export interface QueryParameters {
     fetchDirection: QueryDirection;
     fetchMaxRecords: number;
-    fromBusinessId?: string;
+    fromRecordId?: string;
     type: string;
 }

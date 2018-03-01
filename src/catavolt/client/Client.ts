@@ -11,29 +11,13 @@ export interface Client {
 
     getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse>;
 
-    postMultipart<T>(
-        baseUrl: string,
-        resourcePath: string,
-        formData: FormData
-    ): Promise<VoidClientResponse>;
+    postMultipart<T>(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse>;
 
-    getJson(
-        baseUrl: string,
-        resourcePath: string,
-        queryParams?: StringDictionary
-    ): Promise<JsonClientResponse>;
+    getJson(baseUrl: string, resourcePath: string, queryParams?: StringDictionary): Promise<JsonClientResponse>;
 
-    postJson(
-        baseUrl: string,
-        resourcePath: string,
-        body?: StringDictionary
-    ): Promise<JsonClientResponse>;
+    postJson(baseUrl: string, resourcePath: string, body?: StringDictionary): Promise<JsonClientResponse>;
 
-    putJson(
-        baseUrl: string,
-        resourcePath: string,
-        body?: StringDictionary
-    ): Promise<JsonClientResponse>;
+    putJson(baseUrl: string, resourcePath: string, body?: StringDictionary): Promise<JsonClientResponse>;
 
     deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse>;
 

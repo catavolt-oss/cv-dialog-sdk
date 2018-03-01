@@ -23,9 +23,7 @@ export class PrintMarkup extends View {
                     cell.values.forEach((cellValue: CellValue) => {
                         if (cellValue instanceof AttributeCellValue) {
                             const attributeCellValue = cellValue as AttributeCellValue;
-                            this._orderedCellValue[
-                                attributeCellValue.propertyName
-                            ] = attributeCellValue;
+                            this._orderedCellValue[attributeCellValue.propertyName] = attributeCellValue;
                         }
                     });
                 });

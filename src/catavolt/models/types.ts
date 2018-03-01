@@ -1,8 +1,4 @@
-export type AttributeCellValueEntryMethod =
-    | 'COMBO_BOX'
-    | 'DROP_DOWN'
-    | 'TEXT_FIELD'
-    | 'ICON_CHOOSER';
+export type AttributeCellValueEntryMethod = 'COMBO_BOX' | 'DROP_DOWN' | 'TEXT_FIELD' | 'ICON_CHOOSER';
 export type ClientType = 'DESKTOP' | 'MOBILE';
 export type DialogMessageMessageType = 'CONFIRM' | 'ERROR' | 'INFO' | 'WARN';
 
@@ -85,6 +81,7 @@ export enum TypeNames {
     GpsReadingTypeName = 'hxgn.api.dialog.GpsReading',
     GpsReadingPropertyTypeName = 'hxgn.api.dialog.GpsReadingProperty',
     GraphTypeName = 'hxgn.api.dialog.Graph',
+    LargePropertyTypeName = 'hxgn.api.dialog.LargeProperty',
     ListTypeName = 'hxgn.api.dialog.List',
     LoginTypeName = 'hxgn.api.dialog.Login',
     MapTypeName = 'hxgn.api.dialog.Map',
@@ -95,6 +92,7 @@ export enum TypeNames {
     PropertyTypeName = 'hxgn.api.dialog.Property',
     QueryDialogTypeName = 'hxgn.api.dialog.QueryDialog',
     QueryParametersTypeName = 'hxgn.api.dialog.QueryParameters',
+    ReadLargePropertyParameters = 'hxgn.api.dialog.ReadLargePropertyParameters',
     RecordTypeName = 'hxgn.api.dialog.Record',
     ReferringDialogTypeName = 'hxgn.api.dialog.ReferringDialog',
     ReferringWorkbenchTypeName = 'hxgn.api.dialog.ReferringWorkbench',
@@ -102,5 +100,6 @@ export enum TypeNames {
     StreamTypeName = 'hxgn.api.dialog.Stream',
     WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
     WorkbenchTypeName = 'hxgn.api.dialog.Workbench',
-    WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection'
+    WorkbenchRedirectionTypeName = 'hxgn.api.dialog.WorkbenchRedirection',
+    WriteLargePropertyParameters = 'hxgn.api.dialog.WriteLargePropertyParameters'
 }

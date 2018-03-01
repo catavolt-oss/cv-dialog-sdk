@@ -14,14 +14,13 @@ import { Form } from './Form';
 import { GpsReading } from './GpsReading';
 import { GpsReadingProperty } from './GpsReadingProperty';
 import { Graph } from './Graph';
-import { InlineBinaryRef } from './InlineBinaryRef';
 import { LabelCellValue } from './LabelCellValue';
+import { LargeProperty } from './LargeProperty';
 import { List } from './List';
 import { Map } from './Map';
 import { MapLocation } from './MapLocation';
 import { MapLocationProperty } from './MapLocationProperty';
 import { Menu } from './Menu';
-import { ObjectBinaryRef } from './ObjectBinaryRef';
 import { ObjectRef } from './ObjectRef';
 import { Property } from './Property';
 import { PropertyDef } from './PropertyDef';
@@ -53,12 +52,11 @@ export class ModelUtil {
         'hxgn.api.dialog.MapLocation': MapLocation,
         'hxgn.api.dialog.MapLocationProperty': MapLocationProperty,
         'hxgn.api.dialog.Graph': Graph,
-        'hxgn.api.dialog.InlineBinaryRef': InlineBinaryRef,
         'hxgn.api.dialog.LabelCellValue': LabelCellValue,
+        'hxgn.api.dialog.LargeProperty': LargeProperty,
         'hxgn.api.dialog.List': List,
         'hxgn.api.dialog.Map': Map,
         'hxgn.api.dialog.Menu': Menu,
-        'hxgn.api.dialog.ObjectBinaryRef': ObjectBinaryRef,
         'hxgn.api.dialog.ObjectRef': ObjectRef,
         'hxgn.api.dialog.Property': Property,
         'hxgn.api.dialog.PropertyDef': PropertyDef,

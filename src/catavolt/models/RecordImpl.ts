@@ -119,9 +119,7 @@ export class RecordImpl implements Record {
 
     public isPlacementStretchUnderFor(propName: string): boolean {
         const p = this.propAtName(propName);
-        return p && p.isPlacementStretchUnder
-            ? p.isPlacementStretchUnder
-            : this.isPlacementStretchUnder;
+        return p && p.isPlacementStretchUnder ? p.isPlacementStretchUnder : this.isPlacementStretchUnder;
     }
 
     get isPlacementUnder(): boolean {

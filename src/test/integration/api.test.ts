@@ -5,6 +5,7 @@
 import test from "blue-tape";
 
 import {Catavolt, propertyFormatter} from "../../catavolt/dialog/Catavolt";
+import {LargeProperty, PropertyDef} from "../../catavolt/models";
 import {Cell} from "../../catavolt/models/Cell";
 import {CellValue} from "../../catavolt/models/CellValue";
 import {Details} from "../../catavolt/models/Details";
@@ -28,7 +29,7 @@ import {LogLevel} from "../../catavolt/util/Log";
  */
 /* tslint:disable */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['', '', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 const currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;
@@ -204,15 +205,36 @@ test("Read A Record From An EditorDialog Test", (t) => {
 
 
     // Read the Record data
-    //@TODO Dialog API needs a fix here for BinaryProperty
-    //return editorDialog.read().then((record:Record)=>{
-    //    t.ok(record);
-    //    t.comment(`>  Record is: ${record.propValues.join(', ')}`);
-     //   return record;
-    //});
+    return editorDialog.read().then((record:Record)=>{
+       t.ok(record);
+       t.comment(`>  Record is: ${record.propValues.join(', ')}`);
+       return record;
+    });
 
-    return Promise.resolve(true);
+});
 
+test("Read A Binary Property From EditorDialog Test", (t) => {
+
+    const editorDialog = currentDialog.children[0] as EditorDialog;
+    const details:Details = editorDialog.view as Details;
+
+    return editorDialog.read().then((record:Record)=>{
+
+        const largePropDefs = editorDialog.recordDef.propertyDefs
+                    .filter((propDef:PropertyDef) => propDef.isLargePropertyType);
+        const loadPrArray = largePropDefs.map((propDef:PropertyDef) => {
+            return editorDialog.readLargeProperty(propDef.propertyName, record.id);
+        });
+        return Promise.all(loadPrArray).then((largeProperties:Array<LargeProperty>) => {
+           t.ok(largeProperties);
+           t.comment(`    Read ${largeProperties.length} LargeProperties`);
+           largeProperties.forEach((largeProperty:LargeProperty) => {
+              t.comment(`>    ${largeProperty.toUrl()}`);
+           });
+           return largeProperties;
+        });
+
+    });
 
 });
 

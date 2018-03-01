@@ -29,12 +29,12 @@ export class QueryScroller {
     private _hasMoreForward: boolean;
     private _nextPagePromise: Promise<RecordSet>;
     private _prevPagePromise: Promise<RecordSet>;
-    private _firstResultOid: string;
+    private _firstResultRecordId: string;
 
     constructor(
         private _dialog: QueryDialog,
         private _defaultPageSize: number,
-        private _firstObjectId: string,
+        private _firstRecordId: string,
         private _markerOptions: QueryMarkerOption[] = []
     ) {
         this.clear();
@@ -71,8 +71,8 @@ export class QueryScroller {
         return this._dialog;
     }
 
-    get firstObjectId(): string {
-        return this._firstObjectId;
+    get firstRecordId(): string {
+        return this._firstRecordId;
     }
 
     get hasMoreBackward(): boolean {
@@ -102,16 +102,12 @@ export class QueryScroller {
 
         if (this._prevPagePromise) {
             this._prevPagePromise = this._prevPagePromise.then((recordSet: RecordSet) => {
-                const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
-                return this._dialog.query(pageSize, QueryDirectionEnum.BACKWARD, fromObjectId);
+                const fromRecordId = this._buffer.length === 0 ? null : this._buffer[0].id;
+                return this._dialog.query(pageSize, QueryDirectionEnum.BACKWARD, fromRecordId);
             });
         } else {
-            const fromObjectId = this._buffer.length === 0 ? null : this._buffer[0].id;
-            this._prevPagePromise = this._dialog.query(
-                pageSize,
-                QueryDirectionEnum.BACKWARD,
-                fromObjectId
-            );
+            const fromRecordId = this._buffer.length === 0 ? null : this._buffer[0].id;
+            this._prevPagePromise = this._dialog.query(pageSize, QueryDirectionEnum.BACKWARD, fromRecordId);
         }
 
         return this._prevPagePromise.then((queryResult: RecordSet) => {
@@ -137,18 +133,12 @@ export class QueryScroller {
 
         if (this._nextPagePromise) {
             this._nextPagePromise = this._nextPagePromise.then((recordSet: RecordSet) => {
-                const fromObjectId =
-                    this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
-                return this._dialog.query(pageSize, QueryDirectionEnum.FORWARD, fromObjectId);
+                const fromRecordId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
+                return this._dialog.query(pageSize, QueryDirectionEnum.FORWARD, fromRecordId);
             });
         } else {
-            const fromObjectId =
-                this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
-            this._nextPagePromise = this._dialog.query(
-                pageSize,
-                QueryDirectionEnum.FORWARD,
-                fromObjectId
-            );
+            const fromRecordId = this._buffer.length === 0 ? null : this._buffer[this._buffer.length - 1].id;
+            this._nextPagePromise = this._dialog.query(pageSize, QueryDirectionEnum.FORWARD, fromRecordId);
         }
 
         return this._nextPagePromise.then((queryResult: RecordSet) => {
@@ -175,7 +165,7 @@ export class QueryScroller {
         this.clear();
         return this.pageForward(numRows).then((recordList: Record[]) => {
             if (recordList.length > 0) {
-                this._firstResultOid = recordList[0].id;
+                this._firstResultRecordId = recordList[0].id;
             }
             return recordList;
         });
@@ -200,9 +190,9 @@ export class QueryScroller {
     }
 
     private clear() {
-        this._hasMoreBackward = !!this._firstObjectId;
+        this._hasMoreBackward = !!this._firstRecordId;
         this._hasMoreForward = true;
         this._buffer = [];
-        this._firstResultOid = null;
+        this._firstResultRecordId = null;
     }
 }

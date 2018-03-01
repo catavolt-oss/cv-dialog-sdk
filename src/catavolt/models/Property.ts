@@ -187,9 +187,7 @@ export class Property {
 
     private static parseJSONValue(value: any, format: string): any {
         if (typeof value === 'string' && format) {
-            if (
-                ['integer', 'decimal', 'int32', 'int64', 'float', 'double'].some(v => format === v)
-            ) {
+            if (['integer', 'decimal', 'int32', 'int64', 'float', 'double'].some(v => format === v)) {
                 return Number(value);
             } else if (format === 'date') {
                 // parse as ISO - no offset specified by server right now, so we assume local time

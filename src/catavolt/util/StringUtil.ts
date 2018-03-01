@@ -34,11 +34,7 @@ export class StringUtil {
         return hash;
     }
 
-    public static endsWith(
-        subjectString: string,
-        searchString: string,
-        position?: number
-    ): boolean {
+    public static endsWith(subjectString: string, searchString: string, position?: number): boolean {
         if (
             typeof position !== 'number' ||
             !isFinite(position) ||

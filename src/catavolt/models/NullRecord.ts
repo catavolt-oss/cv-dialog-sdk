@@ -123,10 +123,6 @@ export class NullRecord implements Record {
         return false;
     }
 
-    get objectId(): string {
-        return null;
-    }
-
     get overrideText(): string {
         return null;
     }

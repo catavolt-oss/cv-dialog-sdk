@@ -23,9 +23,7 @@ export class ServiceWorker {
                 return Promise.all(
                     keyList.map(key => {
                         if (ActiveCacheNames.indexOf(key) === -1) {
-                            console.log(
-                                `${MessagePrefix} activate() deleting expired cache: ${key}`
-                            );
+                            console.log(`${MessagePrefix} activate() deleting expired cache: ${key}`);
                             return caches.delete(key);
                         }
                     })
@@ -97,9 +95,9 @@ export class ServiceWorker {
         fetchCount++;
         const thisFetchId = fetchCount;
         console.log(
-            `${MessagePrefix} Begin fetchFromCache() ${thisFetchId} request: ${
-                event.request.method
-            } ${event.request.url}`
+            `${MessagePrefix} Begin fetchFromCache() ${thisFetchId} request: ${event.request.method} ${
+                event.request.url
+            }`
         );
         event.respondWith(
             caches.match(event.request).then(cachedResponse => {
@@ -107,17 +105,13 @@ export class ServiceWorker {
                     return cachedResponse;
                 }
                 console.log(
-                    `${MessagePrefix} fetchFromCache() ${thisFetchId} response NOT found in cache: ${
-                        event.request.url
-                    }`
+                    `${MessagePrefix} fetchFromCache() ${thisFetchId} response NOT found in cache: ${event.request.url}`
                 );
                 return fetch(event.request.clone());
             })
         );
         console.log(
-            `${MessagePrefix} End fetchFromCache() ${thisFetchId} request: ${
-                event.request.method
-            } ${event.request.url}`
+            `${MessagePrefix} End fetchFromCache() ${thisFetchId} request: ${event.request.method} ${event.request.url}`
         );
     }
 
@@ -168,9 +162,7 @@ export class ServiceWorker {
                     'lib/toastr.min.js',
                     'react-widgets/css/react-widgets.css'
                 ];
-                console.log(
-                    `${MessagePrefix} install() adding resources to cache: ${resourceList}`
-                );
+                console.log(`${MessagePrefix} install() adding resources to cache: ${resourceList}`);
                 return cache.addAll(resourceList);
             })
         );
@@ -178,10 +170,6 @@ export class ServiceWorker {
     }
 
     public static isDialogRequest(path: string[]): boolean {
-        return (
-            path.length > 3 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS
-        );
+        return path.length > 3 && path[0] == PersistenceTools.TENANTS && path[2] == PersistenceTools.SESSIONS;
     }
 }

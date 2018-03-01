@@ -13,8 +13,7 @@ export class BriefcaseTemplate {
         viewMode: 'READ',
         dialogClassName: 'com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel',
         dialogType: 'hxgn.api.dialog.EditorDialog',
-        businessClassName:
-            'cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase',
+        businessClassName: 'cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase',
         tenantId: 'hexagonsdaop',
         id: 'a1',
         selectedViewId: 'AAABACcXAAAAAF8e',
@@ -70,8 +69,7 @@ export class BriefcaseTemplate {
         type: 'hxgn.api.dialog.EditorDialog',
         viewMode: 'READ',
         dialogClassName: 'com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel',
-        businessClassName:
-            'cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase',
+        businessClassName: 'cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase',
         view: {
             formLayout: 'TOP_DOWN',
             name: 'Default',
@@ -139,8 +137,7 @@ export class BriefcaseTemplate {
         },
         children: [
             {
-                businessClassName:
-                    'cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase',
+                businessClassName: 'cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase',
                 view: {
                     commitButtonText: 'Cancel',
                     editable: true,
@@ -268,8 +265,7 @@ export class BriefcaseTemplate {
                 type: 'hxgn.api.dialog.EditorDialog',
                 viewMode: 'READ',
                 selectedViewId: 'AAABACcXAAAAAF8e',
-                dialogClassName:
-                    'com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel'
+                dialogClassName: 'com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel'
             },
             {
                 recordDef: {
@@ -350,10 +346,8 @@ export class BriefcaseTemplate {
                 type: 'hxgn.api.dialog.QueryDialog',
                 viewMode: 'READ',
                 supportsPositionalQueries: true,
-                dialogClassName:
-                    'com.catavolt.app.extender.dialog.CatavoltSatelliteEntityQueryModel',
-                businessClassName:
-                    'cx.AAABACcSAAAAAF9J.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.workpackage',
+                dialogClassName: 'com.catavolt.app.extender.dialog.CatavoltSatelliteEntityQueryModel',
+                businessClassName: 'cx.AAABACcSAAAAAF9J.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.workpackage',
                 view: {
                     fixedColumnCount: 3,
                     columns: [
@@ -574,10 +568,8 @@ export class BriefcaseTemplate {
                 type: 'hxgn.api.dialog.QueryDialog',
                 viewMode: 'READ',
                 supportsPositionalQueries: true,
-                dialogClassName:
-                    'com.catavolt.app.extender.dialog.CatavoltSatelliteEntityQueryModel',
-                businessClassName:
-                    'cx.AAABACcSAAAAAF-E.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.mobilecomment',
+                dialogClassName: 'com.catavolt.app.extender.dialog.CatavoltSatelliteEntityQueryModel',
+                businessClassName: 'cx.AAABACcSAAAAAF-E.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.mobilecomment',
                 view: {
                     fixedColumnCount: 3,
                     columns: [

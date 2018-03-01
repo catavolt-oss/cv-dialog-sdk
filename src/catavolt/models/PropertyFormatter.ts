@@ -159,12 +159,7 @@ export class PropertyFormatter {
      * @returns {string}
      */
     public formatForWrite(prop: Property, propDef: PropertyDef): string {
-        if (
-            prop === null ||
-            prop === undefined ||
-            prop.value === null ||
-            prop.value === undefined
-        ) {
+        if (prop === null || prop === undefined || prop.value === null || prop.value === undefined) {
             return null;
         } else if ((propDef && propDef.isCodeRefType) || prop.value instanceof CodeRef) {
             return (prop.value as CodeRef).description;

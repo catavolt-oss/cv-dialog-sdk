@@ -29,11 +29,7 @@ export class FetchClient implements Client {
         });
     }
 
-    public postMultipart(
-        baseUrl: string,
-        resourcePath: string,
-        formData: FormData
-    ): Promise<VoidClientResponse> {
+    public postMultipart(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return this.processRequest(url, 'POST', formData).then((response: Response) => {
             return new VoidClientResponse(response.status);
@@ -47,9 +43,7 @@ export class FetchClient implements Client {
     ): Promise<JsonClientResponse> {
         const headers = { Accept: 'application/json' };
         const queryString = this.encodeQueryParams(queryParams);
-        const url = resourcePath
-            ? `${baseUrl}/${resourcePath}${queryString}`
-            : `${baseUrl}${queryString}`;
+        const url = resourcePath ? `${baseUrl}/${resourcePath}${queryString}` : `${baseUrl}${queryString}`;
         return this.processRequest(url, 'GET', null, headers).then((response: Response) => {
             return this.assertJsonContentType(response.headers.get('content-type')).then(() => {
                 return response.json().then(json => new JsonClientResponse(json, response.status));
@@ -61,11 +55,7 @@ export class FetchClient implements Client {
         return this._lastActivity;
     }
 
-    public postJson(
-        baseUrl: string,
-        resourcePath: string,
-        jsonBody?: StringDictionary
-    ): Promise<JsonClientResponse> {
+    public postJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
         const headers = {
             Accept: 'application/json',
             'Content-Type': 'application/json;charset=UTF-8'
@@ -79,11 +69,7 @@ export class FetchClient implements Client {
         });
     }
 
-    public putJson(
-        baseUrl: string,
-        resourcePath: string,
-        jsonBody?: StringDictionary
-    ): Promise<JsonClientResponse> {
+    public putJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
         const headers = {
             Accept: 'application/json',
             'Content-Type': 'application/json;charset=UTF-8'
@@ -126,9 +112,7 @@ export class FetchClient implements Client {
         if (queryParams) {
             for (const name in queryParams) {
                 if (queryParams.hasOwnProperty(name)) {
-                    result += `${encodeURIComponent(name)}=${encodeURIComponent(
-                        queryParams[name]
-                    )}&`;
+                    result += `${encodeURIComponent(name)}=${encodeURIComponent(queryParams[name])}&`;
                 }
             }
         }

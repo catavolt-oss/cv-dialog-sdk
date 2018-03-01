@@ -468,9 +468,7 @@ export class PrintCell extends Container {
         return this._grid.layout.heights[this.layout.row].value;
     }
     get cellWidth(): number {
-        return this._grid.layout.widths[this.layout.column].resolveWithFill(
-            this._grid.containerWidth
-        );
+        return this._grid.layout.widths[this.layout.column].resolveWithFill(this._grid.containerWidth);
     }
     get componentChildren(): Array<Component> {
         const answer: Array<Component> = [];
@@ -712,10 +710,7 @@ export class PrintForm extends Container {
             const g: Grid = new Grid(p);
             const c: PrintCell = new PrintCell(g);
             c.initCellWith(new Layout(null, 0, 0, 0, 0, 0, 0), this.children);
-            g.initGridWith(
-                new Layout(null, 0, 0, this.layout.singleWidthNum(), this.layout.singleHeightNum()),
-                [c]
-            );
+            g.initGridWith(new Layout(null, 0, 0, this.layout.singleWidthNum(), this.layout.singleHeightNum()), [c]);
             p.initPageWith(g);
             this.assignChildren([p]);
         }
@@ -755,13 +750,9 @@ export class Grid extends Container {
             let colStart = 0;
             for (let c = 0; c < cols; c++) {
                 let rowStart = 0;
-                const colWidth = this.layout.widths[c].resolveWithFill(
-                    this.parentContainer.containerWidth
-                );
+                const colWidth = this.layout.widths[c].resolveWithFill(this.parentContainer.containerWidth);
                 for (let r = 0; r < rows; r++) {
-                    const rowHeight = this.layout.heights[r].resolveWithFill(
-                        this.parentContainer.containerWidth
-                    );
+                    const rowHeight = this.layout.heights[r].resolveWithFill(this.parentContainer.containerWidth);
 
                     // Vertical lines
                     let lineWidth = 0;
@@ -850,11 +841,7 @@ export class Grid extends Container {
                             lastLineWidth = gl.lineWidth;
                             this._gridLines.push(gl);
                             lastPush++;
-                        } else if (
-                            gl.start.y == lastEndY &&
-                            gl.start.x == lastX &&
-                            gl.lineWidth == lastLineWidth
-                        ) {
+                        } else if (gl.start.y == lastEndY && gl.start.x == lastX && gl.lineWidth == lastLineWidth) {
                             // This line and the previous can be combined
                             lastEndY = gl.end.y;
                             this._gridLines[lastPush].end = gl.end;
@@ -881,11 +868,7 @@ export class Grid extends Container {
                             lastLineWidth = gl.lineWidth;
                             this._gridLines.push(gl);
                             lastPush++;
-                        } else if (
-                            gl.start.x == lastEndX &&
-                            gl.start.y == lastY &&
-                            gl.lineWidth == lastLineWidth
-                        ) {
+                        } else if (gl.start.x == lastEndX && gl.start.y == lastY && gl.lineWidth == lastLineWidth) {
                             // This line and the previous can be combined
                             lastEndX = gl.end.x;
                             this._gridLines[lastPush].end = gl.end;
@@ -1028,15 +1011,7 @@ export class Layout extends Spec {
     private _y: number;
     private _column: number;
     private _row: number;
-    constructor(
-        node: Node,
-        x?: number,
-        y?: number,
-        width?: number,
-        height?: number,
-        row?: number,
-        col?: number
-    ) {
+    constructor(node: Node, x?: number, y?: number, width?: number, height?: number, row?: number, col?: number) {
         super(node);
         if (node) {
             PrintUtil.ifChild(this.nodeChildDict[XML_UOM], (n: Node) => {
@@ -1158,9 +1133,7 @@ export class Layout extends Spec {
             }
             if (rn.isFillParent) {
                 if (this.widths.length != 1) {
-                    throw Error(
-                        'More than one value being summed and FillParentWidth used: layout.widths'
-                    );
+                    throw Error('More than one value being summed and FillParentWidth used: layout.widths');
                 }
                 answer = parentSize;
             } else if (rn.isPercentOfParent) {
@@ -1431,10 +1404,7 @@ class PrintUtil {
             f(node);
         }
     }
-    public static importTextAttributes(
-        nodeChildDict: Object,
-        textAttributes: TextAttributes
-    ): void {
+    public static importTextAttributes(nodeChildDict: Object, textAttributes: TextAttributes): void {
         PrintUtil.ifChild(nodeChildDict[XML_BOLD], (n: Node) => {
             textAttributes.bold = PrintUtil.singleChildBoolean(n);
         });
@@ -1445,9 +1415,7 @@ class PrintUtil {
             textAttributes.underline = PrintUtil.singleChildBoolean(n);
         });
         PrintUtil.ifChild(nodeChildDict[XML_TEXT_ALIGNMENT], (n: Node) => {
-            textAttributes.textAlignment = new TextAlignment(
-                PrintUtil.singleChildTextAlignmentUsage(n)
-            );
+            textAttributes.textAlignment = new TextAlignment(PrintUtil.singleChildTextAlignmentUsage(n));
         });
         PrintUtil.ifChild(nodeChildDict[XML_TEXT_COLOR], (n: Node) => {
             textAttributes.textColor = new Color(n);
@@ -1490,15 +1458,11 @@ class PrintUtil {
         // Either there is a FillParent entry with surrounding white space, or a single text entry
         let answer: RichNum;
         for (let i: number = 0; i < node.childNodes.length; i++) {
-            if (
-                node.childNodes[i].nodeName == RichNumUsage[RichNumUsage.PercentOfParent].toString()
-            ) {
+            if (node.childNodes[i].nodeName == RichNumUsage[RichNumUsage.PercentOfParent].toString()) {
                 const v = this.singleChildFloat(node.childNodes[i]);
                 answer = new RichNum(v, RichNumUsage.PercentOfParent);
                 break;
-            } else if (
-                node.childNodes[i].nodeName == RichNumUsage[RichNumUsage.FillParent].toString()
-            ) {
+            } else if (node.childNodes[i].nodeName == RichNumUsage[RichNumUsage.FillParent].toString()) {
                 answer = new RichNum(NaN, RichNumUsage.FillParent);
                 break;
             } else if (node.childNodes[i].nodeName == '#text') {

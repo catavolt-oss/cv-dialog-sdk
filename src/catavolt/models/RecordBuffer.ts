@@ -1,9 +1,7 @@
-import { ArrayUtil } from '../util';
 import { DataAnnotation } from './DataAnnotation';
-import { NullRecord } from './NullRecord';
 import { Property } from './Property';
 import { Record } from './Record';
-import { RecordImpl } from './RecordImpl';
+import { RecordUtil } from './RecordUtil';
 
 /**
  * An {@link Record} that manages two copies internally, a before and after, for 'undo' and comparison purposes.
@@ -15,12 +13,11 @@ export class RecordBuffer implements Record {
         id: string,
         before: Property[],
         after: Property[],
-        annotations: DataAnnotation[],
-        type: string
+        annotations: DataAnnotation[]
     ): RecordBuffer {
         return new RecordBuffer(
-            RecordUtil.newRecord(id, before, annotations, type),
-            RecordUtil.newRecord(id, after, annotations, type)
+            RecordUtil.newRecord(id, before, annotations),
+            RecordUtil.newRecord(id, after, annotations)
         );
     }
 
@@ -204,9 +201,7 @@ export class RecordBuffer implements Record {
         let found = false;
         this.properties.forEach((prop: Property) => {
             if (prop.name === name) {
-                newProps.push(
-                    new Property(name, value, prop.propertyType, prop.format, prop.annotations)
-                );
+                newProps.push(new Property(name, value, prop.propertyType, prop.format, prop.annotations));
                 found = true;
             } else {
                 newProps.push(prop);
@@ -215,7 +210,7 @@ export class RecordBuffer implements Record {
         if (!found) {
             newProps.push(new Property(name, value));
         }
-        this._after = RecordUtil.newRecord(this.id, newProps, this.annotations, this.type);
+        this._after = RecordUtil.newRecord(this.id, newProps, this.annotations);
     }
 
     get tipText(): string {
@@ -227,7 +222,7 @@ export class RecordBuffer implements Record {
     }
 
     public toRecord(): Record {
-        return RecordUtil.newRecord(this.id, this.properties, this.annotations, this.type);
+        return RecordUtil.newRecord(this.id, this.properties, this.annotations);
     }
 
     public toJSON() {
@@ -237,41 +232,4 @@ export class RecordBuffer implements Record {
     public valueAtName(propName: string): any {
         return this._after.valueAtName(propName);
     }
-}
-
-/**
- * Utility for working with Records
- */
-class RecordUtil {
-    public static newRecord(
-        id: string,
-        properties: Property[],
-        annotations: DataAnnotation[],
-        type: string
-    ): Record {
-        return annotations
-            ? new RecordImpl(id, ArrayUtil.copy(properties), ArrayUtil.copy(annotations), type)
-            : new RecordImpl(id, ArrayUtil.copy(properties), null, type);
-    }
-
-    public static isRecord(o: any): boolean {
-        return o instanceof RecordImpl || o instanceof RecordBuffer || o instanceof NullRecord;
-    }
-
-    /*
-     static union(l1:Array<Property>, l2:Array<Property>):Array<Property> {
-     var result:Array<Property> = ArrayUtil.copy(l1);
-     l2.forEach((p2:Property)=> {
-     if (!l1.some((p1:Property, i)=> {
-     if (p1.name === p2.name) {
-     result[i] = p2;
-     return true;
-     }
-     return false;
-     })) {
-     result.push(p2);
-     }
-     });
-     return result;
-     }*/
 }

@@ -1,11 +1,14 @@
 import { ClientMode } from '../client/Client';
 import {
     ActionParameters,
+    Attachment,
     Dialog,
     EditorDialog,
+    LargeProperty,
     Login,
     Menu,
     QueryParameters,
+    ReadLargePropertyParameters,
     Record,
     RecordSet,
     Redirection,
@@ -14,11 +17,14 @@ import {
     ViewDescriptor,
     ViewMode,
     Workbench,
-    WorkbenchAction
+    WorkbenchAction,
+    WriteLargePropertyParameters
 } from '../models';
 
 export interface DialogApi {
     lastServiceActivity: Date;
+
+    addAttachment(tenantId: string, sessionId: string, dialogId: string, attachment: Attachment): Promise<void>;
 
     createSession(tenantId: string, login: Login): Promise<Session | Redirection>;
 
@@ -32,11 +38,7 @@ export interface DialogApi {
 
     getDialog(tenantId: string, sessionId: string, dialogId: string): Promise<Dialog>;
 
-    deleteDialog(
-        tenantId: string,
-        sessionId: string,
-        dialogId: string
-    ): Promise<{ dialogId: string }>;
+    deleteDialog(tenantId: string, sessionId: string, dialogId: string): Promise<{ dialogId: string }>;
 
     getActions(tenantId: string, sessionId: string, dialogId: string): Promise<Array<Menu>>;
 
@@ -46,48 +48,57 @@ export interface DialogApi {
         dialogId: string,
         actionId: string,
         actionParameters: ActionParameters
-    ): Promise<{ actionId: string } | Redirection>;
+    ): Promise<Redirection>;
 
-    getWorkbenchActions(
-        tenantId: string,
-        sessionId: string,
-        workbenchId: string
-    ): Promise<Array<WorkbenchAction>>;
+    getWorkbenchActions(tenantId: string, sessionId: string, workbenchId: string): Promise<Array<WorkbenchAction>>;
 
     performWorkbenchAction(
         tenantId: string,
         sessionId: string,
         workbenchId: string,
         actionId: string
-    ): Promise<{ actionId: string } | Redirection>;
-
-    getRedirection(
-        tenantId: string,
-        sessionId: string,
-        redirectionId: string
     ): Promise<Redirection>;
+
+    getRedirection(tenantId: string, sessionId: string, redirectionId: string): Promise<Redirection>;
 
     getRecord(tenantId: string, sessionId: string, dialogId: string): Promise<Record>;
 
-    // readProperty(tenantId:string, sessionId:string, dialogId:string, propertyName:string, readSeq:number,
-    // readLength:number):Promise<>;
-
-    // writeProperty(tenantId:string, sessionId:string, dialogId:string, propertyName:string, data:string,
-    // append:boolean):Promise<>;
-
-    putRecord(
+    getEditorProperty(
         tenantId: string,
         sessionId: string,
         dialogId: string,
-        record: Record
-    ): Promise<Record | Redirection>;
+        propertyName: string,
+        readLargePropertyParams: ReadLargePropertyParameters
+    ): Promise<LargeProperty>;
 
-    getRecords(
+    getQueryProperty(
         tenantId: string,
         sessionId: string,
         dialogId: string,
-        queryParams: QueryParameters
-    ): Promise<RecordSet>;
+        propertyName: string,
+        readLargePropertyParams: ReadLargePropertyParameters
+    ): Promise<LargeProperty>;
+
+    writeProperty(
+        tenantId: string,
+        sessionId: string,
+        dialogId: string,
+        propertyName: string,
+        writeLargePropertyParams: WriteLargePropertyParameters
+    ): Promise<{ propertyName: string }>;
+
+    propertyChange(
+        tenantId: string,
+        sessionId: string,
+        dialogId: string,
+        propertyName: string,
+        propertyValue: any,
+        pendingWrites: Record
+    ): Promise<Record>;
+
+    putRecord(tenantId: string, sessionId: string, dialogId: string, record: Record): Promise<Record | Redirection>;
+
+    getRecords(tenantId: string, sessionId: string, dialogId: string, queryParams: QueryParameters): Promise<RecordSet>;
 
     getAvailableValues(
         tenantId: string,
@@ -98,21 +109,11 @@ export interface DialogApi {
 
     getMode(tenantId: string, sessionId: string, dialogId: string): Promise<ViewMode>;
 
-    changeMode(
-        tenantId: string,
-        sessionId: string,
-        dialogId: string,
-        mode: ViewMode
-    ): Promise<EditorDialog>;
+    changeMode(tenantId: string, sessionId: string, dialogId: string, mode: ViewMode): Promise<EditorDialog>;
 
     getView(tenantId: string, sessionId: string, dialogId: string): Promise<View>;
 
-    changeView(
-        tenantId: string,
-        sessionId: string,
-        dialogId: string,
-        viewId: string
-    ): Promise<Dialog>;
+    changeView(tenantId: string, sessionId: string, dialogId: string, viewId: string): Promise<Dialog>;
 
     getViews(tenantId: string, sessionId: string, dialogId: string): Promise<Array<ViewDescriptor>>;
 

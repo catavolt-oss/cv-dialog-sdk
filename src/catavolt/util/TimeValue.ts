@@ -20,12 +20,7 @@ export class TimeValue {
         );
     }
 
-    constructor(
-        public hours: number,
-        public minutes: number,
-        public seconds: number,
-        public millis: number
-    ) {}
+    constructor(public hours: number, public minutes: number, public seconds: number, public millis: number) {}
 
     public toString(): string {
         return `${this.pad(this.hours.toString())}:${this.pad(this.minutes.toString())}:${this.pad(

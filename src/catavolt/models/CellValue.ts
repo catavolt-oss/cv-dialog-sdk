@@ -28,9 +28,7 @@ export abstract class CellValue {
 
     get isInlineMediaStyle(): boolean {
         return (
-            this.style &&
-            (this.style === CellValue.STYLE_INLINE_MEDIA ||
-                this.style === CellValue.STYLE_INLINE_MEDIA2)
+            this.style && (this.style === CellValue.STYLE_INLINE_MEDIA || this.style === CellValue.STYLE_INLINE_MEDIA2)
         );
     }
 }

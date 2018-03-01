@@ -30,8 +30,8 @@ export class PropertyDef {
         return this.semanticType === 'BARCODE';
     }
 
-    get isBinaryType(): boolean {
-        return this.isLargeBinaryType || this.isSignatureType;
+    get isByteFormat(): boolean {
+        return this.format === 'byte';
     }
 
     get isBooleanType(): boolean {
@@ -85,8 +85,7 @@ export class PropertyDef {
     // @TODO
     get isInlineMediaStyle(): boolean {
         return (
-            this.semanticType === CellValue.STYLE_INLINE_MEDIA ||
-            this.semanticType === CellValue.STYLE_INLINE_MEDIA2
+            this.semanticType === CellValue.STYLE_INLINE_MEDIA || this.semanticType === CellValue.STYLE_INLINE_MEDIA2
         );
     }
 
@@ -98,10 +97,6 @@ export class PropertyDef {
         return ['integer', 'int32', 'int64'].some(v => this.propertyType === v);
     }
 
-    get isLargeBinaryType(): boolean {
-        return this.semanticType === 'LARGE_BINARY';
-    }
-
     get isLongType(): boolean {
         return this.format === 'int64';
     }
@@ -111,13 +106,11 @@ export class PropertyDef {
     }
 
     get isNumericType(): boolean {
-        return (
-            this.isDecimalType ||
-            this.isIntType ||
-            this.isDoubleType ||
-            this.isLongType ||
-            this.isFloatType
-        );
+        return this.isDecimalType || this.isIntType || this.isDoubleType || this.isLongType || this.isFloatType;
+    }
+
+    get isLargePropertyType(): boolean {
+        return this.semanticType === 'LARGE_PROPERTY' || this.isSignatureType;
     }
 
     get isObjRefType(): boolean {

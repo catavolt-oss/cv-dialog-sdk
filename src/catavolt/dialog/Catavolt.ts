@@ -175,10 +175,7 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @returns {{[p: string]: string}}
      */
     get deviceProps(): { [index: string]: string } {
-        const newProps: { [index: string]: string } = ObjUtil.addAllProps(
-            this._devicePropsStatic,
-            {}
-        );
+        const newProps: { [index: string]: string } = ObjUtil.addAllProps(this._devicePropsStatic, {});
         for (const attr in this._devicePropsDynamic) {
             if (this._devicePropsDynamic.hasOwnProperty(attr)) {
                 newProps[attr] = this._devicePropsDynamic[attr]();
@@ -201,15 +198,8 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @param serverVersion
      * @param serverUrl
      */
-    public initDialogApi(
-        serverUrl: string,
-        serverVersion: string = CatavoltApiImpl.SERVER_VERSION
-    ): void {
-        this._dialogApi = new DialogService(
-            new FetchClient(this._clientMode),
-            serverUrl,
-            serverVersion
-        );
+    public initDialogApi(serverUrl: string, serverVersion: string = CatavoltApiImpl.SERVER_VERSION): void {
+        this._dialogApi = new DialogService(new FetchClient(this._clientMode), serverUrl, serverVersion);
     }
 
     /**
@@ -219,11 +209,7 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @param serverUrl
      */
     public initPersistentApi(serverUrl: string, serverVersion: string): void {
-        this._dialogApi = new DialogService(
-            new PersistentClient(this._clientMode),
-            serverUrl,
-            serverVersion
-        );
+        this._dialogApi = new DialogService(new PersistentClient(this._clientMode), serverUrl, serverVersion);
     }
 
     public isOfflineMode(): boolean {
@@ -288,16 +274,14 @@ export class CatavoltApiImpl implements CatavoltApi {
             type: TypeNames.LoginTypeName
         };
 
-        return this.dialogApi
-            .createSession(tenantId, login)
-            .then((result: Session | Redirection) => {
-                if (result.type === TypeNames.SessionTypeName) {
-                    this._session = result as Session;
-                    return result;
-                } else {
-                    return result;
-                }
-            });
+        return this.dialogApi.createSession(tenantId, login).then((result: Session | Redirection) => {
+            if (result.type === TypeNames.SessionTypeName) {
+                this._session = result as Session;
+                return result;
+            } else {
+                return result;
+            }
+        });
     }
 
     /**
@@ -316,16 +300,14 @@ export class CatavoltApiImpl implements CatavoltApi {
     }
 
     public openDialogWithId(dialogId: string): Promise<Dialog> {
-        return this.dialogApi
-            .getDialog(this.session.tenantId, this.session.id, dialogId)
-            .then((dialog: Dialog) => {
-                dialog.initialize(this);
-                if (dialog.view instanceof Form) {
-                    return dialog;
-                } else {
-                    throw new Error(`Unexpected top-level dialog view type: ${dialog.view.type}`);
-                }
-            });
+        return this.dialogApi.getDialog(this.session.tenantId, this.session.id, dialogId).then((dialog: Dialog) => {
+            dialog.initialize(this);
+            if (dialog.view instanceof Form) {
+                return dialog;
+            } else {
+                throw new Error(`Unexpected top-level dialog view type: ${dialog.view.type}`);
+            }
+        });
     }
 
     public openDialog(redirection: DialogRedirection): Promise<Dialog> {
@@ -335,9 +317,7 @@ export class CatavoltApiImpl implements CatavoltApi {
     public toDialogOrRedirection(resultPr: Promise<{}>): Promise<Dialog | Redirection> {
         return resultPr.then((actionResult: {}) => {
             if (RedirectionUtil.isDialogRedirection(actionResult)) {
-                return this.openDialog(actionResult as DialogRedirection) as Promise<
-                    Dialog | Redirection
-                >;
+                return this.openDialog(actionResult as DialogRedirection) as Promise<Dialog | Redirection>;
             } else if (RedirectionUtil.isRedirection(actionResult)) {
                 return Promise.resolve(actionResult) as Promise<Dialog | Redirection>;
             } else {
@@ -356,9 +336,7 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @param workbenchAction
      * @returns {Promise<{actionId:string} | Redirection>}
      */
-    public performWorkbenchAction(
-        workbenchAction: WorkbenchAction
-    ): Promise<{ actionId: string } | Redirection> {
+    public performWorkbenchAction(workbenchAction: WorkbenchAction): Promise<Redirection> {
         return this.performWorkbenchActionForId(workbenchAction.workbenchId, workbenchAction.id);
     }
 
@@ -368,10 +346,7 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @param workbenchActionId
      * @returns {Promise<{actionId:string} | Redirection>}
      */
-    public performWorkbenchActionForId(
-        workbenchId: string,
-        workbenchActionId: string
-    ): Promise<{ actionId: string } | Redirection> {
+    public performWorkbenchActionForId(workbenchId: string, workbenchActionId: string): Promise<Redirection> {
         if (!this.isLoggedIn) {
             return Promise.reject(new Error('User is not logged in'));
         }
@@ -401,10 +376,7 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @returns {number}
      */
     get remainingSessionTime(): number {
-        return (
-            this.clientTimeoutMillis -
-            (new Date().getTime() - this.dialogApi.lastServiceActivity.getTime())
-        );
+        return this.clientTimeoutMillis - (new Date().getTime() - this.dialogApi.lastServiceActivity.getTime());
     }
 
     /**
