@@ -29,7 +29,7 @@ import {LogLevel} from "../../catavolt/util/Log";
  */
 /* tslint:disable */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['cvtutorial', 'wsmith', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 const currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;
@@ -229,7 +229,8 @@ test("Read A Binary Property From EditorDialog Test", (t) => {
            t.ok(largeProperties);
            t.comment(`    Read ${largeProperties.length} LargeProperties`);
            largeProperties.forEach((largeProperty:LargeProperty) => {
-              t.comment(`>    ${largeProperty.toUrl()}`);
+               t.ok(largeProperty.encodedData);
+              // t.comment(`>    ${largeProperty.toUrl()}`);
            });
            return largeProperties;
         });

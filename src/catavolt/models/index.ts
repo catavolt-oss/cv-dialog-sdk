@@ -79,4 +79,3 @@ export * from './QueryScroller';
 export * from './ErrorDialog';
 export * from './types';
 export * from './ModelUtil';
-export { RecordUtil } from './RecordUtil';

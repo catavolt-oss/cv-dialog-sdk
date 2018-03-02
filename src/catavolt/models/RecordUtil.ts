@@ -1,11 +1,11 @@
-import { ArrayUtil } from '../util';
-import { DataAnnotation } from './DataAnnotation';
-import { NullRecord } from './NullRecord';
-import { Property } from './Property';
-import { Record } from './Record';
-import { RecordBuffer } from './RecordBuffer';
-import { RecordImpl } from './RecordImpl';
-import { TypeNames } from './types';
+import {ArrayUtil} from "../util";
+import {DataAnnotation} from "./DataAnnotation";
+import {NullRecord} from "./NullRecord";
+import {Property} from "./Property";
+import {Record} from "./Record";
+import {RecordBuffer} from "./RecordBuffer";
+import {RecordImpl} from "./RecordImpl";
+import {TypeNames} from "./types";
 
 /**
  * Utility for working with Records
@@ -22,15 +22,13 @@ export class RecordUtil {
     public static unionRight(l1: Array<Property>, l2: Array<Property>): Array<Property> {
         const result: Array<Property> = ArrayUtil.copy(l1);
         l2.forEach((p2: Property) => {
-            if (
-                !l1.some((p1: Property, i) => {
-                    if (p1.name === p2.name) {
-                        result[i] = p2;
-                        return true;
-                    }
-                    return false;
-                })
-            ) {
+            if (!l1.some((p1: Property, i) => {
+                if (p1.name === p2.name) {
+                    result[i] = p2;
+                    return true;
+                }
+                return false;
+            })) {
                 result.push(p2);
             }
         });
