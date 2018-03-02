@@ -368,6 +368,7 @@ export abstract class Dialog {
         return this.catavolt.dialogApi
             .performAction(this.tenantId, this.sessionId, this.id, actionId, actionParams)
             .then((result: Redirection) => {
+                // refreshNeeded
                 // @TODO - update relevant referring dialog settings on 'this' dialog
                 this.updateSettingsWithNewDialogProperties(result.referringObject);
                 // @TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
