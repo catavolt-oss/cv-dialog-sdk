@@ -33,6 +33,9 @@ export class PersistentClient implements Client {
     private _tenantId: string;
     private _userId: string;
 
+    /* Last operation happened at this time */
+    private _lastActivity: Date = new Date();
+
     constructor(clientMode: ClientMode = ClientMode.ONLINE) {
         this._clientMode = clientMode;
         this._fetchClient = new FetchClient();
@@ -44,9 +47,6 @@ export class PersistentClient implements Client {
             this._clientMode = PersistentClientVars.clientMode === 'OFFLINE' ? ClientMode.OFFLINE : ClientMode.ONLINE;
         }
     }
-
-    /* Last operation happened at this time */
-    private _lastActivity: Date = new Date();
 
     get lastActivity(): Date {
         return this._lastActivity;
