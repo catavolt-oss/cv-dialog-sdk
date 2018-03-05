@@ -317,16 +317,16 @@ export abstract class Dialog {
     }
 
     public writeLargeProperty(propertyName: string, largeProperty: LargeProperty): Promise<void> {
-        const data = largeProperty.encodedData;
+        const data = Base64.decode(largeProperty.encodedData);
         const f: (prt: number) => Promise<void> = (ptr: number) => {
             if (ptr < data.length) {
-                const encSegment: string =
+                const segment: string =
                     ptr + Dialog.CHAR_CHUNK_SIZE <= data.length
                         ? data.substr(ptr, Dialog.CHAR_CHUNK_SIZE)
                         : data.substring(ptr);
                 const params: WriteLargePropertyParameters = {
                     append: ptr !== 0,
-                    encodedData: encSegment,
+                    encodedData: Base64.encode(segment),
                     type: TypeNames.WriteLargePropertyParameters
                 };
                 return this.catavolt.dialogApi
@@ -368,20 +368,10 @@ export abstract class Dialog {
         return this.catavolt.dialogApi
             .performAction(this.tenantId, this.sessionId, this.id, actionId, actionParams)
             .then((result: Redirection) => {
-                // refreshNeeded
+                // Redirection.refreshNeeded
                 // @TODO - update relevant referring dialog settings on 'this' dialog
                 this.updateSettingsWithNewDialogProperties(result.referringObject);
-                // @TODO -use 'isLocalRefreshNeeded' instead of this - needs to be added to the Dialog API
-                if (result.referringObject && result.referringObject['dialogProperties']) {
-                    const dialogProps = result.referringObject['dialogProperties'];
-                    if (
-                        (dialogProps.localRefresh && dialogProps.localRefresh === 'true') ||
-                        (dialogProps.globalRefresh && dialogProps.globalRefresh === 'true')
-                    ) {
-                        this.catavolt.dataLastChangedTime = new Date();
-                    }
-                    // @TODO - remove this - we will rely on 'isLocalRefreshNeeded' exclusively
-                } else if (RedirectionUtil.isNullRedirection(result)) {
+                if(result.refreshNeeded) {
                     this.catavolt.dataLastChangedTime = new Date();
                 }
                 return result;
