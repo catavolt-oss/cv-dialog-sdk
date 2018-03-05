@@ -1,8 +1,12 @@
 export interface Storage {
 
-    getItem(key: string):Promise<any>;
+    getItem(key: string):Promise<string>;
 
-    setItem(key: string, value: any):Promise<void>;
+    getJson(key: string):Promise<any>;
+
+    setItem(key: string, value: string):Promise<void>;
+
+    setJson(key: string, value: any):Promise<void>;
 
     removeItem(key: string):Promise<void>;
 

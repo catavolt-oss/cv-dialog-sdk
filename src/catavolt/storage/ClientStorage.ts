@@ -27,7 +27,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public getItem(key: string):Promise<any>{
+    public getItem(key: string):Promise<string>{
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.getItemAsyncStorage(key, ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -35,9 +35,25 @@ class ClientStorage implements Storage {
         }
     }
 
-    public setItem(key: string, value: any):Promise<void> {
+    public getJson(key: string):Promise<any>{
+        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
+            return this.getJsonAsyncStorage(key, ClientStorage._storageApi);
+        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
+            // @TODO
+        }
+    }
+
+    public setItem(key: string, value: string):Promise<void> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.setItemAsyncStorage(key, value, ClientStorage._storageApi);
+        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
+            // @TODO
+        }
+    }
+
+    public setJson(key: string, value: any):Promise<void> {
+        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
+            return this.setJsonAsyncStorage(key, value, ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
             // @TODO
         }
@@ -76,6 +92,10 @@ class ClientStorage implements Storage {
     }
 
     private getItemAsyncStorage(key: string, api) {
+        return api.getItem(key);
+    }
+
+    private getJsonAsyncStorage(key: string, api) {
         return api.getItem(key).then(value => {
             try {
                 return JSON.parse(value);
@@ -85,7 +105,11 @@ class ClientStorage implements Storage {
         });
     }
 
-    private setItemAsyncStorage(key: string, value: any, api) {
+    private setItemAsyncStorage(key: string, value: string, api) {
+        return api.setItem(key, value);
+    }
+
+    private setJsonAsyncStorage(key: string, value: any, api) {
         let stringVal = null;
         try {
             stringVal = JSON.stringify(value);
