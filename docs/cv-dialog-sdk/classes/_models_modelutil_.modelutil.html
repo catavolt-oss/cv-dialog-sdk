@@ -1,0 +1,735 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>ModelUtil | cv-dialog-sdk</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">cv-dialog-sdk</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="../modules/_models_modelutil_.html">&quot;models/ModelUtil&quot;</a>
+				</li>
+				<li>
+					<a href="_models_modelutil_.modelutil.html">ModelUtil</a>
+				</li>
+			</ul>
+			<h1>Class ModelUtil</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">ModelUtil</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static"><a href="_models_modelutil_.modelutil.html#assignprop" class="tsd-kind-icon">assign<wbr>Prop</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static"><a href="_models_modelutil_.modelutil.html#classtype" class="tsd-kind-icon">class<wbr>Type</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static"><a href="_models_modelutil_.modelutil.html#deserializearray" class="tsd-kind-icon">deserialize<wbr>Array</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static"><a href="_models_modelutil_.modelutil.html#jsontomodel" class="tsd-kind-icon">json<wbr>ToModel</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="_models_modelutil_.modelutil.html#modeltojson" class="tsd-kind-icon">model<wbr>ToJson</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static"><a href="_models_modelutil_.modelutil.html#typeinstance" class="tsd-kind-icon">type<wbr>Instance</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-private tsd-is-private-protected">
+							<h3>Object literals</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-object-literal tsd-parent-kind-class tsd-is-private tsd-is-static"><a href="_models_modelutil_.modelutil.html#classtypes" class="tsd-kind-icon">class<wbr>Types</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+					<a name="assignprop" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagPrivate">Private</span> assign<wbr>Prop</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">assign<wbr>Prop<span class="tsd-signature-symbol">(</span>prop<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, target<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, n<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in models/ModelUtil.ts:150</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>prop: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>value: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>target: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>n: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+					<a name="classtype" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagPrivate">Private</span> class<wbr>Type</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">class<wbr>Type<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in models/ModelUtil.ts:73</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+					<a name="deserializearray" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagPrivate">Private</span> deserialize<wbr>Array</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">deserialize<wbr>Array<span class="tsd-signature-symbol">(</span>array<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in models/ModelUtil.ts:138</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>array: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static">
+					<a name="jsontomodel" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> json<wbr>ToModel</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">json<wbr>ToModel&lt;A&gt;<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, n<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in models/ModelUtil.ts:82</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>A</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>obj: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> n: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="modeltojson" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> model<wbr>ToJson</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">model<wbr>ToJson<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, filterFn<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_util_stringdictionary_.stringdictionary.html" class="tsd-signature-type">StringDictionary</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in models/ModelUtil.ts:132</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>obj: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> filterFn: <span class="tsd-signature-type">function</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-siganture">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>prop<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>prop: <span class="tsd-signature-type">any</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_util_stringdictionary_.stringdictionary.html" class="tsd-signature-type">StringDictionary</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+					<a name="typeinstance" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagPrivate">Private</span> type<wbr>Instance</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">type<wbr>Instance<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in models/ModelUtil.ts:77</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>name: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-private tsd-is-private-protected">
+				<h2>Object literals</h2>
+				<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-parent-kind-class tsd-is-private tsd-is-static">
+					<a name="classtypes" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagPrivate">Private</span> class<wbr>Types</h3>
+					<div class="tsd-signature tsd-kind-icon">class<wbr>Types<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in models/ModelUtil.ts:38</li>
+						</ul>
+					</aside>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_annotation" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Annotation</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Annotation<span class="tsd-signature-symbol">:</span> <a href="_models_dataannotation_.dataannotation.html" class="tsd-signature-type">DataAnnotation</a><span class="tsd-signature-symbol"> =&nbsp;DataAnnotation</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:39</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_attributecellvalue" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Attribute<wbr>Cell<wbr>Value</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Attribute<wbr>Cell<wbr>Value<span class="tsd-signature-symbol">:</span> <a href="_models_attributecellvalue_.attributecellvalue.html" class="tsd-signature-type">AttributeCellValue</a><span class="tsd-signature-symbol"> =&nbsp;AttributeCellValue</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:40</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_barcodescan" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Barcode<wbr>Scan</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Barcode<wbr>Scan<span class="tsd-signature-symbol">:</span> <a href="_models_barcodescan_.barcodescan.html" class="tsd-signature-type">BarcodeScan</a><span class="tsd-signature-symbol"> =&nbsp;BarcodeScan</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:42</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_calendar" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Calendar</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Calendar<span class="tsd-signature-symbol">:</span> <a href="_models_calendar_.calendar.html" class="tsd-signature-type">Calendar</a><span class="tsd-signature-symbol"> =&nbsp;Calendar</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:43</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_coderef" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Code<wbr>Ref</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Code<wbr>Ref<span class="tsd-signature-symbol">:</span> <a href="_models_coderef_.coderef.html" class="tsd-signature-type">CodeRef</a><span class="tsd-signature-symbol"> =&nbsp;CodeRef</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:44</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_details" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Details</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Details<span class="tsd-signature-symbol">:</span> <a href="_models_details_.details.html" class="tsd-signature-type">Details</a><span class="tsd-signature-symbol"> =&nbsp;Details</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:45</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_dialogexception" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Dialog<wbr>Exception</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Dialog<wbr>Exception<span class="tsd-signature-symbol">:</span> <a href="_models_dialogexception_.dialogexception.html" class="tsd-signature-type">DialogException</a><span class="tsd-signature-symbol"> =&nbsp;DialogException</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:46</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_editordialog" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Editor<wbr>Dialog</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Editor<wbr>Dialog<span class="tsd-signature-symbol">:</span> <a href="_models_editordialog_.editordialog.html" class="tsd-signature-type">EditorDialog</a><span class="tsd-signature-symbol"> =&nbsp;EditorDialog</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:47</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_forcedlinecellvalue" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Forced<wbr>Line<wbr>Cell<wbr>Value</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Forced<wbr>Line<wbr>Cell<wbr>Value<span class="tsd-signature-symbol">:</span> <a href="_models_forcedlinecellvalue_.forcedlinecellvalue.html" class="tsd-signature-type">ForcedLineCellValue</a><span class="tsd-signature-symbol"> =&nbsp;ForcedLineCellValue</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:48</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_form" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Form</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Form<span class="tsd-signature-symbol">:</span> <a href="_models_form_.form.html" class="tsd-signature-type">Form</a><span class="tsd-signature-symbol"> =&nbsp;Form</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:49</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_gpsreading" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Gps<wbr>Reading</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Gps<wbr>Reading<span class="tsd-signature-symbol">:</span> <a href="_models_gpsreading_.gpsreading.html" class="tsd-signature-type">GpsReading</a><span class="tsd-signature-symbol"> =&nbsp;GpsReading</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:50</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_gpsreadingproperty" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Gps<wbr>Reading<wbr>Property</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Gps<wbr>Reading<wbr>Property<span class="tsd-signature-symbol">:</span> <a href="_models_gpsreadingproperty_.gpsreadingproperty.html" class="tsd-signature-type">GpsReadingProperty</a><span class="tsd-signature-symbol"> =&nbsp;GpsReadingProperty</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:51</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_graph" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Graph</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Graph<span class="tsd-signature-symbol">:</span> <a href="_models_graph_.graph.html" class="tsd-signature-type">Graph</a><span class="tsd-signature-symbol"> =&nbsp;Graph</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:54</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_labelcellvalue" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Label<wbr>Cell<wbr>Value</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Label<wbr>Cell<wbr>Value<span class="tsd-signature-symbol">:</span> <a href="_models_labelcellvalue_.labelcellvalue.html" class="tsd-signature-type">LabelCellValue</a><span class="tsd-signature-symbol"> =&nbsp;LabelCellValue</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:55</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_largeproperty" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Large<wbr>Property</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Large<wbr>Property<span class="tsd-signature-symbol">:</span> <a href="_models_largeproperty_.largeproperty.html" class="tsd-signature-type">LargeProperty</a><span class="tsd-signature-symbol"> =&nbsp;LargeProperty</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:56</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_list" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>List</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>List<span class="tsd-signature-symbol">:</span> <a href="_models_list_.list.html" class="tsd-signature-type">List</a><span class="tsd-signature-symbol"> =&nbsp;List</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:57</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_map" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Map</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Map<span class="tsd-signature-symbol">:</span> <a href="_models_map_.map.html" class="tsd-signature-type">Map</a><span class="tsd-signature-symbol"> =&nbsp;Map</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:58</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_maplocation" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Map<wbr>Location</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Map<wbr>Location<span class="tsd-signature-symbol">:</span> <a href="_models_maplocation_.maplocation.html" class="tsd-signature-type">MapLocation</a><span class="tsd-signature-symbol"> =&nbsp;MapLocation</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:52</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_maplocationproperty" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Map<wbr>Location<wbr>Property</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Map<wbr>Location<wbr>Property<span class="tsd-signature-symbol">:</span> <a href="_models_maplocationproperty_.maplocationproperty.html" class="tsd-signature-type">MapLocationProperty</a><span class="tsd-signature-symbol"> =&nbsp;MapLocationProperty</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:53</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_menu" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Menu</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Menu<span class="tsd-signature-symbol">:</span> <a href="_models_menu_.menu.html" class="tsd-signature-type">Menu</a><span class="tsd-signature-symbol"> =&nbsp;Menu</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:59</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_objectref" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Object<wbr>Ref</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Object<wbr>Ref<span class="tsd-signature-symbol">:</span> <a href="_models_objectref_.objectref.html" class="tsd-signature-type">ObjectRef</a><span class="tsd-signature-symbol"> =&nbsp;ObjectRef</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:60</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_property" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Property</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Property<span class="tsd-signature-symbol">:</span> <a href="_models_property_.property.html" class="tsd-signature-type">Property</a><span class="tsd-signature-symbol"> =&nbsp;Property</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:61</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_propertydef" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Property<wbr>Def</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Property<wbr>Def<span class="tsd-signature-symbol">:</span> <a href="_models_propertydef_.propertydef.html" class="tsd-signature-type">PropertyDef</a><span class="tsd-signature-symbol"> =&nbsp;PropertyDef</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:62</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_querydialog" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Query<wbr>Dialog</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Query<wbr>Dialog<span class="tsd-signature-symbol">:</span> <a href="_models_querydialog_.querydialog.html" class="tsd-signature-type">QueryDialog</a><span class="tsd-signature-symbol"> =&nbsp;QueryDialog</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:63</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_record" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Record</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Record<span class="tsd-signature-symbol">:</span> <a href="_models_recordimpl_.recordimpl.html" class="tsd-signature-type">RecordImpl</a><span class="tsd-signature-symbol"> =&nbsp;RecordImpl</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:64</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_recorddef" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Record<wbr>Def</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Record<wbr>Def<span class="tsd-signature-symbol">:</span> <a href="_models_recorddef_.recorddef.html" class="tsd-signature-type">RecordDef</a><span class="tsd-signature-symbol"> =&nbsp;RecordDef</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:65</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_referringdialog" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Referring<wbr>Dialog</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Referring<wbr>Dialog<span class="tsd-signature-symbol">:</span> <a href="_models_referringdialog_.referringdialog.html" class="tsd-signature-type">ReferringDialog</a><span class="tsd-signature-symbol"> =&nbsp;ReferringDialog</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:66</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_referringworkbench" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Referring<wbr>Workbench</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Referring<wbr>Workbench<span class="tsd-signature-symbol">:</span> <a href="_models_referringworkbench_.referringworkbench.html" class="tsd-signature-type">ReferringWorkbench</a><span class="tsd-signature-symbol"> =&nbsp;ReferringWorkbench</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:67</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_stream" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Stream</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Stream<span class="tsd-signature-symbol">:</span> <a href="_models_stream_.stream.html" class="tsd-signature-type">Stream</a><span class="tsd-signature-symbol"> =&nbsp;Stream</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:68</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_substitutioncellvalue" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Substitution<wbr>Cell<wbr>Value</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Substitution<wbr>Cell<wbr>Value<span class="tsd-signature-symbol">:</span> <a href="_models_substitutioncellvalue_.substitutioncellvalue.html" class="tsd-signature-type">SubstitutionCellValue</a><span class="tsd-signature-symbol"> =&nbsp;SubstitutionCellValue</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:69</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_tabcellvalue" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>Tab<wbr>Cell<wbr>Value</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>Tab<wbr>Cell<wbr>Value<span class="tsd-signature-symbol">:</span> <a href="_models_tabcellvalue_.tabcellvalue.html" class="tsd-signature-type">TabCellValue</a><span class="tsd-signature-symbol"> =&nbsp;TabCellValue</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:41</li>
+							</ul>
+						</aside>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="classtypes.hxgn_api_dialog_viewdescriptor" class="tsd-anchor"></a>
+						<h3>hxgn.api.dialog.<wbr>View<wbr>Descriptor</h3>
+						<div class="tsd-signature tsd-kind-icon">hxgn.api.dialog.<wbr>View<wbr>Descriptor<span class="tsd-signature-symbol">:</span> <a href="_models_viewdescriptor_.viewdescriptor.html" class="tsd-signature-type">ViewDescriptor</a><span class="tsd-signature-symbol"> =&nbsp;ViewDescriptor</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in models/ModelUtil.ts:70</li>
+							</ul>
+						</aside>
+					</section>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+					<li class="current tsd-kind-external-module">
+						<a href="../modules/_models_modelutil_.html">"models/<wbr>Model<wbr>Util"</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-external-module">
+						<a href="_models_modelutil_.modelutil.html" class="tsd-kind-icon">Model<wbr>Util</a>
+						<ul>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+								<a href="_models_modelutil_.modelutil.html#assignprop" class="tsd-kind-icon">assign<wbr>Prop</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+								<a href="_models_modelutil_.modelutil.html#classtype" class="tsd-kind-icon">class<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+								<a href="_models_modelutil_.modelutil.html#deserializearray" class="tsd-kind-icon">deserialize<wbr>Array</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-static">
+								<a href="_models_modelutil_.modelutil.html#jsontomodel" class="tsd-kind-icon">json<wbr>ToModel</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="_models_modelutil_.modelutil.html#modeltojson" class="tsd-kind-icon">model<wbr>ToJson</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+								<a href="_models_modelutil_.modelutil.html#typeinstance" class="tsd-kind-icon">type<wbr>Instance</a>
+							</li>
+							<li class=" tsd-kind-object-literal tsd-parent-kind-class tsd-is-private tsd-is-static">
+								<a href="_models_modelutil_.modelutil.html#classtypes" class="tsd-kind-icon">class<wbr>Types</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>
