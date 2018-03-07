@@ -57,7 +57,7 @@
   },
   "standard-version": {
     "scripts": {
-      "postbump": "bin/gen-version-code.js && tsc"
+      "postbump": "bin/gen-version-code.js && tsc && git add ."
     }
   },
   "husky": {

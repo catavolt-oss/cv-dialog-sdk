@@ -201,10 +201,10 @@ export class EditorDialog extends Dialog {
      * @param name
      * @param dataUrl
      */
-    public setBinaryPropWithDataUrl(name: string, dataUrl: string) {
+    public setLargePropWithDataUrl(name: string, dataUrl: string) {
         if (dataUrl) {
             const urlObj: DataUrl = new DataUrl(dataUrl);
-            this.setBinaryPropWithEncodedData(name, urlObj.data, urlObj.mimeType);
+            this.setLargePropertyWithEncodedData(name, urlObj.data, urlObj.mimeType);
         } else {
             this.setPropValue(name, null); // Property is being deleted/cleared
         }
@@ -216,7 +216,7 @@ export class EditorDialog extends Dialog {
      * @param encodedData
      * @param mimeType
      */
-    public setBinaryPropWithEncodedData(name: string, encodedData: string, mimeType?: string) {
+    public setLargePropertyWithEncodedData(name: string, encodedData: string, mimeType?: string) {
         const propDef: PropertyDef = this.propDefAtName(name);
         if (propDef) {
             const value = new LargeProperty(encodedData, mimeType);
