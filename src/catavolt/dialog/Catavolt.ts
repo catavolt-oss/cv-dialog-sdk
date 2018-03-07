@@ -33,7 +33,7 @@ export class CatavoltApiImpl implements CatavoltApi {
     private static SERVER_URL: string = 'https://dialog.hxgn-api.net';
     private static SERVER_VERSION = 'v0';
 
-    public readonly DEFAULT_LOCALE: CvLocale = new CvLocale('en', 'US');
+    public readonly DEFAULT_LOCALE: CvLocale = new CvLocale('en');
 
     public dataLastChangedTime: Date = new Date(0);
     private _clientMode: ClientMode = ClientMode.ONLINE;

@@ -9,6 +9,9 @@ import { ObjectRef } from './ObjectRef';
 import { Property } from './Property';
 import { PropertyDef } from './PropertyDef';
 
+// Chose the locales to load based on this list:
+// https://stackoverflow.com/questions/9711066/most-common-locales-for-worldwide-compatibility
+// Best effort for now.  Need to dynamically load these from Globalize???
 import 'moment/locale/de';
 import 'moment/locale/en-ca';
 import 'moment/locale/en-gb';
@@ -19,10 +22,12 @@ import 'moment/locale/ja';
 import 'moment/locale/pt';
 import 'moment/locale/pt-br';
 import 'moment/locale/ru';
-// Chose the locales to load based on this list:
-// https://stackoverflow.com/questions/9711066/most-common-locales-for-worldwide-compatibility
-// Best effort for now.  Need to dynamically load these from Globalize???
 import 'moment/locale/zh-cn';
+
+// we must use these to prevent giving moment non-existent locales that cause it hurl in RN
+// @see https://github.com/moment/moment/issues/3624#issuecomment-288713419
+const supportedLocales = ['en', 'de', 'en-ca', 'en-gb', 'es', 'fr', 'it', 'ja', 'pt', 'pt-br', 'ru', 'zh-cn'];
+
 import { DateTimeValue } from '../util/DateTimeValue';
 import { DateValue } from '../util/DateValue';
 import { TimeValue } from '../util/TimeValue';
@@ -118,10 +123,8 @@ export class PropertyFormatter {
 
     public formatValueForRead(value: any, propDef: PropertyDef) {
         const locale: CvLocale = this._catavoltApi.locale;
-        const lang: string[] = [];
-        locale.country && lang.push(locale.langCountryString);
-        lang.push(locale.language);
-        lang.push(this._catavoltApi.DEFAULT_LOCALE.language);
+        const locales: string[] = [];
+        locales.push(this.getSupportedLocale(locale.langCountryString));
 
         if (value === null || value === undefined) {
             return '';
@@ -131,15 +134,15 @@ export class PropertyFormatter {
             return (value as ObjectRef).description;
         } else if (propDef && propDef.isDateTimeType) {
             return moment(value as Date)
-                .locale(lang)
+                .locale(locales)
                 .format('lll');
         } else if ((propDef && propDef.isDateType) || value instanceof Date) {
             return moment(value as Date)
-                .locale(lang)
+                .locale(locales)
                 .format('L');
         } else if ((propDef && propDef.isTimeType) || value instanceof TimeValue) {
             return moment(value as TimeValue)
-                .locale(lang)
+                .locale(locales)
                 .format('LT');
         } else if (propDef && propDef.isPasswordType) {
             return (value as string).replace(/./g, '*');
@@ -315,6 +318,21 @@ export class PropertyFormatter {
             }
         } else {
             return this.toStringRead(o, propDef);
+        }
+    }
+
+    private getSupportedLocale(locale): string {
+        if(supportedLocales.indexOf(locale)) {
+            return locale;
+        } else {
+            const sepIndex = locale.indexOf('-');
+            if(sepIndex > -1) {
+                const lang = locale.substring(0, sepIndex);
+                if(supportedLocales.indexOf(lang)) {
+                    return lang;
+                }
+            }
+            return this._catavoltApi.DEFAULT_LOCALE.language;
         }
     }
 }

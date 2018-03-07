@@ -1,7 +1,11 @@
 export class CvLocale {
-    constructor(readonly language: string, readonly country: string) {}
+    constructor(readonly language: string, readonly country?: string) {}
 
     get langCountryString(): string {
-        return `${this.language}-${this.country.toLowerCase()}`;
+        if(this.country) {
+            return `${this.language.toLowerCase()}-${this.country.toLowerCase()}`;
+        } else {
+            return this.language.toLowerCase();
+        }
     }
 }
