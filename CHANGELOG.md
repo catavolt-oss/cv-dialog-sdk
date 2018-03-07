@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.2.0"></a>
+# [4.2.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.1.4...v4.2.0) (2018-03-07)
+
+
+### Bug Fixes
+
+* moment breaks when looking for unsupported locale ([355cf4d](https://github.com/catavolt-oss/cv-dialog-sdk/commit/355cf4d))
+
+
+### Features
+
+* added json and text methods to storage interface ([e8aef94](https://github.com/catavolt-oss/cv-dialog-sdk/commit/e8aef94))
+
+
+
 <a name="4.1.4"></a>
 ## [4.1.4](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.1.3...v4.1.4) (2018-03-05)
 
