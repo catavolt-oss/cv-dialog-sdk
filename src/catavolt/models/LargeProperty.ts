@@ -32,7 +32,7 @@ export class LargeProperty {
         }
     }
 
-    public asNewLargeProperty(encodedData: string): LargeProperty {
-        return new LargeProperty(encodedData, this.contentType, false, this.type, this.url);
+    public asNewLargeProperty(encodedData: string, hasMore = false): LargeProperty {
+        return new LargeProperty(encodedData, this.contentType, hasMore, this.type, this.url);
     }
 }

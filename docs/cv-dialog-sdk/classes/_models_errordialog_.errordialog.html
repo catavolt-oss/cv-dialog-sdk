@@ -139,11 +139,12 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_errordialog_.errordialog.html#propdefatname" class="tsd-kind-icon">prop<wbr>Def<wbr>AtName</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_errordialog_.errordialog.html#readlargeproperties" class="tsd-kind-icon">read<wbr>Large<wbr>Properties</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_errordialog_.errordialog.html#readlargeproperty" class="tsd-kind-icon">read<wbr>Large<wbr>Property</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_errordialog_.errordialog.html#streamlargeproperty" class="tsd-kind-icon">stream<wbr>Large<wbr>Property</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="_models_errordialog_.errordialog.html#updatesettingswithnewdialogproperties" class="tsd-kind-icon">update<wbr>Settings<wbr>With<wbr>New<wbr>Dialog<wbr>Properties</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_errordialog_.errordialog.html#writeattachment" class="tsd-kind-icon">write<wbr>Attachment</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_errordialog_.errordialog.html#writeattachments" class="tsd-kind-icon">write<wbr>Attachments</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_errordialog_.errordialog.html#writelargeproperties" class="tsd-kind-icon">write<wbr>Large<wbr>Properties</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_errordialog_.errordialog.html#writelargeproperty" class="tsd-kind-icon">write<wbr>Large<wbr>Property</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="_models_errordialog_.errordialog.html#writeattachment" class="tsd-kind-icon">write<wbr>Attachment</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="_models_errordialog_.errordialog.html#writeattachments" class="tsd-kind-icon">write<wbr>Attachments</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="_models_errordialog_.errordialog.html#writelargeproperties" class="tsd-kind-icon">write<wbr>Large<wbr>Properties</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="_models_errordialog_.errordialog.html#writelargeproperty" class="tsd-kind-icon">write<wbr>Large<wbr>Property</a></li>
 							</ul>
 						</section>
 					</div>
@@ -556,7 +557,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#viewdescs">viewDescs</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:275</li>
+									<li>Defined in models/Dialog.ts:262</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -720,7 +721,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#initialize">initialize</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:356</li>
+									<li>Defined in models/Dialog.ts:266</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -744,7 +745,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#invokemenuaction">invokeMenuAction</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:388</li>
+									<li>Defined in models/Dialog.ts:298</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -778,7 +779,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#invokemenuactionwithid">invokeMenuActionWithId</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:367</li>
+									<li>Defined in models/Dialog.ts:277</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -919,7 +920,7 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Read all the large property values in this <a href="../interfaces/_models_record_.record.html">Record</a></p>
+									<p>Read all the large property values into memory in this <a href="../interfaces/_models_record_.record.html">Record</a></p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -948,11 +949,69 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Read a large property and return it</p>
+									<p>Read a large property into memory</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
+								<li>
+									<h5>propertyName: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> recordId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_models_largeproperty_.largeproperty.html" class="tsd-signature-type">LargeProperty</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="streamlargeproperty" class="tsd-anchor"></a>
+					<h3>stream<wbr>Large<wbr>Property</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">stream<wbr>Large<wbr>Property<span class="tsd-signature-symbol">(</span>streamListener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span>, propertyName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, recordId<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_models_largeproperty_.largeproperty.html" class="tsd-signature-type">LargeProperty</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#streamlargeproperty">streamLargeProperty</a></p>
+								<ul>
+									<li>Defined in models/Dialog.ts:246</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Stream the encoded chunks of a large property without retaining them
+										The streamListener will receive Base64 encoded chunks with callbacks. hasMore will
+									be false with the final chunk.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>streamListener: <span class="tsd-signature-type">function</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-siganture">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>encodedChunk<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, hasMore<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>encodedChunk: <span class="tsd-signature-type">string</span></h5>
+														</li>
+														<li>
+															<h5>hasMore: <span class="tsd-signature-type">boolean</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
 								<li>
 									<h5>propertyName: <span class="tsd-signature-type">string</span></h5>
 								</li>
@@ -975,7 +1034,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#updatesettingswithnewdialogproperties">updateSettingsWithNewDialogProperties</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:392</li>
+									<li>Defined in models/Dialog.ts:302</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -988,10 +1047,10 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a name="writeattachment" class="tsd-anchor"></a>
-					<h3>write<wbr>Attachment</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> write<wbr>Attachment</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 						<li class="tsd-signature tsd-kind-icon">write<wbr>Attachment<span class="tsd-signature-symbol">(</span>attachment<span class="tsd-signature-symbol">: </span><a href="_models_attachment_.attachment.html" class="tsd-signature-type">Attachment</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
@@ -999,7 +1058,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#writeattachment">writeAttachment</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:280</li>
+									<li>Defined in models/Dialog.ts:316</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1012,10 +1071,10 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a name="writeattachments" class="tsd-anchor"></a>
-					<h3>write<wbr>Attachments</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> write<wbr>Attachments</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 						<li class="tsd-signature tsd-kind-icon">write<wbr>Attachments<span class="tsd-signature-symbol">(</span>record<span class="tsd-signature-symbol">: </span><a href="../interfaces/_models_record_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
@@ -1023,7 +1082,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#writeattachments">writeAttachments</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:287</li>
+									<li>Defined in models/Dialog.ts:323</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1036,10 +1095,10 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a name="writelargeproperties" class="tsd-anchor"></a>
-					<h3>write<wbr>Large<wbr>Properties</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> write<wbr>Large<wbr>Properties</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 						<li class="tsd-signature tsd-kind-icon">write<wbr>Large<wbr>Properties<span class="tsd-signature-symbol">(</span>record<span class="tsd-signature-symbol">: </span><a href="../interfaces/_models_record_.record.html" class="tsd-signature-type">Record</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
@@ -1047,7 +1106,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#writelargeproperties">writeLargeProperties</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:307</li>
+									<li>Defined in models/Dialog.ts:342</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1065,10 +1124,10 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a name="writelargeproperty" class="tsd-anchor"></a>
-					<h3>write<wbr>Large<wbr>Property</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> write<wbr>Large<wbr>Property</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 						<li class="tsd-signature tsd-kind-icon">write<wbr>Large<wbr>Property<span class="tsd-signature-symbol">(</span>propertyName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, largeProperty<span class="tsd-signature-symbol">: </span><a href="_models_largeproperty_.largeproperty.html" class="tsd-signature-type">LargeProperty</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
@@ -1076,7 +1135,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="_models_dialog_.dialog.html">Dialog</a>.<a href="_models_dialog_.dialog.html#writelargeproperty">writeLargeProperty</a></p>
 								<ul>
-									<li>Defined in models/Dialog.ts:319</li>
+									<li>Defined in models/Dialog.ts:354</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1232,19 +1291,22 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 								<a href="_models_errordialog_.errordialog.html#readlargeproperty" class="tsd-kind-icon">read<wbr>Large<wbr>Property</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="_models_errordialog_.errordialog.html#streamlargeproperty" class="tsd-kind-icon">stream<wbr>Large<wbr>Property</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 								<a href="_models_errordialog_.errordialog.html#updatesettingswithnewdialogproperties" class="tsd-kind-icon">update<wbr>Settings<wbr>With<wbr>New<wbr>Dialog<wbr>Properties</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 								<a href="_models_errordialog_.errordialog.html#writeattachment" class="tsd-kind-icon">write<wbr>Attachment</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 								<a href="_models_errordialog_.errordialog.html#writeattachments" class="tsd-kind-icon">write<wbr>Attachments</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 								<a href="_models_errordialog_.errordialog.html#writelargeproperties" class="tsd-kind-icon">write<wbr>Large<wbr>Properties</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 								<a href="_models_errordialog_.errordialog.html#writelargeproperty" class="tsd-kind-icon">write<wbr>Large<wbr>Property</a>
 							</li>
 						</ul>

@@ -205,7 +205,7 @@ export abstract class Dialog {
     }
 
     /**
-     * Read all the large property values in this {@link Record}
+     * Read all the large property values into memory in this {@link Record}
      *
      * @param {string} recordId
      * @returns {Promise<LargeProperty[]>}
@@ -223,43 +223,30 @@ export abstract class Dialog {
     }
 
     /**
-     * Read a large property and return it
+     * Read a large property into memory
      *
      * @param {string} propertyName
      * @param {string} recordId
      * @returns {Promise<LargeProperty>}
      */
     public readLargeProperty(propertyName: string, recordId?: string): Promise<LargeProperty> {
-        let sequence: number = 0;
-        let resultBuffer: string = '';
-        const f: (largeProperty: LargeProperty) => Promise<LargeProperty> = (largeProperty: LargeProperty) => {
-            if (largeProperty.hasMore) {
-                resultBuffer += Base64.decode(largeProperty.encodedData); // If data is in multiple loads, it must be decoded/built/encoded
-                const params: ReadLargePropertyParameters = {
-                    maxBytes: Dialog.BINARY_CHUNK_SIZE,
-                    sequence: ++sequence,
-                    recordId,
-                    type: TypeNames.ReadLargePropertyParameters
-                };
-                return this.getProperty(propertyName, params).then(f);
-            } else {
-                if (resultBuffer) {
-                    resultBuffer += Base64.decode(largeProperty.encodedData);
-                    return Promise.resolve<LargeProperty>(
-                        largeProperty.asNewLargeProperty(Base64.encode(resultBuffer))
-                    );
-                } else {
-                    return Promise.resolve<LargeProperty>(largeProperty.asNewLargeProperty(largeProperty.encodedData));
-                }
-            }
-        };
-        const initParams: ReadLargePropertyParameters = {
-            maxBytes: Dialog.BINARY_CHUNK_SIZE,
-            sequence,
-            recordId,
-            type: TypeNames.ReadLargePropertyParameters
-        };
-        return this.getProperty(propertyName, initParams).then(f);
+       return this.loadLargeProperty(propertyName, recordId, null) ;
+    }
+
+    /**
+     * Stream the encoded chunks of a large property without retaining them
+     * The streamListener will receive Base64 encoded chunks with callbacks. hasMore will
+     * be false with the final chunk.
+     *
+     * @param {(encodedChunk: string, hasMore: boolean) => void} streamListener
+     * @param {string} propertyName
+     * @param {string} recordId
+     * @returns {Promise<LargeProperty>}
+     */
+    public streamLargeProperty(streamListener:(encodedChunk:string, hasMore:boolean)=>void,
+                               propertyName: string, recordId?: string) : Promise<LargeProperty>{
+        return this.loadLargeProperty(propertyName, recordId, streamListener);
+
     }
 
     /*
@@ -274,83 +261,6 @@ export abstract class Dialog {
      */
     get viewDescs(): ViewDescriptor[] {
         return this.availableViews;
-    }
-
-    /* @TODO */
-    public writeAttachment(attachment: Attachment): Promise<void> {
-        /*
-       return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.session);
-       */
-        return Promise.resolve(null);
-    }
-
-    public writeAttachments(record: Record): Promise<void[]> {
-        return Promise.all(
-            record.properties
-                .filter((prop: Property) => {
-                    return prop.value instanceof Attachment;
-                })
-                .map((prop: Property) => {
-                    const attachment: Attachment = prop.value as Attachment;
-                    return this.writeAttachment(attachment);
-                })
-        );
-    }
-
-    /**
-     * Write all Binary values in this {@link Record} back to the server
-     *
-     * @param {Record} record
-     * @returns {Promise<void[]>}
-     */
-
-    public writeLargeProperties(record: Record): Promise<void[]> {
-        return Promise.all(
-            record.properties
-                .filter((prop: Property) => {
-                    return this.propDefAtName(prop.name).isLargePropertyType;
-                })
-                .map((prop: Property) => {
-                    return this.writeLargeProperty(prop.name, prop.value as LargeProperty);
-                })
-        );
-    }
-
-    public writeLargeProperty(propertyName: string, largeProperty: LargeProperty): Promise<void> {
-        const data = Base64.decode(largeProperty.encodedData);
-        const f: (prt: number) => Promise<void> = (ptr: number) => {
-            if (ptr < data.length) {
-                const segment: string =
-                    ptr + Dialog.CHAR_CHUNK_SIZE <= data.length
-                        ? data.substr(ptr, Dialog.CHAR_CHUNK_SIZE)
-                        : data.substring(ptr);
-                const params: WriteLargePropertyParameters = {
-                    append: ptr !== 0,
-                    encodedData: Base64.encode(segment),
-                    type: TypeNames.WriteLargePropertyParameters
-                };
-                return this.catavolt.dialogApi
-                    .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, params)
-                    .then(() => {
-                        f(ptr + Dialog.CHAR_CHUNK_SIZE);
-                    });
-            } else {
-                return Promise.resolve();
-            }
-        };
-
-        // This is a delete
-        if (!largeProperty || !largeProperty.encodedData) {
-            return this.catavolt.dialogApi
-                .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, {
-                    append: false,
-                    encodedData: null,
-                    type: TypeNames.WriteLargePropertyParameters
-                })
-                .then(() => Promise.resolve());
-        }
-
-        return f(0);
     }
 
     public initialize(catavolt: CatavoltApi) {
@@ -402,6 +312,83 @@ export abstract class Dialog {
 
     protected abstract getProperty(propertyName: string, params: ReadLargePropertyParameters): Promise<LargeProperty>;
 
+    /* @TODO */
+    protected writeAttachment(attachment: Attachment): Promise<void> {
+        /*
+         return DialogService.addAttachment(this.dialogRedirection.dialogHandle, attachment, this.session);
+         */
+        return Promise.resolve(null);
+    }
+
+    protected writeAttachments(record: Record): Promise<void[]> {
+        return Promise.all(
+            record.properties
+                  .filter((prop: Property) => {
+                      return prop.value instanceof Attachment;
+                  })
+                  .map((prop: Property) => {
+                      const attachment: Attachment = prop.value as Attachment;
+                      return this.writeAttachment(attachment);
+                  })
+        );
+    }
+
+    /**
+     * Write all Binary values in this {@link Record} back to the server
+     *
+     * @param {Record} record
+     * @returns {Promise<void[]>}
+     */
+    protected writeLargeProperties(record: Record): Promise<void[]> {
+        return Promise.all(
+            record.properties
+                  .filter((prop: Property) => {
+                      return this.propDefAtName(prop.name).isLargePropertyType;
+                  })
+                  .map((prop: Property) => {
+                      return this.writeLargeProperty(prop.name, prop.value as LargeProperty);
+                  })
+        );
+    }
+
+    protected writeLargeProperty(propertyName: string, largeProperty: LargeProperty): Promise<void> {
+        const data = Base64.decode(largeProperty.encodedData);
+        const f: (prt: number) => Promise<void> = (ptr: number) => {
+            if (ptr < data.length) {
+                const segment: string =
+                    ptr + Dialog.CHAR_CHUNK_SIZE <= data.length
+                        ? data.substr(ptr, Dialog.CHAR_CHUNK_SIZE)
+                        : data.substring(ptr);
+                const params: WriteLargePropertyParameters = {
+                    append: ptr !== 0,
+                    encodedData: Base64.encode(segment),
+                    type: TypeNames.WriteLargePropertyParameters
+                };
+                return this.catavolt.dialogApi
+                           .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, params)
+                           .then(() => {
+                               f(ptr + Dialog.CHAR_CHUNK_SIZE);
+                           });
+            } else {
+                return Promise.resolve();
+            }
+        };
+
+        // This is a delete
+        if (!largeProperty || !largeProperty.encodedData) {
+            return this.catavolt.dialogApi
+                       .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, {
+                           append: false,
+                           encodedData: null,
+                           type: TypeNames.WriteLargePropertyParameters
+                       })
+                       .then(() => Promise.resolve());
+        }
+
+        return f(0);
+    }
+
+
     /**
      * @private
      * @returns {boolean}
@@ -414,4 +401,53 @@ export abstract class Dialog {
             })
         );
     }
+
+    /**
+     * Read a large property into memory or stream it, if a streamListener is provided
+     *
+     * @param {string} propertyName
+     * @param {string} recordId
+     * @param {(encodedChunk: string, hasMore: boolean, error?: any) => void} streamListener
+     * @returns {Promise<LargeProperty>}
+     */
+    private loadLargeProperty(propertyName: string, recordId: string,
+                              streamListener:(encodedChunk:string, hasMore:boolean)=>void): Promise<LargeProperty> {
+        let sequence: number = 0;
+        let resultBuffer: string = '';
+        const f: (largeProperty: LargeProperty) => Promise<LargeProperty> = (largeProperty: LargeProperty) => {
+            streamListener && streamListener(largeProperty.encodedData, largeProperty.hasMore);
+            if (largeProperty.hasMore) {
+                if(!streamListener) {
+                    resultBuffer += Base64.decode(largeProperty.encodedData);
+                }
+                const params: ReadLargePropertyParameters = {
+                    maxBytes: Dialog.BINARY_CHUNK_SIZE,
+                    sequence: ++sequence,
+                    recordId,
+                    type: TypeNames.ReadLargePropertyParameters
+                };
+                return this.getProperty(propertyName, params).then(f);
+            } else {
+                if (resultBuffer) {
+                    resultBuffer += Base64.decode(largeProperty.encodedData);
+                    return Promise.resolve<LargeProperty>(
+                        largeProperty.asNewLargeProperty(Base64.encode(resultBuffer))
+                    );
+                } else {
+                    if(streamListener) {
+                        return Promise.resolve<LargeProperty>(largeProperty.asNewLargeProperty(null));
+                    }
+                    return Promise.resolve<LargeProperty>(largeProperty.asNewLargeProperty(largeProperty.encodedData));
+                }
+            }
+        };
+        const initParams: ReadLargePropertyParameters = {
+            maxBytes: Dialog.BINARY_CHUNK_SIZE,
+            sequence,
+            recordId,
+            type: TypeNames.ReadLargePropertyParameters
+        };
+        return this.getProperty(propertyName, initParams).then(f);
+    }
+
 }
