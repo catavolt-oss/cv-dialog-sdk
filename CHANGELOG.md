@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.4.2"></a>
+## [4.4.2](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.4.0...v4.4.2) (2018-03-08)
+
+
+
 <a name="4.4.0"></a>
 # [4.4.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.2.1...v4.4.0) (2018-03-08)
 
