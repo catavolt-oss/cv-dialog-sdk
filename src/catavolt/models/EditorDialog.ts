@@ -185,7 +185,7 @@ export class EditorDialog extends Dialog {
      * @param value
      * @returns {any}
      */
-    public setPropValue(name: string, value: any): any {
+    public setPropertyValue(name: string, value: any): any {
         const propDef: PropertyDef = this.propDefAtName(name);
         let parsedValue: any = null;
         if (propDef) {
@@ -201,12 +201,12 @@ export class EditorDialog extends Dialog {
      * @param name
      * @param dataUrl
      */
-    public setLargePropWithDataUrl(name: string, dataUrl: string) {
+    public setLargePropertyWithDataUrl(name: string, dataUrl: string) {
         if (dataUrl) {
             const urlObj: DataUrl = new DataUrl(dataUrl);
             this.setLargePropertyWithEncodedData(name, urlObj.data, urlObj.mimeType);
         } else {
-            this.setPropValue(name, null); // Property is being deleted/cleared
+            this.setPropertyValue(name, null); // Property is being deleted/cleared
         }
     }
 
