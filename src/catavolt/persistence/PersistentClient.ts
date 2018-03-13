@@ -6,6 +6,7 @@ import {
     TextClientResponse,
     VoidClientResponse
 } from '../client';
+import {ReadableClientResponse} from "../client/ReadableClientResponse";
 import { StringDictionary } from '../util';
 import { FetchClient } from '../ws';
 import { BriefcaseTemplate } from './BriefcaseTemplate';
@@ -142,6 +143,11 @@ export class PersistentClient implements Client {
             workbenchId: resourcePathElems[5],
             actionId: resourcePathElems[7]
         };
+    }
+
+    // @TODO
+    public openStream(baseUrl: string, resourcePath?: string): Promise<ReadableClientResponse> {
+        return Promise.resolve(null);
     }
 
     public deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse> {

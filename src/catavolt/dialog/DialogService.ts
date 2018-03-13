@@ -1,5 +1,6 @@
 import { Client, ClientMode } from '../client/Client';
 import { JsonClientResponse } from '../client/JsonClientResponse';
+import {ReadableClientResponse} from "../client/ReadableClientResponse";
 import {
     ActionParameters,
     Attachment,
@@ -225,6 +226,12 @@ export class DialogService implements DialogApi {
         return this.get(
             `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record/${propertyName}/availableValues`
         ).then(jsonClientResponse => new DialogServiceResponse<Array<any>>(jsonClientResponse).responseValue());
+    }
+
+    public openContentStream(tenantId: string, sessionId: string, contentId: string): Promise<ReadableClientResponse> {
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/content/${contentId}`).then(
+            jsonClientResponse => new DialogServiceResponse<ReadableClientResponse>(jsonClientResponse).responseValue()
+        );
     }
 
     public getMode(tenantId: string, sessionId: string, dialogId: string): Promise<ViewMode> {

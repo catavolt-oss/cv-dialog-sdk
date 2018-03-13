@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ClientResponse | cv-dialog-sdk</title>
+	<title>ReadableStreamClientResponse | cv-dialog-sdk</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,50 +56,36 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_client_clientresponse_.html">&quot;client/ClientResponse&quot;</a>
+					<a href="../modules/_client_streamingclientresponse_.html">&quot;client/StreamingClientResponse&quot;</a>
 				</li>
 				<li>
-					<a href="_client_clientresponse_.clientresponse.html">ClientResponse</a>
+					<a href="_client_streamingclientresponse_.readablestreamclientresponse.html">ReadableStreamClientResponse</a>
 				</li>
 			</ul>
-			<h1>Class ClientResponse&lt;T&gt;</h1>
+			<h1>Class ReadableStreamClientResponse</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-type-parameters">
-				<h3>Type parameters</h3>
-				<ul class="tsd-type-parameters">
-					<li>
-						<h4>T</h4>
-					</li>
-				</ul>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">ClientResponse</span>
+						<a href="_client_clientresponse_.clientresponse.html" class="tsd-signature-type">ClientResponse</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ReadableStream</span><span class="tsd-signature-symbol">&gt;</span>
 						<ul class="tsd-hierarchy">
 							<li>
-								<a href="_client_blobclientresponse_.blobclientresponse.html" class="tsd-signature-type">BlobClientResponse</a>
-							</li>
-							<li>
-								<a href="_client_jsonclientresponse_.jsonclientresponse.html" class="tsd-signature-type">JsonClientResponse</a>
-							</li>
-							<li>
-								<a href="_client_textclientresponse_.textclientresponse.html" class="tsd-signature-type">TextClientResponse</a>
-							</li>
-							<li>
-								<a href="_client_voidclientresponse_.voidclientresponse.html" class="tsd-signature-type">VoidClientResponse</a>
-							</li>
-							<li>
-								<a href="_client_streamingclientresponse_.readablestreamclientresponse.html" class="tsd-signature-type">ReadableStreamClientResponse</a>
+								<span class="target">ReadableStreamClientResponse</span>
 							</li>
 						</ul>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implements</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html" class="tsd-signature-type">ReadableClientResponse</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -109,14 +95,21 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="_client_clientresponse_.clientresponse.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="_client_streamingclientresponse_.readablestreamclientresponse.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_client_clientresponse_.clientresponse.html#statuscode" class="tsd-kind-icon">status<wbr>Code</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_client_clientresponse_.clientresponse.html#value" class="tsd-kind-icon">value</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_client_streamingclientresponse_.readablestreamclientresponse.html#reader" class="tsd-kind-icon">reader</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="_client_streamingclientresponse_.readablestreamclientresponse.html#statuscode" class="tsd-kind-icon">status<wbr>Code</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="_client_streamingclientresponse_.readablestreamclientresponse.html#value" class="tsd-kind-icon">value</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_client_streamingclientresponse_.readablestreamclientresponse.html#read" class="tsd-kind-icon">read</a></li>
 							</ul>
 						</section>
 					</div>
@@ -124,54 +117,88 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Client<wbr>Response<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span>, statusCode<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_client_clientresponse_.clientresponse.html" class="tsd-signature-type">ClientResponse</a></li>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Readable<wbr>Stream<wbr>Client<wbr>Response<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReadableStream</span>, statusCode<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_client_streamingclientresponse_.readablestreamclientresponse.html" class="tsd-signature-type">ReadableStreamClientResponse</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Overrides <a href="_client_clientresponse_.clientresponse.html">ClientResponse</a>.<a href="_client_clientresponse_.clientresponse.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in client/ClientResponse.ts:1</li>
+									<li>Defined in client/StreamingClientResponse.ts:6</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>value: <span class="tsd-signature-type">T</span></h5>
+									<h5>value: <span class="tsd-signature-type">ReadableStream</span></h5>
 								</li>
 								<li>
 									<h5>statusCode: <span class="tsd-signature-type">number</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_client_clientresponse_.clientresponse.html" class="tsd-signature-type">ClientResponse</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="_client_streamingclientresponse_.readablestreamclientresponse.html" class="tsd-signature-type">ReadableStreamClientResponse</a></h4>
 						</li>
 					</ul>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="reader" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> reader</h3>
+					<div class="tsd-signature tsd-kind-icon">reader<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ReadableStreamReader</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in client/StreamingClientResponse.ts:6</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
 					<a name="statuscode" class="tsd-anchor"></a>
 					<h3>status<wbr>Code</h3>
 					<div class="tsd-signature tsd-kind-icon">status<wbr>Code<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="_client_clientresponse_.clientresponse.html">ClientResponse</a>.<a href="_client_clientresponse_.clientresponse.html#statuscode">statusCode</a></p>
 						<ul>
 							<li>Defined in client/ClientResponse.ts:2</li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
 					<a name="value" class="tsd-anchor"></a>
 					<h3>value</h3>
-					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">T</span></div>
+					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ReadableStream</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="_client_clientresponse_.clientresponse.html">ClientResponse</a>.<a href="_client_clientresponse_.clientresponse.html#value">value</a></p>
 						<ul>
 							<li>Defined in client/ClientResponse.ts:2</li>
 						</ul>
 					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="read" class="tsd-anchor"></a>
+					<h3>read</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">read<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html">ReadableClientResponse</a>.<a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html#read">read</a></p>
+								<ul>
+									<li>Defined in client/StreamingClientResponse.ts:13</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -182,7 +209,7 @@
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="../modules/_client_clientresponse_.html">"client/<wbr>Client<wbr>Response"</a>
+						<a href="../modules/_client_streamingclientresponse_.html">"client/<wbr>Streaming<wbr>Client<wbr>Response"</a>
 					</li>
 				</ul>
 			</nav>
@@ -190,17 +217,23 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-external-module tsd-has-type-parameter">
-						<a href="_client_clientresponse_.clientresponse.html" class="tsd-kind-icon">Client<wbr>Response</a>
+					<li class="current tsd-kind-class tsd-parent-kind-external-module">
+						<a href="_client_streamingclientresponse_.readablestreamclientresponse.html" class="tsd-kind-icon">Readable<wbr>Stream<wbr>Client<wbr>Response</a>
 						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="_client_clientresponse_.clientresponse.html#constructor" class="tsd-kind-icon">constructor</a>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+								<a href="_client_streamingclientresponse_.readablestreamclientresponse.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_client_clientresponse_.clientresponse.html#statuscode" class="tsd-kind-icon">status<wbr>Code</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="_client_streamingclientresponse_.readablestreamclientresponse.html#reader" class="tsd-kind-icon">reader</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_client_clientresponse_.clientresponse.html#value" class="tsd-kind-icon">value</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="_client_streamingclientresponse_.readablestreamclientresponse.html#statuscode" class="tsd-kind-icon">status<wbr>Code</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="_client_streamingclientresponse_.readablestreamclientresponse.html#value" class="tsd-kind-icon">value</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_client_streamingclientresponse_.readablestreamclientresponse.html#read" class="tsd-kind-icon">read</a>
 							</li>
 						</ul>
 					</li>
