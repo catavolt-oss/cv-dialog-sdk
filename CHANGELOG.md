@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.4.4"></a>
+## [4.4.4](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.4.3...v4.4.4) (2018-03-13)
+
+
+### Bug Fixes
+
+* login will not throw 'already logged in' exception ([c4909c5](https://github.com/catavolt-oss/cv-dialog-sdk/commit/c4909c5))
+
+
+
 <a name="4.4.3"></a>
 ## [4.4.3](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.4.2...v4.4.3) (2018-03-12)
 
