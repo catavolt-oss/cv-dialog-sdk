@@ -263,25 +263,10 @@ export class CatavoltApiImpl implements CatavoltApi {
         password: string
     ): Promise<Session | Redirection> {
         if (this.isLoggedIn) {
-            return Promise.reject(new Error('User is already logged in'));
+            return this.logout().then(result => this.processLogin(tenantId, clientType, userId, password));
+        } else {
+           return this.processLogin(tenantId, clientType, userId, password);
         }
-
-        const login: Login = {
-            userId,
-            password,
-            clientType,
-            deviceProperties: this.deviceProps,
-            type: TypeNames.LoginTypeName
-        };
-
-        return this.dialogApi.createSession(tenantId, login).then((result: Session | Redirection) => {
-            if (result.type === TypeNames.SessionTypeName) {
-                this._session = result as Session;
-                return result;
-            } else {
-                return result;
-            }
-        });
     }
 
     /**
@@ -289,14 +274,20 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @returns {{sessionId:string}}
      */
     public logout(): Promise<{ sessionId: string }> {
-        if (!this.isLoggedIn) {
-            return Promise.reject('User is already logged out');
-        }
+        if (this.isLoggedIn) {
 
-        return this.dialogApi.deleteSession(this.session.tenantId, this.session.id).then(result => {
-            this._session = null;
-            return result;
-        });
+            const sessionId = this.session.id;
+            return this.dialogApi.deleteSession(this.session.tenantId, this.session.id).then(result => {
+                this._session = null;
+                return result;
+            }).catch((error) => {
+                Log.error(`Error logging out ${error}`);
+                this._session = null;
+                return {sessionId};
+            });
+        } else {
+            return Promise.resolve({sessionId: null});
+        }
     }
 
     public openDialogWithId(dialogId: string): Promise<Dialog> {
@@ -412,6 +403,32 @@ export class CatavoltApiImpl implements CatavoltApi {
         this._clientMode = ClientMode.ONLINE;
         this.dialogApi.setClientMode(this._clientMode);
     }
+
+    private processLogin(
+        tenantId: string,
+        clientType: ClientType,
+        userId: string,
+        password: string
+    ): Promise<Session | Redirection> {
+
+        const login: Login = {
+            userId,
+            password,
+            clientType,
+            deviceProperties: this.deviceProps,
+            type: TypeNames.LoginTypeName
+        };
+
+        return this.dialogApi.createSession(tenantId, login).then((result: Session | Redirection) => {
+            if (result.type === TypeNames.SessionTypeName) {
+                this._session = result as Session;
+                return result;
+            } else {
+                return result;
+            }
+        });
+    }
+
 }
 
 class AppVersion {
