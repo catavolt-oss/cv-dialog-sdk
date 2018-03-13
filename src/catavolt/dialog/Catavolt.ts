@@ -1,4 +1,3 @@
-import { ClientMode } from '../client/Client';
 import {
     ClientType,
     Dialog,
@@ -13,7 +12,7 @@ import {
     TypeNames,
     WorkbenchAction
 } from '../models';
-import { PersistentClient } from '../persistence/PersistentClient';
+import { DialogProxy } from '../proxy/DialogProxy';
 import { CvLocale } from '../util/CvLocale';
 import { Log } from '../util/Log';
 import { ObjUtil } from '../util/ObjUtil';
@@ -36,7 +35,6 @@ export class CatavoltApiImpl implements CatavoltApi {
     public readonly DEFAULT_LOCALE: CvLocale = new CvLocale('en');
 
     public dataLastChangedTime: Date = new Date(0);
-    private _clientMode: ClientMode = ClientMode.ONLINE;
     private _dialogApi: DialogApi;
     private _session: Session;
     private _devicePropsDynamic: { [index: string]: () => string };
@@ -199,25 +197,9 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @param serverUrl
      */
     public initDialogApi(serverUrl: string, serverVersion: string = CatavoltApiImpl.SERVER_VERSION): void {
-        this._dialogApi = new DialogService(new FetchClient(this._clientMode), serverUrl, serverVersion);
-    }
-
-    /**
-     * Initialize an offline dialog service
-     *
-     * @param serverVersion
-     * @param serverUrl
-     */
-    public initPersistentApi(serverUrl: string, serverVersion: string): void {
-        this._dialogApi = new DialogService(new PersistentClient(this._clientMode), serverUrl, serverVersion);
-    }
-
-    public isOfflineMode(): boolean {
-        return this._clientMode === ClientMode.OFFLINE;
-    }
-
-    public isPersistentClient(): boolean {
-        return (this.dialogApi as DialogService).client instanceof PersistentClient;
+        this._dialogApi = new DialogService(new FetchClient(), serverUrl, serverVersion);
+        // @TODO this will be the future!
+        // this._dialogApi = new DialogService(new DialogProxy(), serverUrl, serverVersion);
     }
 
     /**
@@ -384,24 +366,6 @@ export class CatavoltApiImpl implements CatavoltApi {
      */
     get sessionHasExpired(): boolean {
         return this.remainingSessionTime < 0;
-    }
-
-    public setPersistentClient(): void {
-        this.initPersistentApi(CatavoltApiImpl.SERVER_URL, CatavoltApiImpl.SERVER_VERSION);
-    }
-
-    public setOnlineClient(): void {
-        this.initDialogApi(CatavoltApiImpl.SERVER_URL, CatavoltApiImpl.SERVER_VERSION);
-    }
-
-    public setOfflineMode(): void {
-        this._clientMode = ClientMode.OFFLINE;
-        this.dialogApi.setClientMode(this._clientMode);
-    }
-
-    public setOnlineMode(): void {
-        this._clientMode = ClientMode.ONLINE;
-        this.dialogApi.setClientMode(this._clientMode);
     }
 
     private processLogin(

@@ -1,5 +1,5 @@
 import { BlobClientResponse } from '../client/BlobClientResponse';
-import { Client, ClientMode } from '../client/Client';
+import { Client } from '../client/Client';
 import { JsonClientResponse } from '../client/JsonClientResponse';
 import {ReadableClientResponse} from "../client/ReadableClientResponse";
 import {ReadableStreamClientResponse} from "../client/StreamingClientResponse";
@@ -11,11 +11,6 @@ type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export class FetchClient implements Client {
     private _lastActivity: Date = new Date();
-    private _clientMode: ClientMode;
-
-    constructor(clientMode: ClientMode = ClientMode.ONLINE) {
-        this._clientMode = clientMode;
-    }
 
     public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
@@ -100,10 +95,6 @@ export class FetchClient implements Client {
                 return response.json().then(json => new JsonClientResponse(json, response.status));
             });
         });
-    }
-
-    public setClientMode(clientMode: ClientMode) {
-        this._clientMode = clientMode;
     }
 
     private assertJsonContentType(contentType: string): Promise<void> {

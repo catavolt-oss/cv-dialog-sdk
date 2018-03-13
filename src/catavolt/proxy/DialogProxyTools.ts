@@ -1,6 +1,6 @@
 import { Log } from '../util';
 
-export class PersistenceTools {
+export class DialogProxyTools {
     public static ACTIONS = 'actions';
     public static AVAILABLE_VALUES = 'availableValues';
     public static AVAILABLE_VIEWS = 'availableViews';
@@ -49,9 +49,9 @@ export class PersistenceTools {
     }
 
     public static deleteAllWorkbenchNavigation(tenantId: string, userId: string, navigationKey: string) {
-        const previousNavigation = PersistenceTools.readNavigationState(tenantId, userId, navigationKey);
+        const previousNavigation = DialogProxyTools.readNavigationState(tenantId, userId, navigationKey);
         if (previousNavigation) {
-            PersistenceTools.deleteAllDialogState(tenantId, userId, previousNavigation.redirectionId);
+            DialogProxyTools.deleteAllDialogState(tenantId, userId, previousNavigation.redirectionId);
         }
     }
 
@@ -142,160 +142,160 @@ export class PersistenceTools {
     }
 
     public static isDeleteSession(path: string[]): boolean {
-        return path.length == 4 && path[0] == PersistenceTools.TENANTS && path[2] == PersistenceTools.SESSIONS;
+        return path.length == 4 && path[0] == DialogProxyTools.TENANTS && path[2] == DialogProxyTools.SESSIONS;
     }
 
     public static isGetAvailableViews(path: string[]): boolean {
         return (
             path.length == 7 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.AVAILABLE_VIEWS
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.AVAILABLE_VIEWS
         );
     }
 
     public static isGetDialog(path: string[]): boolean {
         return (
             path.length == 6 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS
         );
     }
 
     public static isGetRecord(path: string[]): boolean {
         return (
             path.length == 7 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.RECORD
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.RECORD
         );
     }
 
     public static isGetRedirection(path: string[]): boolean {
         return (
             path.length == 6 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.REDIRECTIONS
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.REDIRECTIONS
         );
     }
 
     public static isGetSelectedView(path: string[]): boolean {
         return (
             path.length == 7 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.SELECTED_VIEW
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.SELECTED_VIEW
         );
     }
 
     public static isGetSession(path: string[]): boolean {
-        return path.length == 4 && path[0] == PersistenceTools.TENANTS && path[2] == PersistenceTools.SESSIONS;
+        return path.length == 4 && path[0] == DialogProxyTools.TENANTS && path[2] == DialogProxyTools.SESSIONS;
     }
 
     public static isGetTenant(path: string[]): boolean {
-        return path.length == 2 && path[0] == PersistenceTools.TENANTS;
+        return path.length == 2 && path[0] == DialogProxyTools.TENANTS;
     }
 
     public static isGetTenants(path: string[]): boolean {
-        return path.length == 1 && path[0] == PersistenceTools.TENANTS;
+        return path.length == 1 && path[0] == DialogProxyTools.TENANTS;
     }
 
     public static isGetViewMode(path: string[]): boolean {
         return (
             path.length == 7 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.VIEW_MODE
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.VIEW_MODE
         );
     }
 
     public static isGetWorkbenches(path: string[]): boolean {
         return (
             path.length == 5 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.WORKBENCHES
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.WORKBENCHES
         );
     }
 
     public static isPostAvailableValues(path: string[]): boolean {
         return (
             path.length == 9 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.RECORD &&
-            path[8] == PersistenceTools.AVAILABLE_VALUES
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.RECORD &&
+            path[8] == DialogProxyTools.AVAILABLE_VALUES
         );
     }
 
     public static isPostMenuAction(path: string[]): boolean {
         return (
             path.length == 8 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.ACTIONS
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.ACTIONS
         );
     }
 
     public static isPostRecords(path: string[]): boolean {
         return (
             path.length == 7 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.RECORDS
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.RECORDS
         );
     }
 
     public static isPostSession(path: string[]): boolean {
-        return path.length == 3 && path[0] == PersistenceTools.TENANTS && path[2] == PersistenceTools.SESSIONS;
+        return path.length == 3 && path[0] == DialogProxyTools.TENANTS && path[2] == DialogProxyTools.SESSIONS;
     }
 
     public static isPostWorkbenchAction(path: string[]): boolean {
         return (
             path.length == 8 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.WORKBENCHES &&
-            path[6] == PersistenceTools.ACTIONS
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.WORKBENCHES &&
+            path[6] == DialogProxyTools.ACTIONS
         );
     }
 
     public static isPutRecord(path: string[]): boolean {
         return (
             path.length == 7 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.RECORD
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.RECORD
         );
     }
 
     public static isPutSelectedView(path: string[]): boolean {
         return (
             path.length == 8 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.SELECTED_VIEW
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.SELECTED_VIEW
         );
     }
 
     public static isPutViewMode(path: string[]): boolean {
         return (
             path.length == 8 &&
-            path[0] == PersistenceTools.TENANTS &&
-            path[2] == PersistenceTools.SESSIONS &&
-            path[4] == PersistenceTools.DIALOGS &&
-            path[6] == PersistenceTools.VIEW_MODE
+            path[0] == DialogProxyTools.TENANTS &&
+            path[2] == DialogProxyTools.SESSIONS &&
+            path[4] == DialogProxyTools.DIALOGS &&
+            path[6] == DialogProxyTools.VIEW_MODE
         );
     }
 

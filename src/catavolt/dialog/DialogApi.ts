@@ -1,4 +1,3 @@
-import { ClientMode } from '../client/Client';
 import {
     ActionParameters,
     Attachment,
@@ -117,5 +116,4 @@ export interface DialogApi {
 
     getViews(tenantId: string, sessionId: string, dialogId: string): Promise<Array<ViewDescriptor>>;
 
-    setClientMode(clientMode: ClientMode): void;
 }

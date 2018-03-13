@@ -1,4 +1,4 @@
-import { Client, ClientMode } from '../client/Client';
+import { Client } from '../client/Client';
 import { JsonClientResponse } from '../client/JsonClientResponse';
 import {ReadableClientResponse} from "../client/ReadableClientResponse";
 import {
@@ -266,10 +266,6 @@ export class DialogService implements DialogApi {
 
     get lastServiceActivity(): Date {
         return this.client.lastActivity;
-    }
-
-    public setClientMode(clientMode: ClientMode): void {
-        this.client.setClientMode(clientMode);
     }
 
     /* Private methods */

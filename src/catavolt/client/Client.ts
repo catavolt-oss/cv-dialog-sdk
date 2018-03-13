@@ -24,10 +24,4 @@ export interface Client {
 
     deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse>;
 
-    setClientMode(clientMode: ClientMode);
-}
-
-export enum ClientMode {
-    ONLINE,
-    OFFLINE
 }

@@ -49,18 +49,6 @@ export interface CatavoltApi {
     initDialogApi(serverUrl: string, serverVersion: string): void;
 
     /**
-     * Initialize an offline dialog service
-     *
-     * @param serverVersion
-     * @param serverUrl
-     */
-    initPersistentApi(serverUrl: string, serverVersion: string): void;
-
-    isOfflineMode(): boolean;
-
-    isPersistentClient(): boolean;
-
-    /**
      * Check for the availability of the given featureSet
      * @see FeatureSet
      * @param featureSet
@@ -119,11 +107,4 @@ export interface CatavoltApi {
      */
     refreshSession(tenantId: string, sessionId: string): Promise<Session>;
 
-    setPersistentClient(): void;
-
-    setOnlineClient(): void;
-
-    setOfflineMode(): void;
-
-    setOnlineMode(): void;
 }
