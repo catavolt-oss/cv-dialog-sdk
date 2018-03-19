@@ -239,6 +239,16 @@ test("Read A Binary Property From EditorDialog Test", (t) => {
 
 });
 
+test("Read A Url as a Stream", (t) => {
+    return Catavolt.openStream('https://dialog.hxgn-api.net/v0/openapi.yaml').then((readableClientResponse) => {
+       t.ok(readableClientResponse);
+       t.comment(`> Opened URL Stream for ${readableClientResponse}`);
+       readableClientResponse.read().then((result: { done: boolean, value: any }) => {
+           t.comment(`>    Chunk: ${result.value}`);
+       });
+    });
+});
+
 test("Logout Test", (t) => {
 
     return Catavolt.logout().then((response:{sessionId:string})=>{

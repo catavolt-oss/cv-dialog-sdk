@@ -1,3 +1,4 @@
+import {ReadableClientResponse} from "../client/ReadableClientResponse";
 import { ClientType, Dialog, DialogRedirection, Redirection, Session, WorkbenchAction } from '../models';
 import { CvLocale } from '../util';
 import { FeatureSet } from './Catavolt';
@@ -77,6 +78,8 @@ export interface CatavoltApi {
     openDialogWithId(dialogId: string): Promise<Dialog>;
 
     openDialog(redirection: DialogRedirection): Promise<Dialog>;
+
+    openStream(url: string):Promise<ReadableClientResponse>;
 
     toDialogOrRedirection(resultPr: Promise<{}>): Promise<Dialog | Redirection>;
 

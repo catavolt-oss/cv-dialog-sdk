@@ -132,7 +132,6 @@ export class FetchClient implements Client {
     ): Promise<Response> {
         return new Promise((resolve, reject) => {
             const requestHeaders: Headers = new Headers(headers);
-            requestHeaders.append('Accept', 'gzip');
             const init: RequestInit = { method, mode: 'cors' };
             if (body) {
                 init.body = body;

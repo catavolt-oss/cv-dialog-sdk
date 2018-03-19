@@ -264,6 +264,10 @@ export class DialogService implements DialogApi {
         );
     }
 
+    public streamUrl(tentantId: string, sessionId: string, url: string):Promise<ReadableClientResponse> {
+        return this.stream(url);
+    }
+
     get lastServiceActivity(): Date {
         return this.client.lastActivity;
     }
@@ -285,6 +289,11 @@ export class DialogService implements DialogApi {
     private put<T>(path: string, body?: T): Promise<JsonClientResponse> {
         return this.client.putJson(`${this.baseUrl}`, path, body);
     }
+
+    private stream(url: string): Promise<ReadableClientResponse> {
+        return this.client.openStream(url);
+    }
+
 }
 
 interface DialogApiResponse<T> {

@@ -1,3 +1,4 @@
+import {ReadableClientResponse} from "../client/ReadableClientResponse";
 import {
     ClientType,
     Dialog,
@@ -285,6 +286,10 @@ export class CatavoltApiImpl implements CatavoltApi {
 
     public openDialog(redirection: DialogRedirection): Promise<Dialog> {
         return this.openDialogWithId(redirection.dialogId);
+    }
+
+    public openStream(url: string):Promise<ReadableClientResponse> {
+        return this.dialogApi.streamUrl(null, null, url);
     }
 
     public toDialogOrRedirection(resultPr: Promise<{}>): Promise<Dialog | Redirection> {

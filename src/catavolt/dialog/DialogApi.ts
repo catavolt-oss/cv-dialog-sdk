@@ -1,3 +1,4 @@
+import {ReadableClientResponse} from "../client/ReadableClientResponse";
 import {
     ActionParameters,
     Attachment,
@@ -115,5 +116,7 @@ export interface DialogApi {
     changeView(tenantId: string, sessionId: string, dialogId: string, viewId: string): Promise<Dialog>;
 
     getViews(tenantId: string, sessionId: string, dialogId: string): Promise<Array<ViewDescriptor>>;
+
+    streamUrl(tentantId: string, sessionId: string, url: string):Promise<ReadableClientResponse>;
 
 }
