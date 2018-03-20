@@ -62,9 +62,11 @@ export abstract class Dialog {
         return this._catavolt;
     }
 
-    public destroy() {
-        // @TODO
-        // destroy this dialog
+    public destroy():Promise<void> {
+       return this.catavolt.dialogApi.deleteDialog(this.tenantId, this.sessionId, this.id)
+           .then(() => {
+               this.dialogMode = DialogModeEnum.DESTROYED;
+           });
     }
 
     /**
