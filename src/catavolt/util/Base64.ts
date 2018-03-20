@@ -7,6 +7,14 @@ export class Base64 {
     private static _keyStr: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 
     public static encode(input) {
+        return btoa(input);
+    }
+
+    public static decode(input) {
+       return atob(input);
+    }
+
+    public static stringEncode(input) {
         let output = '';
         let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
         let i = 0;
@@ -34,7 +42,7 @@ export class Base64 {
         return output;
     }
 
-    public static decode(input) {
+    public static stringDecode(input) {
         let output = '';
         let chr1, chr2, chr3;
         let enc1, enc2, enc3, enc4;

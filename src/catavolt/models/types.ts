@@ -43,6 +43,7 @@ export enum QueryDirectionEnum {
 export type QueryDirection = QueryDirectionEnum.FORWARD | QueryDirectionEnum.BACKWARD;
 export type RedirectionType =
     | 'hxgn.api.dialog.DialogRedirection'
+    | 'hxgn.api.dialog.ContentRedirection'
     | 'hxgn.api.dialog.WebRedirection'
     | 'hxgn.api.dialog.WorkbenchRedirection'
     | 'hxgn.api.dialog.NullRedirection';
@@ -72,6 +73,7 @@ export enum TypeNames {
     BarcodeScan = 'hxgn.api.dialog.BarcodeScan',
     CalendarTypeName = 'hxgn.api.dialog.Calendar',
     CodeRefTypeName = 'hxgn.api.dialog.CodeRef',
+    ContentRedirectionTypeName = 'hxgn.api.dialog.ContentRedirection',
     DetailsTypeName = 'hxgn.api.dialog.Details',
     DialogTypeName = 'hxgn.api.dialog.Dialog',
     DialogMessageTypeName = 'hxgn.api.dialog.DialogMessage',

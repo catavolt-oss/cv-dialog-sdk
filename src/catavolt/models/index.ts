@@ -70,6 +70,7 @@ export * from './UserMessage';
 export * from './ViewDescriptor';
 export * from './Workbench';
 export * from './WorkbenchAction';
+export * from './ContentRedirection';
 export * from './WebRedirection';
 export * from './WorkbenchRedirection';
 export * from './WriteLargePropertyParams';
