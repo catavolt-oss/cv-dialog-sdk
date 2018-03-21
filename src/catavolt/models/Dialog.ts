@@ -354,7 +354,7 @@ export abstract class Dialog {
     }
 
     protected writeLargeProperty(propertyName: string, largeProperty: LargeProperty): Promise<void> {
-        const data = Base64.decode(largeProperty.encodedData);
+        const data = Base64.decodeString(largeProperty.encodedData);
         const f: (prt: number) => Promise<void> = (ptr: number) => {
             if (ptr < data.length) {
                 const segment: string =
@@ -363,7 +363,7 @@ export abstract class Dialog {
                         : data.substring(ptr);
                 const params: WriteLargePropertyParameters = {
                     append: ptr !== 0,
-                    encodedData: Base64.encode(segment),
+                    encodedData: Base64.encodeString(segment),
                     type: TypeNames.WriteLargePropertyParameters
                 };
                 return this.catavolt.dialogApi
@@ -420,7 +420,7 @@ export abstract class Dialog {
             streamListener && streamListener(largeProperty.encodedData, largeProperty.hasMore);
             if (largeProperty.hasMore) {
                 if(!streamListener) {
-                    resultBuffer += Base64.decode(largeProperty.encodedData);
+                    resultBuffer += Base64.decodeString(largeProperty.encodedData);
                 }
                 const params: ReadLargePropertyParameters = {
                     maxBytes: Dialog.BINARY_CHUNK_SIZE,
@@ -431,9 +431,9 @@ export abstract class Dialog {
                 return this.getProperty(propertyName, params).then(f);
             } else {
                 if (resultBuffer) {
-                    resultBuffer += Base64.decode(largeProperty.encodedData);
+                    resultBuffer += Base64.decodeString(largeProperty.encodedData);
                     return Promise.resolve<LargeProperty>(
-                        largeProperty.asNewLargeProperty(Base64.encode(resultBuffer))
+                        largeProperty.asNewLargeProperty(Base64.encodeString(resultBuffer))
                     );
                 } else {
                     if(streamListener) {
