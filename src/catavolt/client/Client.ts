@@ -1,7 +1,7 @@
+import { StreamProducer } from '../io/StreamProducer';
 import { StringDictionary } from '../util';
 import { BlobClientResponse } from './BlobClientResponse';
 import { JsonClientResponse } from './JsonClientResponse';
-import {ReadableClientResponse} from "./ReadableClientResponse";
 import { TextClientResponse } from './TextClientResponse';
 import { VoidClientResponse } from './VoidClientResponse';
 
@@ -12,7 +12,7 @@ export interface Client {
 
     getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse>;
 
-    openStream(baseUrl: string, resourcePath?: string): Promise<ReadableClientResponse>;
+    openStream(baseUrl: string, resourcePath?: string): Promise<StreamProducer>;
 
     postMultipart<T>(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse>;
 
@@ -23,5 +23,4 @@ export interface Client {
     putJson(baseUrl: string, resourcePath: string, body?: StringDictionary): Promise<JsonClientResponse>;
 
     deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse>;
-
 }

@@ -108,7 +108,7 @@ export class QueryDialog extends Dialog {
         return this._scroller;
     }
 
-    protected getProperty(propertyName: string, params: ReadLargePropertyParameters): Promise<LargeProperty> {
+    protected getProperty(params: ReadLargePropertyParameters, propertyName: string): Promise<LargeProperty> {
         return this.catavolt.dialogApi.getQueryProperty(this.tenantId, this.sessionId, this.id, propertyName, params);
     }
 

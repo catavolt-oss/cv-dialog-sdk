@@ -1,5 +1,6 @@
 import { DialogService } from '../dialog';
 import { CatavoltApi } from '../dialog/CatavoltApi';
+import { StreamConsumer } from '../io/StreamConsumer';
 import { Base64 } from '../util/Base64';
 import { ActionParameters } from './ActionParameters';
 import { Attachment } from './Attachment';
@@ -62,11 +63,10 @@ export abstract class Dialog {
         return this._catavolt;
     }
 
-    public destroy():Promise<void> {
-       return this.catavolt.dialogApi.deleteDialog(this.tenantId, this.sessionId, this.id)
-           .then(() => {
-               this.dialogMode = DialogModeEnum.DESTROYED;
-           });
+    public destroy(): Promise<void> {
+        return this.catavolt.dialogApi.deleteDialog(this.tenantId, this.sessionId, this.id).then(() => {
+            this.dialogMode = DialogModeEnum.DESTROYED;
+        });
     }
 
     /**
@@ -232,23 +232,25 @@ export abstract class Dialog {
      * @returns {Promise<LargeProperty>}
      */
     public readLargeProperty(propertyName: string, recordId?: string): Promise<LargeProperty> {
-       return this.loadLargeProperty(propertyName, recordId, null) ;
+        return this.loadLargeProperty(propertyName, recordId);
     }
 
     /**
      * Stream the encoded chunks of a large property without retaining them
-     * The streamListener will receive Base64 encoded chunks with callbacks. hasMore will
+     * The streamConsumer will receive Base64 encoded chunks with callbacks. hasMore will
      * be false with the final chunk.
-     *
-     * @param {(encodedChunk: string, hasMore: boolean) => void} streamListener
+     * @param {StreamConsumer} streamConsumer
      * @param {string} propertyName
      * @param {string} recordId
      * @returns {Promise<LargeProperty>}
      */
-    public streamLargeProperty(streamListener:(encodedChunk:string, hasMore:boolean)=>void,
-                               propertyName: string, recordId?: string) : Promise<LargeProperty>{
-        return this.loadLargeProperty(propertyName, recordId, streamListener);
 
+    public streamLargeProperty(
+        streamConsumer: StreamConsumer,
+        propertyName: string,
+        recordId?: string
+    ): Promise<LargeProperty> {
+        return this.loadLargeProperty(propertyName, recordId, streamConsumer);
     }
 
     /*
@@ -283,7 +285,7 @@ export abstract class Dialog {
                 // Redirection.refreshNeeded
                 // @TODO - update relevant referring dialog settings on 'this' dialog
                 this.updateSettingsWithNewDialogProperties(result.referringObject);
-                if(result.refreshNeeded) {
+                if (result.refreshNeeded) {
                     this.catavolt.dataLastChangedTime = new Date();
                 }
                 return result;
@@ -312,7 +314,7 @@ export abstract class Dialog {
 
     // protected abstract
 
-    protected abstract getProperty(propertyName: string, params: ReadLargePropertyParameters): Promise<LargeProperty>;
+    protected abstract getProperty(params: ReadLargePropertyParameters, propertyName?: string): Promise<LargeProperty>;
 
     /* @TODO */
     protected writeAttachment(attachment: Attachment): Promise<void> {
@@ -325,13 +327,13 @@ export abstract class Dialog {
     protected writeAttachments(record: Record): Promise<void[]> {
         return Promise.all(
             record.properties
-                  .filter((prop: Property) => {
-                      return prop.value instanceof Attachment;
-                  })
-                  .map((prop: Property) => {
-                      const attachment: Attachment = prop.value as Attachment;
-                      return this.writeAttachment(attachment);
-                  })
+                .filter((prop: Property) => {
+                    return prop.value instanceof Attachment;
+                })
+                .map((prop: Property) => {
+                    const attachment: Attachment = prop.value as Attachment;
+                    return this.writeAttachment(attachment);
+                })
         );
     }
 
@@ -344,12 +346,12 @@ export abstract class Dialog {
     protected writeLargeProperties(record: Record): Promise<void[]> {
         return Promise.all(
             record.properties
-                  .filter((prop: Property) => {
-                      return this.propDefAtName(prop.name).isLargePropertyType;
-                  })
-                  .map((prop: Property) => {
-                      return this.writeLargeProperty(prop.name, prop.value as LargeProperty);
-                  })
+                .filter((prop: Property) => {
+                    return this.propDefAtName(prop.name).isLargePropertyType;
+                })
+                .map((prop: Property) => {
+                    return this.writeLargeProperty(prop.name, prop.value as LargeProperty);
+                })
         );
     }
 
@@ -367,10 +369,10 @@ export abstract class Dialog {
                     type: TypeNames.WriteLargePropertyParameters
                 };
                 return this.catavolt.dialogApi
-                           .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, params)
-                           .then(() => {
-                               f(ptr + Dialog.CHAR_CHUNK_SIZE);
-                           });
+                    .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, params)
+                    .then(() => {
+                        f(ptr + Dialog.CHAR_CHUNK_SIZE);
+                    });
             } else {
                 return Promise.resolve();
             }
@@ -379,17 +381,16 @@ export abstract class Dialog {
         // This is a delete
         if (!largeProperty || !largeProperty.encodedData) {
             return this.catavolt.dialogApi
-                       .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, {
-                           append: false,
-                           encodedData: null,
-                           type: TypeNames.WriteLargePropertyParameters
-                       })
-                       .then(() => Promise.resolve());
+                .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, {
+                    append: false,
+                    encodedData: null,
+                    type: TypeNames.WriteLargePropertyParameters
+                })
+                .then(() => Promise.resolve());
         }
 
         return f(0);
     }
-
 
     /**
      * @private
@@ -405,21 +406,41 @@ export abstract class Dialog {
     }
 
     /**
-     * Read a large property into memory or stream it, if a streamListener is provided
-     *
+     * Read a large property into memory or stream it, if a streamConsumer is provided
      * @param {string} propertyName
      * @param {string} recordId
-     * @param {(encodedChunk: string, hasMore: boolean, error?: any) => void} streamListener
+     * @param {StreamConsumer} streamConsumer
      * @returns {Promise<LargeProperty>}
      */
-    private loadLargeProperty(propertyName: string, recordId: string,
-                              streamListener:(encodedChunk:string, hasMore:boolean)=>void): Promise<LargeProperty> {
+    private loadLargeProperty(
+        propertyName: string,
+        recordId: string,
+        streamConsumer?: StreamConsumer
+    ): Promise<LargeProperty> {
+        return Dialog.loadLargeProperty(this.getProperty.bind(this), streamConsumer, propertyName, recordId);
+    }
+
+    /**
+     * Read a large property into memory or stream it, if a streamConsumer is provided
+     * The actual service call that retrieves the result is delegate to the 'getPropertyFn'
+     * @param {(params: ReadLargePropertyParameters, propertyName?: string) => Promise<LargeProperty>} getPropertyFn
+     * @param {StreamConsumer} streamConsumer
+     * @param {string} propertyName
+     * @param {string} recordId
+     * @returns {Promise<LargeProperty>}
+     */
+    public static loadLargeProperty(
+        getPropertyFn: (params: ReadLargePropertyParameters, propertyName?: string) => Promise<LargeProperty>,
+        streamConsumer?: StreamConsumer,
+        propertyName?: string,
+        recordId?: string
+    ): Promise<LargeProperty> {
         let sequence: number = 0;
         let resultBuffer: string = '';
         const f: (largeProperty: LargeProperty) => Promise<LargeProperty> = (largeProperty: LargeProperty) => {
-            streamListener && streamListener(largeProperty.encodedData, largeProperty.hasMore);
+            streamConsumer && streamConsumer({ done: !largeProperty.hasMore, value: largeProperty.encodedData });
             if (largeProperty.hasMore) {
-                if(!streamListener) {
+                if (!streamConsumer) {
                     resultBuffer += Base64.decodeString(largeProperty.encodedData);
                 }
                 const params: ReadLargePropertyParameters = {
@@ -428,7 +449,7 @@ export abstract class Dialog {
                     recordId,
                     type: TypeNames.ReadLargePropertyParameters
                 };
-                return this.getProperty(propertyName, params).then(f);
+                return getPropertyFn(params, propertyName).then(f);
             } else {
                 if (resultBuffer) {
                     resultBuffer += Base64.decodeString(largeProperty.encodedData);
@@ -436,7 +457,7 @@ export abstract class Dialog {
                         largeProperty.asNewLargeProperty(Base64.encodeString(resultBuffer))
                     );
                 } else {
-                    if(streamListener) {
+                    if (streamConsumer) {
                         return Promise.resolve<LargeProperty>(largeProperty.asNewLargeProperty(null));
                     }
                     return Promise.resolve<LargeProperty>(largeProperty.asNewLargeProperty(largeProperty.encodedData));
@@ -449,7 +470,6 @@ export abstract class Dialog {
             recordId,
             type: TypeNames.ReadLargePropertyParameters
         };
-        return this.getProperty(propertyName, initParams).then(f);
+        return getPropertyFn(initParams, propertyName).then(f);
     }
-
 }

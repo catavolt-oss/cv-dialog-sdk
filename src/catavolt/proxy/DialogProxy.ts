@@ -1,16 +1,13 @@
-import {
-    BlobClientResponse,
-    Client,
-    JsonClientResponse,
-    TextClientResponse,
-    VoidClientResponse
-} from '../client';
-import {ReadableClientResponse} from "../client/ReadableClientResponse";
+import { BlobClientResponse, Client, JsonClientResponse, TextClientResponse, VoidClientResponse } from '../client';
+import { StreamProducer } from '../io/StreamProducer';
 import { StringDictionary } from '../util';
 import { FetchClient } from '../ws';
 import { DialogProxyTools } from './DialogProxyTools';
 
-enum ClientMode { ONLINE, OFFLINE }
+enum ClientMode {
+    ONLINE,
+    OFFLINE
+}
 
 export class DialogProxy implements Client {
     private static ADD_TO_BRIEFCASE_ACTION_ID = 'alias_AddToBriefcase';
@@ -145,7 +142,7 @@ export class DialogProxy implements Client {
     }
 
     // @TODO
-    public openStream(baseUrl: string, resourcePath?: string): Promise<ReadableClientResponse> {
+    public openStream(baseUrl: string, resourcePath?: string): Promise<StreamProducer> {
         return Promise.resolve(null);
     }
 
@@ -588,11 +585,7 @@ export class DialogProxy implements Client {
                 if (!briefcaseRecord) {
                     resolve(new JsonClientResponse(this.createDialogMessageModel('Briefcase not found'), 400));
                 }
-                DialogProxyTools.updateRecordPropertyValue(
-                    briefcaseRecord,
-                    DialogProxy.ONLINE_PROPERTY_NAME,
-                    online
-                );
+                DialogProxyTools.updateRecordPropertyValue(briefcaseRecord, DialogProxy.ONLINE_PROPERTY_NAME, online);
                 this.writeBriefcaseRecord(briefcaseRecord);
                 this.changeClientMode(online ? ClientMode.ONLINE : ClientMode.OFFLINE);
                 resolve(new JsonClientResponse(nullRedirection, 303));

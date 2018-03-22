@@ -1,6 +1,6 @@
 import { Client } from '../client/Client';
 import { JsonClientResponse } from '../client/JsonClientResponse';
-import {ReadableClientResponse} from "../client/ReadableClientResponse";
+import { StreamProducer } from '../io/StreamProducer';
 import {
     ActionParameters,
     Attachment,
@@ -45,7 +45,6 @@ export class DialogService implements DialogApi {
             new DialogServiceResponse<Session>(jsonClientResponse).responseValueOrRedirect()
         );
     }
-
     public getSession(tenantId: string, sessionId: string): Promise<Session> {
         return this.get(`tenants/${tenantId}/sessions/${sessionId}`).then(jsonClientResponse =>
             new DialogServiceResponse<Session>(jsonClientResponse).responseValue()
@@ -56,6 +55,18 @@ export class DialogService implements DialogApi {
         return this.d3lete(`tenants/${tenantId}/sessions/${sessionId}`).then(jsonClientResponse =>
             new DialogServiceResponse<{ sessionId: string }>(jsonClientResponse).responseValue()
         );
+    }
+
+    public getContent(
+        tenantId: string,
+        sessionId: string,
+        contentId: string,
+        readLargePropertyParams: ReadLargePropertyParameters
+    ): Promise<LargeProperty> {
+        return this.post(
+            `tenants/${tenantId}/sessions/${sessionId}/content/${contentId}`,
+            readLargePropertyParams
+        ).then(jsonClientResponse => new DialogServiceResponse<LargeProperty>(jsonClientResponse).responseValue());
     }
 
     public getWorkbenches(tenantId: string, sessionId: string): Promise<Array<Workbench>> {
@@ -228,9 +239,9 @@ export class DialogService implements DialogApi {
         ).then(jsonClientResponse => new DialogServiceResponse<Array<any>>(jsonClientResponse).responseValue());
     }
 
-    public openContentStream(tenantId: string, sessionId: string, contentId: string): Promise<ReadableClientResponse> {
-        return this.get(`tenants/${tenantId}/sessions/${sessionId}/content/${contentId}`).then(
-            jsonClientResponse => new DialogServiceResponse<ReadableClientResponse>(jsonClientResponse).responseValue()
+    public openContentStream(tenantId: string, sessionId: string, contentId: string): Promise<StreamProducer> {
+        return this.get(`tenants/${tenantId}/sessions/${sessionId}/content/${contentId}`).then(jsonClientResponse =>
+            new DialogServiceResponse<StreamProducer>(jsonClientResponse).responseValue()
         );
     }
 
@@ -264,7 +275,7 @@ export class DialogService implements DialogApi {
         );
     }
 
-    public streamUrl(tentantId: string, sessionId: string, url: string):Promise<ReadableClientResponse> {
+    public streamUrl(tentantId: string, sessionId: string, url: string): Promise<StreamProducer> {
         return this.stream(url);
     }
 
@@ -290,10 +301,9 @@ export class DialogService implements DialogApi {
         return this.client.putJson(`${this.baseUrl}`, path, body);
     }
 
-    private stream(url: string): Promise<ReadableClientResponse> {
+    private stream(url: string): Promise<StreamProducer> {
         return this.client.openStream(url);
     }
-
 }
 
 interface DialogApiResponse<T> {

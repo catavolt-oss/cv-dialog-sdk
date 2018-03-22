@@ -1,10 +1,10 @@
 import { BlobClientResponse } from '../client/BlobClientResponse';
 import { Client } from '../client/Client';
 import { JsonClientResponse } from '../client/JsonClientResponse';
-import {ReadableClientResponse} from "../client/ReadableClientResponse";
-import {ReadableStreamClientResponse} from "../client/StreamingClientResponse";
+import { ReadableStreamClientResponse } from '../client/StreamingClientResponse';
 import { TextClientResponse } from '../client/TextClientResponse';
 import { VoidClientResponse } from '../client/VoidClientResponse';
+import { StreamProducer } from '../io/StreamProducer';
 import { Log, StringDictionary } from '../util';
 
 type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -26,7 +26,7 @@ export class FetchClient implements Client {
         });
     }
 
-    public openStream(baseUrl: string, resourcePath?: string): Promise<ReadableClientResponse> {
+    public openStream(baseUrl: string, resourcePath?: string): Promise<StreamProducer> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return this.processRequest(url, 'GET').then((response: Response) => {
             return Promise.resolve(new ReadableStreamClientResponse(response.body, response.status));

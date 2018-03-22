@@ -1,4 +1,4 @@
-import {ReadableClientResponse} from "../client/ReadableClientResponse";
+import { StreamProducer } from '../io/StreamProducer';
 import {
     ActionParameters,
     Attachment,
@@ -31,6 +31,13 @@ export interface DialogApi {
     getSession(tenantId: string, sessionId: string): Promise<Session>;
 
     deleteSession(tenantId: string, sessionId: string): Promise<{ sessionId: string }>;
+
+    getContent(
+        tenantId: string,
+        sessionId: string,
+        contentId: string,
+        readLargePropertyParams: ReadLargePropertyParameters
+    ): Promise<LargeProperty>;
 
     getWorkbenches(tenantId: string, sessionId: string): Promise<Array<Workbench>>;
 
@@ -117,6 +124,5 @@ export interface DialogApi {
 
     getViews(tenantId: string, sessionId: string, dialogId: string): Promise<Array<ViewDescriptor>>;
 
-    streamUrl(tentantId: string, sessionId: string, url: string):Promise<ReadableClientResponse>;
-
+    streamUrl(tentantId: string, sessionId: string, url: string): Promise<StreamProducer>;
 }

@@ -1,4 +1,5 @@
-import {ReadableClientResponse} from "../client/ReadableClientResponse";
+import { StreamConsumer } from '../io/StreamConsumer';
+import { StreamProducer } from '../io/StreamProducer';
 import {
     ClientType,
     Dialog,
@@ -13,6 +14,8 @@ import {
     TypeNames,
     WorkbenchAction
 } from '../models';
+import { LargeProperty } from '../models/LargeProperty';
+import { ReadLargePropertyParameters } from '../models/ReadLargePropertyParameters';
 import { DialogProxy } from '../proxy/DialogProxy';
 import { CvLocale } from '../util/CvLocale';
 import { Log } from '../util/Log';
@@ -248,7 +251,7 @@ export class CatavoltApiImpl implements CatavoltApi {
         if (this.isLoggedIn) {
             return this.logout().then(result => this.processLogin(tenantId, clientType, userId, password));
         } else {
-           return this.processLogin(tenantId, clientType, userId, password);
+            return this.processLogin(tenantId, clientType, userId, password);
         }
     }
 
@@ -258,18 +261,20 @@ export class CatavoltApiImpl implements CatavoltApi {
      */
     public logout(): Promise<{ sessionId: string }> {
         if (this.isLoggedIn) {
-
             const sessionId = this.session.id;
-            return this.dialogApi.deleteSession(this.session.tenantId, this.session.id).then(result => {
-                this._session = null;
-                return result;
-            }).catch((error) => {
-                Log.error(`Error logging out ${error}`);
-                this._session = null;
-                return {sessionId};
-            });
+            return this.dialogApi
+                .deleteSession(this.session.tenantId, this.session.id)
+                .then(result => {
+                    this._session = null;
+                    return result;
+                })
+                .catch(error => {
+                    Log.error(`Error logging out ${error}`);
+                    this._session = null;
+                    return { sessionId };
+                });
         } else {
-            return Promise.resolve({sessionId: null});
+            return Promise.resolve({ sessionId: null });
         }
     }
 
@@ -288,7 +293,7 @@ export class CatavoltApiImpl implements CatavoltApi {
         return this.openDialogWithId(redirection.dialogId);
     }
 
-    public openStream(url: string):Promise<ReadableClientResponse> {
+    public openStream(url: string): Promise<StreamProducer> {
         return this.dialogApi.streamUrl(null, null, url);
     }
 
@@ -373,13 +378,24 @@ export class CatavoltApiImpl implements CatavoltApi {
         return this.remainingSessionTime < 0;
     }
 
+    /**
+     *
+     * @param {string} contentId
+     * @param {StreamConsumer} streamConsumer
+     * @returns {Promise<LargeProperty>}
+     */
+    public streamContent(contentId: string, streamConsumer: StreamConsumer): Promise<LargeProperty> {
+        return Dialog.loadLargeProperty((params: ReadLargePropertyParameters): Promise<LargeProperty> => {
+            return this.dialogApi.getContent(this.session.tenantId, this.session.id, contentId, params);
+        }, streamConsumer);
+    }
+
     private processLogin(
         tenantId: string,
         clientType: ClientType,
         userId: string,
         password: string
     ): Promise<Session | Redirection> {
-
         const login: Login = {
             userId,
             password,
@@ -397,7 +413,6 @@ export class CatavoltApiImpl implements CatavoltApi {
             }
         });
     }
-
 }
 
 class AppVersion {

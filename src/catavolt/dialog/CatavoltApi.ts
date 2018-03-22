@@ -1,5 +1,7 @@
-import {ReadableClientResponse} from "../client/ReadableClientResponse";
+import { StreamConsumer } from '../io/StreamConsumer';
+import { StreamProducer } from '../io/StreamProducer';
 import { ClientType, Dialog, DialogRedirection, Redirection, Session, WorkbenchAction } from '../models';
+import { LargeProperty } from '../models/LargeProperty';
 import { CvLocale } from '../util';
 import { FeatureSet } from './Catavolt';
 import { DialogApi } from './DialogApi';
@@ -79,7 +81,7 @@ export interface CatavoltApi {
 
     openDialog(redirection: DialogRedirection): Promise<Dialog>;
 
-    openStream(url: string):Promise<ReadableClientResponse>;
+    openStream(url: string): Promise<StreamProducer>;
 
     toDialogOrRedirection(resultPr: Promise<{}>): Promise<Dialog | Redirection>;
 
@@ -110,4 +112,11 @@ export interface CatavoltApi {
      */
     refreshSession(tenantId: string, sessionId: string): Promise<Session>;
 
+    /**
+     *
+     * @param {string} contentId
+     * @param {StreamConsumer} streamConsumer
+     * @returns {Promise<LargeProperty>}
+     */
+    streamContent(contentId: string, streamConsumer: StreamConsumer): Promise<LargeProperty>;
 }

@@ -322,13 +322,13 @@ export class PropertyFormatter {
     }
 
     private getSupportedLocale(locale): string {
-        if(supportedLocales.indexOf(locale)) {
+        if (supportedLocales.indexOf(locale)) {
             return locale;
         } else {
             const sepIndex = locale.indexOf('-');
-            if(sepIndex > -1) {
+            if (sepIndex > -1) {
                 const lang = locale.substring(0, sepIndex);
-                if(supportedLocales.indexOf(lang)) {
+                if (supportedLocales.indexOf(lang)) {
                     return lang;
                 }
             }

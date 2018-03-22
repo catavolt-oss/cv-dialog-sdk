@@ -1,12 +1,12 @@
-import {Storage} from './Storage';
+import { Storage } from './Storage';
 
 enum ApiType {
     LOCAL_STORAGE,
     ASYNC_STORAGE
 }
 
-export const setCvStorageApi = (storageApi) => {
-   ClientStorage.setStorageApi(storageApi);
+export const setCvStorageApi = storageApi => {
+    ClientStorage.setStorageApi(storageApi);
 };
 
 class ClientStorage implements Storage {
@@ -27,7 +27,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public getItem(key: string):Promise<string>{
+    public getItem(key: string): Promise<string> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.getItemAsyncStorage(key, ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -35,7 +35,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public getJson(key: string):Promise<any>{
+    public getJson(key: string): Promise<any> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.getJsonAsyncStorage(key, ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -43,7 +43,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public setItem(key: string, value: string):Promise<void> {
+    public setItem(key: string, value: string): Promise<void> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.setItemAsyncStorage(key, value, ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -51,7 +51,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public setJson(key: string, value: any):Promise<void> {
+    public setJson(key: string, value: any): Promise<void> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.setJsonAsyncStorage(key, value, ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -59,7 +59,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public removeItem(key: string):Promise<void> {
+    public removeItem(key: string): Promise<void> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.removeItemAsyncStorage(key, ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -67,7 +67,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public clearAll():Promise<void> {
+    public clearAll(): Promise<void> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.clearAllAsyncStorage(ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -75,7 +75,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public getAllKeys():Promise<string[]> {
+    public getAllKeys(): Promise<string[]> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.getAllKeysAsyncStorage(ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -83,7 +83,7 @@ class ClientStorage implements Storage {
         }
     }
 
-    public multiRemove(keys: Array<string>):Promise<void> {
+    public multiRemove(keys: Array<string>): Promise<void> {
         if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
             return this.multiRemoveAsyncStorage(keys, ClientStorage._storageApi);
         } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
@@ -136,4 +136,4 @@ class ClientStorage implements Storage {
     }
 }
 
-export const storage:Storage = new ClientStorage();
+export const storage: Storage = new ClientStorage();

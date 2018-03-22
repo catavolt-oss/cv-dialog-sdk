@@ -3,6 +3,7 @@
  */
 
 export * from './catavolt/util/'
+export * from './catavolt/io/'
 export * from './catavolt/storage/'
 export * from './catavolt/client/'
 export * from './catavolt/ws/'

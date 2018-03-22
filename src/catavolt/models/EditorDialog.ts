@@ -255,7 +255,7 @@ export class EditorDialog extends Dialog {
 
     // protected methods
 
-    protected getProperty(propertyName: string, params: ReadLargePropertyParameters): Promise<LargeProperty> {
+    protected getProperty(params: ReadLargePropertyParameters, propertyName: string): Promise<LargeProperty> {
         return this.catavolt.dialogApi.getEditorProperty(this.tenantId, this.sessionId, this.id, propertyName, params);
     }
 

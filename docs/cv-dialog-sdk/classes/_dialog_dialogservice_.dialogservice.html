@@ -120,6 +120,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_dialog_dialogservice_.dialogservice.html#get" class="tsd-kind-icon">get</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#getactions" class="tsd-kind-icon">get<wbr>Actions</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#getavailablevalues" class="tsd-kind-icon">get<wbr>Available<wbr>Values</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#getcontent" class="tsd-kind-icon">get<wbr>Content</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#getdialog" class="tsd-kind-icon">get<wbr>Dialog</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#geteditorproperty" class="tsd-kind-icon">get<wbr>Editor<wbr>Property</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#getmode" class="tsd-kind-icon">get<wbr>Mode</a></li>
@@ -225,7 +226,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/DialogService.ts:271</li>
+									<li>Defined in dialog/DialogService.ts:282</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Date</span></h4>
@@ -279,7 +280,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#changemode">changeMode</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:243</li>
+									<li>Defined in dialog/DialogService.ts:254</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -312,7 +313,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#changeview">changeView</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:255</li>
+									<li>Defined in dialog/DialogService.ts:266</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -371,7 +372,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/DialogService.ts:285</li>
+									<li>Defined in dialog/DialogService.ts:296</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -395,7 +396,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#deletedialog">deleteDialog</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:85</li>
+									<li>Defined in dialog/DialogService.ts:96</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -425,7 +426,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#deletesession">deleteSession</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:55</li>
+									<li>Defined in dialog/DialogService.ts:54</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -451,7 +452,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/DialogService.ts:277</li>
+									<li>Defined in dialog/DialogService.ts:288</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -478,7 +479,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getactions">getActions</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:91</li>
+									<li>Defined in dialog/DialogService.ts:102</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -508,7 +509,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getavailablevalues">getAvailableValues</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:220</li>
+									<li>Defined in dialog/DialogService.ts:231</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -531,6 +532,39 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getcontent" class="tsd-anchor"></a>
+					<h3>get<wbr>Content</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Content<span class="tsd-signature-symbol">(</span>tenantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, sessionId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, contentId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, readLargePropertyParams<span class="tsd-signature-symbol">: </span><a href="../interfaces/_models_readlargepropertyparameters_.readlargepropertyparameters.html" class="tsd-signature-type">ReadLargePropertyParameters</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_models_largeproperty_.largeproperty.html" class="tsd-signature-type">LargeProperty</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getcontent">getContent</a></p>
+								<ul>
+									<li>Defined in dialog/DialogService.ts:60</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>tenantId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>sessionId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>contentId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>readLargePropertyParams: <a href="../interfaces/_models_readlargepropertyparameters_.readlargepropertyparameters.html" class="tsd-signature-type">ReadLargePropertyParameters</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_models_largeproperty_.largeproperty.html" class="tsd-signature-type">LargeProperty</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getdialog" class="tsd-anchor"></a>
 					<h3>get<wbr>Dialog</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -541,7 +575,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getdialog">getDialog</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:79</li>
+									<li>Defined in dialog/DialogService.ts:90</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -571,7 +605,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#geteditorproperty">getEditorProperty</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:162</li>
+									<li>Defined in dialog/DialogService.ts:173</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -607,7 +641,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getmode">getMode</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:237</li>
+									<li>Defined in dialog/DialogService.ts:248</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -637,7 +671,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getqueryproperty">getQueryProperty</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:175</li>
+									<li>Defined in dialog/DialogService.ts:186</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -673,7 +707,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getrecord">getRecord</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:133</li>
+									<li>Defined in dialog/DialogService.ts:144</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -703,7 +737,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getrecords">getRecords</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:151</li>
+									<li>Defined in dialog/DialogService.ts:162</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -736,7 +770,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getredirection">getRedirection</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:73</li>
+									<li>Defined in dialog/DialogService.ts:84</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -766,7 +800,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getsession">getSession</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:49</li>
+									<li>Defined in dialog/DialogService.ts:48</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -793,7 +827,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getview">getView</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:249</li>
+									<li>Defined in dialog/DialogService.ts:260</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -823,7 +857,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getviews">getViews</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:261</li>
+									<li>Defined in dialog/DialogService.ts:272</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -853,7 +887,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getworkbench">getWorkbench</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:67</li>
+									<li>Defined in dialog/DialogService.ts:78</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -883,7 +917,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getworkbenchactions">getWorkbenchActions</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:111</li>
+									<li>Defined in dialog/DialogService.ts:122</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -913,7 +947,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#getworkbenches">getWorkbenches</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:61</li>
+									<li>Defined in dialog/DialogService.ts:72</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -933,13 +967,13 @@
 					<a name="opencontentstream" class="tsd-anchor"></a>
 					<h3>open<wbr>Content<wbr>Stream</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">open<wbr>Content<wbr>Stream<span class="tsd-signature-symbol">(</span>tenantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, sessionId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, contentId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html" class="tsd-signature-type">ReadableClientResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">open<wbr>Content<wbr>Stream<span class="tsd-signature-symbol">(</span>tenantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, sessionId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, contentId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_io_streamproducer_.streamproducer.html" class="tsd-signature-type">StreamProducer</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/DialogService.ts:231</li>
+									<li>Defined in dialog/DialogService.ts:242</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -954,7 +988,7 @@
 									<h5>contentId: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html" class="tsd-signature-type">ReadableClientResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_io_streamproducer_.streamproducer.html" class="tsd-signature-type">StreamProducer</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -969,7 +1003,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#performaction">performAction</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:97</li>
+									<li>Defined in dialog/DialogService.ts:108</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1005,7 +1039,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#performworkbenchaction">performWorkbenchAction</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:121</li>
+									<li>Defined in dialog/DialogService.ts:132</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1037,7 +1071,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/DialogService.ts:281</li>
+									<li>Defined in dialog/DialogService.ts:292</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -1070,7 +1104,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#propertychange">propertyChange</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:204</li>
+									<li>Defined in dialog/DialogService.ts:215</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1108,7 +1142,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/DialogService.ts:289</li>
+									<li>Defined in dialog/DialogService.ts:300</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -1141,7 +1175,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#putrecord">putRecord</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:139</li>
+									<li>Defined in dialog/DialogService.ts:150</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1167,13 +1201,13 @@
 					<a name="stream" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> stream</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">stream<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html" class="tsd-signature-type">ReadableClientResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">stream<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_io_streamproducer_.streamproducer.html" class="tsd-signature-type">StreamProducer</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/DialogService.ts:293</li>
+									<li>Defined in dialog/DialogService.ts:304</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1182,7 +1216,7 @@
 									<h5>url: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html" class="tsd-signature-type">ReadableClientResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_io_streamproducer_.streamproducer.html" class="tsd-signature-type">StreamProducer</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1190,14 +1224,14 @@
 					<a name="streamurl" class="tsd-anchor"></a>
 					<h3>stream<wbr>Url</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">stream<wbr>Url<span class="tsd-signature-symbol">(</span>tentantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, sessionId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html" class="tsd-signature-type">ReadableClientResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">stream<wbr>Url<span class="tsd-signature-symbol">(</span>tentantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, sessionId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_io_streamproducer_.streamproducer.html" class="tsd-signature-type">StreamProducer</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#streamurl">streamUrl</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:267</li>
+									<li>Defined in dialog/DialogService.ts:278</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1212,7 +1246,7 @@
 									<h5>url: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_client_readableclientresponse_.readableclientresponse.html" class="tsd-signature-type">ReadableClientResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_io_streamproducer_.streamproducer.html" class="tsd-signature-type">StreamProducer</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1227,7 +1261,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#writeproperty">writeProperty</a></p>
 								<ul>
-									<li>Defined in dialog/DialogService.ts:188</li>
+									<li>Defined in dialog/DialogService.ts:199</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1316,6 +1350,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_dialog_dialogservice_.dialogservice.html#getavailablevalues" class="tsd-kind-icon">get<wbr>Available<wbr>Values</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_dialog_dialogservice_.dialogservice.html#getcontent" class="tsd-kind-icon">get<wbr>Content</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_dialog_dialogservice_.dialogservice.html#getdialog" class="tsd-kind-icon">get<wbr>Dialog</a>
