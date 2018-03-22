@@ -293,8 +293,14 @@ export class CatavoltApiImpl implements CatavoltApi {
         return this.openDialogWithId(redirection.dialogId);
     }
 
+    /**
+     * Not yet implemented
+     * @param {string} url
+     * @returns {Promise<StreamProducer>}
+     */
     public openStream(url: string): Promise<StreamProducer> {
-        return this.dialogApi.streamUrl(null, null, url);
+        // return this.dialogApi.streamUrl(null, null, url);
+        throw Error('not yet implemented');
     }
 
     public toDialogOrRedirection(resultPr: Promise<{}>): Promise<Dialog | Redirection> {
