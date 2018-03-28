@@ -251,9 +251,9 @@ export class DialogService implements DialogApi {
         );
     }
 
-    public changeMode(tenantId: string, sessionId: string, dialogId: string, mode: ViewMode): Promise<EditorDialog> {
+    public changeMode(tenantId: string, sessionId: string, dialogId: string, mode: ViewMode): Promise<EditorDialog | Redirection> {
         return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/viewMode/${mode}`).then(
-            jsonClientResponse => new DialogServiceResponse<EditorDialog>(jsonClientResponse).responseValue()
+            jsonClientResponse => new DialogServiceResponse<EditorDialog | Redirection>(jsonClientResponse).responseValueOrRedirect()
         );
     }
 

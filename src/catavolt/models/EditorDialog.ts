@@ -27,15 +27,21 @@ export class EditorDialog extends Dialog {
 
     private _buffer: RecordBuffer;
 
-    public changeViewMode(viewMode: ViewMode): Promise<EditorDialog> {
+    public changeViewMode(viewMode: ViewMode): Promise<EditorDialog | Redirection> {
         if (this.viewMode !== viewMode) {
             return this.catavolt.dialogApi
                 .changeMode(this.tenantId, this.sessionId, this.id, viewMode)
-                .then((dialog: EditorDialog) => {
-                    // any new dialog needs to be initialized with the Catavolt object
-                    dialog.initialize(this.catavolt);
-                    this.updateSettingsWithNewDialogProperties(dialog.referringObject);
-                    return dialog;
+                .then((result: EditorDialog | Redirection) => {
+                    if (RedirectionUtil.isRedirection(result)) {
+                        this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
+                        return result;
+                    } else {
+                        const dialog = result as EditorDialog;
+                        // any new dialog needs to be initialized with the Catavolt object
+                        dialog.initialize(this.catavolt);
+                        this.updateSettingsWithNewDialogProperties(dialog.referringObject);
+                        return dialog;
+                    }
                 });
         }
     }

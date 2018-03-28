@@ -116,7 +116,7 @@ export interface DialogApi {
 
     getMode(tenantId: string, sessionId: string, dialogId: string): Promise<ViewMode>;
 
-    changeMode(tenantId: string, sessionId: string, dialogId: string, mode: ViewMode): Promise<EditorDialog>;
+    changeMode(tenantId: string, sessionId: string, dialogId: string, mode: ViewMode): Promise<EditorDialog | Redirection>;
 
     getView(tenantId: string, sessionId: string, dialogId: string): Promise<View>;
 
