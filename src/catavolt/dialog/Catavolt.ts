@@ -201,9 +201,7 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @param serverUrl
      */
     public initDialogApi(serverUrl: string, serverVersion: string = CatavoltApiImpl.SERVER_VERSION): void {
-        this._dialogApi = new DialogService(new FetchClient(), serverUrl, serverVersion);
-        // @TODO this will be the future!
-        // this._dialogApi = new DialogService(new DialogProxy(), serverUrl, serverVersion);
+        this._dialogApi = new DialogService(new DialogProxy(), serverUrl, serverVersion);
     }
 
     /**

@@ -1,6 +1,8 @@
-import { Log } from '../util';
+import {Log} from '../util';
+import {FetchClient} from "../ws";
 
 export class DialogProxyTools {
+
     public static ACTIONS = 'actions';
     public static AVAILABLE_VALUES = 'availableValues';
     public static AVAILABLE_VIEWS = 'availableViews';
@@ -13,6 +15,12 @@ export class DialogProxyTools {
     public static TENANTS = 'tenants';
     public static VIEW_MODE = 'viewMode';
     public static WORKBENCHES = 'workbenches';
+
+    public static COMMON_FETCH_CLIENT = new FetchClient();
+
+    public static commonFetchClient(): FetchClient {
+        return this.COMMON_FETCH_CLIENT;
+    }
 
     public static deleteAllDialogState(tenantId: string, userId: string, dialogId: string) {
         const dialog = this.readDialogState(tenantId, userId, dialogId);
@@ -365,25 +373,21 @@ export class DialogProxyTools {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias', alias);
     }
 
-    public static writeDialogParentState(
-        tenantId: string,
-        userId: string,
-        child: any,
-        childIndex: number,
-        parent: any
-    ) {
+    public static writeDialogParentState(tenantId: string,
+                                         userId: string,
+                                         child: any,
+                                         childIndex: number,
+                                         parent: any) {
         this.writePersistentState(tenantId, userId, 'dialog.' + child.id + '.parent', parent.id);
         const parentAlias = this.readDialogAliasState(tenantId, userId, parent.id);
         this.writeDialogAliasState(tenantId, userId, child.id, parentAlias + '_' + childIndex);
         this.writeAllDialogParentState(tenantId, userId, child);
     }
 
-    public static writeDialogReferringAliasState(
-        tenantId: string,
-        userId: string,
-        dialogId: string,
-        referringAlias: any
-    ) {
+    public static writeDialogReferringAliasState(tenantId: string,
+                                                 userId: string,
+                                                 dialogId: string,
+                                                 referringAlias: any) {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias', referringAlias);
     }
 
