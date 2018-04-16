@@ -1,4 +1,4 @@
-//import {SessionContext, SystemContext, Call, Get} from "./ws";
+// import {SessionContext, SystemContext, Call, Get} from "./ws";
 import moment from 'moment';
 import {
     ArrayUtil,
@@ -106,7 +106,7 @@ export interface Textish {
 let GenID = 1; //  Generate a unique number if need be for IDs
 
 export abstract class Spec {
-    protected nodeChildDict: Object = {};
+    protected nodeChildDict: object = {};
     constructor(node?: Node) {
         if (node) {
             PrintUtil.forEachChildNode(node, (n: Node) => {
@@ -238,6 +238,12 @@ export abstract class Container extends Component {
         }
         return this._containerWidth;
     }
+    public initContainerWith(overrideLayout?: Layout, overideChildren?: Array<Component>) {
+        this.initComponentWith(overrideLayout);
+        if (overideChildren) {
+            this.assignChildren(overideChildren);
+        }
+    }
     protected assignChildren(c: Array<Component>) {
         this._children = c;
     }
@@ -250,16 +256,10 @@ export abstract class Container extends Component {
     protected calcAndAssignContainerWidth(parentContainer: Container) {
         // Overriden by Form and Cell for altered behavior
         const parentWidth = parentContainer.containerWidth;
-        if (this.layout == null) {
+        if (this.layout === null) {
             throw Error('Bogus');
         }
         this.assignContainerWidth(this.layout.sumOfWidths(parentWidth));
-    }
-    public initContainerWith(overrideLayout?: Layout, overideChildren?: Array<Component>) {
-        this.initComponentWith(overrideLayout);
-        if (overideChildren) {
-            this.assignChildren(overideChildren);
-        }
     }
 }
 
@@ -425,8 +425,8 @@ export class Button extends Component {
 }
 
 export class CaptureBounds extends PrintProperty {
-    private _height: RichNum;
     public _width: RichNum;
+    private _height: RichNum;
     constructor(node: Node) {
         super(node);
         PrintUtil.ifChild(this.nodeChildDict[XML_HEIGHT], (n: Node) => {
@@ -500,7 +500,7 @@ export class PrintCell extends Container {
         }
     }
     protected calcAndAssignContainerWidth(parentContainer: Container) {
-        if ((parentContainer as Grid).layout == null) {
+        if ((parentContainer as Grid).layout === null) {
             throw Error('bogus');
         }
         const cw = (parentContainer as Grid).layout.widths[this.layout.column].resolveWithFill(
@@ -559,6 +559,9 @@ export class Checkbox extends Component {
 }
 
 export class Color extends Spec {
+    public _green: number;
+    public _blue: number;
+    public _alpha: number;
     public static WHITE(): Color {
         const c: Color = new Color(null);
         c._red = 255;
@@ -576,9 +579,6 @@ export class Color extends Spec {
         return c;
     }
     private _red: number;
-    public _green: number;
-    public _blue: number;
-    public _alpha: number;
     constructor(node: Node, red?: number, green?: number, blue?: number, alpha?: number) {
         super(node);
         PrintUtil.ifChild(this.nodeChildDict[XML_RED], (n: Node) => {
@@ -639,10 +639,10 @@ export class DatePicker extends Component implements Textish {
 }
 
 export class Edges extends Spec {
-    private _top: number;
     public _left: number;
     public _bottom: number;
     public _right: number;
+    private _top: number;
     constructor(node?: Node) {
         super(node);
         if (node) {
@@ -692,7 +692,7 @@ export class PrintForm extends Container {
         if (node) {
             // Because super fluffs children, we need to pre-get the Layout to know this Form's width
             PrintUtil.forEachChildNode(node, (n: Node) => {
-                if (n.nodeName == 'Layout') {
+                if (n.nodeName === 'Layout') {
                     const tempLayout: Layout = new Layout(n);
                     this.assignContainerWidth(tempLayout.singleWidthNum());
                 }
@@ -756,7 +756,7 @@ export class Grid extends Container {
 
                     // Vertical lines
                     let lineWidth = 0;
-                    if (c == 0) {
+                    if (c === 0) {
                         // Left most vertical
                         lineWidth = this.cellChildren[r][c].borderWidths.left;
                     } else {
@@ -774,7 +774,7 @@ export class Grid extends Container {
                         );
                         hasVLines = true;
                     }
-                    if (c == cols - 1) {
+                    if (c === cols - 1) {
                         // Right most vertical
                         lineWidth = this.cellChildren[r][c].borderWidths.right;
                         if (lineWidth) {
@@ -790,7 +790,7 @@ export class Grid extends Container {
 
                     // Horizontal lines
                     lineWidth = 0;
-                    if (r == 0) {
+                    if (r === 0) {
                         // Top most horizontal
                         lineWidth = this.cellChildren[r][c].borderWidths.top;
                     } else {
@@ -808,7 +808,7 @@ export class Grid extends Container {
                         );
                         hasHLines = true;
                     }
-                    if (r == rows - 1) {
+                    if (r === rows - 1) {
                         // Bottom most horizontal
                         lineWidth = this.cellChildren[r][c].borderWidths.bottom;
                         if (lineWidth) {
@@ -841,7 +841,7 @@ export class Grid extends Container {
                             lastLineWidth = gl.lineWidth;
                             this._gridLines.push(gl);
                             lastPush++;
-                        } else if (gl.start.y == lastEndY && gl.start.x == lastX && gl.lineWidth == lastLineWidth) {
+                        } else if (gl.start.y === lastEndY && gl.start.x === lastX && gl.lineWidth === lastLineWidth) {
                             // This line and the previous can be combined
                             lastEndY = gl.end.y;
                             this._gridLines[lastPush].end = gl.end;
@@ -868,7 +868,7 @@ export class Grid extends Container {
                             lastLineWidth = gl.lineWidth;
                             this._gridLines.push(gl);
                             lastPush++;
-                        } else if (gl.start.x == lastEndX && gl.start.y == lastY && gl.lineWidth == lastLineWidth) {
+                        } else if (gl.start.x === lastEndX && gl.start.y === lastY && gl.lineWidth === lastLineWidth) {
                             // This line and the previous can be combined
                             lastEndX = gl.end.x;
                             this._gridLines[lastPush].end = gl.end;
@@ -885,6 +885,10 @@ export class Grid extends Container {
         }
         return this._gridLines;
     }
+    public initGridWith(overrideLayout?: Layout, overrideChildren?: Array<Component>): void {
+        super.initContainerWith(overrideLayout, overrideChildren);
+        this.initCells();
+    }
     private initCells(): void {
         // Structure the cells so that they can be retrieved
         this._cellChildren = new Array(this.layout.heights.length);
@@ -896,14 +900,10 @@ export class Grid extends Container {
         });
     }
     get cellChildren(): PrintCell[][] {
-        if (this._cellChildren == null) {
+        if (this._cellChildren === null) {
             this.initCells();
         }
         return this._cellChildren;
-    }
-    public initGridWith(overrideLayout?: Layout, overrideChildren?: Array<Component>): void {
-        super.initContainerWith(overrideLayout, overrideChildren);
-        this.initCells();
     }
 }
 
@@ -1084,7 +1084,7 @@ export class Layout extends Spec {
     public singleHeightRichNum(): RichNum {
         if (!this.heights) {
             throw Error('No height values on Layout');
-        } else if (this.heights.length != 1) {
+        } else if (this.heights.length !== 1) {
             throw Error('Expecting exactly 1 height, but found: ' + this.heights.length);
         } else {
             return this.heights[0];
@@ -1100,7 +1100,7 @@ export class Layout extends Spec {
     public singleWidthRichNum(): RichNum {
         if (!this.widths) {
             throw Error('No width values on Layout');
-        } else if (this.widths.length != 1) {
+        } else if (this.widths.length !== 1) {
             throw Error('Expecting exactly 1 width, but found: ' + this.widths.length);
         } else {
             return this.widths[0];
@@ -1132,7 +1132,7 @@ export class Layout extends Spec {
                 throw Error('Unsupported ricn num usage on layout.widths');
             }
             if (rn.isFillParent) {
-                if (this.widths.length != 1) {
+                if (this.widths.length !== 1) {
                     throw Error('More than one value being summed and FillParentWidth used: layout.widths');
                 }
                 answer = parentSize;
@@ -1192,13 +1192,13 @@ export class RichNum {
         return this._value * 0.01;
     }
     get isNumber(): boolean {
-        return this._usage == RichNumUsage.Absolute;
+        return this._usage === RichNumUsage.Absolute;
     }
     get isFillParent(): boolean {
-        return this._usage == RichNumUsage.FillParent;
+        return this._usage === RichNumUsage.FillParent;
     }
     get isPercentOfParent(): boolean {
-        return this._usage == RichNumUsage.PercentOfParent;
+        return this._usage === RichNumUsage.PercentOfParent;
     }
     public resolveWithFill(n: number) {
         let answer: number;
@@ -1238,13 +1238,13 @@ export class SignatureCapture extends Component {
 export class TextAlignment {
     constructor(private _usage: TextAlignmentUsage) {}
     get isCenter(): boolean {
-        return this._usage == TextAlignmentUsage.Center;
+        return this._usage === TextAlignmentUsage.Center;
     }
     get isLeft(): boolean {
-        return this._usage == TextAlignmentUsage.Left;
+        return this._usage === TextAlignmentUsage.Left;
     }
     get isRight(): boolean {
-        return this._usage == TextAlignmentUsage.Right;
+        return this._usage === TextAlignmentUsage.Right;
     }
 }
 
@@ -1379,13 +1379,13 @@ class PrintUtil {
     public static arrayOfRichNums(node: Node, name: string): Array<RichNum> {
         const answer: Array<RichNum> = [];
         PrintUtil.forEachChildNode(node, (n: Node) => {
-            if (n.nodeName == name) {
+            if (n.nodeName === name) {
                 answer.push(PrintUtil.singleChildRichNum(n));
             }
         });
         return answer;
     }
-    public static enumValue(node: Node, e: Object): number {
+    public static enumValue(node: Node, e: object): number {
         const answer = null;
         const sv: string = PrintUtil.singleChildText(node);
         let nv: number;
@@ -1395,8 +1395,8 @@ class PrintUtil {
         return nv;
     }
     public static forEachChildNode(node: Node, f: (n: Node) => void): void {
-        for (let i: number = 0; i < node.childNodes.length; i++) {
-            f(node.childNodes[i]);
+        for(const child of node.childNodes) {
+            f(child)
         }
     }
     public static ifChild(node: Node, f: (n: Node) => void): void {
@@ -1404,7 +1404,7 @@ class PrintUtil {
             f(node);
         }
     }
-    public static importTextAttributes(nodeChildDict: Object, textAttributes: TextAttributes): void {
+    public static importTextAttributes(nodeChildDict: object, textAttributes: TextAttributes): void {
         PrintUtil.ifChild(nodeChildDict[XML_BOLD], (n: Node) => {
             textAttributes.bold = PrintUtil.singleChildBoolean(n);
         });
@@ -1427,27 +1427,27 @@ class PrintUtil {
     public static singleChildBoolean(node: Node): boolean {
         const text: string = PrintUtil.singleChildText(node);
         if (text) {
-            return text.toLocaleLowerCase() == 'true';
+            return text.toLocaleLowerCase() === 'true';
         } else {
             return false;
         }
     }
     public static singleChildInt(node: Node): number {
         let answer: number;
-        if (node.childNodes.length != 1) {
+        if (node.childNodes.length !== 1) {
             Log.error('XML error with ' + node.nodeName + '.  Expected exactly one child node.');
-        } else if (node.childNodes[0].nodeName != '#text') {
+        } else if (node.childNodes[0].nodeName !== '#text') {
             Log.error('XML error with ' + node.nodeName + '.  Expected numeric node.');
         } else {
-            answer = parseInt(node.childNodes[0].textContent);
+            answer = Number.parseInt(node.childNodes[0].textContent, 10);
         }
         return answer;
     }
     public static singleChildFloat(node: Node): number {
         let answer: number;
-        if (node.childNodes.length != 1) {
+        if (node.childNodes.length !== 1) {
             Log.error('XML error with ' + node.nodeName + '.  Expected exactly one child node.');
-        } else if (node.childNodes[0].nodeName != '#text') {
+        } else if (node.childNodes[0].nodeName !== '#text') {
             Log.error('XML error with ' + node.nodeName + '.  Expected numeric node.');
         } else {
             answer = parseFloat(node.childNodes[0].textContent);
@@ -1457,16 +1457,16 @@ class PrintUtil {
     public static singleChildRichNum(node: Node): RichNum {
         // Either there is a FillParent entry with surrounding white space, or a single text entry
         let answer: RichNum;
-        for (let i: number = 0; i < node.childNodes.length; i++) {
-            if (node.childNodes[i].nodeName == RichNumUsage[RichNumUsage.PercentOfParent].toString()) {
-                const v = this.singleChildFloat(node.childNodes[i]);
+        for (const child of node.childNodes) {
+            if (child.nodeName === RichNumUsage[RichNumUsage.PercentOfParent].toString()) {
+                const v = this.singleChildFloat(child);
                 answer = new RichNum(v, RichNumUsage.PercentOfParent);
                 break;
-            } else if (node.childNodes[i].nodeName == RichNumUsage[RichNumUsage.FillParent].toString()) {
+            } else if (child.nodeName === RichNumUsage[RichNumUsage.FillParent].toString()) {
                 answer = new RichNum(NaN, RichNumUsage.FillParent);
                 break;
-            } else if (node.childNodes[i].nodeName == '#text') {
-                const v: number = parseFloat(node.childNodes[i].textContent.trim());
+            } else if (child.nodeName === '#text') {
+                const v: number = parseFloat(child.textContent.trim());
                 if (!isNaN(v)) {
                     answer = new RichNum(v);
                 }
@@ -1477,10 +1477,10 @@ class PrintUtil {
     }
     public static singleChildText(node: Node): string {
         let text = null;
-        if (node.childNodes.length != 1) {
+        if (node.childNodes.length !== 1) {
             text = 'ExpectedExactlyOneNode';
             Log.error('XML error with ' + node.nodeName + '.  Expected exactly one child node.');
-        } else if (node.childNodes[0].nodeName != '#text') {
+        } else if (node.childNodes[0].nodeName !== '#text') {
             text = 'ExpectedNodeText';
             Log.error('XML error with ' + node.nodeName + '.  Expected text node.');
         } else {
@@ -1491,17 +1491,17 @@ class PrintUtil {
     public static singleChildTextAlignmentUsage(node: Node): TextAlignmentUsage {
         // Either there is a FillParent entry with surrounding white space, or a single text entry
         let answer: TextAlignmentUsage = TextAlignmentUsage.Left;
-        if (node.childNodes.length != 1) {
+        if (node.childNodes.length !== 1) {
             Log.error('XML error with ' + node.nodeName + '.  Expected exactly one child node.');
-        } else if (node.childNodes[0].nodeName != '#text') {
+        } else if (node.childNodes[0].nodeName !== '#text') {
             Log.error('XML error with ' + node.nodeName + '.  Expected text node.');
         } else {
             const a = node.childNodes[0].textContent;
-            if (a == TextAlignmentUsage[TextAlignmentUsage.Center].toString()) {
+            if (a === TextAlignmentUsage[TextAlignmentUsage.Center].toString()) {
                 answer = TextAlignmentUsage.Center;
-            } else if (a == TextAlignmentUsage[TextAlignmentUsage.Left].toString()) {
+            } else if (a === TextAlignmentUsage[TextAlignmentUsage.Left].toString()) {
                 answer = TextAlignmentUsage.Left;
-            } else if (a == TextAlignmentUsage[TextAlignmentUsage.Right].toString()) {
+            } else if (a === TextAlignmentUsage[TextAlignmentUsage.Right].toString()) {
                 answer = TextAlignmentUsage.Right;
             } else {
                 Log.error('XML error with ' + node.nodeName + '.  Unknown TextAlignment: ' + a);
@@ -1510,10 +1510,3 @@ class PrintUtil {
         return answer;
     }
 }
-/**
- * *********************************
- */
-
-/**
- * *********************************
- */

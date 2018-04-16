@@ -1,6 +1,7 @@
 import { BlobClientResponse, Client, JsonClientResponse, TextClientResponse, VoidClientResponse } from '../client';
 import { StreamProducer } from '../io/StreamProducer';
 import { StringDictionary } from '../util';
+import { Log } from '../util/Log';
 import { FetchClient } from '../ws';
 import { DialogProxyTools } from './DialogProxyTools';
 
@@ -47,6 +48,109 @@ export class DialogProxy implements Client {
 
     get lastActivity(): Date {
         return this._lastActivity;
+    }
+
+    public postJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
+        const resourcePathElems: string[] = resourcePath.split('/');
+        if (DialogProxyTools.isPostSession(resourcePathElems)) {
+            return this.postSession(baseUrl, resourcePath, resourcePathElems, jsonBody);
+        } else if (DialogProxyTools.isPostMenuAction(resourcePathElems)) {
+            return this.postMenuAction(baseUrl, resourcePath, resourcePathElems, jsonBody);
+        } else if (DialogProxyTools.isPostWorkbenchAction(resourcePathElems)) {
+            return this.postWorkbenchAction(baseUrl, resourcePath, resourcePathElems, jsonBody);
+        } else if (DialogProxyTools.isPostRecords(resourcePathElems)) {
+            return this.postRecords(baseUrl, resourcePath, resourcePathElems, jsonBody);
+        }
+        if (this._clientMode === ClientMode.OFFLINE) {
+            return Promise.resolve(
+                new JsonClientResponse(
+                    this.createDialogMessageModel(`POST action is not valid while offline: ${resourcePath}`),
+                    400
+                )
+            );
+        }
+        return this._fetchClient.postJson(baseUrl, resourcePath, jsonBody);
+    }
+
+    // @TODO
+    public openStream(baseUrl: string, resourcePath?: string): Promise<StreamProducer> {
+        return Promise.resolve(null);
+    }
+
+    public deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse> {
+        const resourcePathElems: string[] = resourcePath.split('/');
+        if (this._clientMode === ClientMode.OFFLINE) {
+            if (DialogProxyTools.isDeleteSession(resourcePathElems)) {
+                return this.deleteSession(baseUrl, resourcePath);
+            } else {
+                return Promise.resolve(
+                    new JsonClientResponse(
+                        this.createDialogMessageModel(`DELETE action is not valid while offline: ${resourcePath}`),
+                        400
+                    )
+                );
+            }
+        }
+        return this._fetchClient.deleteJson(baseUrl, resourcePath);
+    }
+
+    public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {
+        if (this._clientMode === ClientMode.OFFLINE) {
+            return Promise.resolve(new BlobClientResponse(null, 400));
+        }
+        return this._fetchClient.getBlob(baseUrl, resourcePath);
+    }
+
+    public getJson(
+        baseUrl: string,
+        resourcePath?: string,
+        queryParams?: StringDictionary
+    ): Promise<JsonClientResponse> {
+        const resourcePathElems: string[] = resourcePath.split('/');
+        if (DialogProxyTools.isGetDialog(resourcePathElems)) {
+            return this.getDialog(baseUrl, resourcePath, resourcePathElems, queryParams);
+        } else if (DialogProxyTools.isGetRedirection(resourcePathElems)) {
+            return this.getRedirection(baseUrl, resourcePath, resourcePathElems, queryParams);
+        } else if (DialogProxyTools.isGetSession(resourcePathElems)) {
+            return this.getSession(baseUrl, resourcePath, resourcePathElems, queryParams);
+        } else if (DialogProxyTools.isGetRecord(resourcePathElems)) {
+            return this.getRecord(baseUrl, resourcePath, resourcePathElems, queryParams);
+        }
+        if (this._clientMode === ClientMode.OFFLINE) {
+            return Promise.resolve(
+                new JsonClientResponse(
+                    this.createDialogMessageModel(`GET action is not valid while offline: ${resourcePath}`),
+                    400
+                )
+            );
+        }
+        return this._fetchClient.getJson(baseUrl, resourcePath, queryParams);
+    }
+
+    public getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> {
+        if (this._clientMode === ClientMode.OFFLINE) {
+            return Promise.resolve(new TextClientResponse(null, 400));
+        }
+        return this._fetchClient.getText(baseUrl, resourcePath);
+    }
+
+    public postMultipart(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse> {
+        if (this._clientMode === ClientMode.OFFLINE) {
+            return Promise.resolve(new VoidClientResponse(400));
+        }
+        return this._fetchClient.postMultipart(baseUrl, resourcePath, formData);
+    }
+
+    public putJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
+        if (this._clientMode === ClientMode.OFFLINE) {
+            return Promise.resolve(
+                new JsonClientResponse(
+                    this.createDialogMessageModel(`PUT action is not valid while offline: ${resourcePath}`),
+                    400
+                )
+            );
+        }
+        return this._fetchClient.putJson(baseUrl, resourcePath, jsonBody);
     }
 
     private writePersistentClientVars() {
@@ -141,28 +245,6 @@ export class DialogProxy implements Client {
         };
     }
 
-    // @TODO
-    public openStream(baseUrl: string, resourcePath?: string): Promise<StreamProducer> {
-        return Promise.resolve(null);
-    }
-
-    public deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse> {
-        const resourcePathElems: string[] = resourcePath.split('/');
-        if (this._clientMode === ClientMode.OFFLINE) {
-            if (DialogProxyTools.isDeleteSession(resourcePathElems)) {
-                return this.deleteSession(baseUrl, resourcePath);
-            } else {
-                return Promise.resolve(
-                    new JsonClientResponse(
-                        this.createDialogMessageModel(`DELETE action is not valid while offline: ${resourcePath}`),
-                        400
-                    )
-                );
-            }
-        }
-        return this._fetchClient.deleteJson(baseUrl, resourcePath);
-    }
-
     private deleteSession(baseUrl: string, resourcePath: string): Promise<JsonClientResponse> {
         return new Promise<JsonClientResponse>((resolve, reject) => {
             const session = DialogProxyTools.readSessionState(this._tenantId, this._userId);
@@ -173,13 +255,6 @@ export class DialogProxy implements Client {
                 resolve(new JsonClientResponse(sessionIdModel, 200));
             }
         });
-    }
-
-    public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {
-        if (this._clientMode === ClientMode.OFFLINE) {
-            return Promise.resolve(new BlobClientResponse(null, 400));
-        }
-        return this._fetchClient.getBlob(baseUrl, resourcePath);
     }
 
     private getDialog(
@@ -229,32 +304,6 @@ export class DialogProxy implements Client {
             }
             return response;
         });
-    }
-
-    public getJson(
-        baseUrl: string,
-        resourcePath?: string,
-        queryParams?: StringDictionary
-    ): Promise<JsonClientResponse> {
-        const resourcePathElems: string[] = resourcePath.split('/');
-        if (DialogProxyTools.isGetDialog(resourcePathElems)) {
-            return this.getDialog(baseUrl, resourcePath, resourcePathElems, queryParams);
-        } else if (DialogProxyTools.isGetRedirection(resourcePathElems)) {
-            return this.getRedirection(baseUrl, resourcePath, resourcePathElems, queryParams);
-        } else if (DialogProxyTools.isGetSession(resourcePathElems)) {
-            return this.getSession(baseUrl, resourcePath, resourcePathElems, queryParams);
-        } else if (DialogProxyTools.isGetRecord(resourcePathElems)) {
-            return this.getRecord(baseUrl, resourcePath, resourcePathElems, queryParams);
-        }
-        if (this._clientMode === ClientMode.OFFLINE) {
-            return Promise.resolve(
-                new JsonClientResponse(
-                    this.createDialogMessageModel(`GET action is not valid while offline: ${resourcePath}`),
-                    400
-                )
-            );
-        }
-        return this._fetchClient.getJson(baseUrl, resourcePath, queryParams);
     }
 
     private getRecord(
@@ -337,13 +386,6 @@ export class DialogProxy implements Client {
             );
         }
         return this._fetchClient.getJson(baseUrl, resourcePath, queryParams);
-    }
-
-    public getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> {
-        if (this._clientMode === ClientMode.OFFLINE) {
-            return Promise.resolve(new TextClientResponse(null, 400));
-        }
-        return this._fetchClient.getText(baseUrl, resourcePath);
     }
 
     private isWorkPackagesDialog(dialog: any): boolean {
@@ -526,28 +568,6 @@ export class DialogProxy implements Client {
         return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
     }
 
-    public postJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        const resourcePathElems: string[] = resourcePath.split('/');
-        if (DialogProxyTools.isPostSession(resourcePathElems)) {
-            return this.postSession(baseUrl, resourcePath, resourcePathElems, jsonBody);
-        } else if (DialogProxyTools.isPostMenuAction(resourcePathElems)) {
-            return this.postMenuAction(baseUrl, resourcePath, resourcePathElems, jsonBody);
-        } else if (DialogProxyTools.isPostWorkbenchAction(resourcePathElems)) {
-            return this.postWorkbenchAction(baseUrl, resourcePath, resourcePathElems, jsonBody);
-        } else if (DialogProxyTools.isPostRecords(resourcePathElems)) {
-            return this.postRecords(baseUrl, resourcePath, resourcePathElems, jsonBody);
-        }
-        if (this._clientMode === ClientMode.OFFLINE) {
-            return Promise.resolve(
-                new JsonClientResponse(
-                    this.createDialogMessageModel(`POST action is not valid while offline: ${resourcePath}`),
-                    400
-                )
-            );
-        }
-        return this._fetchClient.postJson(baseUrl, resourcePath, jsonBody);
-    }
-
     private postMenuAction(
         baseUrl: string,
         resourcePath: string,
@@ -594,7 +614,7 @@ export class DialogProxy implements Client {
         if (this._clientMode === ClientMode.OFFLINE) {
             const target = jsonBody.targets[0];
             let alias = null;
-            if (pathFields.actionId == 'alias_Open') {
+            if (pathFields.actionId === 'alias_Open') {
                 const referringAlias = DialogProxyTools.readDialogAliasState(
                     this._tenantId,
                     this._userId,
@@ -654,11 +674,11 @@ export class DialogProxy implements Client {
                             referringDialog.dialogId
                         );
                         let alias = null;
-                        if (pathFields.actionId == 'alias_Open') {
+                        if (pathFields.actionId === 'alias_Open') {
                             alias = `Documents(${target})`;
-                        } else if (pathFields.actionId == 'alias_ShowTags') {
+                        } else if (pathFields.actionId === 'alias_ShowTags') {
                             alias = `Tags(${target})`;
-                        } else if (pathFields.actionId == 'open') {
+                        } else if (pathFields.actionId === 'open') {
                             if (referringAlias.startsWith('Tags')) {
                                 alias = `TagDetails(${target})`;
                             } else if (referringAlias.startsWith('Documents')) {
@@ -695,13 +715,6 @@ export class DialogProxy implements Client {
             }
             return response;
         });
-    }
-
-    public postMultipart(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse> {
-        if (this._clientMode === ClientMode.OFFLINE) {
-            return Promise.resolve(new VoidClientResponse(400));
-        }
-        return this._fetchClient.postMultipart(baseUrl, resourcePath, formData);
     }
 
     private postRecords(
@@ -917,18 +930,6 @@ export class DialogProxy implements Client {
         });
     }
 
-    public putJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        if (this._clientMode === ClientMode.OFFLINE) {
-            return Promise.resolve(
-                new JsonClientResponse(
-                    this.createDialogMessageModel(`PUT action is not valid while offline: ${resourcePath}`),
-                    400
-                )
-            );
-        }
-        return this._fetchClient.putJson(baseUrl, resourcePath, jsonBody);
-    }
-
     /*
     * TODO: Refactor this into proxy-tools as a general method when discriminator and ids can be parameterized
     */
@@ -949,7 +950,7 @@ export class DialogProxy implements Client {
                 for (const child of dialogChildren) {
                     // TODO: We need a better discriminator technique for reading record(s) for a
                     // particular dialog.
-                    if ((child.businessClassName as String).endsWith('briefcase')) {
+                    if ((child.businessClassName as string).endsWith('briefcase')) {
                         briefcaseRecordDialogId = child.id;
                         break;
                     }
@@ -1000,7 +1001,7 @@ export class DialogProxy implements Client {
                 for (const child of dialogChildren) {
                     // TODO: We need a better discriminator technique for reading record(s) for a
                     // particular dialog.
-                    if ((child.businessClassName as String).endsWith('briefcase')) {
+                    if ((child.businessClassName as string).endsWith('briefcase')) {
                         briefcaseRecordDialogId = child.id;
                         break;
                     }
