@@ -68,7 +68,15 @@ export class FetchClient implements Client {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return this.processRequest(url, 'POST', body, headers).then((response: Response) => {
             return this.assertJsonContentType(response.headers.get('content-type')).then(() => {
-                return response.json().then(json => new JsonClientResponse(json, response.status));
+                return response.json().then(json => {
+                    // TODO: This stalls on my machine and I have no idea why:
+                    // const jsonClientResponse = new JsonClientResponse(resJson, response.status);
+                    const jsonClientResponse = ({
+                        value: json,
+                        statusCode: response.status
+                    } as JsonClientResponse)
+                    return jsonClientResponse
+                });
             });
         });
     }
@@ -130,30 +138,23 @@ export class FetchClient implements Client {
         body?: any,
         headers?: { [index: string]: string }
     ): Promise<Response> {
-        return new Promise((resolve, reject) => {
-            const requestHeaders: Headers = new Headers(headers);
-            const init: RequestInit = { method, mode: 'cors' };
-            if (body) {
-                init.body = body;
-            }
-            if (headers) {
-                init.headers = new Headers(headers);
-            }
+        const requestHeaders: Headers = new Headers(headers);
+        const init: RequestInit = { method, mode: 'cors' };
+        if (body) {
+            init.body = body;
+        }
+        if (headers) {
+            init.headers = new Headers(headers);
+        }
 
-            if (!['GET', 'POST', 'PUT', 'DELETE'].some(v => method === v)) {
-                reject(new Error(`FetchClient::processRequest: Unsupported method: ${method}`));
-            } else {
-                Log.debug(`Fetch request: ${method} ${url} [body]:${body ? body : 'none'}`);
-                fetch(url, init)
-                    .then(response => {
-                        this._lastActivity = new Date();
-                        resolve(response);
-                    })
-                    .catch(error => {
-                        this._lastActivity = new Date();
-                        reject(error);
-                    });
-            }
-        });
+        if (!['GET', 'POST', 'PUT', 'DELETE'].some(v => method === v)) {
+            throw(new Error(`FetchClient::processRequest: Unsupported method: ${method}`));
+        } else {
+            Log.debug(`Fetch request: ${method} ${url} [body]:${body ? body : 'none'}`);
+            return fetch(url, init).then(response => {
+                this._lastActivity = new Date();
+                return response;
+            });
+        }
     }
 }

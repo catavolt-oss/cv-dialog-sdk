@@ -83,3 +83,4 @@ src/js/
 src/catavolt/**/*.js
 src/tsd/
 
+yarn.lock

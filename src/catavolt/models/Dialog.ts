@@ -2,6 +2,7 @@ import { DialogService } from '../dialog';
 import { CatavoltApi } from '../dialog/CatavoltApi';
 import { StreamConsumer } from '../io/StreamConsumer';
 import { Base64 } from '../util/Base64';
+import { Log } from '../util/Log';
 import { ActionParameters } from './ActionParameters';
 import { Attachment } from './Attachment';
 import { DialogException } from './DialogException';
@@ -429,7 +430,7 @@ export abstract class Dialog {
      * @param {string} recordId
      * @returns {Promise<LargeProperty>}
      */
-    public static loadLargeProperty(
+    public static async loadLargeProperty(
         getPropertyFn: (params: ReadLargePropertyParameters, propertyName?: string) => Promise<LargeProperty>,
         streamConsumer?: StreamConsumer,
         propertyName?: string,
@@ -437,9 +438,16 @@ export abstract class Dialog {
     ): Promise<LargeProperty> {
         let sequence: number = 0;
         let resultBuffer: string = '';
-        const f: (largeProperty: LargeProperty) => Promise<LargeProperty> = (largeProperty: LargeProperty) => {
-            streamConsumer && streamConsumer({ done: !largeProperty.hasMore, value: largeProperty.encodedData });
-            if (largeProperty.hasMore) {
+        const initParams: ReadLargePropertyParameters = {
+            maxBytes: Dialog.BINARY_CHUNK_SIZE,
+            sequence,
+            recordId,
+            type: TypeNames.ReadLargePropertyParameters
+        };
+        let largeProperty = await getPropertyFn(initParams, propertyName);
+        streamConsumer && streamConsumer({ done: !largeProperty.hasMore, value: largeProperty.encodedData });
+        if (largeProperty.hasMore) {
+            do {
                 if (!streamConsumer) {
                     resultBuffer += Base64.decodeString(largeProperty.encodedData);
                 }
@@ -449,27 +457,18 @@ export abstract class Dialog {
                     recordId,
                     type: TypeNames.ReadLargePropertyParameters
                 };
-                return getPropertyFn(params, propertyName).then(f);
-            } else {
-                if (resultBuffer) {
-                    resultBuffer += Base64.decodeString(largeProperty.encodedData);
-                    return Promise.resolve<LargeProperty>(
-                        largeProperty.asNewLargeProperty(Base64.encodeString(resultBuffer))
-                    );
-                } else {
-                    if (streamConsumer) {
-                        return Promise.resolve<LargeProperty>(largeProperty.asNewLargeProperty(null));
-                    }
-                    return Promise.resolve<LargeProperty>(largeProperty.asNewLargeProperty(largeProperty.encodedData));
-                }
+                largeProperty = await getPropertyFn(params, propertyName);
+                streamConsumer && streamConsumer({ done: !largeProperty.hasMore, value: largeProperty.encodedData });
+            } while(largeProperty.hasMore)
+        }
+        if (resultBuffer) {
+            resultBuffer += Base64.decodeString(largeProperty.encodedData);
+            return largeProperty.asNewLargeProperty(Base64.encodeString(resultBuffer));
+        } else {
+            if (streamConsumer) {
+                return largeProperty.asNewLargeProperty(null);
             }
-        };
-        const initParams: ReadLargePropertyParameters = {
-            maxBytes: Dialog.BINARY_CHUNK_SIZE,
-            sequence,
-            recordId,
-            type: TypeNames.ReadLargePropertyParameters
-        };
-        return getPropertyFn(initParams, propertyName).then(f);
+            return largeProperty.asNewLargeProperty(largeProperty.encodedData);
+        }
     }
 }

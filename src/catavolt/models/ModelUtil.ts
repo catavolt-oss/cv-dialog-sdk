@@ -79,7 +79,7 @@ export class ModelUtil {
         return type && new type();
     }
 
-    public static jsonToModel<A>(obj, n = 0): Promise<A> {
+    public static jsonToModel<A>(obj: any, n = 0): any {
         const indent = n * 4;
 
         if (Array.isArray(obj)) {
@@ -87,45 +87,34 @@ export class ModelUtil {
             return ModelUtil.deserializeArray(obj);
         } else {
             const objType = obj.type;
-            // Log.debug(`${' '.repeat(indent)}=> Deserializing ${objType}`);
-            return new Promise<A>((resolve, reject) => {
-                // if the class has a fromJSON method, use it
-                const classType = ModelUtil.classType(objType);
-                if (classType && typeof classType.fromJSON === 'function') {
-                    resolve(classType.fromJSON(obj));
-                } else {
-                    let newObj = ModelUtil.typeInstance(objType);
-                    if (!newObj) {
-                        // const message = `ModelUtil::jsonToModel: no type constructor found for ${objType}: assuming interface`;
-                        // Log.debug(message);
-                        newObj = {}; // assume it's an interface
-                    }
-                    // otherwise, copy field values
-                    Promise.all(
-                        Object.keys(obj).map(prop => {
-                            const value = obj[prop];
-                            // Log.debug(`${' '.repeat(indent)}prop: ${prop} is type ${typeof value}`);
-                            if (value && typeof value === 'object') {
-                                if (Array.isArray(value) || 'type' in value) {
-                                    return ModelUtil.jsonToModel(value, ++n).then(model => {
-                                        ModelUtil.assignProp(prop, model, newObj, objType, indent);
-                                    });
-                                } else {
-                                    ModelUtil.assignProp(prop, value, newObj, objType, indent);
-                                    return Promise.resolve();
-                                }
-                            } else {
-                                ModelUtil.assignProp(prop, value, newObj, objType, indent);
-                                return Promise.resolve();
-                            }
-                        })
-                    )
-                        .then(result => {
-                            resolve(newObj);
-                        })
-                        .catch(error => reject(error));
+            // if the class has a fromJSON method, use it
+            const classType = ModelUtil.classType(objType);
+            if (classType && typeof classType.fromJSON === 'function') {
+                return classType.fromJSON(obj);
+            } else {
+                let newObj = ModelUtil.typeInstance(objType);
+                if (!newObj) {
+                    // const message = `ModelUtil::jsonToModel: no type constructor found for ${objType}: assuming interface`;
+                    // Log.debug(message);
+                    newObj = {}; // assume it's an interface
                 }
-            });
+                // otherwise, copy field values
+                Object.keys(obj).forEach(prop => {
+                    const value = obj[prop];
+                    // Log.debug(`${' '.repeat(indent)}prop: ${prop} is type ${typeof value}`);
+                    if (value && typeof value === 'object') {
+                        if (Array.isArray(value) || 'type' in value) {
+                            const model = ModelUtil.jsonToModel(value, ++n);
+                            ModelUtil.assignProp(prop, model, newObj, objType, indent);
+                        } else {
+                            ModelUtil.assignProp(prop, value, newObj, objType, indent);
+                        }
+                    } else {
+                        ModelUtil.assignProp(prop, value, newObj, objType, indent);
+                    }
+                })
+                return newObj;
+            }
         }
     }
 
@@ -135,16 +124,8 @@ export class ModelUtil {
         });
     }
 
-    private static deserializeArray(array: any[]): Promise<any> {
-        return Promise.all(
-            array.map(value => {
-                if (value && typeof value === 'object') {
-                    return ModelUtil.jsonToModel(value);
-                } else {
-                    return Promise.resolve(value);
-                }
-            })
-        );
+    private static deserializeArray(array: any[]): any[] {
+        return array.map(value => (value && typeof value === 'object') ? ModelUtil.jsonToModel(value) : value)
     }
 
     private static assignProp(prop, value, target, type, n) {

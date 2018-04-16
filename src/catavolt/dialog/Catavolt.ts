@@ -391,9 +391,12 @@ export class CatavoltApiImpl implements CatavoltApi {
      * @returns {Promise<LargeProperty>}
      */
     public streamContent(contentId: string, streamConsumer: StreamConsumer): Promise<LargeProperty> {
-        return Dialog.loadLargeProperty((params: ReadLargePropertyParameters): Promise<LargeProperty> => {
-            return this.dialogApi.getContent(this.session.tenantId, this.session.id, contentId, params);
-        }, streamConsumer);
+        const getDialogContent = this.getDialogContent.bind(this);
+        return Dialog.loadLargeProperty(getDialogContent, streamConsumer, contentId);
+    }
+
+    public getDialogContent (params: ReadLargePropertyParameters, contentId: string): Promise<LargeProperty> {
+        return this.dialogApi.getContent(this.session.tenantId, this.session.id, contentId, params);
     }
 
     private processLogin(

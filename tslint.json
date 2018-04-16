@@ -13,7 +13,9 @@
       "array-type": false,
       "no-shadowed-variable": [true, {"typeParameter": false}],
       "no-string-literal": false,
+      "no-empty": false,
       "no-empty-interface": false,
+      "no-unused-variable": true,
       "no-unused-expression": [true, "allow-fast-null-checks"],
       "one-variable-per-declaration": false,
       "member-ordering": [

@@ -25,6 +25,7 @@ import {
     WriteLargePropertyParameters
 } from '../models';
 import { Base64 } from '../util';
+import { Log } from '../util/Log';
 import { StringDictionary } from '../util/StringDictionary';
 import { DialogApi } from './DialogApi';
 
@@ -307,46 +308,38 @@ export class DialogService implements DialogApi {
 }
 
 interface DialogApiResponse<T> {
-    responseValue(): Promise<T>;
+    responseValue(): T;
 
-    responseValueOrRedirect(): Promise<T | Redirection>;
+    responseValueOrRedirect(): T | Redirection;
 
-    assertNoError(): Promise<void>;
+    assertNoError(): void;
 }
 
 class DialogServiceResponse<T> implements DialogApiResponse<T> {
     constructor(private readonly clientResponse: JsonClientResponse) {}
 
-    public responseValue(): Promise<T> {
-        return new Promise((resolve, reject) => {
-            if (this.hasError) {
-                reject(this.clientResponse.value as DialogMessage);
-            } else {
-                this.fullfillJsonToModel<T>(this.clientResponse, resolve, reject);
-            }
-        });
+    public responseValue(): T {
+        if (this.hasError) {
+            throw(this.clientResponse.value as DialogMessage);
+        } else {
+            return this.fullfillJsonToModel<T>(this.clientResponse);
+        }
     }
 
-    public responseValueOrRedirect(): Promise<T | Redirection> {
-        return new Promise((resolve, reject) => {
-            if (this.hasError) {
-                reject(this.clientResponse.value as DialogMessage);
-            } else if (this.hasValue) {
-                this.fullfillJsonToModel<T>(this.clientResponse, resolve, reject);
-            } else {
-                this.fullfillJsonToModel<Redirection>(this.clientResponse, resolve, reject);
-            }
-        });
+    public responseValueOrRedirect(): T | Redirection {
+        if (this.hasError) {
+            throw(this.clientResponse.value as DialogMessage);
+        } else if (this.hasValue) {
+            return this.fullfillJsonToModel<T>(this.clientResponse);
+        } else {
+            return this.fullfillJsonToModel<Redirection>(this.clientResponse);
+        }
     }
 
-    public assertNoError(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (this.hasError) {
-                reject(this.clientResponse.value as DialogMessage);
-            } else {
-                resolve(undefined);
-            }
-        });
+    public assertNoError(): void {
+        if (this.hasError) {
+            throw(this.clientResponse.value as DialogMessage)
+        }
     }
 
     get hasValue(): boolean {
@@ -361,9 +354,7 @@ class DialogServiceResponse<T> implements DialogApiResponse<T> {
         return this.clientResponse.statusCode >= 400;
     }
 
-    private fullfillJsonToModel<T>(clientResponse: JsonClientResponse, resolve, reject): void {
-        ModelUtil.jsonToModel<T>(this.clientResponse.value)
-            .then(resolve)
-            .catch(reject);
+    private fullfillJsonToModel<T>(clientResponse: JsonClientResponse): T {
+        return ModelUtil.jsonToModel<T>(this.clientResponse.value);
     }
 }

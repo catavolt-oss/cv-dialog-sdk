@@ -25,7 +25,7 @@
     "@types/numeral": "0.0.21",
     "@types/tape": "^4.2.30",
     "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
     "babelify": "^8.0.0",
     "blue-tape": "*",
     "browser-run": "^4.0.4",
@@ -44,11 +44,13 @@
   "scripts": {
     "commit": "git-cz",
     "gen-version-code": "bin/gen-version-code.js",
-    "lint": "./node_modules/tslint/bin/tslint -c tslint.json --fix -e 'src/**/*.d.ts' 'src/**/*.ts'",
+    "lint": "./node_modules/.bin/tslint -c tslint.json --fix -e 'src/**/*.d.ts' 'src/**/*.ts'",
     "prettier": "./node_modules/prettier/bin-prettier.js --write src/catavolt/**/*.ts",
     "release": "standard-version",
-    "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -b electron | ./node_modules/.bin/faucet",
-    "test-browser": "./node_modules/.bin/browserify -v -t [ babelify --presets [ es2015 ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet"
+    "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ env ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -b electron | ./node_modules/.bin/faucet",
+    "test-browser": "./node_modules/.bin/browserify -v -t [ babelify --presets [ env ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet",
+    "make-docs": "./node_modules/.bin/typedoc --mode modules --tsconfig ./tsconfig.json --readme ./DOCS_README.md --theme default --out ./docs/cv-dialog-sdk ./src/catavolt",
+    "dev:link-refresh": "yarn unlink && yarn cache clean && ./node_modules/.bin/tsc --project tsconfig.json && yarn link"
   },
   "config": {
     "commitizen": {
@@ -62,7 +64,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "./makeDocs && git add .",
+      "pre-commit": "npm run make-docs && git add .",
       "commit-msg": "commitlint -e $GIT_PARAMS"
     }
   }
