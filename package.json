@@ -42,6 +42,7 @@
     "typescript": "~2.6.2"
   },
   "scripts": {
+    "transpile": "./node_modules/.bin/tsc --project tsconfig.json",
     "commit": "git-cz",
     "gen-version-code": "bin/gen-version-code.js",
     "lint": "./node_modules/.bin/tslint -c tslint.json --fix -e 'src/**/*.d.ts' 'src/**/*.ts'",
@@ -50,7 +51,7 @@
     "test": "./node_modules/.bin/browserify -v -t [ babelify --presets [ env ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -b electron | ./node_modules/.bin/faucet",
     "test-browser": "./node_modules/.bin/browserify -v -t [ babelify --presets [ env ] ] src/js/test/integration/api.test.js | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet",
     "make-docs": "./node_modules/.bin/typedoc --mode modules --tsconfig ./tsconfig.json --readme ./DOCS_README.md --theme default --out ./docs/cv-dialog-sdk ./src/catavolt",
-    "dev:link-refresh": "yarn unlink && yarn cache clean && ./node_modules/.bin/tsc --project tsconfig.json && yarn link"
+    "dev:link-refresh:yarn": "yarn unlink && yarn cache clean && yarn transpile && yarn link"
   },
   "config": {
     "commitizen": {
