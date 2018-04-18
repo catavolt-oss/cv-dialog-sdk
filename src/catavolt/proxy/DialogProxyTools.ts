@@ -1,3 +1,4 @@
+import {storage} from "../storage";
 import {Log} from '../util';
 import {FetchClient} from "../ws";
 
@@ -6,6 +7,7 @@ export class DialogProxyTools {
     public static ACTIONS = 'actions';
     public static AVAILABLE_VALUES = 'availableValues';
     public static AVAILABLE_VIEWS = 'availableViews';
+    public static DIALOG_MESSAGE_MODEL_TYPE = 'hxgn.api.dialog.DialogMessage';
     public static DIALOGS = 'dialogs';
     public static RECORD = 'record';
     public static RECORDS = 'records';
@@ -20,6 +22,64 @@ export class DialogProxyTools {
 
     public static commonFetchClient(): FetchClient {
         return this.COMMON_FETCH_CLIENT;
+    }
+
+    public static constructDialogMessageModel(message: string) {
+        return {type: this.DIALOG_MESSAGE_MODEL_TYPE, message: message};
+    }
+
+    public static constructNullRedirectionId(): string {
+        return `null_redirection__offline_${Date.now()}`;
+    }
+
+    public static deconstructGetDialogPath(resourcePathElems: string[]): any {
+        return {
+            tenantId: resourcePathElems[1],
+            sessionId: resourcePathElems[3],
+            dialogId: resourcePathElems[5]
+        }
+    }
+
+    public static deconstructGetRecordPath(resourcePathElems: string[]): any {
+        return {
+            tenantId: resourcePathElems[1],
+            sessionId: resourcePathElems[3],
+            dialogId: resourcePathElems[5]
+        }
+    }
+
+    public static deconstructGetRedirectionPath(resourcePathElems: string[]): any {
+        return {
+            tenantId: resourcePathElems[1],
+            sessionId: resourcePathElems[3],
+            redirectionId: resourcePathElems[5]
+        }
+    }
+
+    public static deconstructPostMenuActionPath(resourcePathElems: string[]): any {
+        return {
+            tenantId: resourcePathElems[1],
+            sessionId: resourcePathElems[3],
+            dialogId: resourcePathElems[5],
+            actionId: resourcePathElems[7]
+        }
+    }
+
+    public static deconstructPostRecordsPath(resourcePathElems: string[]): any {
+        return {
+            tenantId: resourcePathElems[1],
+            sessionId: resourcePathElems[3],
+            dialogId: resourcePathElems[5]
+        }
+    }
+
+    public static deconstructPostWorkbenchActionPath(resourcePathElems: string[]): any {
+        return {
+            tenantId: resourcePathElems[1],
+            sessionId: resourcePathElems[3],
+            workbenchId: resourcePathElems[5],
+            actionId: resourcePathElems[7]
+        }
     }
 
     public static deleteAllDialogState(tenantId: string, userId: string, dialogId: string) {
@@ -48,12 +108,18 @@ export class DialogProxyTools {
     }
 
     public static deleteAllState(tenantId: string, userId: string) {
-        const keyCount = localStorage.length;
-        for (let i = keyCount - 1; i > -1; --i) {
-            const key = localStorage.key(i);
-            Log.debug('Removing from localStorage: ' + key);
-            localStorage.removeItem(key);
-        }
+        storage.getAllKeys().then(allKeys => {
+            const keyCount = allKeys.length;
+            for (let i = keyCount - 1; i > -1; --i) {
+                const key = allKeys[i];
+                Log.debug('DialogProxyTools::deleteAllState -- removing from storage: ' + key);
+                storage.removeItem(key).catch(removeItemError => {
+                    Log.error("DialogProxyTools::deleteAllState -- error removing item: " + removeItemError);
+                });
+            }
+        }).catch(allKeysError => {
+            Log.error("DialogProxyTools::deleteAllState -- error getting all keys from storage: " + allKeysError);
+        });
     }
 
     public static deleteAllWorkbenchNavigation(tenantId: string, userId: string, navigationKey: string) {
@@ -85,7 +151,7 @@ export class DialogProxyTools {
 
     public static deletePersistentState(tenantId: string, userId: string, stateId: string) {
         const key: string = tenantId + '.' + userId + '.' + stateId;
-        window.localStorage.removeItem(key);
+        storage.removeItem(key).catch(removeItemError => Log.error('Error removing item from storage: ' + removeItemError));
     }
 
     public static deleteRecordSetState(tenantId: string, userId: string, dialogId: string) {
@@ -137,6 +203,11 @@ export class DialogProxyTools {
         return null;
     }
 
+    public static findRecordPropertyValue(record: any, propertyName: string): any {
+        const p = this.findRecordProperty(record, propertyName);
+        return p ? p.value : null;
+    }
+
     public static findRootDialogState(tenantId: string, userId: string, dialogId: string): any {
         const dialog = this.readDialogState(tenantId, userId, dialogId);
         if (dialog) {
@@ -150,160 +221,160 @@ export class DialogProxyTools {
     }
 
     public static isDeleteSession(path: string[]): boolean {
-        return path.length == 4 && path[0] == DialogProxyTools.TENANTS && path[2] == DialogProxyTools.SESSIONS;
+        return path.length === 4 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
     }
 
     public static isGetAvailableViews(path: string[]): boolean {
         return (
-            path.length == 7 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.AVAILABLE_VIEWS
+            path.length === 7 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.AVAILABLE_VIEWS
         );
     }
 
     public static isGetDialog(path: string[]): boolean {
         return (
-            path.length == 6 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS
+            path.length === 6 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS
         );
     }
 
     public static isGetRecord(path: string[]): boolean {
         return (
-            path.length == 7 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.RECORD
+            path.length === 7 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.RECORD
         );
     }
 
     public static isGetRedirection(path: string[]): boolean {
         return (
-            path.length == 6 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.REDIRECTIONS
+            path.length === 6 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.REDIRECTIONS
         );
     }
 
     public static isGetSelectedView(path: string[]): boolean {
         return (
-            path.length == 7 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.SELECTED_VIEW
+            path.length === 7 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.SELECTED_VIEW
         );
     }
 
     public static isGetSession(path: string[]): boolean {
-        return path.length == 4 && path[0] == DialogProxyTools.TENANTS && path[2] == DialogProxyTools.SESSIONS;
+        return path.length === 4 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
     }
 
     public static isGetTenant(path: string[]): boolean {
-        return path.length == 2 && path[0] == DialogProxyTools.TENANTS;
+        return path.length === 2 && path[0] === DialogProxyTools.TENANTS;
     }
 
     public static isGetTenants(path: string[]): boolean {
-        return path.length == 1 && path[0] == DialogProxyTools.TENANTS;
+        return path.length === 1 && path[0] === DialogProxyTools.TENANTS;
     }
 
     public static isGetViewMode(path: string[]): boolean {
         return (
-            path.length == 7 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.VIEW_MODE
+            path.length === 7 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.VIEW_MODE
         );
     }
 
     public static isGetWorkbenches(path: string[]): boolean {
         return (
-            path.length == 5 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.WORKBENCHES
+            path.length === 5 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.WORKBENCHES
         );
     }
 
     public static isPostAvailableValues(path: string[]): boolean {
         return (
-            path.length == 9 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.RECORD &&
-            path[8] == DialogProxyTools.AVAILABLE_VALUES
+            path.length === 9 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.RECORD &&
+            path[8] === DialogProxyTools.AVAILABLE_VALUES
         );
     }
 
     public static isPostMenuAction(path: string[]): boolean {
         return (
-            path.length == 8 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.ACTIONS
+            path.length === 8 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.ACTIONS
         );
     }
 
     public static isPostRecords(path: string[]): boolean {
         return (
-            path.length == 7 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.RECORDS
+            path.length === 7 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.RECORDS
         );
     }
 
     public static isPostSession(path: string[]): boolean {
-        return path.length == 3 && path[0] == DialogProxyTools.TENANTS && path[2] == DialogProxyTools.SESSIONS;
+        return path.length === 3 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
     }
 
     public static isPostWorkbenchAction(path: string[]): boolean {
         return (
-            path.length == 8 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.WORKBENCHES &&
-            path[6] == DialogProxyTools.ACTIONS
+            path.length === 8 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.WORKBENCHES &&
+            path[6] === DialogProxyTools.ACTIONS
         );
     }
 
     public static isPutRecord(path: string[]): boolean {
         return (
-            path.length == 7 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.RECORD
+            path.length === 7 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.RECORD
         );
     }
 
     public static isPutSelectedView(path: string[]): boolean {
         return (
-            path.length == 8 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.SELECTED_VIEW
+            path.length === 8 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.SELECTED_VIEW
         );
     }
 
     public static isPutViewMode(path: string[]): boolean {
         return (
-            path.length == 8 &&
-            path[0] == DialogProxyTools.TENANTS &&
-            path[2] == DialogProxyTools.SESSIONS &&
-            path[4] == DialogProxyTools.DIALOGS &&
-            path[6] == DialogProxyTools.VIEW_MODE
+            path.length === 8 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.DIALOGS &&
+            path[6] === DialogProxyTools.VIEW_MODE
         );
     }
 
@@ -327,10 +398,11 @@ export class DialogProxyTools {
         return this.readPersistentState(tenantId, userId, 'navigation.' + navigationId);
     }
 
-    public static readPersistentState(tenantId: string, userId: string, stateId: string): any {
+    public static readPersistentState(tenantId: string, userId: string, stateId: string): Promise<any> {
         const key: string = tenantId + '.' + userId + '.' + stateId;
-        const json: string = window.localStorage.getItem(key);
-        return json ? JSON.parse(json) : null;
+        return storage.getItem(key).then(json => {
+            return json ? JSON.parse(json) : null;
+        }).catch(getItemError => 'Error getting item from storage: ' + getItemError);
     }
 
     public static readRecordSetState(tenantId: string, userId: string, dialogId: string): any {
@@ -369,8 +441,8 @@ export class DialogProxyTools {
         }
     }
 
-    public static writeDialogAliasState(tenantId: string, userId: string, dialogId: string, alias: any) {
-        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias', alias);
+    public static writeDialogAliasState(tenantId: string, userId: string, dialogId: string, alias: any): Promise<boolean> {
+        return this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias', alias);
     }
 
     public static writeDialogParentState(tenantId: string,
@@ -391,32 +463,37 @@ export class DialogProxyTools {
         this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias', referringAlias);
     }
 
-    public static writeDialogState(tenantId: string, userId: string, dialog: any) {
-        this.writePersistentState(tenantId, userId, 'dialog.' + dialog.id, dialog);
+    public static writeDialogState(tenantId: string, userId: string, dialog: any): Promise<boolean> {
+        return this.writePersistentState(tenantId, userId, 'dialog.' + dialog.id, dialog);
     }
 
-    public static writePersistentState(tenantId: string, userId: string, stateId: string, state: any) {
+    public static writePersistentState(tenantId: string, userId: string, stateId: string, state: any): Promise<boolean> {
         const key: string = tenantId + '.' + userId + '.' + stateId;
-        window.localStorage.setItem(key, JSON.stringify(state));
+        return storage.setItem(key, JSON.stringify(state)).then(value => {
+            return true;
+        }).catch(setItemError => {
+            Log.error('Error setting item in storage: ' + setItemError);
+            return false;
+        });
     }
 
-    public static writeRecordSetState(tenantId: string, userId: string, dialogId: string, recordSet: any): any {
-        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', recordSet);
+    public static writeRecordSetState(tenantId: string, userId: string, dialogId: string, recordSet: any): Promise<boolean> {
+        return this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', recordSet);
     }
 
-    public static writeRecordState(tenantId: string, userId: string, dialogId: string, record: any): any {
-        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.record', record);
+    public static writeRecordState(tenantId: string, userId: string, dialogId: string, record: any): Promise<boolean> {
+        return this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.record', record);
     }
 
-    public static writeNavigationState(tenantId: string, userId: string, navigation: any) {
-        this.writePersistentState(tenantId, userId, 'navigation.' + navigation.id, navigation);
+    public static writeNavigationState(tenantId: string, userId: string, navigation: any): Promise<boolean> {
+        return this.writePersistentState(tenantId, userId, 'navigation.' + navigation.id, navigation);
     }
 
-    public static writeRedirectionState(tenantId: string, userId: string, redirection: any) {
-        this.writePersistentState(tenantId, userId, 'redirection.' + redirection.id, redirection);
+    public static writeRedirectionState(tenantId: string, userId: string, redirection: any): Promise<boolean> {
+        return this.writePersistentState(tenantId, userId, 'redirection.' + redirection.id, redirection);
     }
 
-    public static writeSessionState(session: any) {
-        this.writePersistentState(session.tenantId, session.userId, 'session', session);
+    public static writeSessionState(session: any): Promise<boolean> {
+        return this.writePersistentState(session.tenantId, session.userId, 'session', session);
     }
 }
