@@ -116,9 +116,9 @@ export class EditorDialog extends Dialog {
         return this.viewMode === ViewModeEnum.WRITE;
     }
 
-    public performMenuActionWithId(actionId: string, pendingWrites: Record): Promise<Redirection> {
+    public performMenuActionWithId(actionId: string): Promise<Redirection> {
         return this.invokeMenuActionWithId(actionId, {
-            pendingWrites,
+            pendingWrites: this.getWriteableRecord(this.buffer.afterEffects()),
             type: TypeNames.ActionParametersTypeName
         }).then(result => {
             return result;
@@ -133,9 +133,9 @@ export class EditorDialog extends Dialog {
      * @param {Record} pendingWrites
      * @returns {Promise<{actionId: string} | Redirection>}
      */
-    public performMenuAction(menu: Menu, pendingWrites: Record): Promise<Redirection> {
+    public performMenuAction(menu: Menu): Promise<Redirection> {
         return this.invokeMenuAction(menu, {
-            pendingWrites,
+            pendingWrites: this.getWriteableRecord(this.buffer.afterEffects()),
             type: TypeNames.ActionParametersTypeName
         }).then(result => {
             return result;
