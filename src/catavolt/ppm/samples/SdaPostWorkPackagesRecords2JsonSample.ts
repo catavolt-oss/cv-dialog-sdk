@@ -12,6 +12,7 @@ export class SdaPostWorkPackagesRecords2JsonSample {
     };
 
     private static RESPONSE = {
+        "dialogAlias": "Workpackage_General",
         "defaultActionId": "alias_Open",
         "records": [{
             "annotations": [],

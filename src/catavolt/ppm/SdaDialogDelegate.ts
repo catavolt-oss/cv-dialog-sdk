@@ -21,17 +21,8 @@ export class SdaDialogDelegate implements DialogDelegate {
     }
 
     public initialize(): Promise<void> {
-        Log.info("SdaDialogDelegate::initialize -- initializing");
-        return Promise.resolve().then(voidValue => {
-            Log.info("SdaDialogDelegate::initialize -- showing storage keys");
-            return SdaDialogDelegateTools.showAllStorageKeys();
-        }).then(voidValue => {
-            return SdaDialogDelegateTools.readDelegateState();
-        }).then(delegateState => {
-            this._delegateState = delegateState;
-            Log.info(`SdaDialogDelegate::initialize -- current delegate state: ${this._delegateState.copyAsJsonString()}`)
-            Log.info("SdaDialogDelegate::initialize -- SdaDialogDelegate is done initializing");
-        });
+        Log.info("SdaDialogDelegate::initialize -- nothing to initialize");
+        return Promise.resolve();
     }
 
     public addWorkPackageToBriefcase(baseUrl: string, resourcePathElems: string[], body?: StringDictionary): Promise<JsonClientResponse> {
@@ -114,7 +105,6 @@ export class SdaDialogDelegate implements DialogDelegate {
                 if (SdaDialogDelegateTools.isWorkPackagesRootDialog(jsonObject)) {
                     const resourcePathElems: string[] = resourcePath.split('/');
                     const pathFields = DialogProxyTools.deconstructGetDialogPath(resourcePathElems);
-//                    DialogProxyTools.writeDialogState(pathFields.tenantId, pathFields.sessionId, )
                     const workPackagesDialog = SdaDialogDelegateTools.patchWorkPackagesDialog(jsonObject);
                     return new JsonClientResponse(workPackagesDialog, 200);
                 }
@@ -140,15 +130,14 @@ export class SdaDialogDelegate implements DialogDelegate {
         response.then(jcr => Log.info("SdaDialogDelegate::handlePostJsonResponse -- json response: " + JSON.stringify(jcr.value)));
         return response.then(jcr => {
             if (jcr.statusCode === 200) {
+                const resourcePathElems: string[] = resourcePath.split('/');
                 const jsonObject = jcr.value as StringDictionary;
                 if (DialogProxyTools.isSessionRootDialog(jsonObject)) {
-                    this._delegateState.setUserId(SessionState.userId(jsonObject));
-                    return SdaDialogDelegateTools.writeDelegateState(this._delegateState).then(voidValue => {
-                        return SdaDialogDelegateTools.showAllStorageKeys().then(voidValue2 => SdaDialogDelegateTools.readDelegateState()).then(stateValue => {
-                            Log.info('SdaDialogDelegate::handlePostJsonResponse -- delegate state after write: ' + stateValue.copyAsJsonString());
-                            return jcr;
-                        });
-                    });
+                    return this.initializeAfterCreateSession(resourcePathElems, new SessionState(jsonObject)).then(voidValue => jcr);
+                } else if (SdaDialogDelegateTools.isWorkPackagesQueryRecordSet(resourcePathElems, jsonObject)) {
+                    const patchedRecordSet = SdaDialogDelegateTools.patchWorkPackagesRecordSet(jsonObject, null);
+                    Log.info('SdaDialogDelegate::handlePostJsonResponse -- PATCHED: ' + JSON.stringify(patchedRecordSet));
+                    return new JsonClientResponse(patchedRecordSet, 200);
                 }
             }
             return jcr;
@@ -164,6 +153,28 @@ export class SdaDialogDelegate implements DialogDelegate {
     public handlePutJsonResponse(baseUrl: string, resourcePath: string, body: StringDictionary, response: Promise<JsonClientResponse>): Promise<JsonClientResponse> | null {
         Log.info("SdaDialogDelegate::handlePutJsonResponse -- path: " + resourcePath);
         return response;
+    }
+
+    private initializeAfterCreateSession(resourcePathElems: string[], sessionState: SessionState): Promise<void> {
+        const pathFields = DialogProxyTools.deconstructPostSessionsPath(resourcePathElems);
+        return Promise.resolve().then(voidValue => {
+            Log.info("SdaDialogDelegate::initialize -- showing storage keys");
+            return SdaDialogDelegateTools.showAllStorageKeys();
+        }).then(voidValue => {
+            return SdaDialogDelegateTools.readDelegateState(pathFields.tenantId, sessionState.userId());
+        }).then(delegateState => {
+            Log.info(`SdaDialogDelegate::initialize -- current delegate state: ${delegateState.copyAsJsonString()}`)
+            Log.info("SdaDialogDelegate::initialize -- SdaDialogDelegate is done initializing");
+            delegateState.setUserId(sessionState.userId());
+            return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, sessionState.userId(), delegateState).then(voidValue => {
+                this._delegateState = delegateState;
+                return SdaDialogDelegateTools.showAllStorageKeys().then(voidValue2 => {
+                    return SdaDialogDelegateTools.readDelegateState(pathFields.tenantId, sessionState.userId());
+                }).then(stateValue => {
+                    Log.info('SdaDialogDelegate::initializeAfterCreateSession -- delegate state after write: ' + stateValue.copyAsJsonString());
+                });
+            });
+        });
     }
 
     private online(): boolean {

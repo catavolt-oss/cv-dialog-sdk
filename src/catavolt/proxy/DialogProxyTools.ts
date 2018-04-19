@@ -77,6 +77,12 @@ export class DialogProxyTools {
         }
     }
 
+    public static deconstructPostSessionsPath(path: string[]): any {
+        return {
+            tenantId: path[1]
+        }
+    }
+
     public static deconstructPostWorkbenchActionPath(path: string[]): any {
         return {
             tenantId: path[1],

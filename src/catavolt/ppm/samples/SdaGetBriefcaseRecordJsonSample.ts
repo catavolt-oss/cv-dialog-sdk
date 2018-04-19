@@ -5,6 +5,7 @@ export class SdaGetBriefcaseRecordJsonSample {
     private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/8/record';
 
     private static RESPONSE = {
+        "dialogAlias": "Briefcase_Briefcase_Details",
         "annotations": [],
         "id": "1",
         "type": "hxgn.api.dialog.Record",
