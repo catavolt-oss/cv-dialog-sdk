@@ -1,42 +1,25 @@
-import {DialogProxyTools} from "../proxy";
+import {DialogProxyTools} from "../proxy/DialogProxyTools";
 import {storage} from "../storage";
-import {Log, StringDictionary} from "../util";
-import {SdaGetBriefcaseRecordJsonTemplate} from "./SdaGetBriefcaseRecordJsonTemplate";
+import {Log} from "../util/Log";
+import {StringDictionary} from "../util/StringDictionary";
+import {SdaGetBriefcaseRecordJsonSample} from "./samples/SdaGetBriefcaseRecordJsonSample";
+import {SdaDialogDelegateState} from "./SdaDialogDelegateState";
 
 export class SdaDialogDelegateTools {
 
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
     private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
-
     // Dialog Names
     private static WORK_PACKAGES_ROOT_DIALOG_ALIAS = "Workpackage_General_FORM";
-
-    // Storage Keys
-    private static BRIEFCASE_RECORD_KEY = 'ppm.sda.briefcase.record';
-
+    // Model Types
+    private static EDITOR_DIALOG_MODEL_TYPE = "hxgn.api.dialog.EditorDialog";
+    private static QUERY_DIALOG_MODEL_TYPE = "hxgn.api.dialog.QueryDialog";
     // Property Names
     private static ONLINE_PROPERTY_NAME = 'online';
-
-    public static createDialogMessageModel(message: string) {
-        return {type: 'hxgn.api.dialog.DialogMessage', message};
-    }
-
-    public static findBriefcaseRecord(): Promise<any> {
-        return storage.getJson(SdaDialogDelegateTools.BRIEFCASE_RECORD_KEY).then(jsonObject => {
-            if (!jsonObject) {
-                Log.info('SdaDialogDelegateTools::findBriefcaseRecord -- briefcase record not found, using default record');
-                const copy = SdaGetBriefcaseRecordJsonTemplate.response();
-                Log.info('SdaDialogDelegateTools::findBriefcaseRecord -- returning copy: ' + JSON.stringify(copy));
-                return copy;
-            }
-            return jsonObject;
-        });
-    }
-
-    public static findOnlinePropertyValue(briefcaseRecord: object): boolean {
-        return DialogProxyTools.findRecordPropertyValue(briefcaseRecord, SdaDialogDelegateTools.ONLINE_PROPERTY_NAME);
-    }
+    // Storage Keys
+    private static BRIEFCASE_RECORD_KEY = 'ppm.sda.briefcase.record';
+    private static DIALOG_DELEGATE_STATE_KEY = 'ppm.sda.dialog.delegate.state';
 
     public static isAddToBriefcaseMenuActionRequest(resourcePathElems: string[]): boolean {
         if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
@@ -55,10 +38,11 @@ export class SdaDialogDelegateTools {
     }
 
     public static isWorkPackagesRootDialog(dialog: any): boolean {
-        if (!dialog) {
+        if (!dialog || !dialog.type || !dialog.dialogAlias) {
             return false;
         }
-        return (dialog.dialogAlias && dialog.dialogAlias === this.WORK_PACKAGES_ROOT_DIALOG_ALIAS);
+        return dialog.type === this.EDITOR_DIALOG_MODEL_TYPE &&
+            dialog.dialogAlias === this.WORK_PACKAGES_ROOT_DIALOG_ALIAS;
     }
 
     public static patchWorkPackagesDialog(originalDialog: StringDictionary): StringDictionary {
@@ -79,7 +63,7 @@ export class SdaDialogDelegateTools {
             "heading": "Briefcase",
             "type": "hxgn.api.dialog.Column"
         });
-        // Return original dialog with patches
+        // Return original dialog WITH patches
         return originalDialog;
     }
 
@@ -108,6 +92,16 @@ export class SdaDialogDelegateTools {
         return originalRecordSet;
     }
 
+    public static readDelegateState(): Promise<SdaDialogDelegateState> {
+        return storage.getJson(SdaDialogDelegateTools.DIALOG_DELEGATE_STATE_KEY).then(jsonObject => {
+            if (!jsonObject) {
+                jsonObject = {briefcaseRecord: SdaGetBriefcaseRecordJsonSample.response(), userId: null};
+                Log.info('SdaDialogDelegateTools::readDelegateState -- returning defaults: ' + JSON.stringify(jsonObject));
+            }
+            return new SdaDialogDelegateState(jsonObject);
+        });
+    }
+
     public static showAllStorageKeys(): Promise<void> {
         return storage.getAllKeys().then(allKeys => {
             const keyCount = allKeys.length;
@@ -118,6 +112,11 @@ export class SdaDialogDelegateTools {
         }).catch(allKeysError => {
             Log.error("SdaDialogDelegateTools::showAllStorageKeys -- error getting all keys from storage: " + allKeysError);
         });
+    }
+
+    public static writeDelegateState(delegateState: SdaDialogDelegateState): Promise<void> {
+        Log.info('SdaDialogDelegateTools::writeDelegateState -- delegate state: ' + delegateState.copyAsJsonString());
+        return storage.setJson(SdaDialogDelegateTools.DIALOG_DELEGATE_STATE_KEY, delegateState.internalValue());
     }
 
 }

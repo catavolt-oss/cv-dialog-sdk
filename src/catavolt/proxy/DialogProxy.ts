@@ -1,7 +1,12 @@
-import {BlobClientResponse, Client, JsonClientResponse, TextClientResponse, VoidClientResponse} from '../client';
+import {BlobClientResponse} from "../client/BlobClientResponse";
+import {Client} from "../client/Client";
+import {JsonClientResponse} from "../client/JsonClientResponse";
+import {TextClientResponse} from "../client/TextClientResponse";
+import {VoidClientResponse} from "../client/VoidClientResponse";
 import {StreamProducer} from '../io';
-import {SdaDialogDelegate} from "../ppm";
-import {Log, StringDictionary} from '../util';
+import {SdaDialogDelegate} from "../ppm/SdaDialogDelegate";
+import {Log} from '../util/Log';
+import {StringDictionary} from '../util/StringDictionary';
 import {DialogDelegate} from "./DialogDelegate";
 import {DialogProxyTools} from './DialogProxyTools';
 

@@ -1,13 +1,13 @@
 import {storage} from "../storage";
 import {Log} from '../util';
 import {FetchClient} from "../ws";
+import {DialogState} from "./DialogState";
 
 export class DialogProxyTools {
 
     public static ACTIONS = 'actions';
     public static AVAILABLE_VALUES = 'availableValues';
     public static AVAILABLE_VIEWS = 'availableViews';
-    public static DIALOG_MESSAGE_MODEL_TYPE = 'hxgn.api.dialog.DialogMessage';
     public static DIALOGS = 'dialogs';
     public static RECORD = 'record';
     public static RECORDS = 'records';
@@ -18,6 +18,10 @@ export class DialogProxyTools {
     public static VIEW_MODE = 'viewMode';
     public static WORKBENCHES = 'workbenches';
 
+    // Model Types
+    public static DIALOG_MESSAGE_MODEL_TYPE = 'hxgn.api.dialog.DialogMessage';
+    public static SESSION_MODEL_TYPE = 'hxgn.api.dialog.Session';
+
     public static COMMON_FETCH_CLIENT = new FetchClient();
 
     public static commonFetchClient(): FetchClient {
@@ -25,60 +29,60 @@ export class DialogProxyTools {
     }
 
     public static constructDialogMessageModel(message: string) {
-        return {type: this.DIALOG_MESSAGE_MODEL_TYPE, message: message};
+        return {type: this.DIALOG_MESSAGE_MODEL_TYPE, message};
     }
 
     public static constructNullRedirectionId(): string {
         return `null_redirection__offline_${Date.now()}`;
     }
 
-    public static deconstructGetDialogPath(resourcePathElems: string[]): any {
+    public static deconstructGetDialogPath(path: string[]): any {
         return {
-            tenantId: resourcePathElems[1],
-            sessionId: resourcePathElems[3],
-            dialogId: resourcePathElems[5]
+            tenantId: path[1],
+            sessionId: path[3],
+            dialogId: path[5]
         }
     }
 
-    public static deconstructGetRecordPath(resourcePathElems: string[]): any {
+    public static deconstructGetRecordPath(path: string[]): any {
         return {
-            tenantId: resourcePathElems[1],
-            sessionId: resourcePathElems[3],
-            dialogId: resourcePathElems[5]
+            tenantId: path[1],
+            sessionId: path[3],
+            dialogId: path[5]
         }
     }
 
-    public static deconstructGetRedirectionPath(resourcePathElems: string[]): any {
+    public static deconstructGetRedirectionPath(path: string[]): any {
         return {
-            tenantId: resourcePathElems[1],
-            sessionId: resourcePathElems[3],
-            redirectionId: resourcePathElems[5]
+            tenantId: path[1],
+            sessionId: path[3],
+            redirectionId: path[5]
         }
     }
 
-    public static deconstructPostMenuActionPath(resourcePathElems: string[]): any {
+    public static deconstructPostMenuActionPath(path: string[]): any {
         return {
-            tenantId: resourcePathElems[1],
-            sessionId: resourcePathElems[3],
-            dialogId: resourcePathElems[5],
-            actionId: resourcePathElems[7]
+            tenantId: path[1],
+            sessionId: path[3],
+            dialogId: path[5],
+            actionId: path[7]
         }
     }
 
-    public static deconstructPostRecordsPath(resourcePathElems: string[]): any {
+    public static deconstructPostRecordsPath(path: string[]): any {
         return {
-            tenantId: resourcePathElems[1],
-            sessionId: resourcePathElems[3],
-            dialogId: resourcePathElems[5]
+            tenantId: path[1],
+            sessionId: path[3],
+            dialogId: path[5]
         }
     }
 
-    public static deconstructPostWorkbenchActionPath(resourcePathElems: string[]): any {
+    public static deconstructPostWorkbenchActionPath(path: string[]): any {
         return {
-            tenantId: resourcePathElems[1],
-            sessionId: resourcePathElems[3],
-            workbenchId: resourcePathElems[5],
-            actionId: resourcePathElems[7]
+            tenantId: path[1],
+            sessionId: path[3],
+            workbenchId: path[5],
+            actionId: path[7]
         }
     }
 
@@ -179,7 +183,7 @@ export class DialogProxyTools {
     }
 
     public static findDialogStateWithin(tenantId: string, userId: string, dialog: any, targetId: string): any {
-        if (dialog && dialog.id === targetId) {
+        if (dialog && DialogState.id(dialog) === targetId) {
             return dialog;
         }
         const dialogChildren = dialog.children;
@@ -220,7 +224,11 @@ export class DialogProxyTools {
         return null;
     }
 
-    public static isDeleteSession(path: string[]): boolean {
+    public static isCreateSessionRequest(path: string[]): boolean {
+        return path.length === 3 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
+    }
+
+    public static isDeleteSessionRequest(path: string[]): boolean {
         return path.length === 4 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
     }
 
@@ -378,6 +386,13 @@ export class DialogProxyTools {
         );
     }
 
+    public static isSessionRootDialog(dialog: any): boolean {
+        if (!dialog || !dialog.type) {
+            return false;
+        }
+        return dialog.type === this.SESSION_MODEL_TYPE
+    }
+
     public static readDialogAliasState(tenantId: string, userId: string, dialogId: string) {
         return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias');
     }
@@ -419,16 +434,6 @@ export class DialogProxyTools {
 
     public static readSessionState(tenantId: string, userId: string): any {
         return this.readPersistentState(tenantId, userId, 'session');
-    }
-
-    public static updateRecordPropertyValue(record: any, propertyName: string, value: any): boolean {
-        for (const p of record.properties) {
-            if (p.name === propertyName) {
-                p.value = value;
-                return true;
-            }
-        }
-        return false;
     }
 
     public static writeAllDialogParentState(tenantId: string, userId: string, parent: any) {

@@ -1,12 +1,19 @@
-import {BlobClientResponse, JsonClientResponse, TextClientResponse, VoidClientResponse} from "../client";
-import {StreamProducer} from '../io';
-import {DialogDelegate, DialogProxyTools} from "../proxy";
-import {Log, StringDictionary} from '../util';
+import {BlobClientResponse} from "../client/BlobClientResponse";
+import {JsonClientResponse} from "../client/JsonClientResponse";
+import {TextClientResponse} from "../client/TextClientResponse";
+import {VoidClientResponse} from "../client/VoidClientResponse";
+import {StreamProducer} from '../io/StreamProducer';
+import {DialogDelegate} from "../proxy/DialogDelegate";
+import {DialogProxyTools} from "../proxy/DialogProxyTools";
+import {SessionState} from "../proxy/SessionState";
+import {Log} from '../util/Log';
+import {StringDictionary} from '../util/StringDictionary';
+import {SdaDialogDelegateState} from "./SdaDialogDelegateState";
 import {SdaDialogDelegateTools} from "./SdaDialogDelegateTools";
 
 export class SdaDialogDelegate implements DialogDelegate {
 
-    private _briefcaseRecord: object = null;
+    private _delegateState: SdaDialogDelegateState = null;
     private _lastActivity: Date = new Date();
 
     get lastActivity(): Date {
@@ -19,10 +26,10 @@ export class SdaDialogDelegate implements DialogDelegate {
             Log.info("SdaDialogDelegate::initialize -- showing storage keys");
             return SdaDialogDelegateTools.showAllStorageKeys();
         }).then(voidValue => {
-            return SdaDialogDelegateTools.findBriefcaseRecord();
-        }).then(briefcaseRecord => {
-            this._briefcaseRecord = briefcaseRecord;
-            Log.info(`SdaDialogDelegate::initialize -- briefcase record: ${JSON.stringify(this._briefcaseRecord)}`)
+            return SdaDialogDelegateTools.readDelegateState();
+        }).then(delegateState => {
+            this._delegateState = delegateState;
+            Log.info(`SdaDialogDelegate::initialize -- current delegate state: ${this._delegateState.copyAsJsonString()}`)
             Log.info("SdaDialogDelegate::initialize -- SdaDialogDelegate is done initializing");
         });
     }
@@ -69,6 +76,9 @@ export class SdaDialogDelegate implements DialogDelegate {
         if (SdaDialogDelegateTools.isAddToBriefcaseMenuActionRequest(resourcePathElems)) {
             return this.addWorkPackageToBriefcase(baseUrl, resourcePathElems, body);
         }
+        if (DialogProxyTools.isCreateSessionRequest(resourcePathElems)) {
+            Log.info("SdaDialogDelegate::postJson -- CREATE SESSION");
+        }
         return null;
     }
 
@@ -98,7 +108,19 @@ export class SdaDialogDelegate implements DialogDelegate {
     public handleGetJsonResponse(baseUrl: string, resourcePath: string, queryParams: StringDictionary, response: Promise<JsonClientResponse>): Promise<JsonClientResponse> | null {
         Log.info("SdaDialogDelegate::handleGetJsonResponse -- path: " + resourcePath);
         response.then(jcr => Log.info("SdaDialogDelegate::handleGetJsonResponse -- json response: " + JSON.stringify(jcr.value)));
-        return response;
+        return response.then(jcr => {
+            if (jcr.statusCode === 200) {
+                const jsonObject = jcr.value as StringDictionary;
+                if (SdaDialogDelegateTools.isWorkPackagesRootDialog(jsonObject)) {
+                    const resourcePathElems: string[] = resourcePath.split('/');
+                    const pathFields = DialogProxyTools.deconstructGetDialogPath(resourcePathElems);
+//                    DialogProxyTools.writeDialogState(pathFields.tenantId, pathFields.sessionId, )
+                    const workPackagesDialog = SdaDialogDelegateTools.patchWorkPackagesDialog(jsonObject);
+                    return new JsonClientResponse(workPackagesDialog, 200);
+                }
+            }
+            return jcr;
+        });
     }
 
     public handleGetTextResponse(baseUrl: string, resourcePath: string, response: Promise<TextClientResponse>): Promise<TextClientResponse> | null {
@@ -116,7 +138,21 @@ export class SdaDialogDelegate implements DialogDelegate {
     public handlePostJsonResponse(baseUrl: string, resourcePath: string, body: StringDictionary, response: Promise<JsonClientResponse>): Promise<JsonClientResponse> | null {
         Log.info("SdaDialogDelegate::handlePostJsonResponse -- path: " + resourcePath);
         response.then(jcr => Log.info("SdaDialogDelegate::handlePostJsonResponse -- json response: " + JSON.stringify(jcr.value)));
-        return response;
+        return response.then(jcr => {
+            if (jcr.statusCode === 200) {
+                const jsonObject = jcr.value as StringDictionary;
+                if (DialogProxyTools.isSessionRootDialog(jsonObject)) {
+                    this._delegateState.setUserId(SessionState.userId(jsonObject));
+                    return SdaDialogDelegateTools.writeDelegateState(this._delegateState).then(voidValue => {
+                        return SdaDialogDelegateTools.showAllStorageKeys().then(voidValue2 => SdaDialogDelegateTools.readDelegateState()).then(stateValue => {
+                            Log.info('SdaDialogDelegate::handlePostJsonResponse -- delegate state after write: ' + stateValue.copyAsJsonString());
+                            return jcr;
+                        });
+                    });
+                }
+            }
+            return jcr;
+        });
     }
 
     public handlePostMultipartResponse<T>(baseUrl: string, resourcePath: string, formData: FormData, response: Promise<VoidClientResponse>): Promise<VoidClientResponse> | null {
@@ -131,7 +167,7 @@ export class SdaDialogDelegate implements DialogDelegate {
     }
 
     private online(): boolean {
-        return SdaDialogDelegateTools.findOnlinePropertyValue(this._briefcaseRecord);
+        return this._delegateState.briefcaseRecordState().online();
     }
 
 }

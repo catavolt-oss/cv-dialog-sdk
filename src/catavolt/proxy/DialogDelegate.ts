@@ -1,6 +1,10 @@
-import {BlobClientResponse, Client, JsonClientResponse, TextClientResponse, VoidClientResponse} from "../client";
-import {StreamProducer} from "../io";
-import {StringDictionary} from "../util";
+import {BlobClientResponse} from "../client/BlobClientResponse";
+import {Client} from "../client/Client";
+import {JsonClientResponse} from "../client/JsonClientResponse";
+import {TextClientResponse} from "../client/TextClientResponse";
+import {VoidClientResponse} from "../client/VoidClientResponse";
+import {StreamProducer} from "../io/StreamProducer";
+import {StringDictionary} from "../util/StringDictionary";
 
 export interface DialogDelegate extends Client {
 
