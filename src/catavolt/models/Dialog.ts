@@ -32,7 +32,7 @@ import { WriteLargePropertyParameters } from './WriteLargePropertyParams';
  */
 export abstract class Dialog {
     // statics
-    public static BINARY_CHUNK_SIZE = 256 * 1024; // size in  byes for 'read' operation
+    public static BINARY_CHUNK_SIZE = 128 * 1024; // size in  byes for 'read' operation
     private static CHAR_CHUNK_SIZE = 128 * 1000; // size in chars for encoded 'write' operation
 
     public readonly availableViews: ViewDescriptor[];
@@ -437,8 +437,8 @@ export abstract class Dialog {
     ): Promise<LargeProperty> {
         let sequence: number = 0;
         let resultBuffer: string = '';
-        const f: (largeProperty: LargeProperty) => Promise<LargeProperty> = (largeProperty: LargeProperty) => {
-            streamConsumer && streamConsumer({ done: !largeProperty.hasMore, value: largeProperty.encodedData });
+        const f: (largeProperty: LargeProperty) => Promise<LargeProperty> = async (largeProperty: LargeProperty) => {
+            streamConsumer && await streamConsumer({ done: !largeProperty.hasMore, value: largeProperty.encodedData });
             if (largeProperty.hasMore) {
                 if (!streamConsumer) {
                     resultBuffer += Base64.decodeString(largeProperty.encodedData);
