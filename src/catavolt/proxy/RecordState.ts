@@ -57,6 +57,10 @@ export class RecordState {
 
     // --- State Management --- //
 
+    public recordId(): string {
+        return this.internalValue().id;
+    }
+
     public getPropertyValue(propertyName: string): any {
         for (const p of this.internalValue().properties) {
             if (p.name === propertyName) {

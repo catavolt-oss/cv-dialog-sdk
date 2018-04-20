@@ -1,14 +1,17 @@
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
+import {RecordSetState} from "../proxy/RecordSetState";
 import {storage} from "../storage";
 import {Log} from "../util/Log";
 import {StringDictionary} from "../util/StringDictionary";
 import {SdaGetBriefcaseRecordJsonSample} from "./samples/SdaGetBriefcaseRecordJsonSample";
+import {SdaBriefcaseState} from "./SdaBriefcaseState";
 import {SdaDialogDelegateState} from "./SdaDialogDelegateState";
 
 export class SdaDialogDelegateTools {
 
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
+    private static BRIEFCASE_WORKBENCH_ACTION_ID = 'Briefcase';
     private static REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID = 'alias_RemoveFromBriefcase';
     private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
 
@@ -19,6 +22,7 @@ export class SdaDialogDelegateTools {
     // Model Types
     private static EDITOR_DIALOG_MODEL_TYPE = "hxgn.api.dialog.EditorDialog";
     private static QUERY_DIALOG_MODEL_TYPE = "hxgn.api.dialog.QueryDialog";
+    private static RECORD_MODEL_TYPE = "hxgn.api.dialog.Record";
     private static RECORD_SET_MODEL_TYPE = "hxgn.api.dialog.RecordSet";
 
     // Property Names
@@ -61,6 +65,14 @@ export class SdaDialogDelegateTools {
             "id": nullRedirectionId,
             "type": "hxgn.api.dialog.NullRedirection"
         };
+    }
+
+    public static isBriefcaseWorkbenchActionRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostWorkbenchAction(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
+        return pathFields.actionId === SdaDialogDelegateTools.BRIEFCASE_WORKBENCH_ACTION_ID;
     }
 
     public static isAddToBriefcaseMenuActionRequest(resourcePathElems: string[]): boolean {
@@ -137,10 +149,13 @@ export class SdaDialogDelegateTools {
         const key = this.createDelegateStateKey(tenantId, userId);
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
+                const briefcase = SdaGetBriefcaseRecordJsonSample.response();
+                (new SdaBriefcaseState(briefcase)).setOnline(true);
                 jsonObject = {
                     briefcase: SdaGetBriefcaseRecordJsonSample.response(),
                     selectedWorkPackageIds: [],
-                    userId: null
+                    userId: null,
+                    workPackages: RecordSetState.emptyRecordSet().internalValue()
                 };
                 Log.info('SdaDialogDelegateTools::readDelegateState -- returning defaults: ' + JSON.stringify(jsonObject));
             }

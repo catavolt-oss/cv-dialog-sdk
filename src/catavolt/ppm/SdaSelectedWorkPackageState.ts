@@ -19,11 +19,12 @@ export class SdaSelectedWorkPackageState extends RecordState {
 
     // --- State Management Helpers --- //
 
-    public static createFromWorkPackageState(workPackageState: SdaWorkPackageState) {
+    public static createFromWorkPackageState(workPackageState: SdaWorkPackageState): SdaSelectedWorkPackageState {
         const selectedWorkPackageState = new SdaSelectedWorkPackageState({
             id: workPackageState.id(),
             properties: [],
-            annotations: []
+            annotations: [],
+            type: "hxgn.api.dialog.Record"
         });
         selectedWorkPackageState.setCreationDate(workPackageState.creationDate());
         selectedWorkPackageState.setDescription(workPackageState.description());
@@ -31,6 +32,7 @@ export class SdaSelectedWorkPackageState extends RecordState {
         selectedWorkPackageState.setId(workPackageState.id());
         selectedWorkPackageState.setLastUpdateDate(workPackageState.lastUpdateDate());
         selectedWorkPackageState.setName(workPackageState.name());
+        return selectedWorkPackageState;
     }
 
     // --- State Management --- //

@@ -1,5 +1,6 @@
 import {RecordSetState} from "../proxy/RecordSetState";
-import {SdaSelectedWorkPackagesState} from "./SdaSelectedWorkPackagesState";
+import {SdaWorkPackageState} from "./SdaWorkPackageState";
+import {SdaSelectedWorkPackageState} from "./SdaSelectedWorkPackageState";
 
 /**
  *
@@ -12,7 +13,15 @@ export class SdaWorkPackagesState extends RecordSetState {
 
     // --- State Management Helpers --- //
 
+    public static emptyRecordSet(): SdaWorkPackagesState {
+        return new SdaWorkPackagesState(super.emptyRecordSet().internalValue());
+    }
+
     // --- State Management --- //
+
+    public findRecordAtId(id: string): SdaWorkPackageState {
+        return super.findRecordAtId(id) as SdaWorkPackageState;
+    }
 
     public insertBriefcaseFieldsUsingSelections(selectedWorkPackageIds: string[]) {
         const workPackages = this.internalValue().records;
@@ -33,6 +42,13 @@ export class SdaWorkPackagesState extends RecordSetState {
                 };
                 r.properties.push(briefcaseField);
             }
+        }
+    }
+
+    public * records(): IterableIterator<SdaWorkPackageState> {
+        let index = 0;
+        while (index < this.internalValue().records.length) {
+            yield new SdaWorkPackageState(this.internalValue().records[index++]);
         }
     }
 

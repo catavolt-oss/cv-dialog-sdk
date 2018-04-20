@@ -1,5 +1,6 @@
 import {SdaBriefcaseState} from "./SdaBriefcaseState";
-import {SdaSelectedWorkPackagesState} from "./SdaSelectedWorkPackagesState";
+import {SdaWorkPackagesState} from "./SdaWorkPackagesState";
+import {SdaWorkPackageState} from "./SdaWorkPackageState";
 
 /**
  *
@@ -66,6 +67,10 @@ export class SdaDialogDelegateState {
 
     public setUserId(userId: string) {
         this.internalValue().userId = userId;
+    }
+
+    public workPackagesState(): SdaWorkPackagesState {
+        return new SdaWorkPackagesState(this.internalValue().workPackages);
     }
 
 }

@@ -2,6 +2,7 @@
  *
  */
 import {RecordState} from "./RecordState";
+import {Log} from "../util";
 
 export class RecordSetState {
 
@@ -23,6 +24,15 @@ export class RecordSetState {
 
     // --- State Management Helpers --- //
 
+    public static emptyRecordSet(): RecordSetState {
+        return new RecordSetState({
+            defaultActionId: null,
+            records: [],
+            hasMore: false,
+            type: "hxgn.api.dialog.RecordSet"
+        });
+    }
+
     // --- State Import/Export --- //
 
     public copyAsJsonObject(): object {
@@ -39,18 +49,47 @@ export class RecordSetState {
 
     // --- State Management --- //
 
-    public size(): number {
-        return this.internalValue().records.length;
+    public addAllRecords(recordSetState: RecordSetState) {
+        for (const r of recordSetState.internalValue().records) {
+            this.addOrUpdateRecord(new RecordState(r));
+        }
     }
 
-    public updateRecord(record: RecordState) {
+    public addOrUpdateRecord(recordState: RecordState) {
+        let found = false;
+        const recordCopy = JSON.parse(JSON.stringify(recordState.internalValue()));
         for (const r of this.internalValue().records) {
-            if (r.id === record.internalValue().id) {
-                for (const f of r) {
-                    r[f] = JSON.parse(JSON.stringify(record[f]));
+            if (r.id === recordCopy.id) {
+                for (const k of Object.keys(r)) {
+                    r[k] = recordCopy[k];
                 }
+                found = true;
+                break;
             }
         }
+        if (!found) {
+            this.internalValue().records.push(recordCopy);
+        }
+    }
+
+    public findRecordAtId(id: string): RecordState {
+        for (const r of this.records()) {
+            if (r.recordId() === id) {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    public *records(): IterableIterator<RecordState> {
+        let index = 0;
+        while (index < this.internalValue().records.length) {
+            yield new RecordState(this.internalValue().records[index++]);
+        }
+    }
+
+    public size(): number {
+        return this.internalValue().records.length;
     }
 
 }

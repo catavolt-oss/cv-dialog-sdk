@@ -2,7 +2,7 @@
  */
 export class SdaGetBriefcaseRecordJsonSample {
 
-    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/8/record';
+    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/offline_briefcase_details/record';
 
     private static RESPONSE = {
         "dialogAlias": "Briefcase_Briefcase_Details",

@@ -19,4 +19,8 @@ export class SdaBriefcaseState extends RecordState {
         return this.getPropertyValue(SdaBriefcaseState.ONLINE_PROPERTY_NAME);
     }
 
+    public setOnline(online: boolean) {
+        this.setPropertyValue(SdaBriefcaseState.ONLINE_PROPERTY_NAME, online);
+    }
+
 }

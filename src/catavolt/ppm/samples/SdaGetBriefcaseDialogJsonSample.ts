@@ -2,7 +2,7 @@
  */
 export class SdaGetBriefcaseDialogJsonSample {
 
-    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/6';
+    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/offline_briefcase';
 
     private static RESPONSE = {
         "recordDef": {
@@ -259,7 +259,7 @@ export class SdaGetBriefcaseDialogJsonSample {
             "dialogAlias": "Briefcase_Briefcase_Details",
             "tenantId": "${tenantId}",
             "refreshNeeded": false,
-            "id": "8",
+            "id": "offline_briefcase_details",
             "selectedViewId": "AAABACcXAAAAAKIr"
         }, {
             "recordDef": {
@@ -414,7 +414,7 @@ export class SdaGetBriefcaseDialogJsonSample {
             "tenantId": "${tenantId}",
             "refreshNeeded": false,
             "positionalQueryAbility": "FULL",
-            "id": "9",
+            "id": "offline_briefcase_workpackages",
             "selectedViewId": "AAABACcTAAAAAKKF"
         }, {
             "recordDef": {
@@ -581,13 +581,13 @@ export class SdaGetBriefcaseDialogJsonSample {
             "tenantId": "${tenantId}",
             "refreshNeeded": false,
             "positionalQueryAbility": "FULL",
-            "id": "10",
+            "id": "offline_briefcase_comments",
             "selectedViewId": "AAABACcTAAAAAKL8"
         }],
         "dialogAlias": "Briefcase_Briefcase_FORM",
         "tenantId": "${tenantId}",
         "refreshNeeded": false,
-        "id": "6",
+        "id": "offline_briefcase",
         "selectedViewId": "AAABACcXAAAAAKIr"
     };
 
