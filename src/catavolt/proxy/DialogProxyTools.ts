@@ -1,7 +1,6 @@
 import {storage} from "../storage";
-import {Log} from '../util';
-import {FetchClient} from "../ws";
-import {DialogState} from "./DialogState";
+import {Log} from '../util/Log';
+import {FetchClient} from "../ws/FetchClient";
 
 export class DialogProxyTools {
 
@@ -19,7 +18,15 @@ export class DialogProxyTools {
     public static WORKBENCHES = 'workbenches';
 
     // Model Types
+    public static ACTION_PARAMETERS_MODEL_TYPE = 'hxgn.api.dialog.ActionParameters';
+    public static ANNOTATION_MODEL_TYPE = 'hxgn.api.dialog.Annotation';
     public static DIALOG_MESSAGE_MODEL_TYPE = 'hxgn.api.dialog.DialogMessage';
+    public static EDITOR_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.EditorDialog';
+    public static PROPERTY_MODEL_TYPE = 'hxgn.api.dialog.Property';
+    public static PROPERTY_DEF_MODEL_TYPE = 'hxgn.api.dialog.PropertyDef';
+    public static QUERY_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.QueryDialog';
+    public static RECORD_MODEL_TYPE = 'hxgn.api.dialog.Record';
+    public static RECORD_SET_MODEL_TYPE = 'hxgn.api.dialog.RecordSet';
     public static SESSION_MODEL_TYPE = 'hxgn.api.dialog.Session';
 
     public static COMMON_FETCH_CLIENT = new FetchClient();
@@ -189,7 +196,7 @@ export class DialogProxyTools {
     }
 
     public static findDialogStateWithin(tenantId: string, userId: string, dialog: any, targetId: string): any {
-        if (dialog && DialogState.id(dialog) === targetId) {
+        if (dialog && dialog.id === targetId) {
             return dialog;
         }
         const dialogChildren = dialog.children;
@@ -392,11 +399,61 @@ export class DialogProxyTools {
         );
     }
 
-    public static isSessionRootDialog(dialog: any): boolean {
-        if (!dialog || !dialog.type) {
+    public static isActionParametersObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
             return false;
         }
-        return dialog.type === this.SESSION_MODEL_TYPE
+        return jsonObject['type'] === this.ACTION_PARAMETERS_MODEL_TYPE;
+    }
+
+    public static isAnnotationObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.ANNOTATION_MODEL_TYPE;
+    }
+
+    public static isDialogObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.EDITOR_DIALOG_MODEL_TYPE ||
+            jsonObject['type'] === this.QUERY_DIALOG_MODEL_TYPE;
+    }
+
+    public static isPropertyObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.PROPERTY_MODEL_TYPE
+    }
+
+    public static isPropertyDefObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.PROPERTY_DEF_MODEL_TYPE
+    }
+
+    public static isRecordObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.RECORD_MODEL_TYPE
+    }
+
+    public static isRecordSetObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.RECORD_SET_MODEL_TYPE
+    }
+
+    public static isSessionObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.SESSION_MODEL_TYPE
     }
 
     public static readDialogAliasState(tenantId: string, userId: string, dialogId: string) {

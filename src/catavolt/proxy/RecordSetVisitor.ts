@@ -1,3 +1,4 @@
+import {DialogProxyTools} from "./DialogProxyTools";
 import {JsonObjectVisitor} from "./JsonObjectVisitor";
 import {RecordVisitor} from "./RecordVisitor";
 
@@ -13,6 +14,9 @@ export class RecordSetVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
             this._enclosedJsonObject = value;
+        }
+        if (!DialogProxyTools.isRecordSetObject(this._enclosedJsonObject)) {
+            throw new Error("Object passed to RecordSetVisitor is not a RecordSet");
         }
         if (!this._enclosedJsonObject.records) {
             throw new Error('Invalid record set -- missing records field');
@@ -76,17 +80,17 @@ export class RecordSetVisitor implements JsonObjectVisitor {
         }
     }
 
+    public recordCount(): number {
+        return this.enclosedJsonObject().records.length;
+    }
+
     public visitRecordAtId(id: string): RecordVisitor {
         for (const r of this.visitRecords()) {
-            if (r.recordId() === id) {
+            if (r.visitRecordId() === id) {
                 return r;
             }
         }
         return null;
-    }
-
-    public size(): number {
-        return this.enclosedJsonObject().records.length;
     }
 
     public *visitRecords(): IterableIterator<RecordVisitor> {

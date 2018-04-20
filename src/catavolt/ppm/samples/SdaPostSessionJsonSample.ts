@@ -113,7 +113,7 @@ export class SdaPostSessionJsonSample {
         "userId": "${userId}"
     };
 
-    public static response(): object {
+    public static copyOfResponse(): object {
         return JSON.parse(JSON.stringify(this.RESPONSE));
     }
 

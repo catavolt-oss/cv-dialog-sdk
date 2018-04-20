@@ -33,7 +33,7 @@ export class SdaPostAddToBriefcaseMenuActionJsonSample {
         "type": "hxgn.api.dialog.NullRedirection"
     };
 
-    public static response(): object {
+    public static copyOfResponse(): object {
         return JSON.parse(JSON.stringify(this.RESPONSE));
     }
 

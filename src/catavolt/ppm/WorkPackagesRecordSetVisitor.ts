@@ -18,7 +18,7 @@ export class WorkPackagesRecordSetVisitor extends RecordSetVisitor {
 
     // --- State Management --- //
 
-    public insertBriefcaseFieldsUsingSelections(selectedWorkPackageIds: string[]) {
+    public updateBriefcaseColumnUsingSelections(selectedWorkPackageIds: string[]) {
         const workPackages = this.enclosedJsonObject().records;
         if (workPackages) {
             for (const r of workPackages) {
@@ -29,13 +29,13 @@ export class WorkPackagesRecordSetVisitor extends RecordSetVisitor {
                         break;
                     }
                 }
-                const briefcaseField = {
+                const briefcaseProperty = {
                     "name": "briefcase",
                     "annotations": [],
                     "type": "hxgn.api.dialog.Property",
                     "value": inBriefcase
                 };
-                r.properties.push(briefcaseField);
+                r.properties.push(briefcaseProperty);
             }
         }
     }

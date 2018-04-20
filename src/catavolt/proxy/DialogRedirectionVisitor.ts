@@ -1,10 +1,9 @@
-import {DialogProxyTools} from "./DialogProxyTools";
 import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
-export class AnnotationVisitor implements JsonObjectVisitor{
+export class DialogRedirectionVisitor implements JsonObjectVisitor {
 
     private _enclosedJsonObject: any;
 
@@ -14,12 +13,17 @@ export class AnnotationVisitor implements JsonObjectVisitor{
         } else {
             this._enclosedJsonObject = value;
         }
-        if (!DialogProxyTools.isAnnotationObject(this._enclosedJsonObject)) {
-            throw new Error("Object passed to AnnotationVisitor is not an Annotation");
-        }
     }
 
     // --- State Management Helpers --- //
+
+    public static propagateTenantIdAndSessionId(dialog: object, tenantId: string, sessionId: string) {
+        (new DialogRedirectionVisitor(dialog)).propagateTenantIdAndSessionId(tenantId, sessionId);
+    }
+
+    public static visitId(dialog: object): string {
+        return (new DialogRedirectionVisitor(dialog)).visitId();
+    }
 
     // --- State Import/Export --- //
 
@@ -36,5 +40,14 @@ export class AnnotationVisitor implements JsonObjectVisitor{
     }
 
     // --- State Management --- //
+
+    public propagateTenantIdAndSessionId(tenantId: string, sessionId: string) {
+        this.enclosedJsonObject()['tenantId'] = tenantId;
+        this.enclosedJsonObject()['sessionId'] = sessionId;
+    }
+
+    public visitId(): string {
+        return this.enclosedJsonObject().id;
+    }
 
 }

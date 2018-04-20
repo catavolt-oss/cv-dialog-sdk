@@ -67,11 +67,11 @@ export class SdaPostSelectedWorkPackagesRecordsJsonSample {
         "type": "hxgn.api.dialog.RecordSet"
     };
 
-    public static emptyResponse(): object {
+    public static copyOfEmptyResponse(): object {
         return JSON.parse(JSON.stringify(this.EMPTY_RESPONSE));
     }
 
-    public static response(): object {
+    public static copyOfResponse(): object {
         return JSON.parse(JSON.stringify(this.RESPONSE));
     }
 

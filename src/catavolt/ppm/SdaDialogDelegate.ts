@@ -3,9 +3,11 @@ import {JsonClientResponse} from "../client/JsonClientResponse";
 import {TextClientResponse} from "../client/TextClientResponse";
 import {VoidClientResponse} from "../client/VoidClientResponse";
 import {StreamProducer} from '../io/StreamProducer';
-import {ActionParametersState} from "../proxy/ActionParametersState";
+import {ActionParametersVisitor} from "../proxy/ActionParametersVisitor";
 import {DialogDelegate} from "../proxy/DialogDelegate";
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
+import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
+import {DialogVisitor} from "../proxy/DialogVisitor";
 import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {SessionVisitor} from "../proxy/SessionVisitor";
 import {Log} from '../util/Log';
@@ -38,8 +40,7 @@ export class SdaDialogDelegate implements DialogDelegate {
             const dialogMessage = DialogProxyTools.constructDialogMessageModel("Cannot add a Work Package to the briefcase while offline");
             return Promise.resolve(new JsonClientResponse(dialogMessage, 400));
         }
-        const targets = ActionParametersState.targets(body)
-        Log.info(`${thisMethod} -- is target an array? ${Array.isArray(targets)}`);
+        const targets = ActionParametersVisitor.visitTargetsValue(body);
         if (targets && targets.length > 0) {
             for (const t of targets) {
                 Log.info(`${thisMethod} -- adding selected work package id: ${t}`);
@@ -47,7 +48,7 @@ export class SdaDialogDelegate implements DialogDelegate {
             }
         }
         const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
-        return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, this._delegateState).then(voidValue => {
+        return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, this._delegateState).then(nullValue => {
             return new JsonClientResponse(SdaDialogDelegateTools.
                 constructAddToBriefcaseNullRedirection(pathFields.tenantId, pathFields.sessionId, pathFields.dialogId), 303);
         });
@@ -60,18 +61,17 @@ export class SdaDialogDelegate implements DialogDelegate {
             const dialogMessage = DialogProxyTools.constructDialogMessageModel("Cannot remove a Work Package from the briefcase while offline");
             return Promise.resolve(new JsonClientResponse(dialogMessage, 400));
         }
-        const targets = ActionParametersState.targets(body)
-        Log.info(`${thisMethod} -- is target an array? ${Array.isArray(targets)}`);
+        const targets = ActionParametersVisitor.visitTargetsValue(body);
         if (targets && targets.length > 0) {
             for (const t of targets) {
-                Log.info(`${thisMethod} -- adding selected work package id: ${t}`);
+                Log.info(`${thisMethod} -- removing selected work package id: ${t}`);
                 this._delegateState.removeSelectedWorkPackageId(targets[0]);
             }
         }
         const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
-        return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, this._delegateState).then(voidValue => {
+        return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, this._delegateState).then(nullValue => {
             return new JsonClientResponse(SdaDialogDelegateTools.
-            constructRemoveFromBriefcaseNullRedirection(pathFields.tenantId, pathFields.sessionId, pathFields.dialogId), 303);
+                constructRemoveFromBriefcaseNullRedirection(pathFields.tenantId, pathFields.sessionId, pathFields.dialogId), 303);
         });
     }
 
@@ -101,19 +101,14 @@ export class SdaDialogDelegate implements DialogDelegate {
         const resourcePathElems: string[] = resourcePath.split('/');
         if (DialogProxyTools.isGetDialog(resourcePathElems)) {
             const pathFields = DialogProxyTools.deconstructGetDialogPath(resourcePathElems);
-            if (pathFields.dialogId === "offline_briefcase") {
-                const response = SdaGetBriefcaseDialogJsonSample.response();
-                response['tenantId'] = pathFields.tenantId;
-                response['sessionId'] = pathFields.sessionId;
-                for (const c of response['children']) {
-                    c['tenantId'] = pathFields.tenantId;
-                    c['sessionId'] = pathFields.sessionId;
-                }
+            if (SdaDialogDelegateTools.isOfflineBriefcaseDialogId(pathFields.dialogId)) {
+                const response = SdaGetBriefcaseDialogJsonSample.copyOfResponse();
+                DialogVisitor.propagateTenantIdAndSessionId(response, pathFields.tenantId, pathFields.sessionId);
                 return Promise.resolve(new JsonClientResponse(response, 200));
             }
         } else if (DialogProxyTools.isGetRecord(resourcePathElems)) {
             const pathFields = DialogProxyTools.deconstructGetRecordPath(resourcePathElems);
-            if (pathFields.dialogId === "offline_briefcase_details") {
+            if (SdaDialogDelegateTools.isOfflineBriefcaseDetailsDialogId(pathFields.dialogId)) {
                 const response = this._delegateState.briefcaseState().enclosedJsonObject();
                 return Promise.resolve(new JsonClientResponse(response, 200));
             }
@@ -134,25 +129,24 @@ export class SdaDialogDelegate implements DialogDelegate {
             Log.info(`${thisMethod} -- CREATE SESSION`);
         } else if (SdaDialogDelegateTools.isBriefcaseWorkbenchActionRequest(resourcePathElems)) {
             const pathFields = DialogProxyTools.deconstructPostWorkbenchActionPath(resourcePathElems);
-            const response = SdaPostBriefcaseWorkbenchActionJsonSample.response();
-            response['tenantId'] = pathFields.tenantId;
-            response['sessionId'] = pathFields.sessionId;
+            const response = SdaPostBriefcaseWorkbenchActionJsonSample.copyOfResponse();
+            DialogRedirectionVisitor.propagateTenantIdAndSessionId(response, pathFields.tenantId, pathFields.sessionId);
             return Promise.resolve(new JsonClientResponse(response, 303));
         } else if (DialogProxyTools.isPostRecords(resourcePathElems)) {
             const pathFields = DialogProxyTools.deconstructPostRecordsPath(resourcePathElems);
-            if (pathFields.dialogId === "offline_briefcase_workpackages") {
+            if (SdaDialogDelegateTools.isOfflineBriefcaseWorkPackagesDialogId(pathFields.dialogId)) {
                 const response = RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject();
                 for (const id of this._delegateState.selectedWorkPackageIds()) {
-                    const workPackageState = this._delegateState.workPackagesState().visitRecordAtId(id);
-                    if (workPackageState) {
-                        RecordSetVisitor.addOrUpdateRecord(response, SelectedWorkPackageVisitor.createFromWorkPackageState(workPackageState));
+                    const workPackageVisitor = this._delegateState.workPackagesState().visitRecordAtId(id);
+                    if (workPackageVisitor) {
+                        RecordSetVisitor.addOrUpdateRecord(response, SelectedWorkPackageVisitor.createFromWorkPackageVisitor(workPackageVisitor));
                     } else {
                         Log.warn(`${thisMethod} -- WARNING: Selected work package not found: ${id}`);
                     }
                 }
                 return Promise.resolve(new JsonClientResponse(response, 200));
             }
-            if (pathFields.dialogId === "offline_briefcase_comments") {
+            if (SdaDialogDelegateTools.isOfflineBriefcaseCommentsDialogId(pathFields.dialogId)) {
                 const response = RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject();
                 return Promise.resolve(new JsonClientResponse(response, 200));
             }
@@ -192,7 +186,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                 if (SdaDialogDelegateTools.isWorkPackagesRootDialog(jsonObject)) {
                     const resourcePathElems: string[] = resourcePath.split('/');
                     const pathFields = DialogProxyTools.deconstructGetDialogPath(resourcePathElems);
-                    const workPackagesDialog = SdaDialogDelegateTools.patchWorkPackagesDialog(jsonObject);
+                    const workPackagesDialog = SdaDialogDelegateTools.insertBriefcaseMetaDataIntoWorkPackagesDialog(jsonObject);
                     return new JsonClientResponse(workPackagesDialog, 200);
                 }
             }
@@ -220,15 +214,15 @@ export class SdaDialogDelegate implements DialogDelegate {
             if (jcr.statusCode === 200) {
                 const resourcePathElems: string[] = resourcePath.split('/');
                 const jsonObject = jcr.value as StringDictionary;
-                if (DialogProxyTools.isSessionRootDialog(jsonObject)) {
+                if (DialogProxyTools.isSessionObject(jsonObject)) {
                     return this.initializeAfterCreateSession(resourcePathElems, new SessionVisitor(jsonObject)).then(voidValue => jcr);
                 } else if (SdaDialogDelegateTools.isWorkPackagesQueryRecordSet(resourcePathElems, jsonObject)) {
                     const pathFields = DialogProxyTools.deconstructPostRecordsPath(resourcePathElems);
-                    const workPackagesState = new WorkPackagesRecordSetVisitor(jsonObject);
-                    workPackagesState.insertBriefcaseFieldsUsingSelections(this._delegateState.selectedWorkPackageIds());
-                    this._delegateState.workPackagesState().addOrUpdateAllRecords(workPackagesState);
+                    const workPackagesRecordSetVisitor = new WorkPackagesRecordSetVisitor(jsonObject);
+                    workPackagesRecordSetVisitor.updateBriefcaseColumnUsingSelections(this._delegateState.selectedWorkPackageIds());
+                    this._delegateState.workPackagesState().addOrUpdateAllRecords(workPackagesRecordSetVisitor);
                     return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, this._delegateState).then(voidValue => {
-                        return new JsonClientResponse(workPackagesState.enclosedJsonObject(), 200);
+                        return new JsonClientResponse(workPackagesRecordSetVisitor.enclosedJsonObject(), 200);
                     });
                 }
             }
@@ -247,24 +241,24 @@ export class SdaDialogDelegate implements DialogDelegate {
         return response;
     }
 
-    private initializeAfterCreateSession(resourcePathElems: string[], sessionState: SessionVisitor): Promise<void> {
+    private initializeAfterCreateSession(resourcePathElems: string[], sessionVisitor: SessionVisitor): Promise<void> {
         const thisMethod = 'SdaDialogDelegate::initializeAfterCreateSession';
         const pathFields = DialogProxyTools.deconstructPostSessionsPath(resourcePathElems);
         return Promise.resolve().then(voidValue => {
             Log.info(`${thisMethod} -- showing storage keys`);
             return SdaDialogDelegateTools.showAllStorageKeys();
         }).then(voidValue => {
-            return SdaDialogDelegateTools.readDelegateState(pathFields.tenantId, sessionState.userId());
+            return SdaDialogDelegateTools.readDelegateState(pathFields.tenantId, sessionVisitor.visitUserId());
         }).then(delegateState => {
             Log.info(`${thisMethod} -- delegate state before initializing: ${delegateState.copyAsJsonString()}`);
             Log.info(`${thisMethod} -- selected work packages count: ${delegateState.selectedWorkPackageIds().length}`);
-            delegateState.setUserId(sessionState.userId());
-            return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, delegateState).then(voidValue => {
+            delegateState.setUserId(sessionVisitor.visitUserId());
+            return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, delegateState).then(nullValue => {
                 this._delegateState = delegateState;
                 return SdaDialogDelegateTools.showAllStorageKeys().then(voidValue2 => {
-                    return SdaDialogDelegateTools.readDelegateState(pathFields.tenantId, sessionState.userId());
-                }).then(freshDelegateStateValue => {
-                    Log.info(`${thisMethod} -- delegate state after initializing: ${freshDelegateStateValue.copyAsJsonString()}`);
+                    return SdaDialogDelegateTools.readDelegateState(pathFields.tenantId, sessionVisitor.visitUserId());
+                }).then(freshDelegateState => {
+                    Log.info(`${thisMethod} -- delegate state after initializing: ${freshDelegateState.copyAsJsonString()}`);
                     Log.info(`${thisMethod} -- done initializing`);
                 });
             });

@@ -1,3 +1,4 @@
+import {DialogProxyTools} from "./DialogProxyTools";
 import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
@@ -12,6 +13,9 @@ export class PropertyDefVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
             this._enclosedJsonObject = value;
+        }
+        if (!DialogProxyTools.isPropertyDefObject(this._enclosedJsonObject)) {
+            throw new Error("Object passed to PropertyDefVisitor is not a PropertyDef");
         }
     }
 

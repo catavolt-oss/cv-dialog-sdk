@@ -3,8 +3,8 @@ import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {storage} from "../storage";
 import {Log} from "../util/Log";
 import {StringDictionary} from "../util/StringDictionary";
-import {SdaGetBriefcaseRecordJsonSample} from "./samples/SdaGetBriefcaseRecordJsonSample";
 import {BriefcaseVisitor} from "./BriefcaseVisitor";
+import {SdaGetBriefcaseRecordJsonSample} from "./samples/SdaGetBriefcaseRecordJsonSample";
 import {SdaDialogDelegateState} from "./SdaDialogDelegateState";
 
 export class SdaDialogDelegateTools {
@@ -14,6 +14,12 @@ export class SdaDialogDelegateTools {
     private static BRIEFCASE_WORKBENCH_ACTION_ID = 'Briefcase';
     private static REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID = 'alias_RemoveFromBriefcase';
     private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
+
+    // Dialog Ids
+    private static OFFLINE_BRIEFCASE_DIALOG_ID = "offline_briefcase";
+    private static OFFLINE_BRIEFCASE_COMMENTS_DIALOG_ID = "offline_briefcase_comments";
+    private static OFFLINE_BRIEFCASE_DETAILS_DIALOG_ID = "offline_briefcase_details";
+    private static OFFLINE_BRIEFCASE_WORK_PACKAGES_DIALOG_ID = "offline_briefcase_workpackages";
 
     // Dialog Names
     private static WORK_PACKAGES_QUERY_DIALOG_ALIAS = "Workpackage_General";
@@ -83,6 +89,22 @@ export class SdaDialogDelegateTools {
         return pathFields.actionId === SdaDialogDelegateTools.ADD_TO_BRIEFCASE_MENU_ACTION_ID;
     }
 
+    public static isOfflineBriefcaseDialogId(dialogId: string) {
+        return dialogId === this.OFFLINE_BRIEFCASE_DIALOG_ID;
+    }
+
+    public static isOfflineBriefcaseDetailsDialogId(dialogId: string) {
+        return dialogId === this.OFFLINE_BRIEFCASE_DETAILS_DIALOG_ID;
+    }
+
+    public static isOfflineBriefcaseWorkPackagesDialogId(dialogId: string) {
+        return dialogId === this.OFFLINE_BRIEFCASE_WORK_PACKAGES_DIALOG_ID;
+    }
+
+    public static isOfflineBriefcaseCommentsDialogId(dialogId: string) {
+        return dialogId === this.OFFLINE_BRIEFCASE_COMMENTS_DIALOG_ID;
+    }
+
     public static isRemoveFromBriefcaseMenuActionRequest(resourcePathElems: string[]): boolean {
         if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
             return false;
@@ -118,7 +140,7 @@ export class SdaDialogDelegateTools {
             jsonObject.dialogAlias === this.WORK_PACKAGES_ROOT_DIALOG_ALIAS;
     }
 
-    public static patchWorkPackagesDialog(originalDialog: StringDictionary): StringDictionary {
+    public static insertBriefcaseMetaDataIntoWorkPackagesDialog(originalDialog: StringDictionary): StringDictionary {
         const workPackagesQueryDialog = originalDialog.children[0];
         const propertyDefs = workPackagesQueryDialog.recordDef.propertyDefs;
         propertyDefs.push({
@@ -149,10 +171,10 @@ export class SdaDialogDelegateTools {
         const key = this.createDelegateStateKey(tenantId, userId);
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
-                const briefcase = SdaGetBriefcaseRecordJsonSample.response();
+                const briefcase = SdaGetBriefcaseRecordJsonSample.copyOfResponse();
                 BriefcaseVisitor.visitAndSetOnlineValue(briefcase, true);
                 jsonObject = {
-                    briefcase: SdaGetBriefcaseRecordJsonSample.response(),
+                    briefcase: SdaGetBriefcaseRecordJsonSample.copyOfResponse(),
                     selectedWorkPackageIds: [],
                     userId: null,
                     workPackages: RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject()

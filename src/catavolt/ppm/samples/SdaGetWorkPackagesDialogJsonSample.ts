@@ -339,7 +339,7 @@ export class SdaGetWorkPackagesDialogJsonSample {
         "selectedViewId": "ZZCatavoltSatelliteEntityDashboard_EditorView_Default"
     };
 
-    public static response(): object {
+    public static copyOfResponse(): object {
         return JSON.parse(JSON.stringify(this.RESPONSE));
     }
 

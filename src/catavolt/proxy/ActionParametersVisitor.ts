@@ -4,7 +4,7 @@ import {JsonObjectVisitor} from "./JsonObjectVisitor";
 /**
  *
  */
-export class AnnotationVisitor implements JsonObjectVisitor{
+export class ActionParametersVisitor implements JsonObjectVisitor {
 
     private _enclosedJsonObject: any;
 
@@ -14,12 +14,16 @@ export class AnnotationVisitor implements JsonObjectVisitor{
         } else {
             this._enclosedJsonObject = value;
         }
-        if (!DialogProxyTools.isAnnotationObject(this._enclosedJsonObject)) {
-            throw new Error("Object passed to AnnotationVisitor is not an Annotation");
+        if (!DialogProxyTools.isActionParametersObject(this._enclosedJsonObject)) {
+            throw new Error("Object passed to ActionParametersVisitor is not an ActionParameters");
         }
     }
 
     // --- State Management Helpers --- //
+
+    public static visitTargetsValue(actionParameters: object): string[] {
+        return (new ActionParametersVisitor(actionParameters)).visitTargetsValue();
+    }
 
     // --- State Import/Export --- //
 
@@ -36,5 +40,9 @@ export class AnnotationVisitor implements JsonObjectVisitor{
     }
 
     // --- State Management --- //
+
+    public visitTargetsValue(): string[] {
+        return this._enclosedJsonObject.targets;
+    }
 
 }

@@ -1,3 +1,4 @@
+import {DialogProxyTools} from "./DialogProxyTools";
 import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
@@ -13,12 +14,15 @@ export class SessionVisitor implements JsonObjectVisitor {
         } else {
             this._enclosedJsonObject = value;
         }
+        if (!DialogProxyTools.isSessionObject(this._enclosedJsonObject)) {
+            throw new Error("Object passed to SessionVisitor is not a Session");
+        }
     }
 
     // --- State Management Helpers --- //
 
-    public static userId(session: object): string {
-        return (new SessionVisitor(session)).userId();
+    public static visitUserId(session: object): string {
+        return (new SessionVisitor(session)).visitUserId();
     }
 
     // --- State Import/Export --- //
@@ -37,7 +41,7 @@ export class SessionVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
-    public userId(): string {
+    public visitUserId(): string {
         return this.enclosedJsonObject().userId;
     }
 

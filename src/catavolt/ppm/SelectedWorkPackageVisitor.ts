@@ -19,7 +19,7 @@ export class SelectedWorkPackageVisitor extends RecordVisitor {
 
     // --- State Management Helpers --- //
 
-    public static createFromWorkPackageState(workPackageState: WorkPackageVisitor): SelectedWorkPackageVisitor {
+    public static createFromWorkPackageVisitor(workPackageState: WorkPackageVisitor): SelectedWorkPackageVisitor {
         const selectedWorkPackageState = new SelectedWorkPackageVisitor({
             id: workPackageState.id(),
             properties: [],

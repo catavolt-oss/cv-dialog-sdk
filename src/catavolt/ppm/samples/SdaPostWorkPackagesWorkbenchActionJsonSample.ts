@@ -30,7 +30,7 @@ export class SdaPostWorkPackagesWorkbenchActionJsonSample {
         "dialogDescription": "Work Packages"
     };
 
-    public static response(): object {
+    public static copyOfResponse(): object {
         return JSON.parse(JSON.stringify(this.RESPONSE));
     }
 

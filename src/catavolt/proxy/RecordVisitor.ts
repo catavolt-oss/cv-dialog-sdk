@@ -1,3 +1,4 @@
+import {DialogProxyTools} from "./DialogProxyTools";
 import {JsonObjectVisitor} from "./JsonObjectVisitor";
 import {PropertyVisitor} from "./PropertyVisitor";
 
@@ -13,6 +14,9 @@ export class RecordVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
             this._enclosedJsonObject = value;
+        }
+        if (!DialogProxyTools.isRecordObject(this._enclosedJsonObject)) {
+            throw new Error("Object passed to RecordVisitor is not a Record");
         }
         if (!this._enclosedJsonObject.id) {
             throw new Error('Invalid record -- missing id field');
@@ -60,10 +64,6 @@ export class RecordVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
-    public recordId(): string {
-        return this.enclosedJsonObject().id;
-    }
-
     public visitPropertyValueAt(propertyName: string): any {
         for (const p of this.enclosedJsonObject().properties) {
             if (p.name === propertyName) {
@@ -98,6 +98,10 @@ export class RecordVisitor implements JsonObjectVisitor {
         while (index < this.enclosedJsonObject().properties.length) {
             yield new PropertyVisitor(this.enclosedJsonObject().properties[index++]);
         }
+    }
+
+    public visitRecordId(): string {
+        return this.enclosedJsonObject().id;
     }
 
 }

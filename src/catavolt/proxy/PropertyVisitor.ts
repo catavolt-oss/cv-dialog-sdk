@@ -1,4 +1,5 @@
 import {AnnotationVisitor} from "./AnnotationVisitor";
+import {DialogProxyTools} from "./DialogProxyTools";
 import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
@@ -13,6 +14,9 @@ export class PropertyVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
             this._enclosedJsonObject = value;
+        }
+        if (!DialogProxyTools.isPropertyObject(this._enclosedJsonObject)) {
+            throw new Error("Object passed to PropertyVisitor is not a Property");
         }
     }
 

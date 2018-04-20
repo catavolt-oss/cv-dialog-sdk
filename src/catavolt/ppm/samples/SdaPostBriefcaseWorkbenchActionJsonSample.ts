@@ -30,7 +30,7 @@ export class SdaPostBriefcaseWorkbenchActionJsonSample {
         "dialogDescription": "Briefcase: 1"
     };
 
-    public static response(): object {
+    public static copyOfResponse(): object {
         return JSON.parse(JSON.stringify(this.RESPONSE));
     }
 
