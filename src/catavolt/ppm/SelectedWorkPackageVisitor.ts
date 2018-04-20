@@ -1,10 +1,10 @@
-import {RecordState} from "../proxy/RecordState";
-import {SdaWorkPackageState} from "./SdaWorkPackageState";
+import {RecordVisitor} from "../proxy/RecordVisitor";
+import {WorkPackageVisitor} from "./WorkPackageVisitor";
 
 /**
  *
  */
-export class SdaSelectedWorkPackageState extends RecordState {
+export class SelectedWorkPackageVisitor extends RecordVisitor {
 
     private static CREATION_DATE_PROPERTY_NAME = "Creation_Date";
     private static DESCRIPTION_PROPERTY_NAME = "Description";
@@ -19,8 +19,8 @@ export class SdaSelectedWorkPackageState extends RecordState {
 
     // --- State Management Helpers --- //
 
-    public static createFromWorkPackageState(workPackageState: SdaWorkPackageState): SdaSelectedWorkPackageState {
-        const selectedWorkPackageState = new SdaSelectedWorkPackageState({
+    public static createFromWorkPackageState(workPackageState: WorkPackageVisitor): SelectedWorkPackageVisitor {
+        const selectedWorkPackageState = new SelectedWorkPackageVisitor({
             id: workPackageState.id(),
             properties: [],
             annotations: [],
@@ -38,51 +38,51 @@ export class SdaSelectedWorkPackageState extends RecordState {
     // --- State Management --- //
 
     public creationDate(): string {
-        return this.getPropertyValue(SdaSelectedWorkPackageState.CREATION_DATE_PROPERTY_NAME);
+        return this.visitPropertyValueAt(SelectedWorkPackageVisitor.CREATION_DATE_PROPERTY_NAME);
     }
 
     public setCreationDate(value: string) {
-        this.setPropertyValue(SdaSelectedWorkPackageState.CREATION_DATE_PROPERTY_NAME, value);
+        this.visitAndSetPropertyValueAt(SelectedWorkPackageVisitor.CREATION_DATE_PROPERTY_NAME, value);
     }
 
     public description(): string {
-        return this.getPropertyValue(SdaSelectedWorkPackageState.DESCRIPTION_PROPERTY_NAME);
+        return this.visitPropertyValueAt(SelectedWorkPackageVisitor.DESCRIPTION_PROPERTY_NAME);
     }
 
     public setDescription(value: string) {
-        this.setPropertyValue(SdaSelectedWorkPackageState.DESCRIPTION_PROPERTY_NAME, value);
+        this.visitAndSetPropertyValueAt(SelectedWorkPackageVisitor.DESCRIPTION_PROPERTY_NAME, value);
     }
 
     public disciplines(): string {
-        return this.getPropertyValue(SdaSelectedWorkPackageState.DISCIPLINES_PROPERTY_NAME);
+        return this.visitPropertyValueAt(SelectedWorkPackageVisitor.DISCIPLINES_PROPERTY_NAME);
     }
 
     public setDisciplines(value: string) {
-        this.setPropertyValue(SdaSelectedWorkPackageState.DISCIPLINES_PROPERTY_NAME, value);
+        this.visitAndSetPropertyValueAt(SelectedWorkPackageVisitor.DISCIPLINES_PROPERTY_NAME, value);
     }
 
     public id(): string {
-        return this.getPropertyValue(SdaSelectedWorkPackageState.ID_PROPERTY_NAME);
+        return this.visitPropertyValueAt(SelectedWorkPackageVisitor.ID_PROPERTY_NAME);
     }
 
     public setId(value: string) {
-        this.setPropertyValue(SdaSelectedWorkPackageState.ID_PROPERTY_NAME, value);
+        this.visitAndSetPropertyValueAt(SelectedWorkPackageVisitor.ID_PROPERTY_NAME, value);
     }
 
     public lastUpdateDate(): string {
-        return this.getPropertyValue(SdaSelectedWorkPackageState.LAST_UPDATE_DATE_PROPERTY_NAME);
+        return this.visitPropertyValueAt(SelectedWorkPackageVisitor.LAST_UPDATE_DATE_PROPERTY_NAME);
     }
 
     public setLastUpdateDate(value: string) {
-        this.setPropertyValue(SdaSelectedWorkPackageState.LAST_UPDATE_DATE_PROPERTY_NAME, value);
+        this.visitAndSetPropertyValueAt(SelectedWorkPackageVisitor.LAST_UPDATE_DATE_PROPERTY_NAME, value);
     }
 
     public name(): string {
-        return this.getPropertyValue(SdaSelectedWorkPackageState.NAME_PROPERTY_NAME);
+        return this.visitPropertyValueAt(SelectedWorkPackageVisitor.NAME_PROPERTY_NAME);
     }
 
     public setName(value: string) {
-        this.setPropertyValue(SdaSelectedWorkPackageState.NAME_PROPERTY_NAME, value);
+        this.visitAndSetPropertyValueAt(SelectedWorkPackageVisitor.NAME_PROPERTY_NAME, value);
     }
 
 }

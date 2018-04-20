@@ -6,16 +6,16 @@ import {StreamProducer} from '../io/StreamProducer';
 import {ActionParametersState} from "../proxy/ActionParametersState";
 import {DialogDelegate} from "../proxy/DialogDelegate";
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
-import {RecordSetState} from "../proxy/RecordSetState";
-import {SessionState} from "../proxy/SessionState";
+import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
+import {SessionVisitor} from "../proxy/SessionVisitor";
 import {Log} from '../util/Log';
 import {StringDictionary} from '../util/StringDictionary';
 import {SdaGetBriefcaseDialogJsonSample} from "./samples/SdaGetBriefcaseDialogJsonSample";
 import {SdaPostBriefcaseWorkbenchActionJsonSample} from "./samples/SdaPostBriefcaseWorkbenchActionJsonSample";
 import {SdaDialogDelegateState} from "./SdaDialogDelegateState";
 import {SdaDialogDelegateTools} from "./SdaDialogDelegateTools";
-import {SdaSelectedWorkPackageState} from "./SdaSelectedWorkPackageState";
-import {SdaWorkPackagesState} from "./SdaWorkPackagesState";
+import {SelectedWorkPackageVisitor} from "./SelectedWorkPackageVisitor";
+import {WorkPackagesRecordSetVisitor} from "./WorkPackagesRecordSetVisitor";
 
 export class SdaDialogDelegate implements DialogDelegate {
 
@@ -96,7 +96,8 @@ export class SdaDialogDelegate implements DialogDelegate {
     }
 
     public getJson(baseUrl: string, resourcePath: string, queryParams?: StringDictionary): Promise<JsonClientResponse> | null {
-        Log.info("SdaDialogDelegate::getJson -- path: " + resourcePath);
+        const thisMethod = 'SdaDialogDelegate::getJson';
+        Log.info(`${thisMethod} -- path: ${resourcePath}`);
         const resourcePathElems: string[] = resourcePath.split('/');
         if (DialogProxyTools.isGetDialog(resourcePathElems)) {
             const pathFields = DialogProxyTools.deconstructGetDialogPath(resourcePathElems);
@@ -113,7 +114,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         } else if (DialogProxyTools.isGetRecord(resourcePathElems)) {
             const pathFields = DialogProxyTools.deconstructGetRecordPath(resourcePathElems);
             if (pathFields.dialogId === "offline_briefcase_details") {
-                const response = this._delegateState.briefcaseState().internalValue();
+                const response = this._delegateState.briefcaseState().enclosedJsonObject();
                 return Promise.resolve(new JsonClientResponse(response, 200));
             }
         }
@@ -123,7 +124,7 @@ export class SdaDialogDelegate implements DialogDelegate {
     public postJson(baseUrl: string, resourcePath: string, body?: StringDictionary): Promise<JsonClientResponse> | null {
         const thisMethod = 'SdaDialogDelegate::postJson';
         Log.info(`${thisMethod} -- path: ${resourcePath}`);
-        Log.info(`${thisMethod} -- body: " + JSON.stringify(body)`);
+        Log.info(`${thisMethod} -- body: ${JSON.stringify(body)}`);
         const resourcePathElems: string[] = resourcePath.split('/');
         if (SdaDialogDelegateTools.isAddToBriefcaseMenuActionRequest(resourcePathElems)) {
             return this.addWorkPackageToBriefcase(baseUrl, resourcePathElems, body);
@@ -140,23 +141,19 @@ export class SdaDialogDelegate implements DialogDelegate {
         } else if (DialogProxyTools.isPostRecords(resourcePathElems)) {
             const pathFields = DialogProxyTools.deconstructPostRecordsPath(resourcePathElems);
             if (pathFields.dialogId === "offline_briefcase_workpackages") {
-                const response = RecordSetState.emptyRecordSet().internalValue();
+                const response = RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject();
                 for (const id of this._delegateState.selectedWorkPackageIds()) {
-                    Log.info(`${thisMethod} -- finding wp at id: ${id}`);
-                    const wpr = this._delegateState.workPackagesState().findRecordAtId(id);
-                    if (wpr) {
-                        Log.info(`${thisMethod} -- found wp: ${wpr.copyAsJsonString()}`);
-                        const swpr = SdaSelectedWorkPackageState.createFromWorkPackageState(wpr);
-                        Log.info(`${thisMethod} -- created swpr: ${wpr.copyAsJsonString()}`);
-                        (new RecordSetState(response)).addOrUpdateRecord(swpr);
+                    const workPackageState = this._delegateState.workPackagesState().visitRecordAtId(id);
+                    if (workPackageState) {
+                        RecordSetVisitor.addOrUpdateRecord(response, SelectedWorkPackageVisitor.createFromWorkPackageState(workPackageState));
                     } else {
-                        Log.info(`${thisMethod} -- wp not found`);
+                        Log.warn(`${thisMethod} -- WARNING: Selected work package not found: ${id}`);
                     }
                 }
                 return Promise.resolve(new JsonClientResponse(response, 200));
             }
             if (pathFields.dialogId === "offline_briefcase_comments") {
-                const response = RecordSetState.emptyRecordSet().internalValue();
+                const response = RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject();
                 return Promise.resolve(new JsonClientResponse(response, 200));
             }
         }
@@ -224,15 +221,14 @@ export class SdaDialogDelegate implements DialogDelegate {
                 const resourcePathElems: string[] = resourcePath.split('/');
                 const jsonObject = jcr.value as StringDictionary;
                 if (DialogProxyTools.isSessionRootDialog(jsonObject)) {
-                    return this.initializeAfterCreateSession(resourcePathElems, new SessionState(jsonObject)).then(voidValue => jcr);
+                    return this.initializeAfterCreateSession(resourcePathElems, new SessionVisitor(jsonObject)).then(voidValue => jcr);
                 } else if (SdaDialogDelegateTools.isWorkPackagesQueryRecordSet(resourcePathElems, jsonObject)) {
                     const pathFields = DialogProxyTools.deconstructPostRecordsPath(resourcePathElems);
-                    const workPackagesState = new SdaWorkPackagesState(jsonObject);
+                    const workPackagesState = new WorkPackagesRecordSetVisitor(jsonObject);
                     workPackagesState.insertBriefcaseFieldsUsingSelections(this._delegateState.selectedWorkPackageIds());
-                    Log.info(`${thisMethod} -- PATCHED: ${workPackagesState.copyAsJsonString()}`);
-                    this._delegateState.workPackagesState().addAllRecords(workPackagesState);
+                    this._delegateState.workPackagesState().addOrUpdateAllRecords(workPackagesState);
                     return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, this._delegateState).then(voidValue => {
-                        return new JsonClientResponse(workPackagesState.internalValue(), 200);
+                        return new JsonClientResponse(workPackagesState.enclosedJsonObject(), 200);
                     });
                 }
             }
@@ -251,7 +247,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         return response;
     }
 
-    private initializeAfterCreateSession(resourcePathElems: string[], sessionState: SessionState): Promise<void> {
+    private initializeAfterCreateSession(resourcePathElems: string[], sessionState: SessionVisitor): Promise<void> {
         const thisMethod = 'SdaDialogDelegate::initializeAfterCreateSession';
         const pathFields = DialogProxyTools.deconstructPostSessionsPath(resourcePathElems);
         return Promise.resolve().then(voidValue => {
@@ -276,7 +272,7 @@ export class SdaDialogDelegate implements DialogDelegate {
     }
 
     private online(): boolean {
-        return this._delegateState.briefcaseState().online();
+        return this._delegateState.briefcaseState().visitOnlineValue();
     }
 
 }

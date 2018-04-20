@@ -1,11 +1,10 @@
-import {RecordSetState} from "../proxy/RecordSetState";
-import {SdaWorkPackageState} from "./SdaWorkPackageState";
-import {SdaSelectedWorkPackageState} from "./SdaSelectedWorkPackageState";
+import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
+import {WorkPackageVisitor} from "./WorkPackageVisitor";
 
 /**
  *
  */
-export class SdaWorkPackagesState extends RecordSetState {
+export class WorkPackagesRecordSetVisitor extends RecordSetVisitor {
 
     constructor(value: string | object) {
         super(value);
@@ -13,18 +12,14 @@ export class SdaWorkPackagesState extends RecordSetState {
 
     // --- State Management Helpers --- //
 
-    public static emptyRecordSet(): SdaWorkPackagesState {
-        return new SdaWorkPackagesState(super.emptyRecordSet().internalValue());
+    public static emptyRecordSetVisitor(): WorkPackagesRecordSetVisitor {
+        return new WorkPackagesRecordSetVisitor(super.emptyRecordSetVisitor().enclosedJsonObject());
     }
 
     // --- State Management --- //
 
-    public findRecordAtId(id: string): SdaWorkPackageState {
-        return super.findRecordAtId(id) as SdaWorkPackageState;
-    }
-
     public insertBriefcaseFieldsUsingSelections(selectedWorkPackageIds: string[]) {
-        const workPackages = this.internalValue().records;
+        const workPackages = this.enclosedJsonObject().records;
         if (workPackages) {
             for (const r of workPackages) {
                 let inBriefcase = false;
@@ -45,10 +40,14 @@ export class SdaWorkPackagesState extends RecordSetState {
         }
     }
 
-    public * records(): IterableIterator<SdaWorkPackageState> {
+    public visitRecordAtId(id: string): WorkPackageVisitor {
+        return super.visitRecordAtId(id) as WorkPackageVisitor;
+    }
+
+    public * visitRecords(): IterableIterator<WorkPackageVisitor> {
         let index = 0;
-        while (index < this.internalValue().records.length) {
-            yield new SdaWorkPackageState(this.internalValue().records[index++]);
+        while (index < this.enclosedJsonObject().records.length) {
+            yield new WorkPackageVisitor(this.enclosedJsonObject().records[index++]);
         }
     }
 

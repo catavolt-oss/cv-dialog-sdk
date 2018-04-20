@@ -1,10 +1,10 @@
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
-import {RecordSetState} from "../proxy/RecordSetState";
+import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {storage} from "../storage";
 import {Log} from "../util/Log";
 import {StringDictionary} from "../util/StringDictionary";
 import {SdaGetBriefcaseRecordJsonSample} from "./samples/SdaGetBriefcaseRecordJsonSample";
-import {SdaBriefcaseState} from "./SdaBriefcaseState";
+import {BriefcaseVisitor} from "./BriefcaseVisitor";
 import {SdaDialogDelegateState} from "./SdaDialogDelegateState";
 
 export class SdaDialogDelegateTools {
@@ -150,12 +150,12 @@ export class SdaDialogDelegateTools {
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
                 const briefcase = SdaGetBriefcaseRecordJsonSample.response();
-                (new SdaBriefcaseState(briefcase)).setOnline(true);
+                BriefcaseVisitor.visitAndSetOnlineValue(briefcase, true);
                 jsonObject = {
                     briefcase: SdaGetBriefcaseRecordJsonSample.response(),
                     selectedWorkPackageIds: [],
                     userId: null,
-                    workPackages: RecordSetState.emptyRecordSet().internalValue()
+                    workPackages: RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject()
                 };
                 Log.info('SdaDialogDelegateTools::readDelegateState -- returning defaults: ' + JSON.stringify(jsonObject));
             }
@@ -177,7 +177,6 @@ export class SdaDialogDelegateTools {
 
     public static writeDelegateState(tenantId: string, delegateState: SdaDialogDelegateState): Promise<void> {
         const userId = delegateState.userId();
-        Log.info('SdaDialogDelegateTools::writeDelegateState -- delegate state: ' + delegateState.copyAsJsonString());
         const key = this.createDelegateStateKey(tenantId, userId);
         return storage.setJson(key, delegateState.internalValue());
     }

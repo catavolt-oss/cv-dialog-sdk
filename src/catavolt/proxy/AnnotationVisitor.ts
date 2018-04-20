@@ -1,7 +1,7 @@
 /**
  *
  */
-export class SessionState {
+export class AnnotationVisitor {
 
     private _value: any;
 
@@ -14,10 +14,6 @@ export class SessionState {
     }
 
     // --- State Management Helpers --- //
-
-    public static userId(session: object): string {
-        return (new SessionState(session)).userId();
-    }
 
     // --- State Import/Export --- //
 
@@ -34,9 +30,5 @@ export class SessionState {
     }
 
     // --- State Management --- //
-
-    public userId(): string {
-        return this.internalValue().userId;
-    }
 
 }

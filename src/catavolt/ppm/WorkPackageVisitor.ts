@@ -1,9 +1,9 @@
-import {RecordState} from "../proxy/RecordState";
+import {RecordVisitor} from "../proxy/RecordVisitor";
 
 /**
  *
  */
-export class SdaWorkPackageState extends RecordState {
+export class WorkPackageVisitor extends RecordVisitor {
 
     private static CLASSIFICATION_PROPERTY_NAME = "Classification";
     private static CONFIG_PROPERTY_NAME = "Config";
@@ -28,55 +28,55 @@ export class SdaWorkPackageState extends RecordState {
     // --- State Management --- //
 
     public classification(): string {
-        return this.getPropertyValue(SdaWorkPackageState.CLASSIFICATION_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.CLASSIFICATION_PROPERTY_NAME);
     }
 
     public config(): string {
-        return this.getPropertyValue(SdaWorkPackageState.CONFIG_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.CONFIG_PROPERTY_NAME);
     }
 
     public contract(): string {
-        return this.getPropertyValue(SdaWorkPackageState.CONTRACT_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.CONTRACT_PROPERTY_NAME);
     }
 
     public creationDate(): string {
-        return this.getPropertyValue(SdaWorkPackageState.CREATION_DATE_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.CREATION_DATE_PROPERTY_NAME);
     }
 
     public creationUser(): string {
-        return this.getPropertyValue(SdaWorkPackageState.CREATION_USER_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.CREATION_USER_PROPERTY_NAME);
     }
 
     public description(): string {
-        return this.getPropertyValue(SdaWorkPackageState.DESCRIPTION_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.DESCRIPTION_PROPERTY_NAME);
     }
 
     public disciplines(): string {
-        return this.getPropertyValue(SdaWorkPackageState.DISCIPLINES_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.DISCIPLINES_PROPERTY_NAME);
     }
 
     public id(): string {
-        return this.getPropertyValue(SdaWorkPackageState.ID_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.ID_PROPERTY_NAME);
     }
 
     public lastUpdateDate(): string {
-        return this.getPropertyValue(SdaWorkPackageState.LAST_UPDATE_DATE_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.LAST_UPDATE_DATE_PROPERTY_NAME);
     }
 
     public name(): string {
-        return this.getPropertyValue(SdaWorkPackageState.NAME_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.NAME_PROPERTY_NAME);
     }
 
     public organizationsGroup(): string {
-        return this.getPropertyValue(SdaWorkPackageState.ORGANIZATIONS_GROUP_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.ORGANIZATIONS_GROUP_PROPERTY_NAME);
     }
 
     public owningGroup(): string {
-        return this.getPropertyValue(SdaWorkPackageState.OWNING_GROUP_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.OWNING_GROUP_PROPERTY_NAME);
     }
 
     public uid(): string {
-        return this.getPropertyValue(SdaWorkPackageState.UID_PROPERTY_NAME);
+        return this.visitPropertyValueAt(WorkPackageVisitor.UID_PROPERTY_NAME);
     }
 
 }
