@@ -1,4 +1,5 @@
-import {SdaBriefcaseRecordState} from "./SdaBriefcaseRecordState";
+import {SdaBriefcaseState} from "./SdaBriefcaseState";
+import {SdaSelectedWorkPackagesState} from "./SdaSelectedWorkPackagesState";
 
 /**
  *
@@ -33,12 +34,30 @@ export class SdaDialogDelegateState {
 
     // --- State Management --- //
 
-    public briefcaseRecordState(): SdaBriefcaseRecordState {
-        return new SdaBriefcaseRecordState(this.internalValue().briefcaseRecord);
+    public briefcaseState(): SdaBriefcaseState {
+        return new SdaBriefcaseState(this.internalValue().briefcase);
     }
 
-    public setBriefcaseRecordState(briefcaseRecordState: SdaBriefcaseRecordState) {
-        this.internalValue().briefcaseRecord = briefcaseRecordState.internalValue();
+    public selectedWorkPackageIds(): string[] {
+        return this.internalValue().selectedWorkPackageIds;
+    }
+
+    public addSelectedWorkPackageId(id: string) {
+        const index = this.internalValue().selectedWorkPackageIds.indexOf(id);
+        if (index === -1) {
+            this.internalValue().selectedWorkPackageIds.push(id);
+        }
+    }
+
+    public removeSelectedWorkPackageId(id: string) {
+        const index = this.internalValue().selectedWorkPackageIds.indexOf(id);
+        if (index > -1) {
+            this.internalValue().selectedWorkPackageIds.splice(index, 1);
+        }
+    }
+
+    public setBriefcaseState(briefcase: SdaBriefcaseState) {
+        this.internalValue().briefcase = briefcase.internalValue();
     }
 
     public userId(): string {

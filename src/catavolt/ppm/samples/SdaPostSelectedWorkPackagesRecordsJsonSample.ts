@@ -59,6 +59,18 @@ export class SdaPostSelectedWorkPackagesRecordsJsonSample {
         "type": "hxgn.api.dialog.RecordSet"
     };
 
+    private static EMPTY_RESPONSE = {
+        "dialogAlias": "Briefcase_Briefcase_Workpackages",
+        "defaultActionId": null,
+        "records": [],
+        "hasMore": false,
+        "type": "hxgn.api.dialog.RecordSet"
+    };
+
+    public static emptyResponse(): object {
+        return JSON.parse(JSON.stringify(this.EMPTY_RESPONSE));
+    }
+
     public static response(): object {
         return JSON.parse(JSON.stringify(this.RESPONSE));
     }

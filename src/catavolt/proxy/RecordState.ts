@@ -11,6 +11,24 @@ export class RecordState {
         } else {
             this._value = value;
         }
+        if (!this._value.id) {
+            throw new Error('Invalid record -- missing id field');
+        }
+        if (typeof this._value.id !== 'string') {
+            throw new Error('Invalid record set -- id field is not a string');
+        }
+        if (!this._value.properties) {
+            throw new Error('Invalid record -- missing properties field');
+        }
+        if (!Array.isArray(this._value.properties)) {
+            throw new Error('Invalid record set -- properties field is not an array');
+        }
+        if (!this._value.annotations) {
+            throw new Error('Invalid record -- missing annotations field');
+        }
+        if (!Array.isArray(this._value.annotations)) {
+            throw new Error('Invalid record set -- annotations field is not an array');
+        }
     }
 
     // --- State Management Helpers --- //
@@ -19,8 +37,8 @@ export class RecordState {
         return (new RecordState(record)).getPropertyValue(propertyName);
     }
 
-    public static setPropertyValue(record: object, propertyName: string, value: any): boolean {
-        return (new RecordState(record)).setPropertyValue(propertyName, value);
+    public static setPropertyValue(record: object, propertyName: string, value: any) {
+        (new RecordState(record)).setPropertyValue(propertyName, value);
     }
 
     // --- State Import/Export --- //
@@ -48,14 +66,24 @@ export class RecordState {
         return undefined;
     }
 
-    public setPropertyValue(propertyName: string, value: any): boolean {
+    public setPropertyValue(propertyName: string, value: any) {
+        let found = false;
         for (const p of this.internalValue().properties) {
             if (p.name === propertyName) {
                 p.value = value;
-                return true;
+                found = true;
+                break;
             }
         }
-        return false;
+        if (!found) {
+            this.internalValue().properties.push({
+                "name": propertyName,
+                "format": null,
+                "annotations": [],
+                "type": "hxgn.api.dialog.Property",
+                "value": value
+            });
+        }
     }
 
 }

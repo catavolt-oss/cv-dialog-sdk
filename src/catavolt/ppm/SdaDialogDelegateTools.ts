@@ -1,5 +1,4 @@
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
-import {SessionState} from "../proxy/SessionState";
 import {storage} from "../storage";
 import {Log} from "../util/Log";
 import {StringDictionary} from "../util/StringDictionary";
@@ -10,6 +9,7 @@ export class SdaDialogDelegateTools {
 
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
+    private static REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID = 'alias_RemoveFromBriefcase';
     private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
 
     // Dialog Names
@@ -26,7 +26,42 @@ export class SdaDialogDelegateTools {
 
     // Storage Keys
     private static DIALOG_DELEGATE_STATE_KEY = 'ppm.sda.${tenantId}.${userId}.dialog.delegate.state';
-    private static SELECTED_WORK_PACKAGES_STATE_KEY = 'ppm.sda.${tenantId}.${userId}.selected.workPackages';
+
+    public static constructAddToBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
+        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
+        return {
+            "tenantId": tenantId,
+            "referringObject": {
+                "dialogMode": "LIST",
+                "dialogAlias": "Workpackage_AddToBriefcase_FORM",
+                "actionId": "alias_AddToBriefcase",
+                "type": "hxgn.api.dialog.ReferringDialog",
+                "dialogId": referringDialogId
+            },
+            "refreshNeeded": true,
+            "sessionId": sessionId,
+            "id": nullRedirectionId,
+            "type": "hxgn.api.dialog.NullRedirection"
+        };
+    }
+
+    public static constructRemoveFromBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
+        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
+        return {
+            "tenantId": tenantId,
+            "referringObject": {
+                "dialogMode": "LIST",
+                "dialogAlias": "Workpackage_RemoveFromBriefcase_FORM",
+                "actionId": "alias_RemoveFromBriefcase",
+                "type": "hxgn.api.dialog.ReferringDialog",
+                "dialogId": referringDialogId
+            },
+            "refreshNeeded": true,
+            "sessionId": sessionId,
+            "id": nullRedirectionId,
+            "type": "hxgn.api.dialog.NullRedirection"
+        };
+    }
 
     public static isAddToBriefcaseMenuActionRequest(resourcePathElems: string[]): boolean {
         if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
@@ -34,6 +69,14 @@ export class SdaDialogDelegateTools {
         }
         const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
         return pathFields.actionId === SdaDialogDelegateTools.ADD_TO_BRIEFCASE_MENU_ACTION_ID;
+    }
+
+    public static isRemoveFromBriefcaseMenuActionRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
+        return pathFields.actionId === SdaDialogDelegateTools.REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID;
     }
 
     public static isWorkPackagesWorkbenchActionRequest(resourcePathElems: string[]): boolean {
@@ -85,31 +128,6 @@ export class SdaDialogDelegateTools {
         return originalDialog;
     }
 
-    public static patchWorkPackagesRecordSet(freshWorkPackagesRecordSet: any, selectedWorkPackagesRecordSet: any): any {
-        const selectedWorkPackageRecs = selectedWorkPackagesRecordSet ? selectedWorkPackagesRecordSet.records : [];
-        const freshWorkPackageRecs = freshWorkPackagesRecordSet.records;
-        if (freshWorkPackageRecs) {
-            for (const r of freshWorkPackageRecs) {
-                let inBriefcase = false;
-                for (const selectedRecord of selectedWorkPackageRecs) {
-                    if (r.id === selectedRecord.id) {
-                        inBriefcase = true;
-                        break;
-                    }
-                }
-                const briefcaseField = {
-                    "name": "briefcase",
-                    "annotations": [],
-                    "type": "hxgn.api.dialog.Property",
-                    "value": inBriefcase
-                };
-                r.properties.push(briefcaseField);
-            }
-        }
-        // Return fresh record set WITH PATCHES (no longer fresh)
-        return freshWorkPackagesRecordSet;
-    }
-
     private static createDelegateStateKey(tenantId: string, userId: string): string {
         const key = SdaDialogDelegateTools.DIALOG_DELEGATE_STATE_KEY.replace('${tenantId}', tenantId);
         return key.replace('${userId}', userId);
@@ -119,7 +137,11 @@ export class SdaDialogDelegateTools {
         const key = this.createDelegateStateKey(tenantId, userId);
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
-                jsonObject = {briefcaseRecord: SdaGetBriefcaseRecordJsonSample.response(), userId: null};
+                jsonObject = {
+                    briefcase: SdaGetBriefcaseRecordJsonSample.response(),
+                    selectedWorkPackageIds: [],
+                    userId: null
+                };
                 Log.info('SdaDialogDelegateTools::readDelegateState -- returning defaults: ' + JSON.stringify(jsonObject));
             }
             return new SdaDialogDelegateState(jsonObject);
@@ -138,7 +160,8 @@ export class SdaDialogDelegateTools {
         });
     }
 
-    public static writeDelegateState(tenantId: string, userId: string, delegateState: SdaDialogDelegateState): Promise<void> {
+    public static writeDelegateState(tenantId: string, delegateState: SdaDialogDelegateState): Promise<void> {
+        const userId = delegateState.userId();
         Log.info('SdaDialogDelegateTools::writeDelegateState -- delegate state: ' + delegateState.copyAsJsonString());
         const key = this.createDelegateStateKey(tenantId, userId);
         return storage.setJson(key, delegateState.internalValue());

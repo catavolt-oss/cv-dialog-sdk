@@ -13,6 +13,12 @@ export class RecordSetState {
         } else {
             this._value = value;
         }
+        if (!this._value.records) {
+            throw new Error('Invalid record set -- missing records field');
+        }
+        if (!Array.isArray(this._value.records)) {
+            throw new Error('Invalid record set -- records field is not an array');
+        }
     }
 
     // --- State Management Helpers --- //
@@ -37,12 +43,14 @@ export class RecordSetState {
         return this.internalValue().records.length;
     }
 
-    public recordAt(index: number): RecordState {
-        const records = this.internalValue().records[index];
-        if (index >= records.length) {
-            return null;
+    public updateRecord(record: RecordState) {
+        for (const r of this.internalValue().records) {
+            if (r.id === record.internalValue().id) {
+                for (const f of r) {
+                    r[f] = JSON.parse(JSON.stringify(record[f]));
+                }
+            }
         }
-        return new RecordState(records[length]);
     }
 
 }

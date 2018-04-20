@@ -3,7 +3,7 @@ import {RecordState} from "../proxy/RecordState";
 /**
  *
  */
-export class SdaBriefcaseRecordState extends RecordState {
+export class SdaBriefcaseState extends RecordState {
 
     private static ONLINE_PROPERTY_NAME = 'online';
 
@@ -16,7 +16,7 @@ export class SdaBriefcaseRecordState extends RecordState {
     // --- State Management --- //
 
     public online(): boolean {
-        return this.getPropertyValue(SdaBriefcaseRecordState.ONLINE_PROPERTY_NAME);
+        return this.getPropertyValue(SdaBriefcaseState.ONLINE_PROPERTY_NAME);
     }
 
 }
