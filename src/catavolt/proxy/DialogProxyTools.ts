@@ -22,6 +22,7 @@ export class DialogProxyTools {
     public static ANNOTATION_MODEL_TYPE = 'hxgn.api.dialog.Annotation';
     public static DIALOG_MESSAGE_MODEL_TYPE = 'hxgn.api.dialog.DialogMessage';
     public static EDITOR_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.EditorDialog';
+    public static LOGIN_MODEL_TYPE = 'hxgn.api.dialog.Login';
     public static PROPERTY_MODEL_TYPE = 'hxgn.api.dialog.Property';
     public static PROPERTY_DEF_MODEL_TYPE = 'hxgn.api.dialog.PropertyDef';
     public static QUERY_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.QueryDialog';
@@ -419,6 +420,13 @@ export class DialogProxyTools {
         }
         return jsonObject['type'] === this.EDITOR_DIALOG_MODEL_TYPE ||
             jsonObject['type'] === this.QUERY_DIALOG_MODEL_TYPE;
+    }
+
+    public static isLoginObject(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.LOGIN_MODEL_TYPE;
     }
 
     public static isPropertyObject(jsonObject: object): boolean {

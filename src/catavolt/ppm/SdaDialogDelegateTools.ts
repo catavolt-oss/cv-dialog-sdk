@@ -1,5 +1,6 @@
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
 import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
+import {SessionVisitor} from "../proxy/SessionVisitor";
 import {storage} from "../storage";
 import {Log} from "../util/Log";
 import {StringDictionary} from "../util/StringDictionary";
@@ -37,7 +38,8 @@ export class SdaDialogDelegateTools {
     private static ONLINE_PROPERTY_NAME = 'online';
 
     // Storage Keys
-    private static DIALOG_DELEGATE_STATE_KEY = 'ppm.sda.${tenantId}.${userId}.dialog.delegate.state';
+    private static DIALOG_DELEGATE_STATE_KEY = '${tenantId}.${userId}.ppm.sda.dialog.delegate.state';
+    private static OFFLINE_SESSION_KEY = '${tenantId}.${userId}.offline.session';
 
     public static constructAddToBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
         const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
@@ -205,7 +207,7 @@ export class SdaDialogDelegateTools {
     }
 
     public static readDelegateState(tenantId: string, userId: string): Promise<SdaDialogDelegateState> {
-        const key = this.createDelegateStateKey(tenantId, userId);
+        const key = this.createStorageKey(this.DIALOG_DELEGATE_STATE_KEY, tenantId, userId);
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
                 const briefcase = SdaGetBriefcaseRecordJsonSample.copyOfResponse();
@@ -236,8 +238,13 @@ export class SdaDialogDelegateTools {
 
     public static writeDelegateState(tenantId: string, delegateState: SdaDialogDelegateState): Promise<void> {
         const userId = delegateState.visitUserId();
-        const key = this.createDelegateStateKey(tenantId, userId);
+        const key = this.createStorageKey(this.DIALOG_DELEGATE_STATE_KEY, tenantId, userId);
         return storage.setJson(key, delegateState.internalValue());
+    }
+
+    public static writeOfflineSession(tenantId: string, userId: string, offlineSession: SessionVisitor): Promise<void> {
+        const key = this.createStorageKey(this.OFFLINE_SESSION_KEY, tenantId, userId);
+        return storage.setJson(key, offlineSession.enclosedJsonObject());
     }
 
     private static constructOfflineModeNullRedirection(tenantId: string, sessionId: string, actionId: string): StringDictionary {
@@ -258,8 +265,8 @@ export class SdaDialogDelegateTools {
         };
     }
 
-    private static createDelegateStateKey(tenantId: string, userId: string): string {
-        const key = SdaDialogDelegateTools.DIALOG_DELEGATE_STATE_KEY.replace('${tenantId}', tenantId);
+    private static createStorageKey(keyTemplate: string, tenantId: string, userId: string): string {
+        const key = keyTemplate.replace('${tenantId}', tenantId);
         return key.replace('${userId}', userId);
     }
 

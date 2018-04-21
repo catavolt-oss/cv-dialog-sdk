@@ -13,8 +13,8 @@ import {DialogProxyTools} from './DialogProxyTools';
 export class DialogProxy implements Client {
 
     private _dialogDelegateChain: DialogDelegate[];
-    private _lastActivity: Date = new Date();
     private _initialized: Promise<boolean>;
+    private _lastActivity: Date = new Date();
 
     constructor() {
         this._dialogDelegateChain = [new SdaDialogDelegate()];
@@ -25,162 +25,70 @@ export class DialogProxy implements Client {
     }
 
     public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {
-        this.prepareForActivity();
-        return this._initialized.then(() => {
-            let response: Promise<BlobClientResponse>;
-            for (const d of this._dialogDelegateChain) {
-                response = d.getBlob(baseUrl, resourcePath);
-                if (response !== null) {
-                    break;
-                }
-            }
-            if (!response) {
-                response = DialogProxyTools.commonFetchClient().getBlob(baseUrl, resourcePath);
-            }
-            for (const d of this._dialogDelegateChain) {
-                response = d.handleGetBlobResponse(baseUrl, resourcePath, response);
-            }
-            return response;
-        });
+        return this.processRequestAndResponse('getBlob', 'handleGetBlobResponse', [baseUrl, resourcePath]);
     }
 
     public getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> {
-        this.prepareForActivity();
-        return this._initialized.then(() => {
-            let response: Promise<TextClientResponse>;
-            for (const d of this._dialogDelegateChain) {
-                response = d.getText(baseUrl, resourcePath);
-                if (response !== null) {
-                    break;
-                }
-            }
-            if (!response) {
-                response = DialogProxyTools.commonFetchClient().getText(baseUrl, resourcePath);
-            }
-            for (const d of this._dialogDelegateChain) {
-                response = d.handleGetTextResponse(baseUrl, resourcePath, response);
-            }
-            return response;
-        });
+        return this.processRequestAndResponse('getText', 'handleGetTextResponse', [baseUrl, resourcePath]);
     }
 
     public openStream(baseUrl: string, resourcePath?: string): Promise<StreamProducer> {
-        this.prepareForActivity();
-        return this._initialized.then(() => {
-            let response: Promise<StreamProducer>;
-            for (const d of this._dialogDelegateChain) {
-                response = d.openStream(baseUrl, resourcePath);
-                if (response !== null) {
-                    break;
-                }
-            }
-            if (!response) {
-                response = DialogProxyTools.commonFetchClient().openStream(baseUrl, resourcePath);
-            }
-            for (const d of this._dialogDelegateChain) {
-                response = d.handleOpenStreamResponse(baseUrl, resourcePath, response);
-            }
-            return response;
-        });
+        return this.processRequestAndResponse('openStream', 'handleOpenStreamResponse', [baseUrl, resourcePath]);
     }
 
     public postMultipart(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse> {
-        this.prepareForActivity();
-        return this._initialized.then(() => {
-            let response: Promise<VoidClientResponse>;
-            for (const d of this._dialogDelegateChain) {
-                response = d.postMultipart(baseUrl, resourcePath, formData);
-                if (response !== null) {
-                    break;
-                }
-            }
-            if (!response) {
-                response = DialogProxyTools.commonFetchClient().postMultipart(baseUrl, resourcePath, formData);
-            }
-            for (const d of this._dialogDelegateChain) {
-                response = d.handlePostMultipartResponse(baseUrl, resourcePath, formData, response);
-            }
-            return response;
-        });
+        return this.processRequestAndResponse('postMultipart', 'handlePostMultipartResponse', [baseUrl, resourcePath, formData]);
     }
 
     public getJson(baseUrl: string, resourcePath?: string, queryParams?: StringDictionary): Promise<JsonClientResponse> {
-        this.prepareForActivity();
-        return this._initialized.then(() => {
-            let response: Promise<JsonClientResponse>;
-            for (const d of this._dialogDelegateChain) {
-                response = d.getJson(baseUrl, resourcePath, queryParams);
-                if (response !== null) {
-                    break;
-                }
-            }
-            if (!response) {
-                response = DialogProxyTools.commonFetchClient().getJson(baseUrl, resourcePath, queryParams);
-            }
-            for (const d of this._dialogDelegateChain) {
-                response = d.handleGetJsonResponse(baseUrl, resourcePath, queryParams, response);
-            }
-            return response;
-        });
+        return this.processRequestAndResponse('getJson', 'handleGetJsonResponse', [baseUrl, resourcePath, queryParams]);
     }
 
     public postJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        this.prepareForActivity();
-        return this._initialized.then(() => {
-            let response: Promise<JsonClientResponse>;
-            for (const d of this._dialogDelegateChain) {
-                response = d.postJson(baseUrl, resourcePath, jsonBody);
-                if (response !== null) {
-                    break;
-                }
-            }
-            if (!response) {
-                response = DialogProxyTools.commonFetchClient().postJson(baseUrl, resourcePath, jsonBody);
-            }
-            for (const d of this._dialogDelegateChain) {
-                response = d.handlePostJsonResponse(baseUrl, resourcePath, jsonBody, response);
-            }
-            return response;
-        });
+        return this.processRequestAndResponse('postJson', 'handlePostJsonResponse', [baseUrl, resourcePath, jsonBody]);
     }
 
     public putJson(baseUrl: string, resourcePath: string, jsonBody?: StringDictionary): Promise<JsonClientResponse> {
-        this.prepareForActivity();
-        return this._initialized.then(() => {
-            let reponse: Promise<JsonClientResponse>;
-            for (const d of this._dialogDelegateChain) {
-                reponse = d.putJson(baseUrl, resourcePath, jsonBody);
-                if (reponse !== null) {
-                    break;
-                }
-            }
-            if (!reponse) {
-                reponse = DialogProxyTools.commonFetchClient().putJson(baseUrl, resourcePath, jsonBody);
-            }
-            for (const d of this._dialogDelegateChain) {
-                reponse = d.handlePutJsonResponse(baseUrl, resourcePath, jsonBody, reponse);
-            }
-            return reponse;
-        });
+        return this.processRequestAndResponse('putJson', 'handlePutJsonResponse', [baseUrl, resourcePath, jsonBody]);
     }
 
     public deleteJson(baseUrl: string, resourcePath: string): Promise<JsonClientResponse> {
+        return this.processRequestAndResponse('deleteJson', 'handleDeleteJsonResponse', [baseUrl, resourcePath]);
+    }
+
+    private static delegateRequest(delegateIterator: Iterator<DialogDelegate>, requestFn: string, args): Promise<any> {
+        const thisMethod = 'DialogProxy::delegateRequest';
+        const nextDelegateItem = delegateIterator.next();
+        if (nextDelegateItem.done) {
+            Log.info(`${thisMethod} -- using common fetch client to process request: ${requestFn}`);
+            const fc = DialogProxyTools.commonFetchClient();
+            return fc[requestFn].apply(fc, args);
+        }
+        const nextDelegate = nextDelegateItem.value;
+        const responsePr = nextDelegate[requestFn].apply(nextDelegate, args);
+        if (!responsePr) {
+            return this.delegateRequest(delegateIterator, requestFn, args);
+        }
+        return responsePr.then(response => {
+            if (!response) {
+                Log.info(`${thisMethod} -- delegate returned a falsey response, advancing to next delegate with request: ${requestFn}`);
+                return this.delegateRequest(delegateIterator, requestFn, args);
+            }
+            return responsePr;
+        });
+    }
+
+    private processRequestAndResponse(requestFn: string, responseFn: string, args): any {
         this.prepareForActivity();
         return this._initialized.then(() => {
-            let response: Promise<JsonClientResponse>;
+            const delegateIterator = this._dialogDelegateChain[Symbol.iterator]();
+            let responsePr = DialogProxy.delegateRequest(delegateIterator, requestFn, args);
             for (const d of this._dialogDelegateChain) {
-                response = d.deleteJson(baseUrl, resourcePath);
-                if (response !== null) {
-                    break;
-                }
+                const argsWithResponse = args.slice(0);
+                argsWithResponse.push(responsePr);
+                responsePr = d[responseFn].apply(d, argsWithResponse);
             }
-            if (!response) {
-                response = DialogProxyTools.commonFetchClient().deleteJson(baseUrl, resourcePath);
-            }
-            for (const d of this._dialogDelegateChain) {
-                response = d.handleDeleteJsonResponse(baseUrl, resourcePath, response);
-            }
-            return response;
+            return responsePr;
         });
     }
 

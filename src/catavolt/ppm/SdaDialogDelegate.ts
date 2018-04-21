@@ -8,6 +8,7 @@ import {DialogDelegate} from "../proxy/DialogDelegate";
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
 import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
 import {DialogVisitor} from "../proxy/DialogVisitor";
+import {LoginVisitor} from "../proxy/LoginVisitor";
 import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {SessionVisitor} from "../proxy/SessionVisitor";
 import {Log} from '../util/Log';
@@ -32,6 +33,8 @@ export class SdaDialogDelegate implements DialogDelegate {
         Log.info("SdaDialogDelegate::initialize -- nothing to initialize");
         return Promise.resolve();
     }
+
+    // --- Request Handlers --- //
 
     public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> | null {
         Log.info("SdaDialogDelegate::getBlob -- path: " + resourcePath);
@@ -110,6 +113,8 @@ export class SdaDialogDelegate implements DialogDelegate {
         return null;
     }
 
+    // --- Response Handlers --- //
+
     public handleDeleteJsonResponse(baseUrl: string, resourcePath: string, response: Promise<JsonClientResponse>): Promise<JsonClientResponse> | null {
         Log.info("SdaDialogDelegate::handleDeleteJsonResponse -- path: " + resourcePath);
         response.then(jcr => Log.info("SdaDialogDelegate::handleDeleteJsonResponse -- json response: " + JSON.stringify(jcr.value)));
@@ -186,6 +191,25 @@ export class SdaDialogDelegate implements DialogDelegate {
         return response;
     }
 
+    // --- Others --- //
+
+    private captureOfflineSession(baseUrl:string, tenantId: string, sessionId: string): Promise<JsonClientResponse> {
+        const thisMethod = 'SdaDialogDelegate::captureOfflineSession';
+        const resourcePath = `tenants/${tenantId}/sessions/${sessionId}`;
+        const sessionPr = DialogProxyTools.commonFetchClient().getJson(baseUrl, resourcePath);
+        return sessionPr.then(sessionJcr => {
+            Log.info(`${thisMethod} -- session value: ${JSON.stringify(sessionJcr.value)}`);
+            const sessionVisitor = new SessionVisitor(sessionJcr.value);
+            return SdaDialogDelegateTools.writeOfflineSession(tenantId, this._delegateState.visitUserId(), sessionVisitor)
+                .then(nullValue => sessionJcr);
+        });
+    }
+
+    private captureOfflineWorkPackage(tenantId: string, sessionId: string, workPackageId: string): Promise<void> {
+        const thisMethod = 'SdaDialogDelegate::captureOfflineWorkPackage';
+        return null;
+    }
+
     private initializeAfterCreateSession(resourcePathElems: string[], sessionVisitor: SessionVisitor): Promise<void> {
         const thisMethod = 'SdaDialogDelegate::initializeAfterCreateSession';
         const pathFields = DialogProxyTools.deconstructPostSessionsPath(resourcePathElems);
@@ -241,15 +265,12 @@ export class SdaDialogDelegate implements DialogDelegate {
         return Promise.resolve(new JsonClientResponse(response, 303));
     }
 
-    private performCaptureWorkPackage(baseUrl: string, resourcePathElems: string[], body?: StringDictionary): Promise<JsonClientResponse> {
-        const thisMethod = 'SdaDialogDelegate::performCaptureWorkPackage';
-        return null;
-    }
-
     private performCreateSessionRequest(baseUrl: string, resourcePathElems: string[], body?: StringDictionary): Promise<JsonClientResponse> {
         const thisMethod = 'SdaDialogDelegate::performCreateSessionRequest';
-        Log.info(`${thisMethod} -- CREATE SESSION`);
-        return null;
+        Log.info(`${thisMethod} -- create session request: ${JSON.stringify(body)}`);
+        const loginVisitor = new LoginVisitor(body);
+        Log.info(`${thisMethod} -- user id: ${loginVisitor.visitUserId()}`);
+        return Promise.resolve(null);
     }
 
     private performEnterOfflineModeMenuActionRequest(baseUrl: string, resourcePathElems: string[], body?: StringDictionary): Promise<JsonClientResponse> {
@@ -258,6 +279,7 @@ export class SdaDialogDelegate implements DialogDelegate {
             return Promise.resolve(new JsonClientResponse(dialogMessage, 400));
         }
         const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
+        this.captureOfflineSession(baseUrl, pathFields.tenantId, pathFields.sessionId);
         this._delegateState.visitBriefcase().visitAndSetOnline(false);
         return SdaDialogDelegateTools.writeDelegateState(pathFields.tenantId, this._delegateState).then(nullValue => {
             const nullRedirection = SdaDialogDelegateTools.constructEnterOfflineModeNullRedirection(pathFields.tenantId, pathFields.sessionId);
