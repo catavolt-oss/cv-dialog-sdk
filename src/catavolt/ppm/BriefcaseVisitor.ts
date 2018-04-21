@@ -13,17 +13,17 @@ export class BriefcaseVisitor extends RecordVisitor {
 
     // --- State Management Helpers --- //
 
-    public static visitAndSetOnlineValue(jsonObject: object, online: boolean) {
-        return (new BriefcaseVisitor(jsonObject)).visitAndSetOnlineValue(online);
+    public static visitAndSetOnline(jsonObject: object, online: boolean) {
+        return (new BriefcaseVisitor(jsonObject)).visitAndSetOnline(online);
     }
 
     // --- State Management --- //
 
-    public visitOnlineValue(): boolean {
+    public visitOnline(): boolean {
         return this.visitPropertyValueAt(BriefcaseVisitor.ONLINE_PROPERTY_NAME);
     }
 
-    public visitAndSetOnlineValue(onlineValue: boolean) {
+    public visitAndSetOnline(onlineValue: boolean) {
         this.visitAndSetPropertyValueAt(BriefcaseVisitor.ONLINE_PROPERTY_NAME, onlineValue);
     }
 

@@ -12,6 +12,8 @@ export class SdaDialogDelegateTools {
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
     private static BRIEFCASE_WORKBENCH_ACTION_ID = 'Briefcase';
+    private static ENTER_OFFLINE_MODE_MENU_ACTION_ID = 'alias_EnterOfflineMode';
+    private static EXIT_OFFLINE_MODE_MENU_ACTION_ID = 'alias_ExitOfflineMode';
     private static REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID = 'alias_RemoveFromBriefcase';
     private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
 
@@ -45,6 +47,24 @@ export class SdaDialogDelegateTools {
                 "dialogMode": "LIST",
                 "dialogAlias": "Workpackage_AddToBriefcase_FORM",
                 "actionId": "alias_AddToBriefcase",
+                "type": "hxgn.api.dialog.ReferringDialog",
+                "dialogId": referringDialogId
+            },
+            "refreshNeeded": true,
+            "sessionId": sessionId,
+            "id": nullRedirectionId,
+            "type": "hxgn.api.dialog.NullRedirection"
+        };
+    }
+
+    public static constructEnterOfflineModeNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
+        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
+        return {
+            "tenantId": tenantId,
+            "referringObject": {
+                "dialogMode": "READ",
+                "dialogAlias": "Briefcase_Briefcase_Details",
+                "actionId": "alias_EnterOfflineMode",
                 "type": "hxgn.api.dialog.ReferringDialog",
                 "dialogId": referringDialogId
             },
@@ -89,19 +109,51 @@ export class SdaDialogDelegateTools {
         return pathFields.actionId === SdaDialogDelegateTools.ADD_TO_BRIEFCASE_MENU_ACTION_ID;
     }
 
-    public static isOfflineBriefcaseDialogId(dialogId: string) {
+    public static isEnterOfflineModeMenuActionRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
+        return pathFields.actionId === SdaDialogDelegateTools.ENTER_OFFLINE_MODE_MENU_ACTION_ID;
+    }
+
+    public static isExitOfflineModeMenuActionRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
+        return pathFields.actionId === SdaDialogDelegateTools.EXIT_OFFLINE_MODE_MENU_ACTION_ID;
+    }
+
+    public static isOfflineBriefcaseCommentsRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostRecords(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostRecordsPath(resourcePathElems);
+        return SdaDialogDelegateTools.isOfflineBriefcaseCommentsDialogId(pathFields.dialogId);
+    }
+
+    public static isOfflineBriefcaseDialogId(dialogId: string): boolean {
         return dialogId === this.OFFLINE_BRIEFCASE_DIALOG_ID;
     }
 
-    public static isOfflineBriefcaseDetailsDialogId(dialogId: string) {
+    public static isOfflineBriefcaseDetailsDialogId(dialogId: string): boolean {
         return dialogId === this.OFFLINE_BRIEFCASE_DETAILS_DIALOG_ID;
     }
 
-    public static isOfflineBriefcaseWorkPackagesDialogId(dialogId: string) {
+    public static isOfflineBriefcaseWorkPackagesDialogId(dialogId: string): boolean {
         return dialogId === this.OFFLINE_BRIEFCASE_WORK_PACKAGES_DIALOG_ID;
     }
 
-    public static isOfflineBriefcaseCommentsDialogId(dialogId: string) {
+    public static isOfflineBriefcaseWorkPackagesRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostRecords(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostRecordsPath(resourcePathElems);
+        return SdaDialogDelegateTools.isOfflineBriefcaseWorkPackagesDialogId(pathFields.dialogId);
+    }
+
+    public static isOfflineBriefcaseCommentsDialogId(dialogId: string): boolean {
         return dialogId === this.OFFLINE_BRIEFCASE_COMMENTS_DIALOG_ID;
     }
 
@@ -172,7 +224,7 @@ export class SdaDialogDelegateTools {
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
                 const briefcase = SdaGetBriefcaseRecordJsonSample.copyOfResponse();
-                BriefcaseVisitor.visitAndSetOnlineValue(briefcase, true);
+                BriefcaseVisitor.visitAndSetOnline(briefcase, true);
                 jsonObject = {
                     briefcase: SdaGetBriefcaseRecordJsonSample.copyOfResponse(),
                     selectedWorkPackageIds: [],
@@ -198,7 +250,7 @@ export class SdaDialogDelegateTools {
     }
 
     public static writeDelegateState(tenantId: string, delegateState: SdaDialogDelegateState): Promise<void> {
-        const userId = delegateState.userId();
+        const userId = delegateState.visitUserId();
         const key = this.createDelegateStateKey(tenantId, userId);
         return storage.setJson(key, delegateState.internalValue());
     }

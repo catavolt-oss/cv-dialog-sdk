@@ -34,10 +34,6 @@ export class SdaDialogDelegateState {
 
     // --- State Management --- //
 
-    public briefcaseState(): BriefcaseVisitor {
-        return new BriefcaseVisitor(this.internalValue().briefcase);
-    }
-
     public selectedWorkPackageIds(): string[] {
         return this.internalValue().selectedWorkPackageIds;
     }
@@ -56,19 +52,19 @@ export class SdaDialogDelegateState {
         }
     }
 
-    public setBriefcaseState(briefcase: BriefcaseVisitor) {
-        this.internalValue().briefcase = briefcase.enclosedJsonObject();
+    public visitBriefcase(): BriefcaseVisitor {
+        return new BriefcaseVisitor(this.internalValue().briefcase);
     }
 
-    public userId(): string {
+    public visitUserId(): string {
         return this.internalValue().userId;
     }
 
-    public setUserId(userId: string) {
+    public visitAndSetUserId(userId: string) {
         this.internalValue().userId = userId;
     }
 
-    public workPackagesState(): WorkPackagesRecordSetVisitor {
+    public visitWorkPackagesRecordSet(): WorkPackagesRecordSetVisitor {
         return new WorkPackagesRecordSetVisitor(this.internalValue().workPackages);
     }
 
