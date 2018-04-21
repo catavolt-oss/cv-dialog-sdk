@@ -6,9 +6,11 @@ import {Log} from "../util/Log";
 import {StringDictionary} from "../util/StringDictionary";
 import {BriefcaseVisitor} from "./BriefcaseVisitor";
 import {SdaGetBriefcaseRecordJsonSample} from "./samples/SdaGetBriefcaseRecordJsonSample";
-import {SdaDialogDelegateState} from "./SdaDialogDelegateState";
+import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
 
 export class SdaDialogDelegateTools {
+
+    private static OFFLINE_SESSION_ID = 'offline_session';
 
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
@@ -33,6 +35,7 @@ export class SdaDialogDelegateTools {
     private static QUERY_DIALOG_MODEL_TYPE = "hxgn.api.dialog.QueryDialog";
     private static RECORD_MODEL_TYPE = "hxgn.api.dialog.Record";
     private static RECORD_SET_MODEL_TYPE = "hxgn.api.dialog.RecordSet";
+    private static SESSION_ID_MODEL_TYPE = "hxgn.api.dialog.SessionId";
 
     // Property Names
     private static ONLINE_PROPERTY_NAME = 'online';
@@ -65,6 +68,13 @@ export class SdaDialogDelegateTools {
 
     public static constructExitOfflineModeNullRedirection(tenantId: string, sessionId: string): StringDictionary {
         return this.constructOfflineModeNullRedirection(tenantId, sessionId, this.EXIT_OFFLINE_MODE_MENU_ACTION_ID);
+    }
+
+    public static constructOfflineLogoutResponse(sessionId: string) {
+        return {
+            "sessionId": sessionId,
+            "type": this.SESSION_ID_MODEL_TYPE
+        };
     }
 
     public static constructRemoveFromBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
@@ -206,7 +216,11 @@ export class SdaDialogDelegateTools {
         return originalDialog;
     }
 
-    public static readDelegateState(tenantId: string, userId: string): Promise<SdaDialogDelegateState> {
+    public static offlineSessionId() {
+        return this.OFFLINE_SESSION_ID;
+    }
+
+    public static readDialogDelegateStateVisitor(tenantId: string, userId: string): Promise<SdaDialogDelegateStateVisitor> {
         const key = this.createStorageKey(this.DIALOG_DELEGATE_STATE_KEY, tenantId, userId);
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
@@ -220,8 +234,13 @@ export class SdaDialogDelegateTools {
                 };
                 Log.info('SdaDialogDelegateTools::readDelegateState -- returning defaults: ' + JSON.stringify(jsonObject));
             }
-            return new SdaDialogDelegateState(jsonObject);
+            return new SdaDialogDelegateStateVisitor(jsonObject);
         });
+    }
+
+    public static readOfflineSession(tenantId: string, userId: string): Promise<SessionVisitor> {
+        const key = this.createStorageKey(this.OFFLINE_SESSION_KEY, tenantId, userId);
+        return storage.getJson(key).then(jsonObject => new SessionVisitor(jsonObject));
     }
 
     public static showAllStorageKeys(): Promise<void> {
@@ -236,15 +255,15 @@ export class SdaDialogDelegateTools {
         });
     }
 
-    public static writeDelegateState(tenantId: string, delegateState: SdaDialogDelegateState): Promise<void> {
-        const userId = delegateState.visitUserId();
+    public static writeDialogDelegateState(tenantId: string, stateVisitor: SdaDialogDelegateStateVisitor): Promise<void> {
+        const userId = stateVisitor.visitUserId();
         const key = this.createStorageKey(this.DIALOG_DELEGATE_STATE_KEY, tenantId, userId);
-        return storage.setJson(key, delegateState.internalValue());
+        return storage.setJson(key, stateVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineSession(tenantId: string, userId: string, offlineSession: SessionVisitor): Promise<void> {
+    public static writeOfflineSession(tenantId: string, userId: string, offlineSessionVisitor: SessionVisitor): Promise<void> {
         const key = this.createStorageKey(this.OFFLINE_SESSION_KEY, tenantId, userId);
-        return storage.setJson(key, offlineSession.enclosedJsonObject());
+        return storage.setJson(key, offlineSessionVisitor.enclosedJsonObject());
     }
 
     private static constructOfflineModeNullRedirection(tenantId: string, sessionId: string, actionId: string): StringDictionary {

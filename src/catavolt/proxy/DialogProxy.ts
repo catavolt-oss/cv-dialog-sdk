@@ -9,6 +9,7 @@ import {Log} from '../util/Log';
 import {StringDictionary} from '../util/StringDictionary';
 import {DialogDelegate} from "./DialogDelegate";
 import {DialogProxyTools} from './DialogProxyTools';
+import {ValueIterator} from "./ValueIterator";
 
 export class DialogProxy implements Client {
 
@@ -56,39 +57,30 @@ export class DialogProxy implements Client {
         return this.processRequestAndResponse('deleteJson', 'handleDeleteJsonResponse', [baseUrl, resourcePath]);
     }
 
-    private static delegateRequest(delegateIterator: Iterator<DialogDelegate>, requestFn: string, args): Promise<any> {
+    private static delegateRequest(previousPr: Promise<any>, delegateIterator: ValueIterator<DialogDelegate>, requestFn: string, args): Promise<any> {
         const thisMethod = 'DialogProxy::delegateRequest';
-        const nextDelegateItem = delegateIterator.next();
-        if (nextDelegateItem.done) {
-            Log.info(`${thisMethod} -- using common fetch client to process request: ${requestFn}`);
-            const fc = DialogProxyTools.commonFetchClient();
-            return fc[requestFn].apply(fc, args);
-        }
-        const nextDelegate = nextDelegateItem.value;
-        const responsePr = nextDelegate[requestFn].apply(nextDelegate, args);
-        if (!responsePr) {
-            return this.delegateRequest(delegateIterator, requestFn, args);
-        }
-        return responsePr.then(response => {
-            if (!response) {
-                Log.info(`${thisMethod} -- delegate returned a falsey response, advancing to next delegate with request: ${requestFn}`);
-                return this.delegateRequest(delegateIterator, requestFn, args);
+        return previousPr.then(unusedValue => {
+            if (delegateIterator.done()) {
+                Log.info(`${thisMethod} -- using common fetch client to process request: ${requestFn}`);
+                const fc = DialogProxyTools.commonFetchClient();
+                return fc[requestFn].apply(fc, args);
             }
-            return responsePr;
-        });
-    }
-
-    private processRequestAndResponse(requestFn: string, responseFn: string, args): any {
-        this.prepareForActivity();
-        return this._initialized.then(() => {
-            const delegateIterator = this._dialogDelegateChain[Symbol.iterator]();
-            let responsePr = DialogProxy.delegateRequest(delegateIterator, requestFn, args);
-            for (const d of this._dialogDelegateChain) {
-                const argsWithResponse = args.slice(0);
-                argsWithResponse.push(responsePr);
-                responsePr = d[responseFn].apply(d, argsWithResponse);
+            // Select next delegate
+            const nextDelegate = delegateIterator.next();
+            const nextPr = nextDelegate[requestFn].apply(nextDelegate, args);
+            if (!nextPr) {
+                // Next delegate chose to immediately skip this request, so advance to the next delegate
+                return this.delegateRequest(previousPr, delegateIterator, requestFn, args);
             }
-            return responsePr;
+            return nextPr.then(response => {
+                if (!response) {
+                    // Next delegate chose to skip this request after a delay, so advance to the next delegate
+                    Log.info(`${thisMethod} -- delegate returned a falsey response, advancing to the next delegate with request: ${requestFn}`);
+                    return this.delegateRequest(nextPr, delegateIterator, requestFn, args);
+                }
+                // Next delegate produced a response, so this is the future that will be processed
+                return nextPr;
+            });
         });
     }
 
@@ -103,6 +95,20 @@ export class DialogProxy implements Client {
                 return true;
             });
         }
+    }
+
+    private processRequestAndResponse(requestFn: string, responseFn: string, args): any {
+        this.prepareForActivity();
+        return this._initialized.then(() => {
+            const delegateIterator = new ValueIterator(this._dialogDelegateChain);
+            let responsePr = DialogProxy.delegateRequest(Promise.resolve(), delegateIterator, requestFn, args);
+            for (const d of this._dialogDelegateChain) {
+                const argsWithResponse = args.slice(0);
+                argsWithResponse.push(responsePr);
+                responsePr = d[responseFn].apply(d, argsWithResponse);
+            }
+            return responsePr;
+        });
     }
 
 }

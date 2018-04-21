@@ -41,6 +41,10 @@ export class SessionVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
+    public propagateSessionId(sessionId: string) {
+        this.enclosedJsonObject()['id'] = sessionId;
+    }
+
     public visitUserId(): string {
         return this.enclosedJsonObject().userId;
     }

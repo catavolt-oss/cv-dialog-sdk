@@ -44,6 +44,13 @@ export class DialogProxyTools {
         return `null_redirection__offline_${Date.now()}`;
     }
 
+    public static deconstructDeleteSessionPath(path: string[]): any {
+        return {
+            tenantId: path[1],
+            sessionId: path[3]
+        }
+    }
+
     public static deconstructGetDialogPath(path: string[]): any {
         return {
             tenantId: path[1],
