@@ -12,6 +12,7 @@ export class SdaPostSelectedWorkPackagesRecordsJsonSample {
 
     private static RESPONSE = {
         "dialogAlias": "Briefcase_Briefcase_Workpackages",
+        "dialogName": "Briefcase_Briefcase_Workpackages",
         "defaultActionId": null,
         "records": [{
             "annotations": [],
@@ -61,6 +62,7 @@ export class SdaPostSelectedWorkPackagesRecordsJsonSample {
 
     private static EMPTY_RESPONSE = {
         "dialogAlias": "Briefcase_Briefcase_Workpackages",
+        "dialogName": "Briefcase_Briefcase_Workpackages",
         "defaultActionId": null,
         "records": [],
         "hasMore": false,

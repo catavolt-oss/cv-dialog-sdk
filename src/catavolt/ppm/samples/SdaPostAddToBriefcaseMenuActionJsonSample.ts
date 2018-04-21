@@ -16,7 +16,14 @@ export class SdaPostAddToBriefcaseMenuActionJsonSample {
                 "Form": "FORM",
                 "DataSource": "SDALocal"
             },
+            "dialogOrigin": {
+                "Action": "AddToBriefcase",
+                "DataObject": "Workpackage",
+                "Form": "FORM",
+                "DataSource": "SDALocal"
+            },
             "dialogAlias": "Workpackage_AddToBriefcase_FORM",
+            "dialogName": "Workpackage_AddToBriefcase_FORM",
             "dialogProperties": {
                 "globalRefresh": "true",
                 "localRefresh": "true",

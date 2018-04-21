@@ -45,6 +45,7 @@ export class SdaGetBriefcaseDialogJsonSample {
             }], "type": "hxgn.api.dialog.RecordDef"
         },
         "dialogAliasPath": {"DataObject": "Briefcase", "Form": "FORM", "Detail": "Briefcase", "DataSource": "SDALocal"},
+        "dialogOrigin": {"DataObject": "Briefcase", "Form": "FORM", "Detail": "Briefcase", "DataSource": "SDALocal"},
         "dialogMode": "READ",
         "description": "Briefcase: 1",
         "referringObject": {
@@ -166,6 +167,12 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "Detail": "Briefcase",
                 "DataSource": "SDALocal"
             },
+            "dialogOrigin": {
+                "DataObject": "Briefcase",
+                "PropertySection": "Details",
+                "Detail": "Briefcase",
+                "DataSource": "SDALocal"
+            },
             "dialogMode": "READ",
             "description": "Briefcase: 1",
             "sessionId": "${sessionId}",
@@ -257,6 +264,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "cancelButtonText": "Cancel"
             },
             "dialogAlias": "Briefcase_Briefcase_Details",
+            "dialogName": "Briefcase_Briefcase_Details",
             "tenantId": "${tenantId}",
             "refreshNeeded": false,
             "id": "offline_briefcase_details",
@@ -325,6 +333,13 @@ export class SdaGetBriefcaseDialogJsonSample {
             },
             "supportsColumnStatistics": true,
             "dialogAliasPath": {
+                "DataObject": "Briefcase",
+                "QuerySection": "Workpackages",
+                "ToQuery": {"DataObject": "BriefcaseWorkpackage", "Query": "Workpackages", "DataSource": "SDALocal"},
+                "Detail": "Briefcase",
+                "DataSource": "SDALocal"
+            },
+            "dialogOrigin": {
                 "DataObject": "Briefcase",
                 "QuerySection": "Workpackages",
                 "ToQuery": {"DataObject": "BriefcaseWorkpackage", "Query": "Workpackages", "DataSource": "SDALocal"},
@@ -411,6 +426,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "type": "hxgn.api.dialog.List"
             },
             "dialogAlias": "Briefcase_Briefcase_Workpackages",
+            "dialogName": "Briefcase_Briefcase_Workpackages",
             "tenantId": "${tenantId}",
             "refreshNeeded": false,
             "positionalQueryAbility": "FULL",
@@ -498,6 +514,13 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "Detail": "Briefcase",
                 "DataSource": "SDALocal"
             },
+            "dialogOrigin": {
+                "DataObject": "Briefcase",
+                "QuerySection": "MobileComments",
+                "ToQuery": {"DataObject": "BriefcaseMobileComment", "Query": "MobileComment", "DataSource": "SDALocal"},
+                "Detail": "Briefcase",
+                "DataSource": "SDALocal"
+            },
             "dialogMode": "LIST",
             "description": "Briefcase Mobile Comments",
             "sessionId": "${sessionId}",
@@ -578,6 +601,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "type": "hxgn.api.dialog.List"
             },
             "dialogAlias": "Briefcase_Briefcase_MobileComments",
+            "dialogName": "Briefcase_Briefcase_MobileComments",
             "tenantId": "${tenantId}",
             "refreshNeeded": false,
             "positionalQueryAbility": "FULL",
@@ -585,6 +609,7 @@ export class SdaGetBriefcaseDialogJsonSample {
             "selectedViewId": "AAABACcTAAAAAKL8"
         }],
         "dialogAlias": "Briefcase_Briefcase_FORM",
+        "dialogName": "Briefcase_Briefcase_FORM",
         "tenantId": "${tenantId}",
         "refreshNeeded": false,
         "id": "offline_briefcase",

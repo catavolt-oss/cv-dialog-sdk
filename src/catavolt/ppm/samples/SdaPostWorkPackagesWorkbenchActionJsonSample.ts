@@ -9,6 +9,7 @@ export class SdaPostWorkPackagesWorkbenchActionJsonSample {
     private static RESPONSE = {
         "dialogMode": "READ",
         "dialogAliasPath": {"DataObject": "Workpackage", "Query": "General", "Form": "FORM", "DataSource": "SDALocal"},
+        "dialogOrigin": {"DataObject": "Workpackage", "Query": "General", "Form": "FORM", "DataSource": "SDALocal"},
         "referringObject": {
             "actionId": "WorkPackages",
             "type": "hxgn.api.dialog.ReferringWorkbench",
@@ -23,6 +24,7 @@ export class SdaPostWorkPackagesWorkbenchActionJsonSample {
         "dialogType": "hxgn.api.dialog.EditorDialog",
         "recordId": "AAABACcSAAAAAI59",
         "dialogAlias": "Workpackage_General_FORM",
+        "dialogName": "Workpackage_General_FORM",
         "tenantId": "${tenantId}",
         "refreshNeeded": false,
         "id": "1",

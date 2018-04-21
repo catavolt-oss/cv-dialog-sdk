@@ -9,6 +9,7 @@ export class SdaPostBriefcaseWorkbenchActionJsonSample {
     private static RESPONSE = {
         "dialogMode": "READ",
         "dialogAliasPath": {"DataObject": "Briefcase", "Form": "FORM", "Detail": "Briefcase", "DataSource": "SDALocal"},
+        "dialogOrigin": {"DataObject": "Briefcase", "Form": "FORM", "Detail": "Briefcase", "DataSource": "SDALocal"},
         "referringObject": {
             "actionId": "Briefcase",
             "type": "hxgn.api.dialog.ReferringWorkbench",
@@ -23,6 +24,7 @@ export class SdaPostBriefcaseWorkbenchActionJsonSample {
         "dialogType": "hxgn.api.dialog.EditorDialog",
         "recordId": "1",
         "dialogAlias": "Briefcase_Briefcase_FORM",
+        "dialogName": "Briefcase_Briefcase_FORM",
         "tenantId": "${tenantId}",
         "refreshNeeded": false,
         "id": "offline_briefcase",

@@ -121,6 +121,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#openstream" class="tsd-kind-icon">open<wbr>Stream</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performaddworkpackagetobriefcase" class="tsd-kind-icon">perform<wbr>Add<wbr>Work<wbr>Package<wbr>ToBriefcase</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performbriefcaseworkbenchactionrequest" class="tsd-kind-icon">perform<wbr>Briefcase<wbr>Workbench<wbr>Action<wbr>Request</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performcaptureworkpackage" class="tsd-kind-icon">perform<wbr>Capture<wbr>Work<wbr>Package</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performcreatesessionrequest" class="tsd-kind-icon">perform<wbr>Create<wbr>Session<wbr>Request</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performenterofflinemodemenuactionrequest" class="tsd-kind-icon">perform<wbr>Enter<wbr>Offline<wbr>Mode<wbr>Menu<wbr>Action<wbr>Request</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performexitofflinemodemenuactionrequest" class="tsd-kind-icon">perform<wbr>Exit<wbr>Offline<wbr>Mode<wbr>Menu<wbr>Action<wbr>Request</a></li>
@@ -735,6 +736,35 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="performcaptureworkpackage" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> perform<wbr>Capture<wbr>Work<wbr>Package</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">perform<wbr>Capture<wbr>Work<wbr>Package<span class="tsd-signature-symbol">(</span>baseUrl<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, resourcePathElems<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, body<span class="tsd-signature-symbol">?: </span><a href="../interfaces/_util_stringdictionary_.stringdictionary.html" class="tsd-signature-type">StringDictionary</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_client_jsonclientresponse_.jsonclientresponse.html" class="tsd-signature-type">JsonClientResponse</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in ppm/SdaDialogDelegate.ts:244</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>baseUrl: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>resourcePathElems: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> body: <a href="../interfaces/_util_stringdictionary_.stringdictionary.html" class="tsd-signature-type">StringDictionary</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_client_jsonclientresponse_.jsonclientresponse.html" class="tsd-signature-type">JsonClientResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
 					<a name="performcreatesessionrequest" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> perform<wbr>Create<wbr>Session<wbr>Request</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -744,7 +774,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in ppm/SdaDialogDelegate.ts:244</li>
+									<li>Defined in ppm/SdaDialogDelegate.ts:249</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -773,7 +803,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in ppm/SdaDialogDelegate.ts:250</li>
+									<li>Defined in ppm/SdaDialogDelegate.ts:255</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -802,7 +832,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in ppm/SdaDialogDelegate.ts:263</li>
+									<li>Defined in ppm/SdaDialogDelegate.ts:268</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -831,7 +861,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in ppm/SdaDialogDelegate.ts:268</li>
+									<li>Defined in ppm/SdaDialogDelegate.ts:281</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -860,7 +890,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in ppm/SdaDialogDelegate.ts:273</li>
+									<li>Defined in ppm/SdaDialogDelegate.ts:286</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -889,7 +919,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in ppm/SdaDialogDelegate.ts:287</li>
+									<li>Defined in ppm/SdaDialogDelegate.ts:300</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1095,6 +1125,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 								<a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performbriefcaseworkbenchactionrequest" class="tsd-kind-icon">perform<wbr>Briefcase<wbr>Workbench<wbr>Action<wbr>Request</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performcaptureworkpackage" class="tsd-kind-icon">perform<wbr>Capture<wbr>Work<wbr>Package</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 								<a href="_ppm_sdadialogdelegate_.sdadialogdelegate.html#performcreatesessionrequest" class="tsd-kind-icon">perform<wbr>Create<wbr>Session<wbr>Request</a>

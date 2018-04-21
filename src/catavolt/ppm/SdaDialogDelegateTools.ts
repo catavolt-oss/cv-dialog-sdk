@@ -24,8 +24,8 @@ export class SdaDialogDelegateTools {
     private static OFFLINE_BRIEFCASE_WORK_PACKAGES_DIALOG_ID = "offline_briefcase_workpackages";
 
     // Dialog Names
-    private static WORK_PACKAGES_QUERY_DIALOG_ALIAS = "Workpackage_General";
-    private static WORK_PACKAGES_ROOT_DIALOG_ALIAS = "Workpackage_General_FORM";
+    private static WORK_PACKAGES_QUERY_DIALOG_NAME = "Workpackage_General";
+    private static WORK_PACKAGES_ROOT_DIALOG_NAME = "Workpackage_General_FORM";
 
     // Model Types
     private static EDITOR_DIALOG_MODEL_TYPE = "hxgn.api.dialog.EditorDialog";
@@ -57,22 +57,12 @@ export class SdaDialogDelegateTools {
         };
     }
 
-    public static constructEnterOfflineModeNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
-        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
-        return {
-            "tenantId": tenantId,
-            "referringObject": {
-                "dialogMode": "READ",
-                "dialogAlias": "Briefcase_Briefcase_Details",
-                "actionId": "alias_EnterOfflineMode",
-                "type": "hxgn.api.dialog.ReferringDialog",
-                "dialogId": referringDialogId
-            },
-            "refreshNeeded": true,
-            "sessionId": sessionId,
-            "id": nullRedirectionId,
-            "type": "hxgn.api.dialog.NullRedirection"
-        };
+    public static constructEnterOfflineModeNullRedirection(tenantId: string, sessionId: string): StringDictionary {
+        return this.constructOfflineModeNullRedirection(tenantId, sessionId, this.ENTER_OFFLINE_MODE_MENU_ACTION_ID);
+    }
+
+    public static constructExitOfflineModeNullRedirection(tenantId: string, sessionId: string): StringDictionary {
+        return this.constructOfflineModeNullRedirection(tenantId, sessionId, this.EXIT_OFFLINE_MODE_MENU_ACTION_ID);
     }
 
     public static constructRemoveFromBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
@@ -177,19 +167,19 @@ export class SdaDialogDelegateTools {
         if (!DialogProxyTools.isPostRecords(resourcePathElems)) {
             return false;
         }
-        if (!jsonObject || !jsonObject.type || !jsonObject.dialogAlias) {
+        if (!jsonObject || !jsonObject.type || !jsonObject.dialogName) {
             return false;
         }
         return jsonObject.type === this.RECORD_SET_MODEL_TYPE &&
-            jsonObject.dialogAlias === this.WORK_PACKAGES_QUERY_DIALOG_ALIAS;
+            jsonObject.dialogName === this.WORK_PACKAGES_QUERY_DIALOG_NAME;
     }
 
     public static isWorkPackagesRootDialog(jsonObject: any): boolean {
-        if (!jsonObject || !jsonObject.type || !jsonObject.dialogAlias) {
+        if (!jsonObject || !jsonObject.type || !jsonObject.dialogName) {
             return false;
         }
         return jsonObject.type === this.EDITOR_DIALOG_MODEL_TYPE &&
-            jsonObject.dialogAlias === this.WORK_PACKAGES_ROOT_DIALOG_ALIAS;
+            jsonObject.dialogName === this.WORK_PACKAGES_ROOT_DIALOG_NAME;
     }
 
     public static insertBriefcaseMetaDataIntoWorkPackagesDialog(originalDialog: StringDictionary): StringDictionary {
@@ -212,11 +202,6 @@ export class SdaDialogDelegateTools {
         });
         // Return original dialog WITH patches
         return originalDialog;
-    }
-
-    private static createDelegateStateKey(tenantId: string, userId: string): string {
-        const key = SdaDialogDelegateTools.DIALOG_DELEGATE_STATE_KEY.replace('${tenantId}', tenantId);
-        return key.replace('${userId}', userId);
     }
 
     public static readDelegateState(tenantId: string, userId: string): Promise<SdaDialogDelegateState> {
@@ -253,6 +238,29 @@ export class SdaDialogDelegateTools {
         const userId = delegateState.visitUserId();
         const key = this.createDelegateStateKey(tenantId, userId);
         return storage.setJson(key, delegateState.internalValue());
+    }
+
+    private static constructOfflineModeNullRedirection(tenantId: string, sessionId: string, actionId: string): StringDictionary {
+        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
+        return {
+            "tenantId": tenantId,
+            "referringObject": {
+                "dialogMode": "READ",
+                "dialogAlias": "Briefcase_Briefcase_Details",
+                "actionId": actionId,
+                "type": "hxgn.api.dialog.ReferringDialog",
+                "dialogId": this.OFFLINE_BRIEFCASE_DETAILS_DIALOG_ID
+            },
+            "refreshNeeded": true,
+            "sessionId": sessionId,
+            "id": nullRedirectionId,
+            "type": "hxgn.api.dialog.NullRedirection"
+        };
+    }
+
+    private static createDelegateStateKey(tenantId: string, userId: string): string {
+        const key = SdaDialogDelegateTools.DIALOG_DELEGATE_STATE_KEY.replace('${tenantId}', tenantId);
+        return key.replace('${userId}', userId);
     }
 
 }

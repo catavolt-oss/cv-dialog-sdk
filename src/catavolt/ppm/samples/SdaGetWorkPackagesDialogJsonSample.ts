@@ -7,6 +7,7 @@ export class SdaGetWorkPackagesDialogJsonSample {
     private static RESPONSE = {
         "recordDef": {"propertyDefs": [], "type": "hxgn.api.dialog.RecordDef"},
         "dialogAliasPath": {"DataObject": "Workpackage", "Query": "General", "Form": "FORM", "DataSource": "SDALocal"},
+        "dialogOrigin": {"DataObject": "Workpackage", "Query": "General", "Form": "FORM", "DataSource": "SDALocal"},
         "dialogMode": "READ",
         "description": "Work Packages",
         "referringObject": {
@@ -162,6 +163,7 @@ export class SdaGetWorkPackagesDialogJsonSample {
             },
             "supportsColumnStatistics": true,
             "dialogAliasPath": {"DataObject": "Workpackage", "Query": "General", "DataSource": "SDALocal"},
+            "dialogOrigin": {"DataObject": "Workpackage", "Query": "General", "DataSource": "SDALocal"},
             "dialogMode": "LIST",
             "description": "Work Packages",
             "sessionId": "${sessionId}",
@@ -326,6 +328,7 @@ export class SdaGetWorkPackagesDialogJsonSample {
                 "type": "hxgn.api.dialog.List"
             },
             "dialogAlias": "Workpackage_General",
+            "dialogName": "Workpackage_General",
             "tenantId": "${tenantId}",
             "refreshNeeded": false,
             "positionalQueryAbility": "FULL",
@@ -333,6 +336,7 @@ export class SdaGetWorkPackagesDialogJsonSample {
             "selectedViewId": "AAABACcTAAAAAI6b"
         }],
         "dialogAlias": "Workpackage_General_FORM",
+        "dialogName": "Workpackage_General_FORM",
         "tenantId": "${tenantId}",
         "refreshNeeded": false,
         "id": "1",

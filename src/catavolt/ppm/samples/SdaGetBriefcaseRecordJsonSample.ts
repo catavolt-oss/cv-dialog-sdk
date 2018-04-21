@@ -6,6 +6,7 @@ export class SdaGetBriefcaseRecordJsonSample {
 
     private static RESPONSE = {
         "dialogAlias": "Briefcase_Briefcase_Details",
+        "dialogName": "Briefcase_Briefcase_Details",
         "annotations": [],
         "id": "1",
         "type": "hxgn.api.dialog.Record",
