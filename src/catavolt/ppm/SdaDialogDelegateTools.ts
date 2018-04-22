@@ -27,8 +27,6 @@ export class SdaDialogDelegateTools {
     public static WORK_PACKAGES_LIST_DIALOG_NAME = 'Workpackage_General';
     public static WORK_PACKAGES_ROOT_DIALOG_NAME = 'Workpackage_General_FORM';
 
-    public static OFFLINE_SESSION_ID = 'offline_session';
-
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
     private static BRIEFCASE_WORKBENCH_ACTION_ID = 'Briefcase';
@@ -222,10 +220,6 @@ export class SdaDialogDelegateTools {
         });
         // Return original dialog WITH patches
         return originalDialog;
-    }
-
-    public static offlineSessionId() {
-        return this.OFFLINE_SESSION_ID;
     }
 
     public static readDialogDelegateStateVisitor(tenantId: string, userId: string): Promise<SdaDialogDelegateStateVisitor> {

@@ -35,10 +35,6 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
-    public selectedWorkPackageIds(): string[] {
-        return this.enclosedJsonObject().selectedWorkPackageIds;
-    }
-
     public addSelectedWorkPackageId(id: string) {
         const index = this.enclosedJsonObject().selectedWorkPackageIds.indexOf(id);
         if (index === -1) {
@@ -71,6 +67,14 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
 
     public visitAndSetPassword(password: string) {
         this.enclosedJsonObject().password = password;
+    }
+
+    public visitSelectedWorkPackageIds(): string[] {
+        return this.enclosedJsonObject().selectedWorkPackageIds;
+    }
+
+    public visitAndClearSelectedWorkPackageIds() {
+        return this.enclosedJsonObject().selectedWorkPackageIds = [];
     }
 
     public visitSessionId(): string {
