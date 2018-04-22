@@ -53,8 +53,40 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
         }
     }
 
+    public visitBaseUrl(): string {
+        return this.enclosedJsonObject().baseUrl;
+    }
+
+    public visitAndSetBaseUrl(baseUrl: string) {
+        this.enclosedJsonObject().baseUrl = baseUrl;
+    }
+
     public visitBriefcase(): BriefcaseVisitor {
         return new BriefcaseVisitor(this.enclosedJsonObject().briefcase);
+    }
+
+    public visitPassword(): string {
+        return this.enclosedJsonObject().password;
+    }
+
+    public visitAndSetPassword(password: string) {
+        this.enclosedJsonObject().password = password;
+    }
+
+    public visitSessionId(): string {
+        return this.enclosedJsonObject().sessionId;
+    }
+
+    public visitAndSetSessionId(sessionId: string) {
+        this.enclosedJsonObject().sessionId = sessionId;
+    }
+
+    public visitTenantId(): string {
+        return this.enclosedJsonObject().tenantId;
+    }
+
+    public visitAndSetTenantId(tenantId: string) {
+        this.enclosedJsonObject().tenantId = tenantId;
     }
 
     public visitUserId(): string {

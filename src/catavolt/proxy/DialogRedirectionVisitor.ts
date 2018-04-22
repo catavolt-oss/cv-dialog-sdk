@@ -17,12 +17,16 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
 
     // --- State Management Helpers --- //
 
-    public static propagateTenantIdAndSessionId(dialog: object, tenantId: string, sessionId: string) {
-        (new DialogRedirectionVisitor(dialog)).propagateTenantIdAndSessionId(tenantId, sessionId);
+    public static propagateDialogId(dialogRedirection: object, dialogId: string) {
+        (new DialogRedirectionVisitor(dialogRedirection)).propagateDialogId(dialogId);
     }
 
-    public static visitId(dialog: object): string {
-        return (new DialogRedirectionVisitor(dialog)).visitId();
+    public static propagateTenantIdAndSessionId(dialogRedirection: object, tenantId: string, sessionId: string) {
+        (new DialogRedirectionVisitor(dialogRedirection)).propagateTenantIdAndSessionId(tenantId, sessionId);
+    }
+
+    public static visitId(dialogRedirection: object): string {
+        return (new DialogRedirectionVisitor(dialogRedirection)).visitId();
     }
 
     // --- State Import/Export --- //
@@ -41,9 +45,18 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
+    public propagateDialogId(dialogId: string) {
+        this.enclosedJsonObject()['id'] = dialogId;
+        this.enclosedJsonObject()['dialogId'] = dialogId;
+    }
+
     public propagateTenantIdAndSessionId(tenantId: string, sessionId: string) {
         this.enclosedJsonObject()['tenantId'] = tenantId;
         this.enclosedJsonObject()['sessionId'] = sessionId;
+    }
+
+    public visitDialogId(): string {
+        return this.enclosedJsonObject().dialogId;
     }
 
     public visitId(): string {

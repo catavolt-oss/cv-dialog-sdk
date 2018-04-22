@@ -40,6 +40,16 @@ export class DialogProxyTools {
         return {type: this.DIALOG_MESSAGE_MODEL_TYPE, message};
     }
 
+    public static constructLoginModel(userId: string, password: string): object {
+        return {
+            "userId": "jordan",
+            "password": "jordan1",
+            "clientType": "MOBILE",
+            "deviceProperties": {},
+            "type": this.LOGIN_MODEL_TYPE
+        };
+    }
+
     public static constructNullRedirectionId(): string {
         return `null_redirection__offline_${Date.now()}`;
     }

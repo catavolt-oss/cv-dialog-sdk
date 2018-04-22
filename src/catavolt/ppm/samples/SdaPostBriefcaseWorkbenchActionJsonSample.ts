@@ -17,7 +17,7 @@ export class SdaPostBriefcaseWorkbenchActionJsonSample {
         },
         "sessionId": "${sessionId}",
         "type": "hxgn.api.dialog.DialogRedirection",
-        "dialogId": "offline_briefcase",
+        "dialogId": "6",
         "viewMode": "READ",
         "dialogClassName": "com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel",
         "domainClassName": "cx.AAABACcSAAAAAKH*.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAI5o.Briefcase",
@@ -27,7 +27,7 @@ export class SdaPostBriefcaseWorkbenchActionJsonSample {
         "dialogName": "Briefcase_Briefcase_FORM",
         "tenantId": "${tenantId}",
         "refreshNeeded": false,
-        "id": "offline_briefcase",
+        "id": "6",
         "selectedViewId": "AAABACcXAAAAAKIr",
         "dialogDescription": "Briefcase: 1"
     };

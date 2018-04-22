@@ -84,6 +84,10 @@ export class RecordSetVisitor implements JsonObjectVisitor {
         return this.enclosedJsonObject().records.length;
     }
 
+    public visitAndClearRecords() {
+        return this.enclosedJsonObject().records = [];
+    }
+
     public visitRecordAtId(id: string): RecordVisitor {
         for (const r of this.visitRecords()) {
             if (r.visitRecordId() === id) {

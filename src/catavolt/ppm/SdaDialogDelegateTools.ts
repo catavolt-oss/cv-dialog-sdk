@@ -1,4 +1,5 @@
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
+import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
 import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {SessionVisitor} from "../proxy/SessionVisitor";
 import {storage} from "../storage";
@@ -10,6 +11,22 @@ import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
 
 export class SdaDialogDelegateTools {
 
+    // Dialog Ids
+    public static OFFLINE_BRIEFCASE_COMMENTS_DIALOG_ID = 'offline_briefcase_comments';
+    public static OFFLINE_BRIEFCASE_DETAILS_DIALOG_ID = 'offline_briefcase_details';
+    public static OFFLINE_BRIEFCASE_ROOT_DIALOG_ID = 'offline_briefcase';
+    public static OFFLINE_BRIEFCASE_WORK_PACKAGES_DIALOG_ID = 'offline_briefcase_workPackages';
+    public static OFFLINE_WORK_PACKAGES_LIST_DIALOG_ID = 'offline_workPackages_list';
+    public static OFFLINE_WORK_PACKAGES_ROOT_DIALOG_ID = 'offline_workPackages';
+
+    // Dialog Names
+    public static BRIEFCASE_DETAILS_DIALOG_NAME = 'Briefcase_Briefcase_Details';
+    public static BRIEFCASE_MOBILE_COMMENTS_DIALOG_NAME = 'Briefcase_Briefcase_MobileComments';
+    public static BRIEFCASE_ROOT_DIALOG_NAME = 'Briefcase_Briefcase_FORM';
+    public static BRIEFCASE_WORK_PACKAGES_DIALOG_NAME = 'Briefcase_Briefcase_Workpackages';
+    public static WORK_PACKAGES_LIST_DIALOG_NAME = 'Workpackage_General';
+    public static WORK_PACKAGES_ROOT_DIALOG_NAME = 'Workpackage_General_FORM';
+
     private static OFFLINE_SESSION_ID = 'offline_session';
 
     // Action Ids
@@ -20,22 +37,12 @@ export class SdaDialogDelegateTools {
     private static REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID = 'alias_RemoveFromBriefcase';
     private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
 
-    // Dialog Ids
-    private static OFFLINE_BRIEFCASE_DIALOG_ID = "offline_briefcase";
-    private static OFFLINE_BRIEFCASE_COMMENTS_DIALOG_ID = "offline_briefcase_comments";
-    private static OFFLINE_BRIEFCASE_DETAILS_DIALOG_ID = "offline_briefcase_details";
-    private static OFFLINE_BRIEFCASE_WORK_PACKAGES_DIALOG_ID = "offline_briefcase_workpackages";
-
-    // Dialog Names
-    private static WORK_PACKAGES_QUERY_DIALOG_NAME = "Workpackage_General";
-    private static WORK_PACKAGES_ROOT_DIALOG_NAME = "Workpackage_General_FORM";
-
     // Model Types
-    private static EDITOR_DIALOG_MODEL_TYPE = "hxgn.api.dialog.EditorDialog";
-    private static QUERY_DIALOG_MODEL_TYPE = "hxgn.api.dialog.QueryDialog";
-    private static RECORD_MODEL_TYPE = "hxgn.api.dialog.Record";
-    private static RECORD_SET_MODEL_TYPE = "hxgn.api.dialog.RecordSet";
-    private static SESSION_ID_MODEL_TYPE = "hxgn.api.dialog.SessionId";
+    private static EDITOR_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.EditorDialog';
+    private static QUERY_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.QueryDialog';
+    private static RECORD_MODEL_TYPE = 'hxgn.api.dialog.Record';
+    private static RECORD_SET_MODEL_TYPE = 'hxgn.api.dialog.RecordSet';
+    private static SESSION_ID_MODEL_TYPE = 'hxgn.api.dialog.SessionId';
 
     // Property Names
     private static ONLINE_PROPERTY_NAME = 'online';
@@ -43,6 +50,7 @@ export class SdaDialogDelegateTools {
     // Storage Keys
     private static DIALOG_DELEGATE_STATE_KEY = '${tenantId}.${userId}.ppm.sda.dialog.delegate.state';
     private static OFFLINE_SESSION_KEY = '${tenantId}.${userId}.offline.session';
+    private static OFFLINE_WORK_PACKAGES_REDIRECTION_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.redirection';
 
     public static constructAddToBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
         const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
@@ -136,7 +144,7 @@ export class SdaDialogDelegateTools {
     }
 
     public static isOfflineBriefcaseDialogId(dialogId: string): boolean {
-        return dialogId === this.OFFLINE_BRIEFCASE_DIALOG_ID;
+        return dialogId === this.OFFLINE_BRIEFCASE_ROOT_DIALOG_ID;
     }
 
     public static isOfflineBriefcaseDetailsDialogId(dialogId: string): boolean {
@@ -167,15 +175,7 @@ export class SdaDialogDelegateTools {
         return pathFields.actionId === SdaDialogDelegateTools.REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID;
     }
 
-    public static isWorkPackagesWorkbenchActionRequest(resourcePathElems: string[]): boolean {
-        if (!DialogProxyTools.isPostWorkbenchAction(resourcePathElems)) {
-            return false;
-        }
-        const pathFields = DialogProxyTools.deconstructPostWorkbenchActionPath(resourcePathElems);
-        return pathFields.actionId === SdaDialogDelegateTools.WORK_PACKAGES_WORKBENCH_ACTION_ID;
-    }
-
-    public static isWorkPackagesQueryRecordSet(resourcePathElems: string[], jsonObject: any): boolean {
+    public static isWorkPackagesListRecordSet(resourcePathElems: string[], jsonObject: any): boolean {
         if (!DialogProxyTools.isPostRecords(resourcePathElems)) {
             return false;
         }
@@ -183,7 +183,15 @@ export class SdaDialogDelegateTools {
             return false;
         }
         return jsonObject.type === this.RECORD_SET_MODEL_TYPE &&
-            jsonObject.dialogName === this.WORK_PACKAGES_QUERY_DIALOG_NAME;
+            jsonObject.dialogName === this.WORK_PACKAGES_LIST_DIALOG_NAME;
+    }
+
+    public static isWorkPackagesWorkbenchActionRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostWorkbenchAction(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostWorkbenchActionPath(resourcePathElems);
+        return pathFields.actionId === SdaDialogDelegateTools.WORK_PACKAGES_WORKBENCH_ACTION_ID;
     }
 
     public static isWorkPackagesRootDialog(jsonObject: any): boolean {
@@ -221,7 +229,7 @@ export class SdaDialogDelegateTools {
     }
 
     public static readDialogDelegateStateVisitor(tenantId: string, userId: string): Promise<SdaDialogDelegateStateVisitor> {
-        const key = this.createStorageKey(this.DIALOG_DELEGATE_STATE_KEY, tenantId, userId);
+        const key = this.createStorageKey(tenantId, userId, this.DIALOG_DELEGATE_STATE_KEY);
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
                 const briefcase = SdaGetBriefcaseRecordJsonSample.copyOfResponse();
@@ -239,7 +247,7 @@ export class SdaDialogDelegateTools {
     }
 
     public static readOfflineSession(tenantId: string, userId: string): Promise<SessionVisitor> {
-        const key = this.createStorageKey(this.OFFLINE_SESSION_KEY, tenantId, userId);
+        const key = this.createStorageKey(tenantId, userId, this.OFFLINE_SESSION_KEY);
         return storage.getJson(key).then(jsonObject => new SessionVisitor(jsonObject));
     }
 
@@ -257,13 +265,18 @@ export class SdaDialogDelegateTools {
 
     public static writeDialogDelegateState(tenantId: string, stateVisitor: SdaDialogDelegateStateVisitor): Promise<void> {
         const userId = stateVisitor.visitUserId();
-        const key = this.createStorageKey(this.DIALOG_DELEGATE_STATE_KEY, tenantId, userId);
+        const key = this.createStorageKey(tenantId, userId, this.DIALOG_DELEGATE_STATE_KEY);
         return storage.setJson(key, stateVisitor.enclosedJsonObject());
     }
 
     public static writeOfflineSession(tenantId: string, userId: string, offlineSessionVisitor: SessionVisitor): Promise<void> {
-        const key = this.createStorageKey(this.OFFLINE_SESSION_KEY, tenantId, userId);
+        const key = this.createStorageKey(tenantId, userId, this.OFFLINE_SESSION_KEY);
         return storage.setJson(key, offlineSessionVisitor.enclosedJsonObject());
+    }
+
+    public static writeOfflineWorkPackagesRedirection(tenantId: string, userId: string, dialogRedirectionVistor: DialogRedirectionVisitor) {
+        const key = this.createStorageKey(tenantId, userId, this.OFFLINE_WORK_PACKAGES_REDIRECTION_KEY);
+        return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
     }
 
     private static constructOfflineModeNullRedirection(tenantId: string, sessionId: string, actionId: string): StringDictionary {
@@ -284,7 +297,7 @@ export class SdaDialogDelegateTools {
         };
     }
 
-    private static createStorageKey(keyTemplate: string, tenantId: string, userId: string): string {
+    private static createStorageKey(tenantId: string, userId: string, keyTemplate: string): string {
         const key = keyTemplate.replace('${tenantId}', tenantId);
         return key.replace('${userId}', userId);
     }

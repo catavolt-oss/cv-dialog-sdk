@@ -48,14 +48,53 @@ export class DialogVisitor implements JsonObjectVisitor {
     public propagateTenantIdAndSessionId(tenantId: string, sessionId: string) {
         this.enclosedJsonObject()['tenantId'] = tenantId;
         this.enclosedJsonObject()['sessionId'] = sessionId;
-        for (const c of this.enclosedJsonObject()['children']) {
-            c['tenantId'] = tenantId;
-            c['sessionId'] = sessionId;
+        if (this.enclosedJsonObject()['children']) {
+            for (const c of this.enclosedJsonObject()['children']) {
+                const dialogVisitor = new DialogVisitor(c);
+                dialogVisitor.propagateTenantIdAndSessionId(tenantId, sessionId);
+            }
         }
+    }
+
+    public visitDialogName(): string {
+        return this.enclosedJsonObject().dialogName;
     }
 
     public visitId(): string {
         return this.enclosedJsonObject().id;
+    }
+
+    public visitAndSetId(id: string) {
+        this.enclosedJsonObject().id = id;
+    }
+
+    public visitChildAt(index: number): DialogVisitor {
+        return new DialogVisitor(this.enclosedJsonObject().children[index]);
+    }
+
+    public visitChildAtName(name: string): DialogVisitor {
+        if (this.enclosedJsonObject()['children']) {
+            for (const c of this.enclosedJsonObject()['children']) {
+                const dialogVisitor = new DialogVisitor(c);
+                if (dialogVisitor.visitDialogName() && dialogVisitor.visitDialogName() === name) {
+                    return dialogVisitor;
+                }
+                const childDialogVisitor = dialogVisitor.visitChildAtName(name);
+                if (childDialogVisitor) {
+                    return childDialogVisitor;
+                }
+            }
+        }
+        return null;
+    }
+
+    public visitChildAtNameAndSetId(name: string, id: string): boolean {
+        const childDialogVisitor = this.visitChildAtName(name);
+        if (childDialogVisitor) {
+            childDialogVisitor.visitAndSetId(id);
+            return true;
+        }
+        return false;
     }
 
 }

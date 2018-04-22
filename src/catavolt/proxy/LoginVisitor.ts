@@ -37,6 +37,10 @@ export class LoginVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
+    public visitPassword(): string {
+        return this.enclosedJsonObject().password;
+    }
+
     public visitUserId(): string {
         return this.enclosedJsonObject().userId;
     }
