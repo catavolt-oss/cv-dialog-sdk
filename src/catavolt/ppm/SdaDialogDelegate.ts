@@ -39,21 +39,33 @@ export class SdaDialogDelegate implements DialogDelegate {
 
     public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> | null {
         Log.info("SdaDialogDelegate::getBlob -- path: " + resourcePath);
+        if (!this.online()) {
+            throw new Error(`Blob request is not valid during offline mode: ${resourcePath}`);
+        }
         return null;
     }
 
     public getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse> | null {
         Log.info("SdaDialogDelegate::getText -- path: " + resourcePath);
+        if (!this.online()) {
+            throw new Error(`Text request is not valid during offline mode: ${resourcePath}`);
+        }
         return null;
     }
 
     public openStream(baseUrl: string, resourcePath?: string): Promise<StreamProducer> | null {
         Log.info("SdaDialogDelegate::openStream -- path: " + resourcePath);
+        if (!this.online()) {
+            throw new Error(`Stream request is not valid during offline mode: ${resourcePath}`);
+        }
         return null;
     }
 
     public postMultipart<T>(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse> | null {
         Log.info("SdaDialogDelegate::postMultipart -- path: " + resourcePath);
+        if (!this.online()) {
+            throw new Error(`Multipart request is not valid during offline mode: ${resourcePath}`);
+        }
         return null;
     }
 
@@ -83,6 +95,9 @@ export class SdaDialogDelegate implements DialogDelegate {
                 return Promise.resolve(new JsonClientResponse(response, 200));
             }
         }
+        if (!this.online()) {
+            return DialogProxyTools.constructRequestNotValidDuringOfflineMode(resourcePath);
+        }
         return null;
     }
 
@@ -91,6 +106,16 @@ export class SdaDialogDelegate implements DialogDelegate {
         Log.info(`${thisMethod} -- path: ${resourcePath}`);
         Log.info(`${thisMethod} -- body: ${JSON.stringify(body)}`);
         const resourcePathElems: string[] = resourcePath.split('/');
+        if (SdaDialogDelegateTools.isWorkPackagesWorkbenchActionRequest(resourcePathElems)) {
+            const pathFields = DialogProxyTools.deconstructPostWorkbenchActionPath(resourcePathElems);
+            // Switch to online session if necessary
+            if (this.online() && pathFields.sessionId === SdaDialogDelegateTools.OFFLINE_SESSION_ID) {
+                const onlineSessionId = this._dialogDelegateStateVisitor.visitSessionId();
+                const onlineResourcePath = `tenants/${pathFields.tenantId}/sessions/${onlineSessionId}/workbenches/SDAWorkbenchLOCAL/actions/WorkPackages`;
+                Log.info(`${thisMethod} -- switching to online session id: ${onlineSessionId}`);
+                return DialogProxyTools.commonFetchClient().postJson(baseUrl, onlineResourcePath, body);
+            }
+        }
         if (SdaDialogDelegateTools.isAddToBriefcaseMenuActionRequest(resourcePathElems)) {
             return this.performAddWorkPackageToBriefcase(baseUrl, resourcePathElems, body);
         } else if (SdaDialogDelegateTools.isRemoveFromBriefcaseMenuActionRequest(resourcePathElems)) {
@@ -108,12 +133,18 @@ export class SdaDialogDelegate implements DialogDelegate {
         } else if (SdaDialogDelegateTools.isExitOfflineModeMenuActionRequest(resourcePathElems)) {
             return this.performExitOfflineModeMenuActionRequest(baseUrl, resourcePathElems, body);
         }
+        if (!this.online()) {
+            return DialogProxyTools.constructRequestNotValidDuringOfflineMode(resourcePath);
+        }
         return null;
     }
 
     public putJson(baseUrl: string, resourcePath: string, body?: StringDictionary): Promise<JsonClientResponse> | null {
         Log.info("SdaDialogDelegate::putJson -- path: " + resourcePath);
         Log.info("SdaDialogDelegate::putJson -- body: " + JSON.stringify(body));
+        if (!this.online()) {
+            return DialogProxyTools.constructRequestNotValidDuringOfflineMode(resourcePath);
+        }
         return null;
     }
 
@@ -122,6 +153,9 @@ export class SdaDialogDelegate implements DialogDelegate {
         const resourcePathElems: string[] = resourcePath.split('/');
         if (DialogProxyTools.isDeleteSessionRequest(resourcePathElems)) {
             return this.performDeleteSessionRequest(baseUrl, resourcePathElems);
+        }
+        if (!this.online()) {
+            return DialogProxyTools.constructRequestNotValidDuringOfflineMode(resourcePath);
         }
         return null;
     }
@@ -237,13 +271,22 @@ export class SdaDialogDelegate implements DialogDelegate {
         return Promise.resolve();
     }
 
-    private loginForOnlineProcessing(tenantId: string, sessionId: string): Promise<JsonClientResponse> {
-        const thisMethod = 'SdaDialogDelegate::loginForOnlineProcessing';
+    private performLogoutForOfflineProcessing(tenantId: string, sessionId: string): Promise<JsonClientResponse> {
+        const thisMethod = 'SdaDialogDelegate::performLogoutForOfflineProcessing';
+        const resourcePath = `tenants/${tenantId}/sessions/${sessionId}`;
+        return DialogProxyTools.commonFetchClient().deleteJson(this._dialogDelegateStateVisitor.visitBaseUrl(), resourcePath).then(deleteJcr => {
+            Log.info(`${thisMethod} -- logout for offline completed with result ${JSON.stringify(deleteJcr.value)}`);
+            return deleteJcr;
+        });
+    }
+
+    private performLoginForOnlineProcessing(tenantId: string): Promise<JsonClientResponse> {
+        const thisMethod = 'SdaDialogDelegate::performLoginForOnlineProcessing';
         const resourcePath = `tenants/${tenantId}/sessions`;
         const loginModel = DialogProxyTools.constructLoginModel(this._dialogDelegateStateVisitor.visitUserId(),
             this._dialogDelegateStateVisitor.visitPassword());
         return DialogProxyTools.commonFetchClient().postJson(this._dialogDelegateStateVisitor.visitBaseUrl(), resourcePath, loginModel).then(jcr => {
-            Log.info(`${thisMethod} -- login result ${JSON.stringify(jcr.value)}`);
+            Log.info(`${thisMethod} -- login for online completed with result ${JSON.stringify(jcr.value)}`);
             return jcr;
         });
     }
@@ -376,12 +419,14 @@ export class SdaDialogDelegate implements DialogDelegate {
             return Promise.resolve(new JsonClientResponse(dialogMessage, 400));
         }
         const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
-        return this.captureOfflineWorkPackages(pathFields.tenantId, pathFields.sessionId).then(voidValue => {
-            return this.captureOfflineSession(baseUrl, pathFields.tenantId, pathFields.sessionId).then(offlineSession => {
+        return this.captureOfflineWorkPackages(pathFields.tenantId, pathFields.sessionId).then(nullWorkPackagesValue => {
+            return this.captureOfflineSession(baseUrl, pathFields.tenantId, pathFields.sessionId).then(offlineSessionJcr => {
                 this._dialogDelegateStateVisitor.visitBriefcase().visitAndSetOnline(false);
                 return SdaDialogDelegateTools.writeDialogDelegateState(pathFields.tenantId, this._dialogDelegateStateVisitor).then(nullValue => {
                     const nullRedirection = SdaDialogDelegateTools.constructEnterOfflineModeNullRedirection(pathFields.tenantId, pathFields.sessionId);
-                    return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
+                    return this.performLogoutForOfflineProcessing(pathFields.tenantId, pathFields.sessionId).then(nullLogoutValue => {
+                        return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
+                    });
                 });
             });
         });
@@ -393,10 +438,17 @@ export class SdaDialogDelegate implements DialogDelegate {
             return Promise.resolve(new JsonClientResponse(dialogMessage, 400));
         }
         const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
-        this._dialogDelegateStateVisitor.visitBriefcase().visitAndSetOnline(true);
-        return SdaDialogDelegateTools.writeDialogDelegateState(pathFields.tenantId, this._dialogDelegateStateVisitor).then(nullValue => {
-            const nullRedirection = SdaDialogDelegateTools.constructEnterOfflineModeNullRedirection(pathFields.tenantId, pathFields.sessionId);
-            return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
+        return this.performLoginForOnlineProcessing(pathFields.tenantId).then(sessionJcr => {
+            if (sessionJcr.statusCode !== 200) {
+                return sessionJcr;
+            }
+            const sessionVisitor = new SessionVisitor(sessionJcr.value);
+            this._dialogDelegateStateVisitor.visitAndSetSessionId(sessionVisitor.visitId());
+            this._dialogDelegateStateVisitor.visitBriefcase().visitAndSetOnline(true);
+            return SdaDialogDelegateTools.writeDialogDelegateState(pathFields.tenantId, this._dialogDelegateStateVisitor).then(nullValue => {
+                const nullRedirection = SdaDialogDelegateTools.constructEnterOfflineModeNullRedirection(pathFields.tenantId, pathFields.sessionId);
+                return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
+            });
         });
     }
 

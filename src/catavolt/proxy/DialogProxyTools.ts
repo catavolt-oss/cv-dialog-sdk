@@ -1,3 +1,6 @@
+import {BlobClientResponse} from "../client/BlobClientResponse";
+import {JsonClientResponse} from "../client/JsonClientResponse";
+import {TextClientResponse} from "../client/TextClientResponse";
 import {storage} from "../storage";
 import {Log} from '../util/Log';
 import {FetchClient} from "../ws/FetchClient";
@@ -48,6 +51,10 @@ export class DialogProxyTools {
             "deviceProperties": {},
             "type": this.LOGIN_MODEL_TYPE
         };
+    }
+
+    public static constructRequestNotValidDuringOfflineMode(resourcePath: string): Promise<JsonClientResponse> {
+        return Promise.resolve(new JsonClientResponse(this.constructDialogMessageModel(`Request is not valid during offline mode: ${resourcePath}`), 400));
     }
 
     public static constructNullRedirectionId(): string {

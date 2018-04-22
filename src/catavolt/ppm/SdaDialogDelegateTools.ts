@@ -27,7 +27,7 @@ export class SdaDialogDelegateTools {
     public static WORK_PACKAGES_LIST_DIALOG_NAME = 'Workpackage_General';
     public static WORK_PACKAGES_ROOT_DIALOG_NAME = 'Workpackage_General_FORM';
 
-    private static OFFLINE_SESSION_ID = 'offline_session';
+    public static OFFLINE_SESSION_ID = 'offline_session';
 
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
