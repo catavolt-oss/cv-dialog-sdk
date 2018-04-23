@@ -10,6 +10,7 @@ export class DialogProxyTools {
     public static ACTIONS = 'actions';
     public static AVAILABLE_VALUES = 'availableValues';
     public static AVAILABLE_VIEWS = 'availableViews';
+    public static CONTENT = 'content';
     public static DIALOGS = 'dialogs';
     public static RECORD = 'record';
     public static RECORDS = 'records';
@@ -106,6 +107,14 @@ export class DialogProxyTools {
             tenantId: path[1],
             sessionId: path[3],
             dialogId: path[5]
+        }
+    }
+
+    public static deconstructPostSessionContentPath(path: string[]): any {
+        return {
+            tenantId: path[1],
+            sessionId: path[3],
+            contentId: path[5]
         }
     }
 
@@ -382,6 +391,15 @@ export class DialogProxyTools {
 
     public static isPostSession(path: string[]): boolean {
         return path.length === 3 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
+    }
+
+    public static isPostSessionContent(path: string[]): boolean {
+        return (
+            path.length === 6 &&
+            path[0] === DialogProxyTools.TENANTS &&
+            path[2] === DialogProxyTools.SESSIONS &&
+            path[4] === DialogProxyTools.CONTENT
+        );
     }
 
     public static isPostWorkbenchAction(path: string[]): boolean {

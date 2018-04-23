@@ -9,6 +9,7 @@ import {DialogDelegate} from "../proxy/DialogDelegate";
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
 import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
 import {DialogVisitor} from "../proxy/DialogVisitor";
+import {LargePropertyVisitor} from "../proxy/LargePropertyVisitor";
 import {LoginVisitor} from "../proxy/LoginVisitor";
 import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {RecordVisitor} from "../proxy/RecordVisitor";
@@ -23,6 +24,7 @@ import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
 import {SdaDialogDelegateTools} from "./SdaDialogDelegateTools";
 import {SelectedWorkPackageVisitor} from "./SelectedWorkPackageVisitor";
 import {WorkPackagesRecordSetVisitor} from "./WorkPackagesRecordSetVisitor";
+import {ReadLargePropertyParametersVisitor} from "../proxy";
 
 export class SdaDialogDelegate implements DialogDelegate {
 
@@ -144,6 +146,8 @@ export class SdaDialogDelegate implements DialogDelegate {
                 return this.performOfflineDocumentsListRecordSetRequest(baseUrl, resourcePathElems, body);
             } else if (SdaDialogDelegateTools.isOfflineDocumentOpenLatestFileMenuActionRequest(resourcePathElems)) {
                 return this.performOfflineDocumentOpenLatestFileMenuActionRequest(baseUrl, resourcePathElems, body);
+            } else if (SdaDialogDelegateTools.isOfflineDocumentContentRequest(resourcePathElems)) {
+                return this.performOfflineDocumentContentRequest(baseUrl, resourcePathElems, body);
             }
             return DialogProxyTools.constructRequestNotValidDuringOfflineMode('postJson', resourcePath);
         }
@@ -357,6 +361,26 @@ export class SdaDialogDelegate implements DialogDelegate {
         contentRedirectionVisitor.visitAndSetId(offlineContentId);
         await SdaDialogDelegateTools.writeOfflineDocumentContentRedirection(tenantId, this._dialogDelegateStateVisitor.visitUserId(), offlineDocumentsListDialogId, nextDocumentId, contentRedirectionVisitor);
         Log.info(`${thisMethod} -- document content redirection written successfully: ${contentRedirectionVisitor.copyAsJsonString()}`);
+        // GET CONTENT //
+        let nextSequence = 0;
+        while (true) {
+            const contentPath = `tenants/${tenantId}/sessions/${sessionId}/content/${onlineContentId}`;
+            const readLargePropertyParametersJson = {
+                maxBytes: 131072,
+                sequence: nextSequence,
+                type: "hxgn.api.dialog.ReadLargePropertyParameters"
+            };
+            const largePropertyJcr = await DialogProxyTools.commonFetchClient().postJson(this._dialogDelegateStateVisitor.visitBaseUrl(), contentPath, readLargePropertyParametersJson);
+            if (largePropertyJcr.statusCode !== 200) {
+                throw new Error(`Unexpected result when reading content: ${onlineContentId}`);
+            }
+            const largePropertyVisitor = new LargePropertyVisitor(largePropertyJcr.value);
+            await SdaDialogDelegateTools.writeOfflineDocumentContentChunk(tenantId, this._dialogDelegateStateVisitor.visitUserId(), offlineDocumentsListDialogId, nextDocumentId, nextSequence, largePropertyVisitor);
+            if (!largePropertyVisitor.visitHasMore()) {
+                break;
+            }
+            nextSequence++;
+        }
         return null;
     }
 
@@ -530,6 +554,14 @@ export class SdaDialogDelegate implements DialogDelegate {
             }
         }
         return Promise.resolve(new JsonClientResponse(response, 200));
+    }
+
+    private async performOfflineDocumentContentRequest(baseUrl: string, resourcePathElems: string[], body: StringDictionary): Promise<JsonClientResponse> {
+        const thisMethod = 'SdaDialogDelegate::performOfflineBriefcaseWorkPackagesRequest';
+        const pathFields = DialogProxyTools.deconstructPostSessionContentPath(resourcePathElems);
+        const sequence = ReadLargePropertyParametersVisitor.visitSequence(body);
+        const largePropertyVisitor = await SdaDialogDelegateTools.readOfflineDocumentContentChunk(pathFields.tenantId, this._dialogDelegateStateVisitor.visitUserId(), pathFields.contentId, sequence);
+        return new JsonClientResponse(largePropertyVisitor.enclosedJsonObject(), 200);
     }
 
     private async performOfflineDocumentOpenLatestFileMenuActionRequest(baseUrl: string, resourcePathElems: string[], body: StringDictionary): Promise<JsonClientResponse> {

@@ -2,6 +2,7 @@ import {ContentRedirectionVisitor} from "../proxy/ContentRedirectionVisitor";
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
 import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
 import {DialogVisitor} from "../proxy/DialogVisitor";
+import {LargePropertyVisitor} from "../proxy/LargePropertyVisitor";
 import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {RecordVisitor} from "../proxy/RecordVisitor";
 import {SessionVisitor} from "../proxy/SessionVisitor";
@@ -191,6 +192,13 @@ export class SdaDialogDelegateTools {
         return dialogId === this.OFFLINE_BRIEFCASE_DIALOG_COMMENTS_ID;
     }
 
+    public static isOfflineDocumentContentRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostSessionContent(resourcePathElems)) {
+            return false;
+        }
+        return true;
+    }
+
     public static isOfflineDocumentOpenLatestFileMenuActionRequest(resourcePathElems: string[]): boolean {
         if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
             return false;
@@ -327,6 +335,11 @@ export class SdaDialogDelegateTools {
         });
     }
 
+    public static readOfflineDocumentContentChunk(tenantId: string, userId: string, contentId, sequence: number): Promise<LargePropertyVisitor> {
+        const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.content.${contentId}.${sequence}`;
+        return storage.getJson(key).then(jsonObject => new LargePropertyVisitor(jsonObject));
+    }
+
     public static readOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string): Promise<ContentRedirectionVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.${documentsListDialogId}.alias_OpenLatestFile(${documentId}).redirection`;
         return storage.getJson(key).then(jsonObject => new ContentRedirectionVisitor(jsonObject));
@@ -386,7 +399,12 @@ export class SdaDialogDelegateTools {
         return storage.setJson(key, stateVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string, contentRedirectionVisitor: ContentRedirectionVisitor) {
+    public static writeOfflineDocumentContentChunk(tenantId: string, userId: string, offlineDocumentsListDialogId: string, documentId: string, sequence: number, largePropertyVisitor: LargePropertyVisitor): Promise<void> {
+        const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.content.${offlineDocumentsListDialogId}_alias_OpenLatestFile_${documentId}.${sequence}`;
+        return storage.setJson(key, largePropertyVisitor.enclosedJsonObject());
+    }
+
+    public static writeOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string, contentRedirectionVisitor: ContentRedirectionVisitor): Promise<void> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.${documentsListDialogId}.alias_OpenLatestFile(${documentId}).redirection`;
         return storage.setJson(key, contentRedirectionVisitor.enclosedJsonObject());
     }
