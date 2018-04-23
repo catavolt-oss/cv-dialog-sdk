@@ -5,6 +5,7 @@ import {RecordVisitor} from "../proxy/RecordVisitor";
  */
 export class WorkPackageVisitor extends RecordVisitor {
 
+    private static BRIEFCASE_PROPERTY_NAME = "briefcase";
     private static CLASSIFICATION_PROPERTY_NAME = "Classification";
     private static CONFIG_PROPERTY_NAME = "Config";
     private static CONTRACT_PROPERTY_NAME = "Contract";
@@ -27,55 +28,59 @@ export class WorkPackageVisitor extends RecordVisitor {
 
     // --- State Management --- //
 
-    public classification(): string {
+    public visitBriefcase(): boolean {
+        return this.visitPropertyValueAt(WorkPackageVisitor.BRIEFCASE_PROPERTY_NAME);
+    }
+
+    public visitClassification(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.CLASSIFICATION_PROPERTY_NAME);
     }
 
-    public config(): string {
+    public visitConfig(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.CONFIG_PROPERTY_NAME);
     }
 
-    public contract(): string {
+    public visitContract(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.CONTRACT_PROPERTY_NAME);
     }
 
-    public creationDate(): string {
+    public visitCreationDate(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.CREATION_DATE_PROPERTY_NAME);
     }
 
-    public creationUser(): string {
+    public visitCreationUser(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.CREATION_USER_PROPERTY_NAME);
     }
 
-    public description(): string {
+    public visitDescription(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.DESCRIPTION_PROPERTY_NAME);
     }
 
-    public disciplines(): string {
+    public visitDisciplines(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.DISCIPLINES_PROPERTY_NAME);
     }
 
-    public id(): string {
+    public visitId(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.ID_PROPERTY_NAME);
     }
 
-    public lastUpdateDate(): string {
+    public visitLastUpdateDate(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.LAST_UPDATE_DATE_PROPERTY_NAME);
     }
 
-    public name(): string {
+    public visitName(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.NAME_PROPERTY_NAME);
     }
 
-    public organizationsGroup(): string {
+    public visitOrganizationsGroup(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.ORGANIZATIONS_GROUP_PROPERTY_NAME);
     }
 
-    public owningGroup(): string {
+    public visitOwningGroup(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.OWNING_GROUP_PROPERTY_NAME);
     }
 
-    public uid(): string {
+    public visitUid(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.UID_PROPERTY_NAME);
     }
 

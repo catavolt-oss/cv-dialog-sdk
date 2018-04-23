@@ -85,7 +85,15 @@ export class RecordSetVisitor implements JsonObjectVisitor {
     }
 
     public visitAndClearRecords() {
-        return this.enclosedJsonObject().records = [];
+        this.enclosedJsonObject().records = [];
+    }
+
+    public visitHasMore(): boolean {
+        return this.enclosedJsonObject().hasMore;
+    }
+
+    public visitAndSetHasMore(hasMore: boolean) {
+        this.enclosedJsonObject().hasMore = hasMore;
     }
 
     public visitRecordAtId(id: string): RecordVisitor {

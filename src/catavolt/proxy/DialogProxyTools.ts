@@ -53,8 +53,8 @@ export class DialogProxyTools {
         };
     }
 
-    public static constructRequestNotValidDuringOfflineMode(resourcePath: string): Promise<JsonClientResponse> {
-        return Promise.resolve(new JsonClientResponse(this.constructDialogMessageModel(`Request is not valid during offline mode: ${resourcePath}`), 400));
+    public static constructRequestNotValidDuringOfflineMode(action: string, resourcePath: string): Promise<JsonClientResponse> {
+        return Promise.resolve(new JsonClientResponse(this.constructDialogMessageModel(`${action} at ${resourcePath} is not valid during offline mode: `), 400));
     }
 
     public static constructNullRedirectionId(): string {

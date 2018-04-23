@@ -109,6 +109,8 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#recordcount" class="tsd-kind-icon">record<wbr>Count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#updatebriefcasecolumnusingselections" class="tsd-kind-icon">update<wbr>Briefcase<wbr>Column<wbr>Using<wbr>Selections</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visitandclearrecords" class="tsd-kind-icon">visit<wbr>And<wbr>Clear<wbr>Records</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visitandsethasmore" class="tsd-kind-icon">visit<wbr>And<wbr>Set<wbr>Has<wbr>More</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visithasmore" class="tsd-kind-icon">visit<wbr>Has<wbr>More</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visitrecordatid" class="tsd-kind-icon">visit<wbr>Record<wbr>AtId</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visitrecords" class="tsd-kind-icon">visit<wbr>Records</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-static"><a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#addorupdaterecord-1" class="tsd-kind-icon">add<wbr>OrUpdate<wbr>Record</a></li>
@@ -297,7 +299,7 @@
 					<a name="visitandclearrecords" class="tsd-anchor"></a>
 					<h3>visit<wbr>And<wbr>Clear<wbr>Records</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">visit<wbr>And<wbr>Clear<wbr>Records<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">visit<wbr>And<wbr>Clear<wbr>Records<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -307,7 +309,49 @@
 									<li>Defined in proxy/RecordSetVisitor.ts:87</li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="visitandsethasmore" class="tsd-anchor"></a>
+					<h3>visit<wbr>And<wbr>Set<wbr>Has<wbr>More</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">visit<wbr>And<wbr>Set<wbr>Has<wbr>More<span class="tsd-signature-symbol">(</span>hasMore<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="_proxy_recordsetvisitor_.recordsetvisitor.html">RecordSetVisitor</a>.<a href="_proxy_recordsetvisitor_.recordsetvisitor.html#visitandsethasmore">visitAndSetHasMore</a></p>
+								<ul>
+									<li>Defined in proxy/RecordSetVisitor.ts:95</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>hasMore: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="visithasmore" class="tsd-anchor"></a>
+					<h3>visit<wbr>Has<wbr>More</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">visit<wbr>Has<wbr>More<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="_proxy_recordsetvisitor_.recordsetvisitor.html">RecordSetVisitor</a>.<a href="_proxy_recordsetvisitor_.recordsetvisitor.html#visithasmore">visitHasMore</a></p>
+								<ul>
+									<li>Defined in proxy/RecordSetVisitor.ts:91</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -444,6 +488,12 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 								<a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visitandclearrecords" class="tsd-kind-icon">visit<wbr>And<wbr>Clear<wbr>Records</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visitandsethasmore" class="tsd-kind-icon">visit<wbr>And<wbr>Set<wbr>Has<wbr>More</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visithasmore" class="tsd-kind-icon">visit<wbr>Has<wbr>More</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 								<a href="_ppm_workpackagesrecordsetvisitor_.workpackagesrecordsetvisitor.html#visitrecordatid" class="tsd-kind-icon">visit<wbr>Record<wbr>AtId</a>

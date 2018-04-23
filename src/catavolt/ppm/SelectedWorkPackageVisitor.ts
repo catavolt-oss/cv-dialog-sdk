@@ -19,19 +19,19 @@ export class SelectedWorkPackageVisitor extends RecordVisitor {
 
     // --- State Management Helpers --- //
 
-    public static createFromWorkPackageVisitor(workPackageState: WorkPackageVisitor): SelectedWorkPackageVisitor {
+    public static createFromWorkPackageVisitor(workPackageVisitor: WorkPackageVisitor): SelectedWorkPackageVisitor {
         const selectedWorkPackageState = new SelectedWorkPackageVisitor({
-            id: workPackageState.id(),
+            id: workPackageVisitor.visitId(),
             properties: [],
             annotations: [],
             type: "hxgn.api.dialog.Record"
         });
-        selectedWorkPackageState.setCreationDate(workPackageState.creationDate());
-        selectedWorkPackageState.setDescription(workPackageState.description());
-        selectedWorkPackageState.setDisciplines(workPackageState.disciplines());
-        selectedWorkPackageState.setId(workPackageState.id());
-        selectedWorkPackageState.setLastUpdateDate(workPackageState.lastUpdateDate());
-        selectedWorkPackageState.setName(workPackageState.name());
+        selectedWorkPackageState.setCreationDate(workPackageVisitor.visitCreationDate());
+        selectedWorkPackageState.setDescription(workPackageVisitor.visitDescription());
+        selectedWorkPackageState.setDisciplines(workPackageVisitor.visitDisciplines());
+        selectedWorkPackageState.setId(workPackageVisitor.visitId());
+        selectedWorkPackageState.setLastUpdateDate(workPackageVisitor.visitLastUpdateDate());
+        selectedWorkPackageState.setName(workPackageVisitor.visitName());
         return selectedWorkPackageState;
     }
 
