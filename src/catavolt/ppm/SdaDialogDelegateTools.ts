@@ -1,3 +1,4 @@
+import {ContentRedirectionVisitor} from "../proxy/ContentRedirectionVisitor";
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
 import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
 import {DialogVisitor} from "../proxy/DialogVisitor";
@@ -46,6 +47,7 @@ export class SdaDialogDelegateTools {
     private static ENTER_OFFLINE_MODE_MENU_ACTION_ID = 'alias_EnterOfflineMode';
     private static EXIT_OFFLINE_MODE_MENU_ACTION_ID = 'alias_ExitOfflineMode';
     private static OPEN_MENU_ACTION_ID = 'alias_Open';
+    private static OPEN_LATEST_FILE_MENU_ACTION_ID = 'alias_OpenLatestFile';
     private static REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID = 'alias_RemoveFromBriefcase';
     private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
 
@@ -189,6 +191,14 @@ export class SdaDialogDelegateTools {
         return dialogId === this.OFFLINE_BRIEFCASE_DIALOG_COMMENTS_ID;
     }
 
+    public static isOfflineDocumentOpenLatestFileMenuActionRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
+        return pathFields.actionId === this.OPEN_LATEST_FILE_MENU_ACTION_ID;
+    }
+
     public static isOfflineDocumentsListRecordSetRequest(resourcePathElems: string[]): boolean {
         if (!DialogProxyTools.isPostRecords(resourcePathElems)) {
             return false;
@@ -317,6 +327,11 @@ export class SdaDialogDelegateTools {
         });
     }
 
+    public static readOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string): Promise<ContentRedirectionVisitor> {
+        const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.${documentsListDialogId}.alias_OpenLatestFile(${documentId}).redirection`;
+        return storage.getJson(key).then(jsonObject => new ContentRedirectionVisitor(jsonObject));
+    }
+
     public static readOfflineDocumentsListRecordSet(tenantId: string, userId: string, dialogId: string): Promise<RecordSetVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.dialog.${dialogId}.recordSet`;
         return storage.getJson(key).then(jsonObject => new RecordSetVisitor(jsonObject));
@@ -369,6 +384,11 @@ export class SdaDialogDelegateTools {
         const userId = stateVisitor.visitUserId();
         const key = this.createStorageKey(tenantId, userId, this.DIALOG_DELEGATE_STATE_KEY);
         return storage.setJson(key, stateVisitor.enclosedJsonObject());
+    }
+
+    public static writeOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string, contentRedirectionVisitor: ContentRedirectionVisitor) {
+        const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.${documentsListDialogId}.alias_OpenLatestFile(${documentId}).redirection`;
+        return storage.setJson(key, contentRedirectionVisitor.enclosedJsonObject());
     }
 
     public static writeOfflineDocumentsDialogListRecordSet(tenantId: string, userId: string, workPackageId: string, recordSetVisitor: RecordSetVisitor) {

@@ -1,5 +1,6 @@
 export * from './ActionParametersVisitor';
 export * from './AnnotationVisitor';
+export * from './ContentRedirectionVisitor';
 export * from './DialogDelegate';
 export * from './DialogProxy';
 export * from './DialogProxyTools';
