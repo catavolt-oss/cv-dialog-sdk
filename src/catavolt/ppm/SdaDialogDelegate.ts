@@ -11,6 +11,7 @@ import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
 import {DialogVisitor} from "../proxy/DialogVisitor";
 import {LargePropertyVisitor} from "../proxy/LargePropertyVisitor";
 import {LoginVisitor} from "../proxy/LoginVisitor";
+import {ReadLargePropertyParametersVisitor} from "../proxy/ReadLargePropertyParametersVisitor";
 import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {RecordVisitor} from "../proxy/RecordVisitor";
 import {SessionVisitor} from "../proxy/SessionVisitor";
@@ -24,7 +25,6 @@ import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
 import {SdaDialogDelegateTools} from "./SdaDialogDelegateTools";
 import {SelectedWorkPackageVisitor} from "./SelectedWorkPackageVisitor";
 import {WorkPackagesRecordSetVisitor} from "./WorkPackagesRecordSetVisitor";
-import {ReadLargePropertyParametersVisitor} from "../proxy";
 
 export class SdaDialogDelegate implements DialogDelegate {
 
@@ -397,7 +397,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const thisMethod = 'SdaDialogDelegate::captureOfflineWorkPackages';
         Log.info(`${thisMethod} -- capturing work packages list for offline`);
         // GET REDIRECTION //
-        const redirectionPath = `tenants/${tenantId}/sessions/${sessionId}/workbenches/SDAWorkbenchLOCAL/actions/WorkPackages`;
+        const redirectionPath = `tenants/${tenantId}/sessions/${sessionId}/workbenches/SDAWorkbench/actions/WorkPackages`;
         const dialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this._dialogDelegateStateVisitor.visitBaseUrl(), redirectionPath, {});
         if (dialogRedirectionJcr.statusCode !== 303) {
             throw new Error(`Unexpected result when posting for WorkPackages: ${dialogRedirectionJcr.statusCode}`);
