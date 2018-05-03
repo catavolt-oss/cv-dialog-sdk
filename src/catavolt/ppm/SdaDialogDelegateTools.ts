@@ -28,11 +28,41 @@ export class SdaDialogDelegateTools {
     public static BRIEFCASE_MOBILE_COMMENTS_DIALOG_NAME = 'Briefcase_Briefcase_MobileComments';
     public static BRIEFCASE_ROOT_DIALOG_NAME = 'Briefcase_Briefcase_FORM';
     public static BRIEFCASE_WORK_PACKAGES_DIALOG_NAME = 'Briefcase_Briefcase_Workpackages';
+
     public static DOCUMENTS_ROOT_DIALOG_NAME = 'Workpackage_Documents_FORM';
     public static DOCUMENTS_PROPERTIES_DIALOG_NAME = 'Workpackage_Documents_Properties';
     public static DOCUMENTS_LIST_DIALOG_NAME = 'Workpackage_Documents_Documents';
+
+    public static TAGS_ROOT_DIALOG_NAME = 'Workpackage_Tags_FORM';
+    public static TAGS_PROPERTIES_DIALOG_NAME = 'Workpackage_Tags_Properties';
+    public static TAGS_LIST_DIALOG_NAME = 'Workpackage_Tags_Tags';
+
     public static WORK_PACKAGES_LIST_DIALOG_NAME = 'Workpackage_General';
     public static WORK_PACKAGES_ROOT_DIALOG_NAME = 'Workpackage_General_FORM';
+
+    // =========================================
+
+    private static OFFLINE_WORKBENCH_ACTION_MAP = {
+        Briefcase: '',
+        WorkPackages: ''
+    };
+
+    private static DIALOG_NAME_TO_OFFLINE_DIALOG_ID_MAP = {
+        Briefcase_Briefcase_FORM: 'ppm_sda_briefcase',
+        Briefcase_Briefcase_Details: 'ppm_sda_briefcase_details',
+        Briefcase_Briefcase_Workpackages: 'ppm_sda_briefcase_workPackages',
+        Briefcase_Briefcase_MobileComments: 'ppm_sda_briefcase_comments',
+        Workpackage_Documents_FORM: 'ppm_sda_workPackage_documents',
+        Workpackage_Documents_Properties: 'ppm_sda_workPackage_documents_properties',
+        Workpackage_Documents_Documents: 'ppm_sda_workPackage_documents_list',
+        Workpackage_General_FORM: 'ppm_sda_workPackages',
+        Workpackage_General: 'ppm_workPackages_list'
+    };
+
+    private static NAVIGATION_DIALOG_KEY =      '${tenantId}.${userId}.${state}.${event}.dialog';
+    private static NAVIGATION_REDIRECTION_KEY = '${tenantId}.${userId}.${state}.${event}.redirection';
+
+    // =========================================
 
     // Dynamic Dialog Ids -- PRIVATE
     private static OFFLINE_DOCUMENTS_DIALOG_LIST_ID_PREFIX = 'offline_documents_list_';
@@ -42,6 +72,13 @@ export class SdaDialogDelegateTools {
     private static OFFLINE_DOCUMENTS_DIALOG_ROOT_ID_PREFIX = 'offline_documents_';
     private static OFFLINE_DOCUMENTS_DIALOG_ROOT_ID = `${SdaDialogDelegateTools.OFFLINE_DOCUMENTS_DIALOG_ROOT_ID_PREFIX}\${workPackageId}`;
 
+    private static OFFLINE_TAGS_DIALOG_LIST_ID_PREFIX = 'offline_tags_list_';
+    private static OFFLINE_TAGS_DIALOG_LIST_ID = `${SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_LIST_ID_PREFIX}\${workPackageId}`;
+    private static OFFLINE_TAGS_DIALOG_PROPERTIES_ID_PREFIX = 'offline_tags_properties_';
+    private static OFFLINE_TAGS_DIALOG_PROPERTIES_ID = `${SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_PROPERTIES_ID_PREFIX}\${workPackageId}`;
+    private static OFFLINE_TAGS_DIALOG_ROOT_ID_PREFIX = 'offline_tags_';
+    private static OFFLINE_TAGS_DIALOG_ROOT_ID = `${SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_ROOT_ID_PREFIX}\${workPackageId}`;
+
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
     private static BRIEFCASE_WORKBENCH_ACTION_ID = 'Briefcase';
@@ -50,6 +87,7 @@ export class SdaDialogDelegateTools {
     private static OPEN_MENU_ACTION_ID = 'alias_Open';
     private static OPEN_LATEST_FILE_MENU_ACTION_ID = 'alias_OpenLatestFile';
     private static REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID = 'alias_RemoveFromBriefcase';
+    private static SHOW_TAGS_MENU_ACTION_ID = 'alias_ShowTags';
     private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
 
     // Model Types
@@ -69,6 +107,10 @@ export class SdaDialogDelegateTools {
     private static OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_RECORD_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.documents.dialog.offline_documents_properties_${workPackageId}.record';
     private static OFFLINE_DOCUMENTS_DIALOG_LIST_RECORD_SET_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.documents.dialog.offline_documents_list_${workPackageId}.recordSet';
     private static OFFLINE_SESSION_KEY = '${tenantId}.${userId}.offline.session';
+    private static OFFLINE_TAGS_REDIRECTION_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.tags.redirection.${workPackageId}';
+    private static OFFLINE_TAGS_DIALOG_ROOT_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.offline_tags_${workPackageId}';
+    private static OFFLINE_TAGS_DIALOG_PROPERTIES_RECORD_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.offline_tags_properties_${workPackageId}.record';
+    private static OFFLINE_TAGS_DIALOG_LIST_RECORD_SET_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.offline_tags_list_${workPackageId}.recordSet';
     private static OFFLINE_WORK_PACKAGES_LIST_RECORD_SET_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.dialog.offline_workPackages_list.recordSet';
     private static OFFLINE_WORK_PACKAGES_REDIRECTION_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.redirection';
     private static OFFLINE_WORK_PACKAGES_DIALOG_ROOT_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.dialog.root';
@@ -134,6 +176,18 @@ export class SdaDialogDelegateTools {
 
     public static getOfflineDocumentsDialogRootId(workPackageId: string) {
         return this.OFFLINE_DOCUMENTS_DIALOG_ROOT_ID.replace('${workPackageId}', workPackageId);
+    }
+
+    public static getOfflineTagsDialogListId(workPackageId: string) {
+        return this.OFFLINE_TAGS_DIALOG_LIST_ID.replace('${workPackageId}', workPackageId);
+    }
+
+    public static getOfflineTagsDialogPropertiesId(workPackageId: string) {
+        return this.OFFLINE_TAGS_DIALOG_PROPERTIES_ID.replace('${workPackageId}', workPackageId);
+    }
+
+    public static getOfflineTagsDialogRootId(workPackageId: string) {
+        return this.OFFLINE_TAGS_DIALOG_ROOT_ID.replace('${workPackageId}', workPackageId);
     }
 
     public static isBriefcaseWorkbenchActionRequest(resourcePathElems: string[]): boolean {
@@ -227,6 +281,34 @@ export class SdaDialogDelegateTools {
         return pathFields.dialogId.startsWith(this.OFFLINE_DOCUMENTS_DIALOG_ROOT_ID_PREFIX);
     }
 
+    public static isOfflineShowTagsMenuActionRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostMenuAction(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
+        return pathFields.actionId === this.SHOW_TAGS_MENU_ACTION_ID;
+    }
+
+    public static isOfflineTagsListRecordSetRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isPostRecords(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructPostRecordsPath(resourcePathElems);
+        return pathFields.dialogId.startsWith(this.OFFLINE_TAGS_DIALOG_LIST_ID_PREFIX);
+    }
+
+    public static isOfflineTagsPropertiesDialogId(dialogId: string): boolean {
+        return dialogId.startsWith(this.OFFLINE_TAGS_DIALOG_PROPERTIES_ID_PREFIX);
+    }
+
+    public static isOfflineTagsRootDialogRequest(resourcePathElems: string[]): boolean {
+        if (!DialogProxyTools.isGetDialog(resourcePathElems)) {
+            return false;
+        }
+        const pathFields = DialogProxyTools.deconstructGetDialogPath(resourcePathElems);
+        return pathFields.dialogId.startsWith(this.OFFLINE_TAGS_DIALOG_ROOT_ID_PREFIX);
+    }
+
     public static isOfflineWorkPackagesListRecordSetRequest(resourcePathElems: string[]): boolean {
         if (!DialogProxyTools.isPostRecords(resourcePathElems)) {
             return false;
@@ -317,6 +399,11 @@ export class SdaDialogDelegateTools {
         return originalDialog;
     }
 
+    public static mapDialogNameToOfflineDialogId(name: string) {
+        const offlineDialogId = this.DIALOG_NAME_TO_OFFLINE_DIALOG_ID_MAP[name];
+        return offlineDialogId ? offlineDialogId : name;
+    }
+
     public static readDialogDelegateStateVisitor(tenantId: string, userId: string): Promise<SdaDialogDelegateStateVisitor> {
         const key = this.createStorageKey(tenantId, userId, this.DIALOG_DELEGATE_STATE_KEY);
         return storage.getJson(key).then(jsonObject => {
@@ -369,6 +456,27 @@ export class SdaDialogDelegateTools {
     public static readOfflineSession(tenantId: string, userId: string): Promise<SessionVisitor> {
         const key = this.createStorageKey(tenantId, userId, this.OFFLINE_SESSION_KEY);
         return storage.getJson(key).then(jsonObject => new SessionVisitor(jsonObject));
+    }
+
+    public static readOfflineTagsListRecordSet(tenantId: string, userId: string, dialogId: string): Promise<RecordSetVisitor> {
+        const key = `${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.${dialogId}.recordSet`;
+        return storage.getJson(key).then(jsonObject => new RecordSetVisitor(jsonObject));
+    }
+
+    public static readOfflineTagsPropertiesRecord(tenantId: string, userId: string, dialogId: string): Promise<RecordVisitor> {
+        const key = `${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.${dialogId}.record`;
+        return storage.getJson(key).then(jsonObject => new RecordVisitor(jsonObject));
+    }
+
+    public static readOfflineTagsRedirection(tenantId: string, userId: string, workPackageId: string): Promise<DialogRedirectionVisitor> {
+        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_REDIRECTION_KEY);
+        key = key.replace('${workPackageId}', workPackageId);
+        return storage.getJson(key).then(jsonObject => new DialogRedirectionVisitor(jsonObject));
+    }
+
+    public static readOfflineTagsRootDialog(tenantId: string, userId: string, dialogId: string): Promise<DialogVisitor> {
+        const key = `${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.${dialogId}`;
+        return storage.getJson(key).then(jsonObject => new DialogVisitor(jsonObject));
     }
 
     public static readOfflineWorkPackagesRedirection(tenantId: string, userId: string): Promise<DialogRedirectionVisitor> {
@@ -436,6 +544,30 @@ export class SdaDialogDelegateTools {
     public static writeOfflineSession(tenantId: string, userId: string, offlineSessionVisitor: SessionVisitor): Promise<void> {
         const key = this.createStorageKey(tenantId, userId, this.OFFLINE_SESSION_KEY);
         return storage.setJson(key, offlineSessionVisitor.enclosedJsonObject());
+    }
+
+    public static writeOfflineTagsDialogListRecordSet(tenantId: string, userId: string, workPackageId: string, recordSetVisitor: RecordSetVisitor) {
+        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_LIST_RECORD_SET_KEY);
+        key = key.replace('${workPackageId}', workPackageId);
+        return storage.setJson(key, recordSetVisitor.enclosedJsonObject());
+    }
+
+    public static writeOfflineTagsDialogPropertiesRecord(tenantId: string, userId: string, workPackageId: string, recordVisitor: RecordVisitor) {
+        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_PROPERTIES_RECORD_KEY);
+        key = key.replace('${workPackageId}', workPackageId);
+        return storage.setJson(key, recordVisitor.enclosedJsonObject());
+    }
+
+    public static writeOfflineTagsDialogRoot(tenantId: string, userId: string, workPackageId: string, dialogVisitor: DialogVisitor) {
+        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_ROOT_KEY);
+        key = key.replace('${workPackageId}', workPackageId);
+        return storage.setJson(key, dialogVisitor.enclosedJsonObject());
+    }
+
+    public static writeOfflineTagsRedirection(tenantId: string, userId: string, workPackageId: string, dialogRedirectionVistor: DialogRedirectionVisitor) {
+        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_REDIRECTION_KEY);
+        key = key.replace('${workPackageId}', workPackageId);
+        return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
     }
 
     public static writeOfflineWorkPackagesDialogRoot(tenantId: string, userId: string, dialogVisitor: DialogVisitor) {
