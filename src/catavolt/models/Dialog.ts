@@ -282,7 +282,6 @@ export abstract class Dialog {
         return this.catavolt.dialogApi
             .performAction(this.tenantId, this.sessionId, this.id, actionId, actionParams)
             .then((result: Redirection) => {
-                // Redirection.refreshNeeded
                 // @TODO - update relevant referring dialog settings on 'this' dialog
                 this.updateSettingsWithNewDialogProperties(result.referringObject);
                 if (result.refreshNeeded) {
