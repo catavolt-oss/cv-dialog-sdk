@@ -1,11 +1,10 @@
-import {DialogProxyTools} from "./DialogProxyTools";
-import {JsonObjectVisitor} from "./JsonObjectVisitor";
+import { DialogProxyTools } from './DialogProxyTools';
+import { JsonObjectVisitor } from './JsonObjectVisitor';
 
 /**
  *
  */
 export class ActionParametersVisitor implements JsonObjectVisitor {
-
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -15,14 +14,14 @@ export class ActionParametersVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = value;
         }
         if (!DialogProxyTools.isActionParametersObject(this._enclosedJsonObject)) {
-            throw new Error("Object passed to ActionParametersVisitor is not an ActionParameters");
+            throw new Error('Object passed to ActionParametersVisitor is not an ActionParameters');
         }
     }
 
     // --- State Management Helpers --- //
 
     public static visitTargetsValue(actionParameters: object): string[] {
-        return (new ActionParametersVisitor(actionParameters)).visitTargetsValue();
+        return new ActionParametersVisitor(actionParameters).visitTargetsValue();
     }
 
     // --- State Import/Export --- //
@@ -44,5 +43,4 @@ export class ActionParametersVisitor implements JsonObjectVisitor {
     public visitTargetsValue(): string[] {
         return this._enclosedJsonObject.targets;
     }
-
 }

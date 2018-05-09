@@ -1,11 +1,10 @@
-import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
-import {WorkPackageVisitor} from "./WorkPackageVisitor";
+import { RecordSetVisitor } from '../proxy/RecordSetVisitor';
+import { WorkPackageVisitor } from './WorkPackageVisitor';
 
 /**
  *
  */
 export class WorkPackagesRecordSetVisitor extends RecordSetVisitor {
-
     constructor(value: string | object) {
         super(value);
     }
@@ -30,10 +29,10 @@ export class WorkPackagesRecordSetVisitor extends RecordSetVisitor {
                     }
                 }
                 const briefcaseProperty = {
-                    "name": "briefcase",
-                    "annotations": [],
-                    "type": "hxgn.api.dialog.Property",
-                    "value": inBriefcase
+                    name: 'briefcase',
+                    annotations: [],
+                    type: 'hxgn.api.dialog.Property',
+                    value: inBriefcase
                 };
                 r.properties.push(briefcaseProperty);
             }
@@ -44,11 +43,10 @@ export class WorkPackagesRecordSetVisitor extends RecordSetVisitor {
         return super.visitRecordAtId(id) as WorkPackageVisitor;
     }
 
-    public * visitRecords(): IterableIterator<WorkPackageVisitor> {
+    public *visitRecords(): IterableIterator<WorkPackageVisitor> {
         let index = 0;
         while (index < this.enclosedJsonObject().records.length) {
             yield new WorkPackageVisitor(this.enclosedJsonObject().records[index++]);
         }
     }
-
 }

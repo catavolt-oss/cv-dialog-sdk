@@ -1,10 +1,9 @@
-import {RecordVisitor} from "../proxy/RecordVisitor";
+import { RecordVisitor } from '../proxy/RecordVisitor';
 
 /**
  *
  */
 export class BriefcaseVisitor extends RecordVisitor {
-
     private static ONLINE_PROPERTY_NAME = 'online';
 
     constructor(value: string | object) {
@@ -14,7 +13,7 @@ export class BriefcaseVisitor extends RecordVisitor {
     // --- State Management Helpers --- //
 
     public static visitAndSetOnline(jsonObject: object, online: boolean) {
-        return (new BriefcaseVisitor(jsonObject)).visitAndSetOnline(online);
+        return new BriefcaseVisitor(jsonObject).visitAndSetOnline(online);
     }
 
     // --- State Management --- //
@@ -26,5 +25,4 @@ export class BriefcaseVisitor extends RecordVisitor {
     public visitAndSetOnline(onlineValue: boolean) {
         this.visitAndSetPropertyValueAt(BriefcaseVisitor.ONLINE_PROPERTY_NAME, onlineValue);
     }
-
 }

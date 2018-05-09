@@ -1,11 +1,10 @@
-import {DialogProxyTools} from "./DialogProxyTools";
-import {JsonObjectVisitor} from "./JsonObjectVisitor";
+import { DialogProxyTools } from './DialogProxyTools';
+import { JsonObjectVisitor } from './JsonObjectVisitor';
 
 /**
  *
  */
 export class SessionVisitor implements JsonObjectVisitor {
-
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -15,14 +14,14 @@ export class SessionVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = value;
         }
         if (!DialogProxyTools.isSessionObject(this._enclosedJsonObject)) {
-            throw new Error("Object passed to SessionVisitor is not a Session");
+            throw new Error('Object passed to SessionVisitor is not a Session');
         }
     }
 
     // --- State Management Helpers --- //
 
     public static visitUserId(session: object): string {
-        return (new SessionVisitor(session)).visitUserId();
+        return new SessionVisitor(session).visitUserId();
     }
 
     // --- State Import/Export --- //
@@ -52,5 +51,4 @@ export class SessionVisitor implements JsonObjectVisitor {
     public visitUserId(): string {
         return this.enclosedJsonObject().userId;
     }
-
 }

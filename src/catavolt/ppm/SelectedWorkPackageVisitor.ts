@@ -1,17 +1,16 @@
-import {RecordVisitor} from "../proxy/RecordVisitor";
-import {WorkPackageVisitor} from "./WorkPackageVisitor";
+import { RecordVisitor } from '../proxy/RecordVisitor';
+import { WorkPackageVisitor } from './WorkPackageVisitor';
 
 /**
  *
  */
 export class SelectedWorkPackageVisitor extends RecordVisitor {
-
-    private static CREATION_DATE_PROPERTY_NAME = "Creation_Date";
-    private static DESCRIPTION_PROPERTY_NAME = "Description";
-    private static DISCIPLINES_PROPERTY_NAME = "Disciplines";
-    private static ID_PROPERTY_NAME = "Id";
-    private static LAST_UPDATE_DATE_PROPERTY_NAME = "Last_Update_Date";
-    private static NAME_PROPERTY_NAME = "Name";
+    private static CREATION_DATE_PROPERTY_NAME = 'Creation_Date';
+    private static DESCRIPTION_PROPERTY_NAME = 'Description';
+    private static DISCIPLINES_PROPERTY_NAME = 'Disciplines';
+    private static ID_PROPERTY_NAME = 'Id';
+    private static LAST_UPDATE_DATE_PROPERTY_NAME = 'Last_Update_Date';
+    private static NAME_PROPERTY_NAME = 'Name';
 
     constructor(value: string | object) {
         super(value);
@@ -24,7 +23,7 @@ export class SelectedWorkPackageVisitor extends RecordVisitor {
             id: workPackageVisitor.visitId(),
             properties: [],
             annotations: [],
-            type: "hxgn.api.dialog.Record"
+            type: 'hxgn.api.dialog.Record'
         });
         selectedWorkPackageState.setCreationDate(workPackageVisitor.visitCreationDate());
         selectedWorkPackageState.setDescription(workPackageVisitor.visitDescription());
@@ -84,5 +83,4 @@ export class SelectedWorkPackageVisitor extends RecordVisitor {
     public setName(value: string) {
         this.visitAndSetPropertyValueAt(SelectedWorkPackageVisitor.NAME_PROPERTY_NAME, value);
     }
-
 }

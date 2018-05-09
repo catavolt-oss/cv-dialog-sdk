@@ -1,12 +1,11 @@
-import {DialogProxyTools} from "./DialogProxyTools";
-import {JsonObjectVisitor} from "./JsonObjectVisitor";
-import {RecordVisitor} from "./RecordVisitor";
+import { DialogProxyTools } from './DialogProxyTools';
+import { JsonObjectVisitor } from './JsonObjectVisitor';
+import { RecordVisitor } from './RecordVisitor';
 
 /**
  *
  */
 export class RecordSetVisitor implements JsonObjectVisitor {
-
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -16,7 +15,7 @@ export class RecordSetVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = value;
         }
         if (!DialogProxyTools.isRecordSetObject(this._enclosedJsonObject)) {
-            throw new Error("Object passed to RecordSetVisitor is not a RecordSet");
+            throw new Error('Object passed to RecordSetVisitor is not a RecordSet');
         }
         if (!this._enclosedJsonObject.records) {
             throw new Error('Invalid record set -- missing records field');
@@ -29,7 +28,7 @@ export class RecordSetVisitor implements JsonObjectVisitor {
     // --- State Management Helpers --- //
 
     public static addOrUpdateRecord(jsonObject: object, recordState: RecordVisitor) {
-        (new RecordSetVisitor(jsonObject)).addOrUpdateRecord(recordState);
+        new RecordSetVisitor(jsonObject).addOrUpdateRecord(recordState);
     }
 
     public static emptyRecordSetVisitor(): RecordSetVisitor {
@@ -37,7 +36,7 @@ export class RecordSetVisitor implements JsonObjectVisitor {
             defaultActionId: null,
             records: [],
             hasMore: false,
-            type: "hxgn.api.dialog.RecordSet"
+            type: 'hxgn.api.dialog.RecordSet'
         });
     }
 
@@ -111,5 +110,4 @@ export class RecordSetVisitor implements JsonObjectVisitor {
             yield new RecordVisitor(this.enclosedJsonObject().records[index++]);
         }
     }
-
 }

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Login | cv-dialog-sdk</title>
+	<title>CatavoltAuth | cv-dialog-sdk</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,13 +56,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_models_login_.html">&quot;models/Login&quot;</a>
+					<a href="../modules/_auth_catavoltauth_.html">&quot;auth/CatavoltAuth&quot;</a>
 				</li>
 				<li>
-					<a href="_models_login_.login.html">Login</a>
+					<a href="_auth_catavoltauth_.catavoltauth.html">CatavoltAuth</a>
 				</li>
 			</ul>
-			<h1>Interface Login</h1>
+			<h1>Class CatavoltAuth</h1>
 		</div>
 	</div>
 </header>
@@ -73,7 +73,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Login</span>
+						<span class="target">CatavoltAuth</span>
 					</li>
 				</ul>
 			</section>
@@ -82,91 +82,65 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
+							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_models_login_.login.html#clienttype" class="tsd-kind-icon">client<wbr>Type</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_models_login_.login.html#deviceproperties" class="tsd-kind-icon">device<wbr>Properties</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_models_login_.login.html#password" class="tsd-kind-icon">password</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_models_login_.login.html#permissiontoken" class="tsd-kind-icon">permission<wbr>Token</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_models_login_.login.html#proofkey" class="tsd-kind-icon">proof<wbr>Key</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_models_login_.login.html#type" class="tsd-kind-icon">type</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_models_login_.login.html#userid" class="tsd-kind-icon">user<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static"><a href="_auth_catavoltauth_.catavoltauth.html#_getoauthrequrl" class="tsd-kind-icon">_getOAuth<wbr>Req<wbr>Url</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="_auth_catavoltauth_.catavoltauth.html#getoauthurl" class="tsd-kind-icon">getOAuth<wbr>Url</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="clienttype" class="tsd-anchor"></a>
-					<h3>client<wbr>Type</h3>
-					<div class="tsd-signature tsd-kind-icon">client<wbr>Type<span class="tsd-signature-symbol">:</span> <a href="../modules/_models_types_.html#clienttype" class="tsd-signature-type">ClientType</a></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in models/Login.ts:9</li>
-						</ul>
-					</aside>
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+					<a name="_getoauthrequrl" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagPrivate">Private</span> _getOAuth<wbr>Req<wbr>Url</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">_getOAuth<wbr>Req<wbr>Url<span class="tsd-signature-symbol">(</span>tenantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in auth/CatavoltAuth.ts:21</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>tenantId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="deviceproperties" class="tsd-anchor"></a>
-					<h3>device<wbr>Properties</h3>
-					<div class="tsd-signature tsd-kind-icon">device<wbr>Properties<span class="tsd-signature-symbol">:</span> <a href="_util_stringdictionary_.stringdictionary.html" class="tsd-signature-type">StringDictionary</a></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in models/Login.ts:10</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="password" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> password</h3>
-					<div class="tsd-signature tsd-kind-icon">password<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in models/Login.ts:6</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="permissiontoken" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> permission<wbr>Token</h3>
-					<div class="tsd-signature tsd-kind-icon">permission<wbr>Token<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in models/Login.ts:7</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="proofkey" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> proof<wbr>Key</h3>
-					<div class="tsd-signature tsd-kind-icon">proof<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in models/Login.ts:8</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="type" class="tsd-anchor"></a>
-					<h3>type</h3>
-					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in models/Login.ts:11</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="userid" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> user<wbr>Id</h3>
-					<div class="tsd-signature tsd-kind-icon">user<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in models/Login.ts:5</li>
-						</ul>
-					</aside>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="getoauthurl" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> getOAuth<wbr>Url</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">getOAuth<wbr>Url<span class="tsd-signature-symbol">(</span>tenantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, proofKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in auth/CatavoltAuth.ts:5</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>tenantId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>proofKey: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -177,7 +151,7 @@
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="../modules/_models_login_.html">"models/<wbr>Login"</a>
+						<a href="../modules/_auth_catavoltauth_.html">"auth/<wbr>Catavolt<wbr>Auth"</a>
 					</li>
 				</ul>
 			</nav>
@@ -185,29 +159,14 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_models_login_.login.html" class="tsd-kind-icon">Login</a>
+					<li class="current tsd-kind-class tsd-parent-kind-external-module">
+						<a href="_auth_catavoltauth_.catavoltauth.html" class="tsd-kind-icon">Catavolt<wbr>Auth</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_models_login_.login.html#clienttype" class="tsd-kind-icon">client<wbr>Type</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+								<a href="_auth_catavoltauth_.catavoltauth.html#_getoauthrequrl" class="tsd-kind-icon">_getOAuth<wbr>Req<wbr>Url</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_models_login_.login.html#deviceproperties" class="tsd-kind-icon">device<wbr>Properties</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_models_login_.login.html#password" class="tsd-kind-icon">password</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_models_login_.login.html#permissiontoken" class="tsd-kind-icon">permission<wbr>Token</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_models_login_.login.html#proofkey" class="tsd-kind-icon">proof<wbr>Key</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_models_login_.login.html#type" class="tsd-kind-icon">type</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_models_login_.login.html#userid" class="tsd-kind-icon">user<wbr>Id</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="_auth_catavoltauth_.catavoltauth.html#getoauthurl" class="tsd-kind-icon">getOAuth<wbr>Url</a>
 							</li>
 						</ul>
 					</li>

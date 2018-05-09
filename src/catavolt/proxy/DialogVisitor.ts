@@ -1,11 +1,10 @@
-import {JsonObjectVisitor} from "./JsonObjectVisitor";
-import {DialogProxyTools} from "./DialogProxyTools";
+import { JsonObjectVisitor } from './JsonObjectVisitor';
+import { DialogProxyTools } from './DialogProxyTools';
 
 /**
  *
  */
 export class DialogVisitor implements JsonObjectVisitor {
-
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -15,18 +14,18 @@ export class DialogVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = value;
         }
         if (!DialogProxyTools.isDialogObject(this._enclosedJsonObject)) {
-            throw new Error("Object passed to DialogVisitor is not a Dialog");
+            throw new Error('Object passed to DialogVisitor is not a Dialog');
         }
     }
 
     // --- State Management Helpers --- //
 
     public static propagateTenantIdAndSessionId(dialog: object, tenantId: string, sessionId: string) {
-        (new DialogVisitor(dialog)).propagateTenantIdAndSessionId(tenantId, sessionId);
+        new DialogVisitor(dialog).propagateTenantIdAndSessionId(tenantId, sessionId);
     }
 
     public static visitId(dialog: object): string {
-        return (new DialogVisitor(dialog)).visitId();
+        return new DialogVisitor(dialog).visitId();
     }
 
     // --- State Import/Export --- //
@@ -96,5 +95,4 @@ export class DialogVisitor implements JsonObjectVisitor {
         }
         return false;
     }
-
 }

@@ -6,4 +6,3 @@ export * from './SelectedWorkPackagesRecordSetVisitor';
 export * from './SelectedWorkPackageVisitor';
 export * from './WorkPackageVisitor';
 export * from './WorkPackagesRecordSetVisitor';
-

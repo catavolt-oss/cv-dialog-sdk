@@ -71,6 +71,12 @@ export interface CatavoltApi {
      */
     login(tenantId: string, clientType: ClientType, userId: string, password: string): Promise<Session | Redirection>;
 
+    loginWithToken(
+        tenantId: string,
+        clientType: ClientType,
+        permissionToken: string,
+        proofKey: string
+    ): Promise<Session | Redirection>;
     /**
      * Logout and destroy the session
      * @returns {{sessionId:string}}

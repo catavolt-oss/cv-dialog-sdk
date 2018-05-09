@@ -1,20 +1,19 @@
-import {ContentRedirectionVisitor} from "../proxy/ContentRedirectionVisitor";
-import {DialogProxyTools} from "../proxy/DialogProxyTools";
-import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
-import {DialogVisitor} from "../proxy/DialogVisitor";
-import {LargePropertyVisitor} from "../proxy/LargePropertyVisitor";
-import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
-import {RecordVisitor} from "../proxy/RecordVisitor";
-import {SessionVisitor} from "../proxy/SessionVisitor";
-import {storage} from "../storage";
-import {Log} from "../util/Log";
-import {StringDictionary} from "../util/StringDictionary";
-import {BriefcaseVisitor} from "./BriefcaseVisitor";
-import {SdaGetBriefcaseRecordJsonSample} from "./samples/SdaGetBriefcaseRecordJsonSample";
-import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
+import { ContentRedirectionVisitor } from '../proxy/ContentRedirectionVisitor';
+import { DialogProxyTools } from '../proxy/DialogProxyTools';
+import { DialogRedirectionVisitor } from '../proxy/DialogRedirectionVisitor';
+import { DialogVisitor } from '../proxy/DialogVisitor';
+import { LargePropertyVisitor } from '../proxy/LargePropertyVisitor';
+import { RecordSetVisitor } from '../proxy/RecordSetVisitor';
+import { RecordVisitor } from '../proxy/RecordVisitor';
+import { SessionVisitor } from '../proxy/SessionVisitor';
+import { storage } from '../storage';
+import { Log } from '../util/Log';
+import { StringDictionary } from '../util/StringDictionary';
+import { BriefcaseVisitor } from './BriefcaseVisitor';
+import { SdaGetBriefcaseRecordJsonSample } from './samples/SdaGetBriefcaseRecordJsonSample';
+import { SdaDialogDelegateStateVisitor } from './SdaDialogDelegateStateVisitor';
 
 export class SdaDialogDelegateTools {
-
     // Dialog Ids
     public static OFFLINE_BRIEFCASE_DIALOG_COMMENTS_ID = 'offline_briefcase_comments';
     public static OFFLINE_BRIEFCASE_DIALOG_DETAILS_ID = 'offline_briefcase_details';
@@ -59,25 +58,37 @@ export class SdaDialogDelegateTools {
         Workpackage_General: 'ppm_workPackages_list'
     };
 
-    private static NAVIGATION_DIALOG_KEY =      '${tenantId}.${userId}.${state}.${event}.dialog';
+    private static NAVIGATION_DIALOG_KEY = '${tenantId}.${userId}.${state}.${event}.dialog';
     private static NAVIGATION_REDIRECTION_KEY = '${tenantId}.${userId}.${state}.${event}.redirection';
 
     // =========================================
 
     // Dynamic Dialog Ids -- PRIVATE
     private static OFFLINE_DOCUMENTS_DIALOG_LIST_ID_PREFIX = 'offline_documents_list_';
-    private static OFFLINE_DOCUMENTS_DIALOG_LIST_ID = `${SdaDialogDelegateTools.OFFLINE_DOCUMENTS_DIALOG_LIST_ID_PREFIX}\${workPackageId}`;
+    private static OFFLINE_DOCUMENTS_DIALOG_LIST_ID = `${
+        SdaDialogDelegateTools.OFFLINE_DOCUMENTS_DIALOG_LIST_ID_PREFIX
+    }\${workPackageId}`;
     private static OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_ID_PREFIX = 'offline_documents_properties_';
-    private static OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_ID = `${SdaDialogDelegateTools.OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_ID_PREFIX}\${workPackageId}`;
+    private static OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_ID = `${
+        SdaDialogDelegateTools.OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_ID_PREFIX
+    }\${workPackageId}`;
     private static OFFLINE_DOCUMENTS_DIALOG_ROOT_ID_PREFIX = 'offline_documents_';
-    private static OFFLINE_DOCUMENTS_DIALOG_ROOT_ID = `${SdaDialogDelegateTools.OFFLINE_DOCUMENTS_DIALOG_ROOT_ID_PREFIX}\${workPackageId}`;
+    private static OFFLINE_DOCUMENTS_DIALOG_ROOT_ID = `${
+        SdaDialogDelegateTools.OFFLINE_DOCUMENTS_DIALOG_ROOT_ID_PREFIX
+    }\${workPackageId}`;
 
     private static OFFLINE_TAGS_DIALOG_LIST_ID_PREFIX = 'offline_tags_list_';
-    private static OFFLINE_TAGS_DIALOG_LIST_ID = `${SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_LIST_ID_PREFIX}\${workPackageId}`;
+    private static OFFLINE_TAGS_DIALOG_LIST_ID = `${
+        SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_LIST_ID_PREFIX
+    }\${workPackageId}`;
     private static OFFLINE_TAGS_DIALOG_PROPERTIES_ID_PREFIX = 'offline_tags_properties_';
-    private static OFFLINE_TAGS_DIALOG_PROPERTIES_ID = `${SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_PROPERTIES_ID_PREFIX}\${workPackageId}`;
+    private static OFFLINE_TAGS_DIALOG_PROPERTIES_ID = `${
+        SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_PROPERTIES_ID_PREFIX
+    }\${workPackageId}`;
     private static OFFLINE_TAGS_DIALOG_ROOT_ID_PREFIX = 'offline_tags_';
-    private static OFFLINE_TAGS_DIALOG_ROOT_ID = `${SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_ROOT_ID_PREFIX}\${workPackageId}`;
+    private static OFFLINE_TAGS_DIALOG_ROOT_ID = `${
+        SdaDialogDelegateTools.OFFLINE_TAGS_DIALOG_ROOT_ID_PREFIX
+    }\${workPackageId}`;
 
     // Action Ids
     private static ADD_TO_BRIEFCASE_MENU_ACTION_ID = 'alias_AddToBriefcase';
@@ -115,21 +126,25 @@ export class SdaDialogDelegateTools {
     private static OFFLINE_WORK_PACKAGES_REDIRECTION_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.redirection';
     private static OFFLINE_WORK_PACKAGES_DIALOG_ROOT_KEY = '${tenantId}.${userId}.ppm.sda.workPackages.dialog.root';
 
-    public static constructAddToBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
+    public static constructAddToBriefcaseNullRedirection(
+        tenantId: string,
+        sessionId: string,
+        referringDialogId: string
+    ): StringDictionary {
         const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
         return {
-            "tenantId": tenantId,
-            "referringObject": {
-                "dialogMode": "LIST",
-                "dialogAlias": "Workpackage_AddToBriefcase_FORM",
-                "actionId": "alias_AddToBriefcase",
-                "type": "hxgn.api.dialog.ReferringDialog",
-                "dialogId": referringDialogId
+            tenantId: tenantId,
+            referringObject: {
+                dialogMode: 'LIST',
+                dialogAlias: 'Workpackage_AddToBriefcase_FORM',
+                actionId: 'alias_AddToBriefcase',
+                type: 'hxgn.api.dialog.ReferringDialog',
+                dialogId: referringDialogId
             },
-            "refreshNeeded": true,
-            "sessionId": sessionId,
-            "id": nullRedirectionId,
-            "type": "hxgn.api.dialog.NullRedirection"
+            refreshNeeded: true,
+            sessionId: sessionId,
+            id: nullRedirectionId,
+            type: 'hxgn.api.dialog.NullRedirection'
         };
     }
 
@@ -143,26 +158,30 @@ export class SdaDialogDelegateTools {
 
     public static constructOfflineLogoutResponse(sessionId: string) {
         return {
-            "sessionId": sessionId,
-            "type": this.SESSION_ID_MODEL_TYPE
+            sessionId: sessionId,
+            type: this.SESSION_ID_MODEL_TYPE
         };
     }
 
-    public static constructRemoveFromBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
+    public static constructRemoveFromBriefcaseNullRedirection(
+        tenantId: string,
+        sessionId: string,
+        referringDialogId: string
+    ): StringDictionary {
         const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
         return {
-            "tenantId": tenantId,
-            "referringObject": {
-                "dialogMode": "LIST",
-                "dialogAlias": "Workpackage_RemoveFromBriefcase_FORM",
-                "actionId": "alias_RemoveFromBriefcase",
-                "type": "hxgn.api.dialog.ReferringDialog",
-                "dialogId": referringDialogId
+            tenantId: tenantId,
+            referringObject: {
+                dialogMode: 'LIST',
+                dialogAlias: 'Workpackage_RemoveFromBriefcase_FORM',
+                actionId: 'alias_RemoveFromBriefcase',
+                type: 'hxgn.api.dialog.ReferringDialog',
+                dialogId: referringDialogId
             },
-            "refreshNeeded": true,
-            "sessionId": sessionId,
-            "id": nullRedirectionId,
-            "type": "hxgn.api.dialog.NullRedirection"
+            refreshNeeded: true,
+            sessionId: sessionId,
+            id: nullRedirectionId,
+            type: 'hxgn.api.dialog.NullRedirection'
         };
     }
 
@@ -322,8 +341,10 @@ export class SdaDialogDelegateTools {
             return false;
         }
         const pathFields = DialogProxyTools.deconstructPostMenuActionPath(resourcePathElems);
-        return pathFields.dialogId === this.OFFLINE_WORK_PACKAGES_DIALOG_LIST_ID &&
-            pathFields.actionId === this.OPEN_MENU_ACTION_ID;
+        return (
+            pathFields.dialogId === this.OFFLINE_WORK_PACKAGES_DIALOG_LIST_ID &&
+            pathFields.actionId === this.OPEN_MENU_ACTION_ID
+        );
     }
 
     public static isOfflineWorkPackagesRootDialogRequest(resourcePathElems: string[]): boolean {
@@ -349,8 +370,10 @@ export class SdaDialogDelegateTools {
         if (!jsonObject || !jsonObject.type || !jsonObject.dialogName) {
             return false;
         }
-        return jsonObject.type === this.RECORD_SET_MODEL_TYPE &&
-            jsonObject.dialogName === this.WORK_PACKAGES_LIST_DIALOG_NAME;
+        return (
+            jsonObject.type === this.RECORD_SET_MODEL_TYPE &&
+            jsonObject.dialogName === this.WORK_PACKAGES_LIST_DIALOG_NAME
+        );
     }
 
     public static isWorkPackagesRemoveFromBriefcaseMenuActionRequest(resourcePathElems: string[]): boolean {
@@ -373,27 +396,29 @@ export class SdaDialogDelegateTools {
         if (!jsonObject || !jsonObject.type || !jsonObject.dialogName) {
             return false;
         }
-        return jsonObject.type === this.EDITOR_DIALOG_MODEL_TYPE &&
-            jsonObject.dialogName === this.WORK_PACKAGES_ROOT_DIALOG_NAME;
+        return (
+            jsonObject.type === this.EDITOR_DIALOG_MODEL_TYPE &&
+            jsonObject.dialogName === this.WORK_PACKAGES_ROOT_DIALOG_NAME
+        );
     }
 
     public static insertBriefcaseMetaDataIntoWorkPackagesDialog(originalDialog: StringDictionary): StringDictionary {
         const workPackagesQueryDialog = originalDialog.children[0];
         const propertyDefs = workPackagesQueryDialog.recordDef.propertyDefs;
         propertyDefs.push({
-            "writeAllowed": false,
-            "propertyName": "briefcase",
-            "canCauseSideEffects": false,
-            "upperCaseOnly": false,
-            "propertyType": "boolean",
-            "type": "hxgn.api.dialog.PropertyDef",
-            "writeEnabled": false
+            writeAllowed: false,
+            propertyName: 'briefcase',
+            canCauseSideEffects: false,
+            upperCaseOnly: false,
+            propertyType: 'boolean',
+            type: 'hxgn.api.dialog.PropertyDef',
+            writeEnabled: false
         });
         const columns = workPackagesQueryDialog.view.columns;
         columns.push({
-            "propertyName": "briefcase",
-            "heading": "Briefcase",
-            "type": "hxgn.api.dialog.Column"
+            propertyName: 'briefcase',
+            heading: 'Briefcase',
+            type: 'hxgn.api.dialog.Column'
         });
         // Return original dialog WITH patches
         return originalDialog;
@@ -404,7 +429,10 @@ export class SdaDialogDelegateTools {
         return offlineDialogId ? offlineDialogId : name;
     }
 
-    public static readDialogDelegateStateVisitor(tenantId: string, userId: string): Promise<SdaDialogDelegateStateVisitor> {
+    public static readDialogDelegateStateVisitor(
+        tenantId: string,
+        userId: string
+    ): Promise<SdaDialogDelegateStateVisitor> {
         const key = this.createStorageKey(tenantId, userId, this.DIALOG_DELEGATE_STATE_KEY);
         return storage.getJson(key).then(jsonObject => {
             if (!jsonObject) {
@@ -416,39 +444,67 @@ export class SdaDialogDelegateTools {
                     userId: null,
                     workPackages: RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject()
                 };
-                Log.info('SdaDialogDelegateTools::readDelegateState -- returning defaults: ' + JSON.stringify(jsonObject));
+                Log.info(
+                    'SdaDialogDelegateTools::readDelegateState -- returning defaults: ' + JSON.stringify(jsonObject)
+                );
             }
             return new SdaDialogDelegateStateVisitor(jsonObject);
         });
     }
 
-    public static readOfflineDocumentContentChunk(tenantId: string, userId: string, contentId, sequence: number): Promise<LargePropertyVisitor> {
+    public static readOfflineDocumentContentChunk(
+        tenantId: string,
+        userId: string,
+        contentId,
+        sequence: number
+    ): Promise<LargePropertyVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.content.${contentId}.${sequence}`;
         return storage.getJson(key).then(jsonObject => new LargePropertyVisitor(jsonObject));
     }
 
-    public static readOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string): Promise<ContentRedirectionVisitor> {
+    public static readOfflineDocumentContentRedirection(
+        tenantId: string,
+        userId: string,
+        documentsListDialogId: string,
+        documentId: string
+    ): Promise<ContentRedirectionVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.${documentsListDialogId}.alias_OpenLatestFile(${documentId}).redirection`;
         return storage.getJson(key).then(jsonObject => new ContentRedirectionVisitor(jsonObject));
     }
 
-    public static readOfflineDocumentsListRecordSet(tenantId: string, userId: string, dialogId: string): Promise<RecordSetVisitor> {
+    public static readOfflineDocumentsListRecordSet(
+        tenantId: string,
+        userId: string,
+        dialogId: string
+    ): Promise<RecordSetVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.dialog.${dialogId}.recordSet`;
         return storage.getJson(key).then(jsonObject => new RecordSetVisitor(jsonObject));
     }
 
-    public static readOfflineDocumentsPropertiesRecord(tenantId: string, userId: string, dialogId: string): Promise<RecordVisitor> {
+    public static readOfflineDocumentsPropertiesRecord(
+        tenantId: string,
+        userId: string,
+        dialogId: string
+    ): Promise<RecordVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.dialog.${dialogId}.record`;
         return storage.getJson(key).then(jsonObject => new RecordVisitor(jsonObject));
     }
 
-    public static readOfflineDocumentsRedirection(tenantId: string, userId: string, workPackageId: string): Promise<DialogRedirectionVisitor> {
+    public static readOfflineDocumentsRedirection(
+        tenantId: string,
+        userId: string,
+        workPackageId: string
+    ): Promise<DialogRedirectionVisitor> {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_REDIRECTION_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.getJson(key).then(jsonObject => new DialogRedirectionVisitor(jsonObject));
     }
 
-    public static readOfflineDocumentsRootDialog(tenantId: string, userId: string, dialogId: string): Promise<DialogVisitor> {
+    public static readOfflineDocumentsRootDialog(
+        tenantId: string,
+        userId: string,
+        dialogId: string
+    ): Promise<DialogVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.dialog.${dialogId}`;
         return storage.getJson(key).then(jsonObject => new DialogVisitor(jsonObject));
     }
@@ -458,28 +514,47 @@ export class SdaDialogDelegateTools {
         return storage.getJson(key).then(jsonObject => new SessionVisitor(jsonObject));
     }
 
-    public static readOfflineTagsListRecordSet(tenantId: string, userId: string, dialogId: string): Promise<RecordSetVisitor> {
+    public static readOfflineTagsListRecordSet(
+        tenantId: string,
+        userId: string,
+        dialogId: string
+    ): Promise<RecordSetVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.${dialogId}.recordSet`;
         return storage.getJson(key).then(jsonObject => new RecordSetVisitor(jsonObject));
     }
 
-    public static readOfflineTagsPropertiesRecord(tenantId: string, userId: string, dialogId: string): Promise<RecordVisitor> {
+    public static readOfflineTagsPropertiesRecord(
+        tenantId: string,
+        userId: string,
+        dialogId: string
+    ): Promise<RecordVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.${dialogId}.record`;
         return storage.getJson(key).then(jsonObject => new RecordVisitor(jsonObject));
     }
 
-    public static readOfflineTagsRedirection(tenantId: string, userId: string, workPackageId: string): Promise<DialogRedirectionVisitor> {
+    public static readOfflineTagsRedirection(
+        tenantId: string,
+        userId: string,
+        workPackageId: string
+    ): Promise<DialogRedirectionVisitor> {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_REDIRECTION_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.getJson(key).then(jsonObject => new DialogRedirectionVisitor(jsonObject));
     }
 
-    public static readOfflineTagsRootDialog(tenantId: string, userId: string, dialogId: string): Promise<DialogVisitor> {
+    public static readOfflineTagsRootDialog(
+        tenantId: string,
+        userId: string,
+        dialogId: string
+    ): Promise<DialogVisitor> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.tags.dialog.${dialogId}`;
         return storage.getJson(key).then(jsonObject => new DialogVisitor(jsonObject));
     }
 
-    public static readOfflineWorkPackagesRedirection(tenantId: string, userId: string): Promise<DialogRedirectionVisitor> {
+    public static readOfflineWorkPackagesRedirection(
+        tenantId: string,
+        userId: string
+    ): Promise<DialogRedirectionVisitor> {
         const key = this.createStorageKey(tenantId, userId, this.OFFLINE_WORK_PACKAGES_REDIRECTION_KEY);
         return storage.getJson(key).then(jsonObject => new DialogRedirectionVisitor(jsonObject));
     }
@@ -490,81 +565,146 @@ export class SdaDialogDelegateTools {
     }
 
     public static showAllStorageKeys(): Promise<void> {
-        return storage.getAllKeys().then(allKeys => {
-            const keyCount = allKeys.length;
-            Log.info(`SdaDialogDelegateTools::showAllStorageKeys -- key count: ${allKeys.length}`);
-            for (let i = keyCount - 1; i > -1; --i) {
-                Log.info(`SdaDialogDelegateTools::showAllStorageKeys -- key[${i}]: ${allKeys[i]}`);
-            }
-        }).catch(allKeysError => {
-            Log.error("SdaDialogDelegateTools::showAllStorageKeys -- error getting all keys from storage: " + allKeysError);
-        });
+        return storage
+            .getAllKeys()
+            .then(allKeys => {
+                const keyCount = allKeys.length;
+                Log.info(`SdaDialogDelegateTools::showAllStorageKeys -- key count: ${allKeys.length}`);
+                for (let i = keyCount - 1; i > -1; --i) {
+                    Log.info(`SdaDialogDelegateTools::showAllStorageKeys -- key[${i}]: ${allKeys[i]}`);
+                }
+            })
+            .catch(allKeysError => {
+                Log.error(
+                    'SdaDialogDelegateTools::showAllStorageKeys -- error getting all keys from storage: ' + allKeysError
+                );
+            });
     }
 
-    public static writeDialogDelegateState(tenantId: string, stateVisitor: SdaDialogDelegateStateVisitor): Promise<void> {
+    public static writeDialogDelegateState(
+        tenantId: string,
+        stateVisitor: SdaDialogDelegateStateVisitor
+    ): Promise<void> {
         const userId = stateVisitor.visitUserId();
         const key = this.createStorageKey(tenantId, userId, this.DIALOG_DELEGATE_STATE_KEY);
         return storage.setJson(key, stateVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineDocumentContentChunk(tenantId: string, userId: string, offlineDocumentsListDialogId: string, documentId: string, sequence: number, largePropertyVisitor: LargePropertyVisitor): Promise<void> {
+    public static writeOfflineDocumentContentChunk(
+        tenantId: string,
+        userId: string,
+        offlineDocumentsListDialogId: string,
+        documentId: string,
+        sequence: number,
+        largePropertyVisitor: LargePropertyVisitor
+    ): Promise<void> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.content.${offlineDocumentsListDialogId}_alias_OpenLatestFile_${documentId}.${sequence}`;
         return storage.setJson(key, largePropertyVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string, contentRedirectionVisitor: ContentRedirectionVisitor): Promise<void> {
+    public static writeOfflineDocumentContentRedirection(
+        tenantId: string,
+        userId: string,
+        documentsListDialogId: string,
+        documentId: string,
+        contentRedirectionVisitor: ContentRedirectionVisitor
+    ): Promise<void> {
         const key = `${tenantId}.${userId}.ppm.sda.workPackages.documents.${documentsListDialogId}.alias_OpenLatestFile(${documentId}).redirection`;
         return storage.setJson(key, contentRedirectionVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineDocumentsDialogListRecordSet(tenantId: string, userId: string, workPackageId: string, recordSetVisitor: RecordSetVisitor) {
+    public static writeOfflineDocumentsDialogListRecordSet(
+        tenantId: string,
+        userId: string,
+        workPackageId: string,
+        recordSetVisitor: RecordSetVisitor
+    ) {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_DIALOG_LIST_RECORD_SET_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.setJson(key, recordSetVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineDocumentsDialogPropertiesRecord(tenantId: string, userId: string, workPackageId: string, recordVisitor: RecordVisitor) {
+    public static writeOfflineDocumentsDialogPropertiesRecord(
+        tenantId: string,
+        userId: string,
+        workPackageId: string,
+        recordVisitor: RecordVisitor
+    ) {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_RECORD_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.setJson(key, recordVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineDocumentsDialogRoot(tenantId: string, userId: string, workPackageId: string, dialogVisitor: DialogVisitor) {
+    public static writeOfflineDocumentsDialogRoot(
+        tenantId: string,
+        userId: string,
+        workPackageId: string,
+        dialogVisitor: DialogVisitor
+    ) {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_DIALOG_ROOT_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.setJson(key, dialogVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineDocumentsRedirection(tenantId: string, userId: string, workPackageId: string, dialogRedirectionVistor: DialogRedirectionVisitor) {
+    public static writeOfflineDocumentsRedirection(
+        tenantId: string,
+        userId: string,
+        workPackageId: string,
+        dialogRedirectionVistor: DialogRedirectionVisitor
+    ) {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_REDIRECTION_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
     }
 
-    public static writeOfflineSession(tenantId: string, userId: string, offlineSessionVisitor: SessionVisitor): Promise<void> {
+    public static writeOfflineSession(
+        tenantId: string,
+        userId: string,
+        offlineSessionVisitor: SessionVisitor
+    ): Promise<void> {
         const key = this.createStorageKey(tenantId, userId, this.OFFLINE_SESSION_KEY);
         return storage.setJson(key, offlineSessionVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineTagsDialogListRecordSet(tenantId: string, userId: string, workPackageId: string, recordSetVisitor: RecordSetVisitor) {
+    public static writeOfflineTagsDialogListRecordSet(
+        tenantId: string,
+        userId: string,
+        workPackageId: string,
+        recordSetVisitor: RecordSetVisitor
+    ) {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_LIST_RECORD_SET_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.setJson(key, recordSetVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineTagsDialogPropertiesRecord(tenantId: string, userId: string, workPackageId: string, recordVisitor: RecordVisitor) {
+    public static writeOfflineTagsDialogPropertiesRecord(
+        tenantId: string,
+        userId: string,
+        workPackageId: string,
+        recordVisitor: RecordVisitor
+    ) {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_PROPERTIES_RECORD_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.setJson(key, recordVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineTagsDialogRoot(tenantId: string, userId: string, workPackageId: string, dialogVisitor: DialogVisitor) {
+    public static writeOfflineTagsDialogRoot(
+        tenantId: string,
+        userId: string,
+        workPackageId: string,
+        dialogVisitor: DialogVisitor
+    ) {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_ROOT_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.setJson(key, dialogVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineTagsRedirection(tenantId: string, userId: string, workPackageId: string, dialogRedirectionVistor: DialogRedirectionVisitor) {
+    public static writeOfflineTagsRedirection(
+        tenantId: string,
+        userId: string,
+        workPackageId: string,
+        dialogRedirectionVistor: DialogRedirectionVisitor
+    ) {
         let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_REDIRECTION_KEY);
         key = key.replace('${workPackageId}', workPackageId);
         return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
@@ -575,26 +715,34 @@ export class SdaDialogDelegateTools {
         return storage.setJson(key, dialogVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineWorkPackagesRedirection(tenantId: string, userId: string, dialogRedirectionVistor: DialogRedirectionVisitor) {
+    public static writeOfflineWorkPackagesRedirection(
+        tenantId: string,
+        userId: string,
+        dialogRedirectionVistor: DialogRedirectionVisitor
+    ) {
         const key = this.createStorageKey(tenantId, userId, this.OFFLINE_WORK_PACKAGES_REDIRECTION_KEY);
         return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
     }
 
-    private static constructOfflineModeNullRedirection(tenantId: string, sessionId: string, actionId: string): StringDictionary {
+    private static constructOfflineModeNullRedirection(
+        tenantId: string,
+        sessionId: string,
+        actionId: string
+    ): StringDictionary {
         const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
         return {
-            "tenantId": tenantId,
-            "referringObject": {
-                "dialogMode": "READ",
-                "dialogAlias": "Briefcase_Briefcase_Details",
-                "actionId": actionId,
-                "type": "hxgn.api.dialog.ReferringDialog",
-                "dialogId": this.OFFLINE_BRIEFCASE_DIALOG_DETAILS_ID
+            tenantId: tenantId,
+            referringObject: {
+                dialogMode: 'READ',
+                dialogAlias: 'Briefcase_Briefcase_Details',
+                actionId: actionId,
+                type: 'hxgn.api.dialog.ReferringDialog',
+                dialogId: this.OFFLINE_BRIEFCASE_DIALOG_DETAILS_ID
             },
-            "refreshNeeded": true,
-            "sessionId": sessionId,
-            "id": nullRedirectionId,
-            "type": "hxgn.api.dialog.NullRedirection"
+            refreshNeeded: true,
+            sessionId: sessionId,
+            id: nullRedirectionId,
+            type: 'hxgn.api.dialog.NullRedirection'
         };
     }
 
@@ -602,5 +750,4 @@ export class SdaDialogDelegateTools {
         const key = keyTemplate.replace('${tenantId}', tenantId);
         return key.replace('${userId}', userId);
     }
-
 }

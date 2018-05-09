@@ -253,6 +253,21 @@ export class CatavoltApiImpl implements CatavoltApi {
         }
     }
 
+    public loginWithToken(
+        tenantId: string,
+        clientType: ClientType,
+        permissionToken: string,
+        proofKey: string
+    ): Promise<Session | Redirection> {
+        if (this.isLoggedIn) {
+            return this.logout().then(result =>
+                this.processLogin(tenantId, clientType, null, null, permissionToken, proofKey)
+            );
+        } else {
+            return this.processLogin(tenantId, clientType, null, null, permissionToken, proofKey);
+        }
+    }
+
     /**
      * Logout and destroy the session
      * @returns {{sessionId:string}}
@@ -398,11 +413,15 @@ export class CatavoltApiImpl implements CatavoltApi {
         tenantId: string,
         clientType: ClientType,
         userId: string,
-        password: string
+        password: string,
+        permissionToken?: string,
+        proofKey?: string
     ): Promise<Session | Redirection> {
         const login: Login = {
             userId,
             password,
+            permissionToken,
+            proofKey,
             clientType,
             deviceProperties: this.deviceProps,
             type: TypeNames.LoginTypeName

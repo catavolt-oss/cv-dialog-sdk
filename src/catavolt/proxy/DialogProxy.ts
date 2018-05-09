@@ -1,18 +1,17 @@
-import {BlobClientResponse} from "../client/BlobClientResponse";
-import {Client} from "../client/Client";
-import {JsonClientResponse} from "../client/JsonClientResponse";
-import {TextClientResponse} from "../client/TextClientResponse";
-import {VoidClientResponse} from "../client/VoidClientResponse";
-import {StreamProducer} from '../io';
-import {SdaDialogDelegate} from "../ppm/SdaDialogDelegate";
-import {Log} from '../util/Log';
-import {StringDictionary} from '../util/StringDictionary';
-import {DialogDelegate} from "./DialogDelegate";
-import {DialogProxyTools} from './DialogProxyTools';
-import {ValueIterator} from "./ValueIterator";
+import { BlobClientResponse } from '../client/BlobClientResponse';
+import { Client } from '../client/Client';
+import { JsonClientResponse } from '../client/JsonClientResponse';
+import { TextClientResponse } from '../client/TextClientResponse';
+import { VoidClientResponse } from '../client/VoidClientResponse';
+import { StreamProducer } from '../io';
+import { SdaDialogDelegate } from '../ppm/SdaDialogDelegate';
+import { Log } from '../util/Log';
+import { StringDictionary } from '../util/StringDictionary';
+import { DialogDelegate } from './DialogDelegate';
+import { DialogProxyTools } from './DialogProxyTools';
+import { ValueIterator } from './ValueIterator';
 
 export class DialogProxy implements Client {
-
     private _dialogDelegateChain: DialogDelegate[];
     private _initialized: Promise<boolean>;
     private _lastActivity: Date = new Date();
@@ -38,10 +37,18 @@ export class DialogProxy implements Client {
     }
 
     public postMultipart(baseUrl: string, resourcePath: string, formData: FormData): Promise<VoidClientResponse> {
-        return this.processRequestAndResponse('postMultipart', 'handlePostMultipartResponse', [baseUrl, resourcePath, formData]);
+        return this.processRequestAndResponse('postMultipart', 'handlePostMultipartResponse', [
+            baseUrl,
+            resourcePath,
+            formData
+        ]);
     }
 
-    public getJson(baseUrl: string, resourcePath?: string, queryParams?: StringDictionary): Promise<JsonClientResponse> {
+    public getJson(
+        baseUrl: string,
+        resourcePath?: string,
+        queryParams?: StringDictionary
+    ): Promise<JsonClientResponse> {
         return this.processRequestAndResponse('getJson', 'handleGetJsonResponse', [baseUrl, resourcePath, queryParams]);
     }
 
@@ -57,7 +64,12 @@ export class DialogProxy implements Client {
         return this.processRequestAndResponse('deleteJson', 'handleDeleteJsonResponse', [baseUrl, resourcePath]);
     }
 
-    private static delegateRequest(previousPr: Promise<any>, delegateIterator: ValueIterator<DialogDelegate>, requestFn: string, args): Promise<any> {
+    private static delegateRequest(
+        previousPr: Promise<any>,
+        delegateIterator: ValueIterator<DialogDelegate>,
+        requestFn: string,
+        args
+    ): Promise<any> {
         const thisMethod = 'DialogProxy::delegateRequest';
         return previousPr.then(unusedValue => {
             if (delegateIterator.done()) {
@@ -75,7 +87,9 @@ export class DialogProxy implements Client {
             return nextPr.then(response => {
                 if (!response) {
                     // Next delegate chose to skip this request after a delay, so advance to the next delegate
-                    Log.info(`${thisMethod} -- delegate returned a falsey response, advancing to the next delegate with request: ${requestFn}`);
+                    Log.info(
+                        `${thisMethod} -- delegate returned a falsey response, advancing to the next delegate with request: ${requestFn}`
+                    );
                     return this.delegateRequest(nextPr, delegateIterator, requestFn, args);
                 }
                 // Next delegate produced a response, so this is the future that will be processed
@@ -87,11 +101,11 @@ export class DialogProxy implements Client {
     private prepareForActivity() {
         this._lastActivity = new Date();
         if (!this._initialized) {
-            Log.info("DialogProxy::prepareForActivity -- waiting for all DialogDelegates to initialize");
+            Log.info('DialogProxy::prepareForActivity -- waiting for all DialogDelegates to initialize');
             const allDelegatesInitializing = this._dialogDelegateChain.map(d => d.initialize());
             this._initialized = Promise.all(allDelegatesInitializing).then(() => {
-                Log.info("DialogProxy::prepareForActivity -- all DialogDelegates are initialized");
-                Log.info("DialogProxy::prepareForActivity -- DialogProxy is initialized");
+                Log.info('DialogProxy::prepareForActivity -- all DialogDelegates are initialized');
+                Log.info('DialogProxy::prepareForActivity -- DialogProxy is initialized');
                 return true;
             });
         }
@@ -110,5 +124,4 @@ export class DialogProxy implements Client {
             return responsePr;
         });
     }
-
 }

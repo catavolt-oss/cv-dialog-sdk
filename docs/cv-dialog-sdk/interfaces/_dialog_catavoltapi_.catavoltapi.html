@@ -113,6 +113,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_dialog_catavoltapi_.catavoltapi.html#initdialogapi" class="tsd-kind-icon">init<wbr>Dialog<wbr>Api</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_dialog_catavoltapi_.catavoltapi.html#isfeaturesetavailable" class="tsd-kind-icon">is<wbr>Feature<wbr>Set<wbr>Available</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_dialog_catavoltapi_.catavoltapi.html#login" class="tsd-kind-icon">login</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_dialog_catavoltapi_.catavoltapi.html#loginwithtoken" class="tsd-kind-icon">login<wbr>With<wbr>Token</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_dialog_catavoltapi_.catavoltapi.html#logout" class="tsd-kind-icon">logout</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_dialog_catavoltapi_.catavoltapi.html#opendialog" class="tsd-kind-icon">open<wbr>Dialog</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_dialog_catavoltapi_.catavoltapi.html#opendialogwithid" class="tsd-kind-icon">open<wbr>Dialog<wbr>With<wbr>Id</a></li>
@@ -373,7 +374,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:88</li>
+									<li>Defined in dialog/CatavoltApi.ts:94</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -492,6 +493,38 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="loginwithtoken" class="tsd-anchor"></a>
+					<h3>login<wbr>With<wbr>Token</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">login<wbr>With<wbr>Token<span class="tsd-signature-symbol">(</span>tenantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, clientType<span class="tsd-signature-symbol">: </span><a href="../modules/_models_types_.html#clienttype" class="tsd-signature-type">ClientType</a>, permissionToken<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, proofKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_models_session_.session.html" class="tsd-signature-type">Session</a><span class="tsd-signature-symbol"> | </span><a href="_models_redirection_.redirection.html" class="tsd-signature-type">Redirection</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in dialog/CatavoltApi.ts:74</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>tenantId: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>clientType: <a href="../modules/_models_types_.html#clienttype" class="tsd-signature-type">ClientType</a></h5>
+								</li>
+								<li>
+									<h5>permissionToken: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>proofKey: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_models_session_.session.html" class="tsd-signature-type">Session</a><span class="tsd-signature-symbol"> | </span><a href="_models_redirection_.redirection.html" class="tsd-signature-type">Redirection</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="logout" class="tsd-anchor"></a>
 					<h3>logout</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -501,7 +534,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:78</li>
+									<li>Defined in dialog/CatavoltApi.ts:84</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -523,7 +556,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:82</li>
+									<li>Defined in dialog/CatavoltApi.ts:88</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -546,7 +579,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:80</li>
+									<li>Defined in dialog/CatavoltApi.ts:86</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -569,7 +602,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:84</li>
+									<li>Defined in dialog/CatavoltApi.ts:90</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -592,7 +625,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:95</li>
+									<li>Defined in dialog/CatavoltApi.ts:101</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -621,7 +654,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:103</li>
+									<li>Defined in dialog/CatavoltApi.ts:109</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -653,7 +686,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:113</li>
+									<li>Defined in dialog/CatavoltApi.ts:119</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -684,7 +717,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:121</li>
+									<li>Defined in dialog/CatavoltApi.ts:127</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -712,7 +745,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/CatavoltApi.ts:86</li>
+									<li>Defined in dialog/CatavoltApi.ts:92</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -798,6 +831,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_dialog_catavoltapi_.catavoltapi.html#login" class="tsd-kind-icon">login</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_dialog_catavoltapi_.catavoltapi.html#loginwithtoken" class="tsd-kind-icon">login<wbr>With<wbr>Token</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_dialog_catavoltapi_.catavoltapi.html#logout" class="tsd-kind-icon">logout</a>

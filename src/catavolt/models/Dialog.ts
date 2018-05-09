@@ -437,7 +437,8 @@ export abstract class Dialog {
         let sequence: number = 0;
         let resultBuffer: string = '';
         const f: (largeProperty: LargeProperty) => Promise<LargeProperty> = async (largeProperty: LargeProperty) => {
-            streamConsumer && await streamConsumer({ done: !largeProperty.hasMore, value: largeProperty.encodedData });
+            streamConsumer &&
+                (await streamConsumer({ done: !largeProperty.hasMore, value: largeProperty.encodedData }));
             if (largeProperty.hasMore) {
                 if (!streamConsumer) {
                     resultBuffer += Base64.decodeString(largeProperty.encodedData);

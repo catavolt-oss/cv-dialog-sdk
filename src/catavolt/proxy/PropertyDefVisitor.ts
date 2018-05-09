@@ -1,11 +1,10 @@
-import {DialogProxyTools} from "./DialogProxyTools";
-import {JsonObjectVisitor} from "./JsonObjectVisitor";
+import { DialogProxyTools } from './DialogProxyTools';
+import { JsonObjectVisitor } from './JsonObjectVisitor';
 
 /**
  *
  */
 export class PropertyDefVisitor implements JsonObjectVisitor {
-
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -15,7 +14,7 @@ export class PropertyDefVisitor implements JsonObjectVisitor {
             this._enclosedJsonObject = value;
         }
         if (!DialogProxyTools.isPropertyDefObject(this._enclosedJsonObject)) {
-            throw new Error("Object passed to PropertyDefVisitor is not a PropertyDef");
+            throw new Error('Object passed to PropertyDefVisitor is not a PropertyDef');
         }
     }
 
@@ -92,5 +91,4 @@ export class PropertyDefVisitor implements JsonObjectVisitor {
     public writeEnabled(): boolean {
         return this.enclosedJsonObject().writeEnabled;
     }
-
 }

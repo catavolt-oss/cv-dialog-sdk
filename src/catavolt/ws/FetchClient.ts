@@ -7,7 +7,7 @@ import { VoidClientResponse } from '../client/VoidClientResponse';
 import { StreamProducer } from '../io/StreamProducer';
 import { Log, StringDictionary } from '../util';
 
-type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export class FetchClient implements Client {
     private _lastActivity: Date = new Date();
@@ -97,6 +97,16 @@ export class FetchClient implements Client {
         });
     }
 
+    public fetch(
+        url: string,
+        method: FetchMethod,
+        body?: any,
+        headers?: { [index: string]: string },
+        fetchOpts?: {}
+    ): Promise<Response> {
+        return this.processRequest(url, method, body, headers, fetchOpts);
+    }
+
     private assertJsonContentType(contentType: string): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.isJsonContentType(contentType)) {
@@ -128,7 +138,8 @@ export class FetchClient implements Client {
         url: string,
         method: FetchMethod,
         body?: any,
-        headers?: { [index: string]: string }
+        headers?: { [index: string]: string },
+        fetchOpts?: {}
     ): Promise<Response> {
         return new Promise((resolve, reject) => {
             const requestHeaders: Headers = new Headers(headers);
@@ -138,6 +149,9 @@ export class FetchClient implements Client {
             }
             if (headers) {
                 init.headers = new Headers(headers);
+            }
+            if (fetchOpts) {
+                Object.assign(init, fetchOpts);
             }
 
             if (!['GET', 'POST', 'PUT', 'DELETE'].some(v => method === v)) {
