@@ -1,15 +1,15 @@
 /**
  */
-export class SdaGetBriefcaseRecordJsonSample {
+export class Briefcase_Briefcase_Details_RECORD {
 
-    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/offline_briefcase_details/record';
+    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/3/record';
 
     private static RESPONSE = {
         "dialogAlias": "Briefcase_Briefcase_Details",
-        "dialogName": "Briefcase_Briefcase_Details",
         "annotations": [],
         "id": "1",
         "type": "hxgn.api.dialog.Record",
+        "dialogName": "Briefcase_Briefcase_Details",
         "properties": [{
             "name": "password",
             "format": null,

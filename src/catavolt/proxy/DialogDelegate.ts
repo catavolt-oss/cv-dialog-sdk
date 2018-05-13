@@ -1,63 +1,45 @@
-import { BlobClientResponse } from '../client/BlobClientResponse';
-import { Client } from '../client/Client';
-import { JsonClientResponse } from '../client/JsonClientResponse';
-import { TextClientResponse } from '../client/TextClientResponse';
-import { VoidClientResponse } from '../client/VoidClientResponse';
-import { StreamProducer } from '../io/StreamProducer';
-import { StringDictionary } from '../util/StringDictionary';
+import {BlobClientResponse} from "../client/BlobClientResponse";
+import {JsonClientResponse} from "../client/JsonClientResponse";
+import {TextClientResponse} from "../client/TextClientResponse";
+import {VoidClientResponse} from "../client/VoidClientResponse";
+import {StreamProducer} from "../io/StreamProducer";
+import {StringDictionary} from "../util/StringDictionary";
+import {DialogRequest} from "./DialogRequest";
 
-export interface DialogDelegate extends Client {
+export interface DialogDelegate {
+
     initialize(): Promise<void>;
 
-    handleGetBlobResponse(
-        baseUrl: string,
-        resourcePath: string,
-        response: Promise<BlobClientResponse>
-    ): Promise<BlobClientResponse> | null;
+    getBlob(request: DialogRequest): Promise<BlobClientResponse>;
 
-    handleGetTextResponse(
-        baseUrl: string,
-        resourcePath: string,
-        response: Promise<TextClientResponse>
-    ): Promise<TextClientResponse> | null;
+    getText(request: DialogRequest): Promise<TextClientResponse>;
 
-    handleOpenStreamResponse(
-        baseUrl: string,
-        resourcePath: string,
-        response: Promise<StreamProducer>
-    ): Promise<StreamProducer> | null;
+    openStream(request: DialogRequest): Promise<StreamProducer>;
 
-    handlePostMultipartResponse<T>(
-        baseUrl: string,
-        resourcePath: string,
-        formData: FormData,
-        response: Promise<VoidClientResponse>
-    ): Promise<VoidClientResponse> | null;
+    postMultipart<T>(request: DialogRequest): Promise<VoidClientResponse>;
 
-    handleGetJsonResponse(
-        baseUrl: string,
-        resourcePath: string,
-        queryParams: StringDictionary,
-        response: Promise<JsonClientResponse>
-    ): Promise<JsonClientResponse> | null;
+    getJson(request: DialogRequest): Promise<JsonClientResponse>;
 
-    handlePostJsonResponse(
-        baseUrl: string,
-        resourcePath: string,
-        body: StringDictionary,
-        response: Promise<JsonClientResponse>
-    ): Promise<JsonClientResponse> | null;
+    postJson(request: DialogRequest): Promise<JsonClientResponse>;
 
-    handlePutJsonResponse(
-        baseUrl: string,
-        resourcePath: string,
-        body: StringDictionary,
-        response: Promise<JsonClientResponse>
-    ): Promise<JsonClientResponse> | null;
+    putJson(request: DialogRequest): Promise<JsonClientResponse>;
 
-    handleDeleteJsonResponse(
-        baseUrl: string,
-        resourcePath: string,
-        response: Promise<JsonClientResponse>
-    ): Promise<JsonClientResponse> | null;
+    deleteJson(request: DialogRequest): Promise<JsonClientResponse>;
+
+    handleGetBlobResponse(request: DialogRequest, response: Promise<BlobClientResponse>): Promise<BlobClientResponse> | null;
+
+    handleGetTextResponse(request: DialogRequest, response: Promise<TextClientResponse>): Promise<TextClientResponse> | null;
+
+    handleOpenStreamResponse(request: DialogRequest, response: Promise<StreamProducer>): Promise<StreamProducer> | null;
+
+    handlePostMultipartResponse<T>(request: DialogRequest, response: Promise<VoidClientResponse>): Promise<VoidClientResponse> | null;
+
+    handleGetJsonResponse(request: DialogRequest, response: Promise<JsonClientResponse>): Promise<JsonClientResponse> | null;
+
+    handlePostJsonResponse(request: DialogRequest, response: Promise<JsonClientResponse>): Promise<JsonClientResponse> | null;
+
+    handlePutJsonResponse(request: DialogRequest, response: Promise<JsonClientResponse>): Promise<JsonClientResponse> | null;
+
+    handleDeleteJsonResponse(request: DialogRequest, response: Promise<JsonClientResponse>): Promise<JsonClientResponse> | null;
+
 }

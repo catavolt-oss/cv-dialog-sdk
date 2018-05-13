@@ -1,10 +1,20 @@
 /**
+ * Editor dialog: Briefcase_Briefcase_FORM
+ *     Editor dialog: Briefcase_Briefcase_Details
+ *     Query dialog: Briefcase_Briefcase_Workpackages
+ *     Query dialog: Briefcase_Briefcase_MobileComments
  */
-export class SdaGetBriefcaseDialogJsonSample {
+export class Briefcase_Briefcase_FORM {
 
-    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/6';
+    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/1';
 
     private static RESPONSE = {
+        "dialogOrigin": {
+            "DataObject": "Briefcase",
+            "Form": "FORM",
+            "Detail": "Briefcase",
+            "DataSource": "BriefcaseMetadata"
+        },
         "recordDef": {
             "propertyDefs": [{
                 "writeAllowed": false,
@@ -12,7 +22,8 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "canCauseSideEffects": false,
                 "upperCaseOnly": false,
                 "propertyType": "string",
-                "semanticType": "NAME",
+                "semanticType": "PASSWORD",
+                "format": "password",
                 "length": 255,
                 "type": "hxgn.api.dialog.PropertyDef",
                 "writeEnabled": false
@@ -23,7 +34,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "upperCaseOnly": false,
                 "propertyType": "string",
                 "semanticType": "NAME",
-                "length": 255,
+                "length": 256,
                 "type": "hxgn.api.dialog.PropertyDef",
                 "writeEnabled": false
             }, {
@@ -44,27 +55,31 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "writeEnabled": false
             }], "type": "hxgn.api.dialog.RecordDef"
         },
-        "dialogAliasPath": {"DataObject": "Briefcase", "Form": "FORM", "Detail": "Briefcase", "DataSource": "SDALocal"},
-        "dialogOrigin": {"DataObject": "Briefcase", "Form": "FORM", "Detail": "Briefcase", "DataSource": "SDALocal"},
+        "dialogAliasPath": {
+            "DataObject": "Briefcase",
+            "Form": "FORM",
+            "Detail": "Briefcase",
+            "DataSource": "BriefcaseMetadata"
+        },
         "dialogMode": "READ",
         "description": "Briefcase: 1",
         "referringObject": {
             "actionId": "Briefcase",
             "type": "hxgn.api.dialog.ReferringWorkbench",
-            "workbenchId": "SDAWorkbenchLOCAL"
+            "workbenchId": "SDAWorkbench"
         },
         "sessionId": "${sessionId}",
         "type": "hxgn.api.dialog.EditorDialog",
         "viewMode": "READ",
         "dialogClassName": "com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel",
-        "domainClassName": "cx.AAABACcSAAAAAKH*.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAI5o.Briefcase",
+        "domainClassName": "cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase",
         "recordId": "1",
         "view": {
             "formLayout": "TABS",
             "name": "Default",
             "formStyle": "INDIVIDUAL_ROUNDED_RECTANGLES",
             "alias": "Briefcase_Briefcase_FORM",
-            "id": "FORM_AAABACcXAAAAAKIr_6_671398670:4260:1017952399:6_null_1",
+            "id": "FORM_AAABACcXAAAAAF8e_9_465204103:10487:-1613579321:1_null_1",
             "title": "Default",
             "menu": {
                 "visible": false,
@@ -74,7 +89,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                         "visible": true,
                         "modes": ["READ", "WRITE"],
                         "actionId": "alias_EnterOfflineMode",
-                        "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/catavolt.png",
+                        "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/catavolt.png",
                         "label": "Go Offline",
                         "id": "alias_EnterOfflineMode",
                         "type": "hxgn.api.dialog.Menu"
@@ -82,7 +97,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                         "visible": true,
                         "modes": ["READ", "WRITE"],
                         "actionId": "alias_ExitOfflineMode",
-                        "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/catavolt.png",
+                        "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/catavolt.png",
                         "label": "Go Online",
                         "id": "alias_ExitOfflineMode",
                         "type": "hxgn.api.dialog.Menu"
@@ -90,7 +105,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                         "visible": true,
                         "modes": ["READ", "WRITE"],
                         "actionId": "alias_ClearBriefcaseContents",
-                        "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/catavolt.png",
+                        "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/catavolt.png",
                         "label": "Clear Briefcase Contents",
                         "id": "alias_ClearBriefcaseContents",
                         "type": "hxgn.api.dialog.Menu"
@@ -98,7 +113,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                         "visible": true,
                         "modes": ["READ", "WRITE"],
                         "actionId": "#refresh",
-                        "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/refresh.png",
+                        "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/refresh.png",
                         "label": "Refresh",
                         "id": "#refresh",
                         "type": "hxgn.api.dialog.Menu"
@@ -106,7 +121,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                         "visible": true,
                         "modes": ["READ", "WRITE"],
                         "actionId": "export",
-                        "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/export.png",
+                        "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/export.png",
                         "label": "Export",
                         "id": "export",
                         "type": "hxgn.api.dialog.Menu"
@@ -122,6 +137,12 @@ export class SdaGetBriefcaseDialogJsonSample {
             "type": "hxgn.api.dialog.Form"
         },
         "children": [{
+            "dialogOrigin": {
+                "DataObject": "Briefcase",
+                "PropertySection": "Details",
+                "Detail": "Briefcase",
+                "DataSource": "BriefcaseMetadata"
+            },
             "recordDef": {
                 "propertyDefs": [{
                     "writeAllowed": false,
@@ -129,7 +150,8 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
-                    "semanticType": "NAME",
+                    "semanticType": "PASSWORD",
+                    "format": "password",
                     "length": 255,
                     "type": "hxgn.api.dialog.PropertyDef",
                     "writeEnabled": false
@@ -140,7 +162,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "upperCaseOnly": false,
                     "propertyType": "string",
                     "semanticType": "NAME",
-                    "length": 255,
+                    "length": 256,
                     "type": "hxgn.api.dialog.PropertyDef",
                     "writeEnabled": false
                 }, {
@@ -165,13 +187,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "DataObject": "Briefcase",
                 "PropertySection": "Details",
                 "Detail": "Briefcase",
-                "DataSource": "SDALocal"
-            },
-            "dialogOrigin": {
-                "DataObject": "Briefcase",
-                "PropertySection": "Details",
-                "Detail": "Briefcase",
-                "DataSource": "SDALocal"
+                "DataSource": "BriefcaseMetadata"
             },
             "dialogMode": "READ",
             "description": "Briefcase: 1",
@@ -179,13 +195,13 @@ export class SdaGetBriefcaseDialogJsonSample {
             "type": "hxgn.api.dialog.EditorDialog",
             "viewMode": "READ",
             "dialogClassName": "com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel",
-            "domainClassName": "cx.AAABACcSAAAAAKH*.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAI5o.Briefcase",
+            "domainClassName": "cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase",
             "view": {
                 "commitButtonText": "Save",
                 "editable": false,
                 "name": "Default",
                 "alias": "Briefcase_Briefcase_Details",
-                "id": "DETAILS_AAABACcdAAAAAKI8_3_671398670:4260:1017952399:6_null_1",
+                "id": "DETAILS_AAABACcdAAAAAF8v_3_465204103:10487:-1613579321:1_null_1",
                 "menu": {
                     "visible": false,
                     "children": [{
@@ -194,7 +210,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "alias_EnterOfflineMode",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/catavolt.png",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/catavolt.png",
                             "label": "Go Offline",
                             "id": "alias_EnterOfflineMode",
                             "type": "hxgn.api.dialog.Menu"
@@ -202,7 +218,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "alias_ExitOfflineMode",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/catavolt.png",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/catavolt.png",
                             "label": "Go Online",
                             "id": "alias_ExitOfflineMode",
                             "type": "hxgn.api.dialog.Menu"
@@ -210,7 +226,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "alias_ClearBriefcaseContents",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/catavolt.png",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/catavolt.png",
                             "label": "Clear Briefcase Contents",
                             "id": "alias_ClearBriefcaseContents",
                             "type": "hxgn.api.dialog.Menu"
@@ -218,7 +234,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "#refresh",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/refresh.png",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/refresh.png",
                             "label": "Refresh",
                             "id": "#refresh",
                             "type": "hxgn.api.dialog.Menu"
@@ -264,34 +280,22 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "cancelButtonText": "Cancel"
             },
             "dialogAlias": "Briefcase_Briefcase_Details",
-            "dialogName": "Briefcase_Briefcase_Details",
             "tenantId": "${tenantId}",
-            "refreshNeeded": false,
-            "id": "8",
-            "selectedViewId": "AAABACcXAAAAAKIr"
+            "id": "3",
+            "dialogName": "Briefcase_Briefcase_Details",
+            "selectedViewId": "AAABACcXAAAAAF8e"
         }, {
+            "dialogOrigin": {
+                "DataObject": "Briefcase",
+                "QuerySection": "Workpackages",
+                "ToQuery": {"DataObject": "Workpackage", "Query": "Workpackages", "DataSource": "BriefcaseMetadata"},
+                "Detail": "Briefcase",
+                "DataSource": "BriefcaseMetadata"
+            },
             "recordDef": {
                 "propertyDefs": [{
                     "writeAllowed": false,
-                    "propertyName": "Creation_Date",
-                    "canCauseSideEffects": false,
-                    "upperCaseOnly": false,
-                    "propertyType": "string",
-                    "format": "date-time",
-                    "type": "hxgn.api.dialog.PropertyDef",
-                    "writeEnabled": false
-                }, {
-                    "writeAllowed": false,
-                    "propertyName": "Last_Update_Date",
-                    "canCauseSideEffects": false,
-                    "upperCaseOnly": false,
-                    "propertyType": "string",
-                    "format": "date-time",
-                    "type": "hxgn.api.dialog.PropertyDef",
-                    "writeEnabled": false
-                }, {
-                    "writeAllowed": false,
-                    "propertyName": "Disciplines",
+                    "propertyName": "name",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
@@ -301,7 +305,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "writeEnabled": false
                 }, {
                     "writeAllowed": false,
-                    "propertyName": "Id",
+                    "propertyName": "workpackageid",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
@@ -311,7 +315,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "writeEnabled": false
                 }, {
                     "writeAllowed": false,
-                    "propertyName": "Description",
+                    "propertyName": "description",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
@@ -321,12 +325,30 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "writeEnabled": false
                 }, {
                     "writeAllowed": false,
-                    "propertyName": "Name",
+                    "propertyName": "creation_date",
+                    "canCauseSideEffects": false,
+                    "upperCaseOnly": false,
+                    "propertyType": "string",
+                    "format": "date",
+                    "type": "hxgn.api.dialog.PropertyDef",
+                    "writeEnabled": false
+                }, {
+                    "writeAllowed": false,
+                    "propertyName": "disciplines",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
                     "semanticType": "NAME",
                     "length": 255,
+                    "type": "hxgn.api.dialog.PropertyDef",
+                    "writeEnabled": false
+                }, {
+                    "writeAllowed": false,
+                    "propertyName": "last_update_date",
+                    "canCauseSideEffects": false,
+                    "upperCaseOnly": false,
+                    "propertyType": "string",
+                    "format": "date",
                     "type": "hxgn.api.dialog.PropertyDef",
                     "writeEnabled": false
                 }], "type": "hxgn.api.dialog.RecordDef"
@@ -335,57 +357,50 @@ export class SdaGetBriefcaseDialogJsonSample {
             "dialogAliasPath": {
                 "DataObject": "Briefcase",
                 "QuerySection": "Workpackages",
-                "ToQuery": {"DataObject": "BriefcaseWorkpackage", "Query": "Workpackages", "DataSource": "SDALocal"},
+                "ToQuery": {"DataObject": "Workpackage", "Query": "Workpackages", "DataSource": "BriefcaseMetadata"},
                 "Detail": "Briefcase",
-                "DataSource": "SDALocal"
-            },
-            "dialogOrigin": {
-                "DataObject": "Briefcase",
-                "QuerySection": "Workpackages",
-                "ToQuery": {"DataObject": "BriefcaseWorkpackage", "Query": "Workpackages", "DataSource": "SDALocal"},
-                "Detail": "Briefcase",
-                "DataSource": "SDALocal"
+                "DataSource": "BriefcaseMetadata"
             },
             "dialogMode": "LIST",
-            "description": "Briefcase Workpackages",
+            "description": "Workpackage",
             "sessionId": "${sessionId}",
             "type": "hxgn.api.dialog.QueryDialog",
             "viewMode": "READ",
             "supportsPositionalQueries": true,
             "dialogClassName": "com.catavolt.app.extender.dialog.CatavoltSatelliteEntityQueryModel",
-            "domainClassName": "cx.AAABACcSAAAAAKJo.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAI5o.BriefcaseWorkpackage",
+            "domainClassName": "cx.AAABACcSAAAAAF9J.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.workpackage",
             "view": {
                 "fixedColumnCount": 3,
                 "columns": [{
-                    "propertyName": "Id",
-                    "heading": "Id",
+                    "propertyName": "workpackageid",
+                    "heading": "workpackageid",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "Description",
-                    "heading": "Description",
+                    "propertyName": "description",
+                    "heading": "description",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "Name",
-                    "heading": "Name",
+                    "propertyName": "name",
+                    "heading": "name",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "Disciplines",
-                    "heading": "Disciplines",
+                    "propertyName": "disciplines",
+                    "heading": "disciplines",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "Creation_Date",
-                    "heading": "Creation_Date",
+                    "propertyName": "creation_date",
+                    "heading": "creation_date",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "Last_Update_Date",
-                    "heading": "Last_Update_Date",
+                    "propertyName": "last_update_date",
+                    "heading": "last_update_date",
                     "type": "hxgn.api.dialog.Column"
                 }],
                 "name": "Default",
                 "alias": "Briefcase_Briefcase_Workpackages",
                 "style": "DEFAULT",
-                "id": "LIST_AAABACcZAAAAAKNu_0_671398670:4260:1017952399:6_null_1",
-                "title": "Workpackages",
+                "id": "LIST_AAABACcZAAAAAF*2_1_465204103:10487:-1613579321:1_null_1",
+                "title": "Workpackage",
                 "menu": {
                     "visible": false,
                     "children": [{
@@ -394,7 +409,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "#refresh",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/refresh.png",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/refresh.png",
                             "label": "Refresh",
                             "id": "#refresh",
                             "type": "hxgn.api.dialog.Menu"
@@ -402,15 +417,15 @@ export class SdaGetBriefcaseDialogJsonSample {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "#search",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/find.png",
-                            "label": "Search/Sort",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/find.png",
+                            "label": "Search\/Sort",
                             "id": "#search",
                             "type": "hxgn.api.dialog.Menu"
                         }, {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "export",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/export.png",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/export.png",
                             "label": "Export",
                             "id": "export",
                             "type": "hxgn.api.dialog.Menu"
@@ -426,17 +441,23 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "type": "hxgn.api.dialog.List"
             },
             "dialogAlias": "Briefcase_Briefcase_Workpackages",
-            "dialogName": "Briefcase_Briefcase_Workpackages",
             "tenantId": "${tenantId}",
-            "refreshNeeded": false,
             "positionalQueryAbility": "FULL",
-            "id": "9",
-            "selectedViewId": "AAABACcTAAAAAKKF"
+            "id": "4",
+            "dialogName": "Briefcase_Briefcase_Workpackages",
+            "selectedViewId": "AAABACcTAAAAAF9m"
         }, {
+            "dialogOrigin": {
+                "DataObject": "Briefcase",
+                "QuerySection": "MobileComments",
+                "ToQuery": {"DataObject": "MobileComment", "Query": "MobileComment", "DataSource": "BriefcaseMetadata"},
+                "Detail": "Briefcase",
+                "DataSource": "BriefcaseMetadata"
+            },
             "recordDef": {
                 "propertyDefs": [{
                     "writeAllowed": false,
-                    "propertyName": "Description",
+                    "propertyName": "workpackageid",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
@@ -446,7 +467,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "writeEnabled": false
                 }, {
                     "writeAllowed": false,
-                    "propertyName": "tag_id",
+                    "propertyName": "tagid",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
@@ -456,7 +477,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "writeEnabled": false
                 }, {
                     "writeAllowed": false,
-                    "propertyName": "Id",
+                    "propertyName": "name",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
@@ -466,7 +487,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "writeEnabled": false
                 }, {
                     "writeAllowed": false,
-                    "propertyName": "doc_id",
+                    "propertyName": "description",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
@@ -476,7 +497,7 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "writeEnabled": false
                 }, {
                     "writeAllowed": false,
-                    "propertyName": "workpackage_id",
+                    "propertyName": "documentid",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
@@ -486,12 +507,22 @@ export class SdaGetBriefcaseDialogJsonSample {
                     "writeEnabled": false
                 }, {
                     "writeAllowed": false,
-                    "propertyName": "Name",
+                    "propertyName": "mobilecommentid",
                     "canCauseSideEffects": false,
                     "upperCaseOnly": false,
                     "propertyType": "string",
                     "semanticType": "NAME",
                     "length": 255,
+                    "type": "hxgn.api.dialog.PropertyDef",
+                    "writeEnabled": false
+                }, {
+                    "writeAllowed": false,
+                    "propertyName": "picture",
+                    "canCauseSideEffects": false,
+                    "upperCaseOnly": false,
+                    "propertyType": "string",
+                    "semanticType": "LARGE_PROPERTY",
+                    "format": "byte",
                     "type": "hxgn.api.dialog.PropertyDef",
                     "writeEnabled": false
                 }, {
@@ -510,57 +541,54 @@ export class SdaGetBriefcaseDialogJsonSample {
             "dialogAliasPath": {
                 "DataObject": "Briefcase",
                 "QuerySection": "MobileComments",
-                "ToQuery": {"DataObject": "BriefcaseMobileComment", "Query": "MobileComment", "DataSource": "SDALocal"},
+                "ToQuery": {"DataObject": "MobileComment", "Query": "MobileComment", "DataSource": "BriefcaseMetadata"},
                 "Detail": "Briefcase",
-                "DataSource": "SDALocal"
-            },
-            "dialogOrigin": {
-                "DataObject": "Briefcase",
-                "QuerySection": "MobileComments",
-                "ToQuery": {"DataObject": "BriefcaseMobileComment", "Query": "MobileComment", "DataSource": "SDALocal"},
-                "Detail": "Briefcase",
-                "DataSource": "SDALocal"
+                "DataSource": "BriefcaseMetadata"
             },
             "dialogMode": "LIST",
-            "description": "Briefcase Mobile Comments",
+            "description": "Mobile Comment",
             "sessionId": "${sessionId}",
             "type": "hxgn.api.dialog.QueryDialog",
             "viewMode": "READ",
             "supportsPositionalQueries": true,
             "dialogClassName": "com.catavolt.app.extender.dialog.CatavoltSatelliteEntityQueryModel",
-            "domainClassName": "cx.AAABACcSAAAAAKLV.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAI5o.BriefcaseMobileComment",
+            "domainClassName": "cx.AAABACcSAAAAAF-E.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.mobilecomment",
             "view": {
                 "fixedColumnCount": 3,
                 "columns": [{
-                    "propertyName": "Id",
-                    "heading": "Id",
+                    "propertyName": "mobilecommentid",
+                    "heading": "mobilecommentid",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "workpackage_id",
-                    "heading": "workpackage_id",
+                    "propertyName": "workpackageid",
+                    "heading": "workpackageid",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "doc_id",
-                    "heading": "doc_id",
+                    "propertyName": "documentid",
+                    "heading": "documentid",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "tag_id",
-                    "heading": "tag_id",
+                    "propertyName": "tagid",
+                    "heading": "tagid",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "Name",
-                    "heading": "Name",
+                    "propertyName": "name",
+                    "heading": "name",
                     "type": "hxgn.api.dialog.Column"
                 }, {
-                    "propertyName": "Description",
-                    "heading": "Description",
+                    "propertyName": "description",
+                    "heading": "description",
+                    "type": "hxgn.api.dialog.Column"
+                }, {
+                    "propertyName": "picture",
+                    "heading": "picture",
                     "type": "hxgn.api.dialog.Column"
                 }, {"propertyName": "status", "heading": "status", "type": "hxgn.api.dialog.Column"}],
                 "name": "Default",
                 "alias": "Briefcase_Briefcase_MobileComments",
                 "style": "DEFAULT",
-                "id": "LIST_AAABACcZAAAAAKN8_0_671398670:4260:1017952399:6_null_1",
-                "title": "Mobile Comments",
+                "id": "LIST_AAABACcZAAAAAGBF_1_465204103:10487:-1613579321:1_null_1",
+                "title": "Mobile Comment",
                 "menu": {
                     "visible": false,
                     "children": [{
@@ -568,8 +596,16 @@ export class SdaGetBriefcaseDialogJsonSample {
                         "children": [{
                             "visible": true,
                             "modes": ["READ", "WRITE"],
+                            "actionId": "delete",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/delete.png",
+                            "label": "Delete",
+                            "id": "delete",
+                            "type": "hxgn.api.dialog.Menu"
+                        }, {
+                            "visible": true,
+                            "modes": ["READ", "WRITE"],
                             "actionId": "#refresh",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/refresh.png",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/refresh.png",
                             "label": "Refresh",
                             "id": "#refresh",
                             "type": "hxgn.api.dialog.Menu"
@@ -577,15 +613,15 @@ export class SdaGetBriefcaseDialogJsonSample {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "#search",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/find.png",
-                            "label": "Search/Sort",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/find.png",
+                            "label": "Search\/Sort",
                             "id": "#search",
                             "type": "hxgn.api.dialog.Menu"
                         }, {
                             "visible": true,
                             "modes": ["READ", "WRITE"],
                             "actionId": "export",
-                            "iconUrl": "https://s3-eu-west-1.amazonaws.com/res-euw.catavolt.net/catavoltres/images/action/export.png",
+                            "iconUrl": "https:\/\/s3-eu-west-1.amazonaws.com\/res-euw.catavolt.net\/catavoltres\/images\/action\/export.png",
                             "label": "Export",
                             "id": "export",
                             "type": "hxgn.api.dialog.Menu"
@@ -601,19 +637,17 @@ export class SdaGetBriefcaseDialogJsonSample {
                 "type": "hxgn.api.dialog.List"
             },
             "dialogAlias": "Briefcase_Briefcase_MobileComments",
-            "dialogName": "Briefcase_Briefcase_MobileComments",
             "tenantId": "${tenantId}",
-            "refreshNeeded": false,
             "positionalQueryAbility": "FULL",
-            "id": "10",
-            "selectedViewId": "AAABACcTAAAAAKL8"
+            "id": "5",
+            "dialogName": "Briefcase_Briefcase_MobileComments",
+            "selectedViewId": "AAABACcTAAAAAF-h"
         }],
         "dialogAlias": "Briefcase_Briefcase_FORM",
-        "dialogName": "Briefcase_Briefcase_FORM",
         "tenantId": "${tenantId}",
-        "refreshNeeded": false,
-        "id": "6",
-        "selectedViewId": "AAABACcXAAAAAKIr"
+        "id": "1",
+        "dialogName": "Briefcase_Briefcase_FORM",
+        "selectedViewId": "AAABACcXAAAAAF8e"
     };
 
     public static copyOfResponse(): object {

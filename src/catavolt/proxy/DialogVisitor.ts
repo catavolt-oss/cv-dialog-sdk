@@ -1,10 +1,12 @@
-import { JsonObjectVisitor } from './JsonObjectVisitor';
-import { DialogProxyTools } from './DialogProxyTools';
+import {Base64} from "../util";
+import {DialogProxyTools} from "./DialogProxyTools";
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
 export class DialogVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -13,19 +15,19 @@ export class DialogVisitor implements JsonObjectVisitor {
         } else {
             this._enclosedJsonObject = value;
         }
-        if (!DialogProxyTools.isDialogObject(this._enclosedJsonObject)) {
-            throw new Error('Object passed to DialogVisitor is not a Dialog');
+        if (!DialogProxyTools.isDialogModel(this._enclosedJsonObject)) {
+            throw new Error("Object passed to DialogVisitor is not a Dialog");
         }
     }
 
     // --- State Management Helpers --- //
 
     public static propagateTenantIdAndSessionId(dialog: object, tenantId: string, sessionId: string) {
-        new DialogVisitor(dialog).propagateTenantIdAndSessionId(tenantId, sessionId);
+        (new DialogVisitor(dialog)).propagateTenantIdAndSessionId(tenantId, sessionId);
     }
 
     public static visitId(dialog: object): string {
-        return new DialogVisitor(dialog).visitId();
+        return (new DialogVisitor(dialog)).visitId();
     }
 
     // --- State Import/Export --- //
@@ -43,6 +45,28 @@ export class DialogVisitor implements JsonObjectVisitor {
     }
 
     // --- State Management --- //
+
+    public deriveDialogIdsFromDialogNameAndRecordIdRecursively() {
+        let dialogName = this.enclosedJsonObject()['dialogName'];
+        if (!dialogName) {
+            throw new Error("Cannot propagate dialog name -- dialog name not found")
+        }
+        const referringObject = this.visitReferringObject();
+        if (DialogProxyTools.isReferringDialogModel(referringObject)) {
+            const recordId = this.visitRecordId();
+            if (recordId) {
+                const recordIdEncoded = Base64.encodeString(recordId);
+                dialogName = `${dialogName}@${recordIdEncoded}`;
+            }
+        }
+        this.visitAndSetId(dialogName);
+        if (this.enclosedJsonObject()['children']) {
+            for (const c of this.enclosedJsonObject()['children']) {
+                const dialogVisitor = new DialogVisitor(c);
+                dialogVisitor.deriveDialogIdsFromDialogNameAndRecordIdRecursively();
+            }
+        }
+    }
 
     public propagateTenantIdAndSessionId(tenantId: string, sessionId: string) {
         this.enclosedJsonObject()['tenantId'] = tenantId;
@@ -95,4 +119,13 @@ export class DialogVisitor implements JsonObjectVisitor {
         }
         return false;
     }
+
+    public visitRecordId(): string {
+        return this.enclosedJsonObject().recordId;
+    }
+
+    public visitReferringObject(): object {
+        return this.enclosedJsonObject().referringObject;
+    }
+
 }

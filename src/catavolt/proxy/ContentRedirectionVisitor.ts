@@ -1,9 +1,10 @@
-import { JsonObjectVisitor } from './JsonObjectVisitor';
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
 export class ContentRedirectionVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -39,4 +40,5 @@ export class ContentRedirectionVisitor implements JsonObjectVisitor {
     public visitAndSetId(id: string) {
         this.enclosedJsonObject().id = id;
     }
+
 }

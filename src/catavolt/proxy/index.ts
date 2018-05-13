@@ -5,6 +5,7 @@ export * from './DialogDelegate';
 export * from './DialogProxy';
 export * from './DialogProxyTools';
 export * from './DialogRedirectionVisitor';
+export * from './DialogRequest';
 export * from './DialogVisitor';
 export * from './JsonObjectVisitor';
 export * from './LargePropertyVisitor';
