@@ -1,11 +1,12 @@
-import { AnnotationVisitor } from './AnnotationVisitor';
-import { DialogProxyTools } from './DialogProxyTools';
-import { JsonObjectVisitor } from './JsonObjectVisitor';
+import {AnnotationVisitor} from "./AnnotationVisitor";
+import {DialogProxyTools} from "./DialogProxyTools";
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
 export class PropertyVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -14,8 +15,8 @@ export class PropertyVisitor implements JsonObjectVisitor {
         } else {
             this._enclosedJsonObject = value;
         }
-        if (!DialogProxyTools.isPropertyObject(this._enclosedJsonObject)) {
-            throw new Error('Object passed to PropertyVisitor is not a Property');
+        if (!DialogProxyTools.isPropertyModel(this._enclosedJsonObject)) {
+            throw new Error("Object passed to PropertyVisitor is not a Property");
         }
     }
 
@@ -37,7 +38,7 @@ export class PropertyVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
-    public *visitAnnotations(): IterableIterator<AnnotationVisitor> {
+    public * visitAnnotations(): IterableIterator<AnnotationVisitor> {
         let index = 0;
         while (index < this.enclosedJsonObject().annotations.length) {
             yield new AnnotationVisitor(this.enclosedJsonObject().annotations[index++]);
@@ -59,4 +60,5 @@ export class PropertyVisitor implements JsonObjectVisitor {
     public value(): string {
         return this.enclosedJsonObject().value;
     }
+
 }

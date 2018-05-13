@@ -1,10 +1,11 @@
-import { RecordSetVisitor } from '../proxy/RecordSetVisitor';
-import { SelectedWorkPackageVisitor } from './SelectedWorkPackageVisitor';
+import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
+import {SelectedWorkPackageVisitor} from "./SelectedWorkPackageVisitor";
 
 /**
  *
  */
 export class SdaSelectedWorkPackagesState extends RecordSetVisitor {
+
     constructor(value: string | object) {
         super(value);
     }
@@ -27,4 +28,5 @@ export class SdaSelectedWorkPackagesState extends RecordSetVisitor {
             yield new SelectedWorkPackageVisitor(this.enclosedJsonObject().records[index++]);
         }
     }
+
 }

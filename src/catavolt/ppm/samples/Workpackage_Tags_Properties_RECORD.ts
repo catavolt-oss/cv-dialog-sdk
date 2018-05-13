@@ -1,7 +1,7 @@
 /**
  *
  */
-export class SdaGetTagsRecordJsonSample {
+export class Workpackage_Tags_Properties {
 
     private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/15/record';
 

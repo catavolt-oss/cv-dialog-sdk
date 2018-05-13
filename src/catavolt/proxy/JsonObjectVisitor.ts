@@ -2,6 +2,7 @@
  *
  */
 export interface JsonObjectVisitor {
+
     // --- State Import/Export --- //
 
     copyAsJsonObject(): object;
@@ -9,4 +10,5 @@ export interface JsonObjectVisitor {
     copyAsJsonString(): string;
 
     enclosedJsonObject();
+
 }

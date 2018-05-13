@@ -1,9 +1,11 @@
-import { JsonObjectVisitor } from './JsonObjectVisitor';
+import {DialogProxyTools} from "./DialogProxyTools";
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
 export class DialogRedirectionVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -17,15 +19,15 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
     // --- State Management Helpers --- //
 
     public static propagateDialogId(dialogRedirection: object, dialogId: string) {
-        new DialogRedirectionVisitor(dialogRedirection).propagateDialogId(dialogId);
+        (new DialogRedirectionVisitor(dialogRedirection)).propagateDialogId(dialogId);
     }
 
     public static propagateTenantIdAndSessionId(dialogRedirection: object, tenantId: string, sessionId: string) {
-        new DialogRedirectionVisitor(dialogRedirection).propagateTenantIdAndSessionId(tenantId, sessionId);
+        (new DialogRedirectionVisitor(dialogRedirection)).propagateTenantIdAndSessionId(tenantId, sessionId);
     }
 
     public static visitId(dialogRedirection: object): string {
-        return new DialogRedirectionVisitor(dialogRedirection).visitId();
+        return (new DialogRedirectionVisitor(dialogRedirection)).visitId();
     }
 
     // --- State Import/Export --- //
@@ -44,6 +46,21 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
+    public deriveDialogIdsFromDialogNameAndRecordId() {
+        const dialogName = this.enclosedJsonObject()['dialogName'];
+        if (!dialogName) {
+            throw new Error("Cannot propagate dialog name -- dialog name not found")
+        }
+        this.propagateDialogId(dialogName);
+        const referringObject = this.visitReferringObject();
+        if (DialogProxyTools.isReferringDialogModel(referringObject)) {
+            const referringDialogName = referringObject['dialogName'];
+            if (referringDialogName) {
+                referringObject['dialogId'] = referringDialogName;
+            }
+        }
+    }
+
     public propagateDialogId(dialogId: string) {
         this.enclosedJsonObject()['id'] = dialogId;
         this.enclosedJsonObject()['dialogId'] = dialogId;
@@ -61,4 +78,13 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
     public visitId(): string {
         return this.enclosedJsonObject().id;
     }
+
+    public visitReferringDialogId(): string {
+        return this.visitReferringObject()['dialogId'];
+    }
+
+    public visitReferringObject(): object {
+        return this.enclosedJsonObject().referringObject;
+    }
+
 }

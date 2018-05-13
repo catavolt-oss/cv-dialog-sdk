@@ -1,11 +1,12 @@
-import { DialogProxyTools } from './DialogProxyTools';
-import { JsonObjectVisitor } from './JsonObjectVisitor';
-import { PropertyVisitor } from './PropertyVisitor';
+import {DialogProxyTools} from "./DialogProxyTools";
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
+import {PropertyVisitor} from "./PropertyVisitor";
 
 /**
  *
  */
 export class RecordVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -14,8 +15,8 @@ export class RecordVisitor implements JsonObjectVisitor {
         } else {
             this._enclosedJsonObject = value;
         }
-        if (!DialogProxyTools.isRecordObject(this._enclosedJsonObject)) {
-            throw new Error('Object passed to RecordVisitor is not a Record');
+        if (!DialogProxyTools.isRecordModel(this._enclosedJsonObject)) {
+            throw new Error("Object passed to RecordVisitor is not a Record");
         }
         if (!this._enclosedJsonObject.id) {
             throw new Error('Invalid record -- missing id field');
@@ -40,11 +41,11 @@ export class RecordVisitor implements JsonObjectVisitor {
     // --- State Management Helpers --- //
 
     public static visitPropertyValueAt(record: object, propertyName: string): any {
-        return new RecordVisitor(record).visitPropertyValueAt(propertyName);
+        return (new RecordVisitor(record)).visitPropertyValueAt(propertyName);
     }
 
     public static visitAndSetPropertyValueAt(record: object, propertyName: string, value: any) {
-        new RecordVisitor(record).visitAndSetPropertyValueAt(propertyName, value);
+        (new RecordVisitor(record)).visitAndSetPropertyValueAt(propertyName, value);
     }
 
     // --- State Import/Export --- //
@@ -83,16 +84,16 @@ export class RecordVisitor implements JsonObjectVisitor {
         }
         if (!found) {
             this.enclosedJsonObject().properties.push({
-                name: propertyName,
-                format: null,
-                annotations: [],
-                type: 'hxgn.api.dialog.Property',
-                value: value
+                "name": propertyName,
+                "format": null,
+                "annotations": [],
+                "type": "hxgn.api.dialog.Property",
+                "value": value
             });
         }
     }
 
-    public *visitProperties(): IterableIterator<PropertyVisitor> {
+    public * visitProperties(): IterableIterator<PropertyVisitor> {
         let index = 0;
         while (index < this.enclosedJsonObject().properties.length) {
             yield new PropertyVisitor(this.enclosedJsonObject().properties[index++]);
@@ -102,4 +103,5 @@ export class RecordVisitor implements JsonObjectVisitor {
     public visitRecordId(): string {
         return this.enclosedJsonObject().id;
     }
+
 }

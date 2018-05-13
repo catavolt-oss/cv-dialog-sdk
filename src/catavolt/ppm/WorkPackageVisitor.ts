@@ -1,23 +1,24 @@
-import { RecordVisitor } from '../proxy/RecordVisitor';
+import {RecordVisitor} from "../proxy/RecordVisitor";
 
 /**
  *
  */
 export class WorkPackageVisitor extends RecordVisitor {
-    private static BRIEFCASE_PROPERTY_NAME = 'briefcase';
-    private static CLASSIFICATION_PROPERTY_NAME = 'Classification';
-    private static CONFIG_PROPERTY_NAME = 'Config';
-    private static CONTRACT_PROPERTY_NAME = 'Contract';
-    private static CREATION_DATE_PROPERTY_NAME = 'Creation_Date';
-    private static CREATION_USER_PROPERTY_NAME = 'Creation_User';
-    private static DESCRIPTION_PROPERTY_NAME = 'Description';
-    private static DISCIPLINES_PROPERTY_NAME = 'Disciplines';
-    private static ID_PROPERTY_NAME = 'Id';
-    private static LAST_UPDATE_DATE_PROPERTY_NAME = 'Last_Update_Date';
-    private static NAME_PROPERTY_NAME = 'Name';
-    private static ORGANIZATIONS_GROUP_PROPERTY_NAME = 'Organizations';
-    private static OWNING_GROUP_PROPERTY_NAME = 'Owning_Group';
-    private static UID_PROPERTY_NAME = 'UID';
+
+    private static BRIEFCASE_PROPERTY_NAME = "briefcase";
+    private static CLASSIFICATION_PROPERTY_NAME = "Classification";
+    private static CONFIG_PROPERTY_NAME = "Config";
+    private static CONTRACT_PROPERTY_NAME = "Contract";
+    private static CREATION_DATE_PROPERTY_NAME = "Creation_Date";
+    private static CREATION_USER_PROPERTY_NAME = "Creation_User";
+    private static DESCRIPTION_PROPERTY_NAME = "Description";
+    private static DISCIPLINES_PROPERTY_NAME = "Disciplines";
+    private static ID_PROPERTY_NAME = "Id";
+    private static LAST_UPDATE_DATE_PROPERTY_NAME = "Last_Update_Date";
+    private static NAME_PROPERTY_NAME = "Name";
+    private static ORGANIZATIONS_GROUP_PROPERTY_NAME = "Organizations";
+    private static OWNING_GROUP_PROPERTY_NAME = "Owning_Group";
+    private static UID_PROPERTY_NAME = "UID";
 
     constructor(value: string | object) {
         super(value);
@@ -82,4 +83,5 @@ export class WorkPackageVisitor extends RecordVisitor {
     public visitUid(): string {
         return this.visitPropertyValueAt(WorkPackageVisitor.UID_PROPERTY_NAME);
     }
+
 }

@@ -1,11 +1,12 @@
-import { JsonObjectVisitor } from '../proxy';
-import { BriefcaseVisitor } from './BriefcaseVisitor';
-import { WorkPackagesRecordSetVisitor } from './WorkPackagesRecordSetVisitor';
+import {JsonObjectVisitor} from "../proxy";
+import {BriefcaseVisitor} from "./BriefcaseVisitor";
+import {WorkPackagesRecordSetVisitor} from "./WorkPackagesRecordSetVisitor";
 
 /**
  *
  */
 export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(state: string | object) {
@@ -73,7 +74,7 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
     }
 
     public visitAndClearSelectedWorkPackageIds() {
-        return (this.enclosedJsonObject().selectedWorkPackageIds = []);
+        return this.enclosedJsonObject().selectedWorkPackageIds = [];
     }
 
     public visitSessionId(): string {
@@ -103,4 +104,5 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
     public visitWorkPackagesRecordSet(): WorkPackagesRecordSetVisitor {
         return new WorkPackagesRecordSetVisitor(this.enclosedJsonObject().workPackages);
     }
+
 }

@@ -1,6 +1,6 @@
 /**
  */
-export class SdaGetWorkPackagesDialogJsonSample {
+export class Workpackage_General_FORM {
 
     private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/1';
 

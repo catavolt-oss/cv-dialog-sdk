@@ -1,9 +1,10 @@
-import { JsonObjectVisitor } from './JsonObjectVisitor';
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
 export class LargePropertyVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
@@ -35,4 +36,5 @@ export class LargePropertyVisitor implements JsonObjectVisitor {
     public visitHasMore(): boolean {
         return this.enclosedJsonObject().hasMore;
     }
+
 }
