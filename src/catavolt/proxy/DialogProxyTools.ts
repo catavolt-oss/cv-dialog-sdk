@@ -1,12 +1,17 @@
 import {JsonClientResponse} from "../client/JsonClientResponse";
 import {storage} from "../storage";
+import {Base64} from "../util/Base64";
 import {Log} from "../util/Log";
 import {FetchClient} from "../ws/FetchClient";
+import {ContentRedirectionVisitor} from "./ContentRedirectionVisitor";
 import {DialogRedirectionVisitor} from "./DialogRedirectionVisitor";
 import {DialogRequest} from "./DialogRequest";
 import {DialogVisitor} from "./DialogVisitor";
 import {RecordSetVisitor} from "./RecordSetVisitor";
 import {RecordVisitor} from "./RecordVisitor";
+import {LargePropertyVisitor} from "./LargePropertyVisitor";
+import {SdaDialogDelegateTools} from "../ppm/SdaDialogDelegateTools";
+import {ReadLargePropertyParametersVisitor} from "./ReadLargePropertyParametersVisitor";
 
 /**
  *
@@ -29,6 +34,7 @@ export class DialogProxyTools {
     private static SESSION_MODEL_TYPE = 'hxgn.api.dialog.Session';
 
     // Storage Keys
+    private static CONTENT_STORAGE_KEY =     '${userId}.${tenantId}.${contentId}.${sequence}';
     private static DIALOG_STORAGE_KEY =      '${userId}.${tenantId}.${dialogId}.dialog';
     private static RECORD_SET_STORAGE_KEY =  '${userId}.${tenantId}.${dialogId}.recordset';
     private static RECORD_STORAGE_KEY =      '${userId}.${tenantId}.${dialogId}.record';
@@ -47,10 +53,10 @@ export class DialogProxyTools {
         Log.info(`${thisMethod} -- dialog: ${JSON.stringify(dialogJcr.value)}`);
         // WRITE DIALOG //
         const dialogVisitor = new DialogVisitor(dialogJcr.value);
-        const originalDialog = dialogVisitor.copyAsJsonObject();
-        dialogVisitor.deriveDialogIdsFromDialogNameAndRecordIdRecursively();
+        const beforeDialog = dialogVisitor.copyAsJsonObject();
+        dialogVisitor.deriveDialogIdsFromDialogNameAndRecordId();
         await this.writeDialog(userId, tenantId, dialogVisitor);
-        return originalDialog;
+        return {beforeDialog, afterDialog: dialogVisitor.enclosedJsonObject()};
     }
 
     public static async captureMenuActionRedirectionAndDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string, actionId: string, targetId: string): Promise<any> {
@@ -69,13 +75,64 @@ export class DialogProxyTools {
         Log.info(`${thisMethod} -- menu action redirection: ${JSON.stringify(dialogRedirectionJcr.value)}`);
         // WRITE REDIRECTION //
         const dialogRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJcr.value);
-        const originalDialogRedirection = dialogRedirectionVisitor.copyAsJsonObject();
+        const beforeDialogRedirection = dialogRedirectionVisitor.copyAsJsonObject();
         dialogRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
-        await this.writeDialogRedirection(userId, tenantId, dialogRedirectionVisitor.visitReferringDialogId(), actionId, dialogRedirectionVisitor);
+        let actionIdAtTargetId = actionId;
+        if (targetId) {
+            const targetIdEncoded = Base64.encodeUrlSafeString(targetId);
+            actionIdAtTargetId = `${actionId}@${targetIdEncoded}`;
+        }
+        await this.writeDialogRedirection(userId, tenantId, dialogRedirectionVisitor.visitReferringDialogId(), actionIdAtTargetId, dialogRedirectionVisitor);
         // GET DIALOG //
-        const originalDialogId = originalDialogRedirection['dialogId'];
-        const originalDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, originalDialogId);
-        return {originalDialogRedirection, originalDialog};
+        const beforeDialogId = beforeDialogRedirection['dialogId'];
+        const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId);
+        return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),
+            beforeDialog: beforeAndAfterDialog['beforeDialog'], afterDialog: beforeAndAfterDialog['afterDialog']};
+    }
+
+    public static async captureRecord(userId: string, baseUrl: string, tenantId: string, sessionId: string, beforeAndAfterValues: any, listDialogName: string): Promise<RecordVisitor> {
+        // ONLINE
+        const onlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
+        const onlineEditorDialogVisitor = onlineRootDialogVisitor.visitChildAtName(listDialogName);
+        const onlineEditorDialogId = onlineEditorDialogVisitor.visitId();
+        const onlineEditorRecordPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${onlineEditorDialogId}/record`;
+        const onlineEditorRecordJcr = await DialogProxyTools.commonFetchClient().getJson(baseUrl, onlineEditorRecordPath);
+        if (onlineEditorRecordJcr.statusCode !== 200) {
+            throw new Error(`Unexpected result when getting record: ${onlineEditorRecordJcr.statusCode}`);
+        }
+        const onlineEditorRecordVisitor = new RecordVisitor(onlineEditorRecordJcr.value);
+        // OFFLINE
+        const offlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.afterDialog);
+        const offlineEditorDialogVisitor = offlineRootDialogVisitor.visitChildAtName(listDialogName);
+        const offlineEditorDialogId = offlineEditorDialogVisitor.visitId();
+        // WRITE TO STORAGE
+        await DialogProxyTools.writeRecord(userId, tenantId, offlineEditorDialogId, onlineEditorRecordVisitor);
+        return onlineEditorRecordVisitor;
+    }
+
+    public static async captureRecordSet(userId: string, baseUrl: string, tenantId: string, sessionId: string, beforeAndAfterValues: any, listDialogName: string): Promise<RecordSetVisitor> {
+        // ONLINE
+        const onlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
+        const onlineQueryDialogVisitor = onlineRootDialogVisitor.visitChildAtName(listDialogName);
+        const onlineQueryDialogId = onlineQueryDialogVisitor.visitId();
+        const onlineQueryRecordsPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${onlineQueryDialogId}/records`;
+        const onlineQueryParameters = {
+            fetchDirection: "FORWARD",
+            fetchMaxRecords: 999,
+            type: "hxgn.api.dialog.QueryParameters"
+        };
+        const onlineQueryRecordsJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, onlineQueryRecordsPath, onlineQueryParameters);
+        if (onlineQueryRecordsJcr.statusCode !== 200) {
+            throw new Error(`Unexpected result when getting records: ${onlineQueryRecordsJcr.statusCode}`);
+        }
+        const onlineQueryRecordSetVisitor = new RecordSetVisitor(onlineQueryRecordsJcr.value);
+        // OFFLINE
+        const offlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.afterDialog);
+        const offlineQueryDialogVisitor = offlineRootDialogVisitor.visitChildAtName(listDialogName);
+        const offlineQueryDialogId = offlineQueryDialogVisitor.visitId();
+        // WRITE TO STORAGE
+        await DialogProxyTools.writeRecordSet(userId, tenantId, offlineQueryDialogId, onlineQueryRecordSetVisitor);
+        return onlineQueryRecordSetVisitor;
     }
 
     public static async captureWorkbenchActionRedirectionAndDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, workbenchId: string, actionId: string): Promise<any> {
@@ -90,13 +147,14 @@ export class DialogProxyTools {
         Log.info(`${thisMethod} -- workbench action redirection: ${JSON.stringify(dialogRedirectionJcr.value)}`);
         // WRITE REDIRECTION //
         const dialogRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJcr.value);
-        const originalDialogRedirection = dialogRedirectionVisitor.copyAsJsonObject();
+        const beforeDialogRedirection = dialogRedirectionVisitor.copyAsJsonObject();
         dialogRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
         await this.writeDialogRedirection(userId, tenantId, workbenchId, actionId, dialogRedirectionVisitor);
         // GET DIALOG //
-        const originalDialogId = originalDialogRedirection['dialogId'];
-        const originalDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, originalDialogId);
-        return {originalDialogRedirection, originalDialog};
+        const beforeDialogId = beforeDialogRedirection['dialogId'];
+        const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId);
+        return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),
+            beforeDialog: beforeAndAfterDialog['beforeDialog'], afterDialog: beforeAndAfterDialog['afterDialog']};
     }
 
     public static commonFetchClient(): FetchClient {
@@ -117,8 +175,8 @@ export class DialogProxyTools {
         };
     }
 
-    public static constructRequestNotValidDuringOfflineMode(action: string, resourcePath: string): Promise<JsonClientResponse> {
-        return Promise.resolve(new JsonClientResponse(this.constructDialogMessageModel(`${action} at ${resourcePath} is not valid during offline mode: `), 400));
+    public static constructRequestNotValidDuringOfflineMode(action: string, resourcePath: string): JsonClientResponse {
+        return new JsonClientResponse(this.constructDialogMessageModel(`${action} at ${resourcePath} is not valid during offline mode: `), 400);
     }
 
     public static constructNullRedirectionId(): string {
@@ -215,7 +273,8 @@ export class DialogProxyTools {
         });
     }
 
-    public static readDialogAsVisitor(userId: string, request: DialogRequest): Promise<DialogRedirectionVisitor> {
+    public static readDialogAsVisitor(userId: string, request: DialogRequest): Promise<DialogVisitor> {
+        const thisMethod = 'DialogProxyTools::readDialogAsVisitor';
         const pathFields = request.deconstructGetDialogPath();
         const tenantId = pathFields.tenantId;
         const sessionId = pathFields.sessionId;
@@ -223,20 +282,29 @@ export class DialogProxyTools {
         let key = this.DIALOG_STORAGE_KEY.replace('${tenantId}', tenantId);
         key = key.replace('${userId}', userId);
         key = key.replace('${dialogId}', dialogId);
-        return storage.getJson(key).then(jsonObject => new DialogRedirectionVisitor(jsonObject));
+        Log.info(`${thisMethod} -- reading for dialog at key: ${key}`);
+        return storage.getJson(key).then(jsonObject => jsonObject ? new DialogVisitor(jsonObject) : null);
     }
 
     public static readDialogRedirectionAsVisitor(userId: string, tenantId: string, stateId: string, actionId: string): Promise<DialogRedirectionVisitor> {
+        const thisMethod = 'DialogProxyTools::readDialogRedirectionAsVisitor';
         let key = this.REDIRECTION_STORAGE_KEY.replace('${tenantId}', tenantId);
         key = key.replace('${userId}', userId);
         key = key.replace('${stateId}', stateId);
         key = key.replace('${actionId}', actionId);
-        return storage.getJson(key).then(jsonObject => new DialogRedirectionVisitor(jsonObject));
+        Log.info(`${thisMethod} -- reading for redirection at key: ${key}`);
+        return storage.getJson(key).then(jsonObject => jsonObject ? new DialogRedirectionVisitor(jsonObject) : null);
     }
 
     public static readMenuActionRedirectionAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
         const pathFields = request.deconstructPostMenuActionPath();
-        return this.readDialogRedirectionAsVisitor(userId, pathFields.tenantId, pathFields.dialogId, pathFields.actionId).then(dialogRedirectionVisitor => {
+        let actionIdAtTargetId = request.actionId();
+        const targetId = request.targetId();
+        if (targetId) {
+            const targetIdEncoded = Base64.encodeUrlSafeString(targetId);
+            actionIdAtTargetId = `${request.actionId()}@${targetIdEncoded}`;
+        }
+        return this.readDialogRedirectionAsVisitor(userId, pathFields.tenantId, pathFields.dialogId, actionIdAtTargetId).then(dialogRedirectionVisitor => {
             return dialogRedirectionVisitor ?
                 new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303) :
                 this.constructRequestNotValidDuringOfflineMode('readMenuActionRedirectionAsOfflineResponse', request.resourcePath());
@@ -256,10 +324,10 @@ export class DialogProxyTools {
         const tenantId = pathFields.tenantId;
         const sessionId = pathFields.sessionId;
         const dialogId = pathFields.dialogId;
-        let key = this.RECORD_STORAGE_KEY.replace('${tenantId}', tenantId);
-        key = key.replace('${userId}', userId);
+        let key = this.RECORD_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
         key = key.replace('${dialogId}', dialogId);
-        return storage.getJson(key).then(jsonObject => new RecordVisitor(jsonObject));
+        return storage.getJson(key).then(jsonObject => jsonObject ? new RecordVisitor(jsonObject) : null);
     }
 
     public static readRecordSetAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
@@ -270,7 +338,7 @@ export class DialogProxyTools {
         });
     }
 
-    public static readRecordSetAsVisitor(userId: string, request: DialogRequest): Promise<RecordSetVisitor> {
+    public static async readRecordSetAsVisitor(userId: string, request: DialogRequest): Promise<RecordSetVisitor> {
         const pathFields = request.deconstructPostRecordsPath();
         const tenantId = pathFields.tenantId;
         const sessionId = pathFields.sessionId;
@@ -278,7 +346,36 @@ export class DialogProxyTools {
         let key = this.RECORD_SET_STORAGE_KEY.replace('${tenantId}', tenantId);
         key = key.replace('${userId}', userId);
         key = key.replace('${dialogId}', dialogId);
-        return storage.getJson(key).then(jsonObject => new RecordSetVisitor(jsonObject));
+        const jsonObject = await storage.getJson(key);
+        if (!jsonObject) {
+            return null;
+        }
+        const recordSetVisitor = new RecordSetVisitor(jsonObject);
+        if (request.body().fromRecordId) {
+            recordSetVisitor.fromRecordId(request.body().fromRecordId);
+        }
+        return recordSetVisitor;
+    }
+
+    public static readSessionContentAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
+        const pathFields = request.deconstructPostSessionContentPath();
+        const tenantId = pathFields.tenantId;
+        const contentId = pathFields.contentId;
+        const parametersVisitor = new ReadLargePropertyParametersVisitor(request.body());
+        const sequence = parametersVisitor.visitSequence();
+        return this.readSessionContentAsVisitor(userId, tenantId, contentId, sequence).then(largePropertyVisitor => {
+            return largePropertyVisitor ?
+                new JsonClientResponse(largePropertyVisitor.enclosedJsonObject(), 200) :
+                this.constructRequestNotValidDuringOfflineMode('readSessionContentAsOfflineResponse', request.resourcePath());
+        });
+    }
+
+    public static readSessionContentAsVisitor(userId: string, tenantId: string, contentId: string, sequence: number): Promise<LargePropertyVisitor> {
+        let key = this.CONTENT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${contentId}', contentId);
+        key = key.replace('${sequence}', sequence.toString());
+        return storage.getJson(key).then(jsonObject => jsonObject ? new LargePropertyVisitor(jsonObject) : null);
     }
 
     public static readWorkbenchActionRedirectionAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
@@ -288,6 +385,24 @@ export class DialogProxyTools {
                 new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303) :
                 this.constructRequestNotValidDuringOfflineMode('readWorkbenchActionRedirectionAsOfflineResponse', request.resourcePath());
         });
+    }
+
+    public static writeContentChunk(userId: string, tenantId: string, contentId: string, sequence: number, largePropertyVisitor: LargePropertyVisitor): Promise<void> {
+        let key = this.CONTENT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${contentId}', contentId);
+        key = key.replace('${sequence}', sequence.toString());
+        return storage.setJson(key, largePropertyVisitor.enclosedJsonObject());
+    }
+
+    public static writeContentRedirection(userId: string, tenantId: string, stateId: string, actionId: string,
+                                          contentRedirectionVistor: ContentRedirectionVisitor)
+    {
+        let key = this.REDIRECTION_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${stateId}', stateId);
+        key = key.replace('${actionId}', actionId);
+        return storage.setJson(key, contentRedirectionVistor.enclosedJsonObject());
     }
 
     public static writeDialog(userId: string, tenantId: string, dialogVisitor: DialogVisitor) {

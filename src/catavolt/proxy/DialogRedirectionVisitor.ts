@@ -1,3 +1,4 @@
+import {Base64} from "../util/Base64";
 import {DialogProxyTools} from "./DialogProxyTools";
 import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
@@ -9,6 +10,9 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
+        if (!value) {
+            throw new Error('DialogRedirectionVisitor -- null value exception')
+        }
         if (typeof value === 'string') {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
@@ -47,18 +51,23 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
     // --- State Management --- //
 
     public deriveDialogIdsFromDialogNameAndRecordId() {
-        const dialogName = this.enclosedJsonObject()['dialogName'];
+        let dialogName = this.enclosedJsonObject()['dialogName'];
         if (!dialogName) {
             throw new Error("Cannot propagate dialog name -- dialog name not found")
         }
-        this.propagateDialogId(dialogName);
         const referringObject = this.visitReferringObject();
         if (DialogProxyTools.isReferringDialogModel(referringObject)) {
             const referringDialogName = referringObject['dialogName'];
             if (referringDialogName) {
                 referringObject['dialogId'] = referringDialogName;
             }
+            const recordId = this.visitRecordId();
+            if (recordId) {
+                const recordIdEncoded = Base64.encodeUrlSafeString(recordId);
+                dialogName = `${dialogName}@${recordIdEncoded}`;
+            }
         }
+        this.propagateDialogId(dialogName);
     }
 
     public propagateDialogId(dialogId: string) {
@@ -77,6 +86,10 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
 
     public visitId(): string {
         return this.enclosedJsonObject().id;
+    }
+
+    public visitRecordId(): string {
+        return this.enclosedJsonObject().recordId;
     }
 
     public visitReferringDialogId(): string {

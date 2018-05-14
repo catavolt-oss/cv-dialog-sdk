@@ -2,6 +2,8 @@
  *
  */
 import {StringDictionary} from "../util/StringDictionary";
+import {ActionParametersVisitor} from "./ActionParametersVisitor";
+import {DialogProxyTools} from "./DialogProxyTools";
 
 export class DialogRequest {
 
@@ -53,6 +55,10 @@ export class DialogRequest {
 
     public static createFromPostMultipartRequest(baseUrl: string, resourcePath: string, formData: FormData): DialogRequest {
         return new DialogRequest(baseUrl, resourcePath, null, null, formData, [baseUrl, resourcePath, formData]);
+    }
+
+    public actionId(): string {
+        return this._resourcePathElems[7];
     }
 
     public baseUrl(): string {
@@ -364,11 +370,26 @@ export class DialogRequest {
         return this._resourcePathElems;
     }
 
-    public sessionId() {
+    public sessionId(): string {
         return this._resourcePathElems[3];
     }
 
-    public tenantId() {
+    public targetId(): string {
+        const targetIds = this.targetIds();
+        if (targetIds) {
+            return targetIds[0];
+        }
+        return null;
+    }
+
+    public targetIds(): string[] {
+        if (DialogProxyTools.isActionParametersModel(this.body())) {
+            return ActionParametersVisitor.visitTargetsValue(this.body());
+        }
+        return null;
+    }
+
+    public tenantId(): string {
         return this._resourcePathElems[1];
     }
 

@@ -10,7 +10,20 @@ export class Base64 {
         return btoa(str);
     }
 
+    public static encodeUrlSafeString(str) {
+        str = btoa(str);
+        str = str.replace('+', '-');
+        str = str.replace('/', '_');
+        return str;
+    }
+
     public static decodeString(str) {
+        return atob(str);
+    }
+
+    public static decodeUrlSafeString(str) {
+        str = str.replace('-', '+');
+        str = str.replace('_', '/');
         return atob(str);
     }
 }
