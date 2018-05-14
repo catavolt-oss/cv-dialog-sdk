@@ -10,6 +10,9 @@ export class DialogVisitor implements JsonObjectVisitor {
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
+        if (!value) {
+            throw new Error('DialogVisitor -- null value exception')
+        }
         if (typeof value === 'string') {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
@@ -46,16 +49,20 @@ export class DialogVisitor implements JsonObjectVisitor {
 
     // --- State Management --- //
 
-    public deriveDialogIdsFromDialogNameAndRecordIdRecursively() {
+    /**
+     * The record id targeted by the root dialog (usually a Form) will be used to help derive new dialog ids for all.
+     */
+    public deriveDialogIdsFromDialogNameAndRecordId() {
         let dialogName = this.enclosedJsonObject()['dialogName'];
         if (!dialogName) {
             throw new Error("Cannot propagate dialog name -- dialog name not found")
         }
+        let rootRecordId = null;
         const referringObject = this.visitReferringObject();
         if (DialogProxyTools.isReferringDialogModel(referringObject)) {
-            const recordId = this.visitRecordId();
-            if (recordId) {
-                const recordIdEncoded = Base64.encodeString(recordId);
+            rootRecordId = this.visitRecordId();
+            if (rootRecordId) {
+                const recordIdEncoded = Base64.encodeUrlSafeString(rootRecordId);
                 dialogName = `${dialogName}@${recordIdEncoded}`;
             }
         }
@@ -63,7 +70,7 @@ export class DialogVisitor implements JsonObjectVisitor {
         if (this.enclosedJsonObject()['children']) {
             for (const c of this.enclosedJsonObject()['children']) {
                 const dialogVisitor = new DialogVisitor(c);
-                dialogVisitor.deriveDialogIdsFromDialogNameAndRecordIdRecursively();
+                dialogVisitor.deriveDialogIdsFromDialogName(rootRecordId);
             }
         }
     }
@@ -126,6 +133,24 @@ export class DialogVisitor implements JsonObjectVisitor {
 
     public visitReferringObject(): object {
         return this.enclosedJsonObject().referringObject;
+    }
+
+    private deriveDialogIdsFromDialogName(rootRecordId: string) {
+        let dialogName = this.enclosedJsonObject()['dialogName'];
+        if (!dialogName) {
+            throw new Error("Cannot propagate dialog name -- dialog name not found")
+        }
+        if (rootRecordId) {
+            const recordIdEncoded = Base64.encodeUrlSafeString(rootRecordId);
+            dialogName = `${dialogName}@${recordIdEncoded}`;
+        }
+        this.visitAndSetId(dialogName);
+        if (this.enclosedJsonObject()['children']) {
+            for (const c of this.enclosedJsonObject()['children']) {
+                const dialogVisitor = new DialogVisitor(c);
+                dialogVisitor.deriveDialogIdsFromDialogName(rootRecordId);
+            }
+        }
     }
 
 }

@@ -10,6 +10,9 @@ export class RecordSetVisitor implements JsonObjectVisitor {
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
+        if (!value) {
+            throw new Error('RecordSetVisitor -- null value exception')
+        }
         if (typeof value === 'string') {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
@@ -78,6 +81,24 @@ export class RecordSetVisitor implements JsonObjectVisitor {
         if (!found) {
             this.enclosedJsonObject().records.push(recordCopy);
         }
+    }
+
+    public fromRecordId(recordId: string) {
+        if (!recordId) {
+            return;
+        }
+        const records = [];
+        let found = false;
+        for (const r of this.visitRecords()) {
+            if (found) {
+                records.push(r);
+            } else {
+                if (r.visitRecordId() === recordId) {
+                    found = true;
+                }
+            }
+        }
+        return this.enclosedJsonObject().records = records;
     }
 
     public recordCount(): number {

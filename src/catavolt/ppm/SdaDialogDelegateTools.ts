@@ -431,39 +431,10 @@ export class SdaDialogDelegateTools {
         return storage.setJson(key, stateVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineDocumentContentChunk(tenantId: string, userId: string, offlineDocumentsListDialogId: string, documentId: string, sequence: number, largePropertyVisitor: LargePropertyVisitor): Promise<void> {
-        const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.content.${offlineDocumentsListDialogId}_alias_OpenLatestFile_${documentId}.${sequence}`;
-        return storage.setJson(key, largePropertyVisitor.enclosedJsonObject());
-    }
-
-    public static writeOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string, contentRedirectionVisitor: ContentRedirectionVisitor): Promise<void> {
-        const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.${documentsListDialogId}.alias_OpenLatestFile(${documentId}).redirection`;
-        return storage.setJson(key, contentRedirectionVisitor.enclosedJsonObject());
-    }
-
-    public static writeOfflineDocumentsDialogListRecordSet(tenantId: string, userId: string, workPackageId: string, recordSetVisitor: RecordSetVisitor) {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_DIALOG_LIST_RECORD_SET_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.setJson(key, recordSetVisitor.enclosedJsonObject());
-    }
-
-    public static writeOfflineDocumentsDialogPropertiesRecord(tenantId: string, userId: string, workPackageId: string, recordVisitor: RecordVisitor) {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_RECORD_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.setJson(key, recordVisitor.enclosedJsonObject());
-    }
-
-    public static writeOfflineDocumentsDialogRoot(tenantId: string, userId: string, workPackageId: string, dialogVisitor: DialogVisitor) {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_DIALOG_ROOT_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.setJson(key, dialogVisitor.enclosedJsonObject());
-    }
-
-    public static writeOfflineDocumentsRedirection(tenantId: string, userId: string, workPackageId: string, dialogRedirectionVistor: DialogRedirectionVisitor) {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_REDIRECTION_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
-    }
+    // public static writeOfflineDocumentContentChunk(tenantId: string, userId: string, offlineDocumentsListDialogId: string, documentId: string, sequence: number, largePropertyVisitor: LargePropertyVisitor): Promise<void> {
+    //     const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.content.${offlineDocumentsListDialogId}_alias_OpenLatestFile_${documentId}.${sequence}`;
+    //     return storage.setJson(key, largePropertyVisitor.enclosedJsonObject());
+    // }
 
     public static writeOfflineSession(tenantId: string, userId: string, offlineSessionVisitor: SessionVisitor): Promise<void> {
         const key = this.createStorageKey(tenantId, userId, this.OFFLINE_SESSION_KEY);

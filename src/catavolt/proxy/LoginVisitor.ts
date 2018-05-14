@@ -9,6 +9,9 @@ export class LoginVisitor implements JsonObjectVisitor {
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
+        if (!value) {
+            throw new Error('LoginVisitor -- null value exception')
+        }
         if (typeof value === 'string') {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
