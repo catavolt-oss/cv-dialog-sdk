@@ -7,11 +7,10 @@ import {ContentRedirectionVisitor} from "./ContentRedirectionVisitor";
 import {DialogRedirectionVisitor} from "./DialogRedirectionVisitor";
 import {DialogRequest} from "./DialogRequest";
 import {DialogVisitor} from "./DialogVisitor";
+import {LargePropertyVisitor} from "./LargePropertyVisitor";
+import {ReadLargePropertyParametersVisitor} from "./ReadLargePropertyParametersVisitor";
 import {RecordSetVisitor} from "./RecordSetVisitor";
 import {RecordVisitor} from "./RecordVisitor";
-import {LargePropertyVisitor} from "./LargePropertyVisitor";
-import {SdaDialogDelegateTools} from "../ppm/SdaDialogDelegateTools";
-import {ReadLargePropertyParametersVisitor} from "./ReadLargePropertyParametersVisitor";
 
 /**
  *
@@ -45,8 +44,9 @@ export class DialogProxyTools {
     public static async captureDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string): Promise<object> {
         const thisMethod = 'DialogProxyTools::captureDialog';
         // GET DIALOG //
-        const dialogPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}`;
-        const dialogJcr = await DialogProxyTools.commonFetchClient().getJson(baseUrl, dialogPath);
+        const resourcePath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}`;
+        Log.info(`${thisMethod} -- capturing online dialog: ${resourcePath}`);
+        const dialogJcr = await DialogProxyTools.commonFetchClient().getJson(baseUrl, resourcePath);
         if (dialogJcr.statusCode !== 200) {
             throw new Error(`Unexpected result when getting dialog ${dialogId}: ${dialogJcr.statusCode}`);
         }
@@ -55,11 +55,13 @@ export class DialogProxyTools {
         const dialogVisitor = new DialogVisitor(dialogJcr.value);
         const beforeDialog = dialogVisitor.copyAsJsonObject();
         dialogVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+        Log.info(`${thisMethod} -- writing online dialog to offline dialog id: ${dialogVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- writing online dialog to offline storage: ${dialogVisitor.copyAsJsonString()}`);
         await this.writeDialog(userId, tenantId, dialogVisitor);
         return {beforeDialog, afterDialog: dialogVisitor.enclosedJsonObject()};
     }
 
-    public static async captureMenuActionRedirectionAndDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string, actionId: string, targetId: string): Promise<any> {
+    public static async captureMenuActionRedirectionAndDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string, actionId: string, targetId: string, impliedTargetId): Promise<any> {
         const thisMethod = 'DialogProxyTools::captureMenuActionRedirectionAndDialog';
         const resourcePath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions/${actionId}`;
         Log.info(`${thisMethod} -- capturing menu redirection and dialog: ${resourcePath}`);
@@ -68,6 +70,7 @@ export class DialogProxyTools {
             targets: [targetId],
             type: "hxgn.api.dialog.ActionParameters"
         };
+        Log.info(`${thisMethod} -- capturing online dialog redirection: ${resourcePath}`);
         const dialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, resourcePath, actionParameters);
         if (dialogRedirectionJcr.statusCode !== 303) {
             throw new Error(`Unexpected result when posting menu dialog ${dialogId} action ${actionId}: ${dialogRedirectionJcr.statusCode}`);
@@ -80,10 +83,21 @@ export class DialogProxyTools {
         let actionIdAtTargetId = actionId;
         if (targetId) {
             const targetIdEncoded = Base64.encodeUrlSafeString(targetId);
-            actionIdAtTargetId = `${actionId}@${targetIdEncoded}`;
+            actionIdAtTargetId = actionIdAtTargetId + '@' + targetIdEncoded;
         }
-        await this.writeDialogRedirection(userId, tenantId, dialogRedirectionVisitor.visitReferringDialogId(), actionIdAtTargetId, dialogRedirectionVisitor);
-        // GET DIALOG //
+        Log.info(`${thisMethod} -- writing online dialog redirection with dialog id: ${dialogRedirectionVisitor.visitDialogId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection with referring dialog id: ${dialogRedirectionVisitor.visitReferringDialogId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection with record id: ${dialogRedirectionVisitor.visitRecordId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection to offline redirection id: ${dialogRedirectionVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection to offline storage: ${dialogRedirectionVisitor.copyAsJsonString()}`);
+
+        let dialogIdAtTargetId = dialogRedirectionVisitor.visitReferringDialogId();
+        if (impliedTargetId) {
+            const impliedTargetIdEncoded = Base64.encodeUrlSafeString(impliedTargetId);
+            dialogIdAtTargetId = dialogIdAtTargetId + '@' + impliedTargetIdEncoded;
+        }
+        await this.writeDialogRedirection(userId, tenantId, dialogIdAtTargetId, actionIdAtTargetId, dialogRedirectionVisitor);
+        // CAPTURE DIALOG //
         const beforeDialogId = beforeDialogRedirection['dialogId'];
         const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId);
         return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),
@@ -91,11 +105,13 @@ export class DialogProxyTools {
     }
 
     public static async captureRecord(userId: string, baseUrl: string, tenantId: string, sessionId: string, beforeAndAfterValues: any, listDialogName: string): Promise<RecordVisitor> {
+        const thisMethod = 'DialogProxyTools::captureRecord';
         // ONLINE
         const onlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
         const onlineEditorDialogVisitor = onlineRootDialogVisitor.visitChildAtName(listDialogName);
         const onlineEditorDialogId = onlineEditorDialogVisitor.visitId();
         const onlineEditorRecordPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${onlineEditorDialogId}/record`;
+        Log.info(`${thisMethod} -- capturing online record: ${onlineEditorRecordPath}`);
         const onlineEditorRecordJcr = await DialogProxyTools.commonFetchClient().getJson(baseUrl, onlineEditorRecordPath);
         if (onlineEditorRecordJcr.statusCode !== 200) {
             throw new Error(`Unexpected result when getting record: ${onlineEditorRecordJcr.statusCode}`);
@@ -106,11 +122,14 @@ export class DialogProxyTools {
         const offlineEditorDialogVisitor = offlineRootDialogVisitor.visitChildAtName(listDialogName);
         const offlineEditorDialogId = offlineEditorDialogVisitor.visitId();
         // WRITE TO STORAGE
+        Log.info(`${thisMethod} -- writing online record to offline editor dialog id: ${offlineEditorDialogId}`);
+        Log.info(`${thisMethod} -- writing online record to offline storage: ${onlineEditorRecordVisitor.copyAsJsonString()}`);
         await DialogProxyTools.writeRecord(userId, tenantId, offlineEditorDialogId, onlineEditorRecordVisitor);
         return onlineEditorRecordVisitor;
     }
 
     public static async captureRecordSet(userId: string, baseUrl: string, tenantId: string, sessionId: string, beforeAndAfterValues: any, listDialogName: string): Promise<RecordSetVisitor> {
+        const thisMethod = 'DialogProxyTools::captureRecordSet';
         // ONLINE
         const onlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
         const onlineQueryDialogVisitor = onlineRootDialogVisitor.visitChildAtName(listDialogName);
@@ -121,6 +140,7 @@ export class DialogProxyTools {
             fetchMaxRecords: 999,
             type: "hxgn.api.dialog.QueryParameters"
         };
+        Log.info(`${thisMethod} -- capturing online record set: ${onlineQueryRecordsPath}`);
         const onlineQueryRecordsJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, onlineQueryRecordsPath, onlineQueryParameters);
         if (onlineQueryRecordsJcr.statusCode !== 200) {
             throw new Error(`Unexpected result when getting records: ${onlineQueryRecordsJcr.statusCode}`);
@@ -131,6 +151,8 @@ export class DialogProxyTools {
         const offlineQueryDialogVisitor = offlineRootDialogVisitor.visitChildAtName(listDialogName);
         const offlineQueryDialogId = offlineQueryDialogVisitor.visitId();
         // WRITE TO STORAGE
+        Log.info(`${thisMethod} -- writing online record set to offline query dialog id: ${offlineQueryDialogId}`);
+        Log.info(`${thisMethod} -- writing online record set to offline storage: ${onlineQueryRecordSetVisitor.copyAsJsonString()}`);
         await DialogProxyTools.writeRecordSet(userId, tenantId, offlineQueryDialogId, onlineQueryRecordSetVisitor);
         return onlineQueryRecordSetVisitor;
     }
@@ -140,6 +162,7 @@ export class DialogProxyTools {
         const resourcePath = `tenants/${tenantId}/sessions/${sessionId}/workbenches/${workbenchId}/actions/${actionId}`;
         Log.info(`${thisMethod} -- capturing workbench redirection and dialog: ${resourcePath}`);
         // GET REDIRECTION //
+        Log.info(`${thisMethod} -- capturing online dialog redirection: ${resourcePath}`);
         const dialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, resourcePath, {});
         if (dialogRedirectionJcr.statusCode !== 303) {
             throw new Error(`Unexpected result when posting workbench ${workbenchId} action ${actionId}: ${dialogRedirectionJcr.statusCode}`);
@@ -149,8 +172,10 @@ export class DialogProxyTools {
         const dialogRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJcr.value);
         const beforeDialogRedirection = dialogRedirectionVisitor.copyAsJsonObject();
         dialogRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+        Log.info(`${thisMethod} -- writing online dialog redirection to offline redirection id: ${dialogRedirectionVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection to offline storage: ${dialogRedirectionVisitor.copyAsJsonString()}`);
         await this.writeDialogRedirection(userId, tenantId, workbenchId, actionId, dialogRedirectionVisitor);
-        // GET DIALOG //
+        // CAPTURE DIALOG //
         const beforeDialogId = beforeDialogRedirection['dialogId'];
         const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId);
         return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),

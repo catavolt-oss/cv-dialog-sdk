@@ -140,6 +140,10 @@ export class DialogRequest {
         }
     }
 
+    public dialogId(): string {
+        return this._resourcePathElems[5];
+    }
+
     public fetchClientParams(): any[] {
         return this._fetchClientParams;
     }

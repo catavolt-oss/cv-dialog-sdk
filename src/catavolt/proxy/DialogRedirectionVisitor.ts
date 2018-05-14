@@ -61,6 +61,9 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
             if (referringDialogName) {
                 referringObject['dialogId'] = referringDialogName;
             }
+            // WARNING: Although this code sets the id on the dialog redirection, it is conditioned on the
+            // referring object being a dialog redirection. This is because workbench redirections have a
+            // synthetic record id that we do NOT want to include as part of the redirection id.
             const recordId = this.visitRecordId();
             if (recordId) {
                 const recordIdEncoded = Base64.encodeUrlSafeString(recordId);
@@ -94,6 +97,14 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
 
     public visitReferringDialogId(): string {
         return this.visitReferringObject()['dialogId'];
+    }
+
+    public visitReferringDialogMode(): string {
+        return this.visitReferringObject()['dialogMode'];
+    }
+
+    public visitAndSetReferringDialogMode(dialogMode: string) {
+        this.visitReferringObject()['dialogMode'] = dialogMode;
     }
 
     public visitReferringObject(): object {

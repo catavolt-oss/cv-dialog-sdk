@@ -3,7 +3,7 @@ import {Client} from "../client/Client";
 import {JsonClientResponse} from "../client/JsonClientResponse";
 import {TextClientResponse} from "../client/TextClientResponse";
 import {VoidClientResponse} from "../client/VoidClientResponse";
-import {StreamProducer} from '../io';
+import {StreamProducer} from '../io/StreamProducer';
 import {SdaDialogDelegate} from "../ppm/SdaDialogDelegate";
 import {Log} from '../util/Log';
 import {StringDictionary} from '../util/StringDictionary';

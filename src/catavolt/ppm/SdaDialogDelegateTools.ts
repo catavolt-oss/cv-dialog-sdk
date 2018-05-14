@@ -65,12 +65,9 @@ export class SdaDialogDelegateTools {
     private static OPEN_LATEST_FILE_MENU_ACTION_ID = 'alias_OpenLatestFile';
     private static REMOVE_FROM_BRIEFCASE_MENU_ACTION_ID = 'alias_RemoveFromBriefcase';
     private static SHOW_TAGS_MENU_ACTION_ID = 'alias_ShowTags';
-    private static WORK_PACKAGES_WORKBENCH_ACTION_ID = 'WorkPackages';
 
     // Model Types
     private static EDITOR_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.EditorDialog';
-    private static QUERY_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.QueryDialog';
-    private static RECORD_MODEL_TYPE = 'hxgn.api.dialog.Record';
     private static RECORD_SET_MODEL_TYPE = 'hxgn.api.dialog.RecordSet';
     private static SESSION_ID_MODEL_TYPE = 'hxgn.api.dialog.SessionId';
 
@@ -83,12 +80,6 @@ export class SdaDialogDelegateTools {
 
     private static OFFLINE_DOCUMENTS_REDIRECTION_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.documents.redirection.${workPackageId}';
 
-    private static OFFLINE_DOCUMENTS_DIALOG_ROOT_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.documents.dialog.offline_documents_${workPackageId}';
-
-    private static OFFLINE_DOCUMENTS_DIALOG_PROPERTIES_RECORD_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.documents.dialog.offline_documents_properties_${workPackageId}.record';
-
-    private static OFFLINE_DOCUMENTS_DIALOG_LIST_RECORD_SET_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.documents.dialog.offline_documents_list_${workPackageId}.recordSet';
-
     private static OFFLINE_SESSION_KEY = '${userId}.${tenantId}.OfflineSession';
 
     private static OFFLINE_TAGS_REDIRECTION_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.tags.redirection.${workPackageId}';
@@ -98,12 +89,6 @@ export class SdaDialogDelegateTools {
     private static OFFLINE_TAGS_DIALOG_PROPERTIES_RECORD_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.tags.dialog.offline_tags_properties_${workPackageId}.record';
 
     private static OFFLINE_TAGS_DIALOG_LIST_RECORD_SET_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.tags.dialog.offline_tags_list_${workPackageId}.recordSet';
-
-    private static OFFLINE_WORK_PACKAGES_REDIRECTION_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.redirection';
-    // ${userId}.${tenantId}.Workpackage_General_FORM.redirection
-
-    private static OFFLINE_WORK_PACKAGES_DIALOG_ROOT_KEY = '${userId}.${tenantId}.ppm.sda.workPackages.dialog.root';
-    // ${userId}.${tenantId}.SDAWorkbench.WorkPackages->Workpackage_General_FORM.dialog
 
     public static constructAddToBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
         const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
