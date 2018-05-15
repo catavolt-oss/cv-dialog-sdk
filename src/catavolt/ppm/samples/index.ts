@@ -5,7 +5,7 @@ export * from './Workpackage_Tags_FORM';
 export * from './Workpackage_Tags_Properties_RECORD';
 export * from './Workpackage_General_FORM';
 export * from './SdaPostAddToBriefcaseMenuActionJsonSample';
-export * from './SdaPostCreateCommentMenuActionJsonSample';
+export * from './Documents_CreateComment_FORM_REDIRECTION';
 export * from './SdaPostSelectedWorkPackagesRecordsJsonSample';
 export * from './SdaPostSessionJsonSample';
 export * from './SdaPostShowTagsMenuActionJsonSample';

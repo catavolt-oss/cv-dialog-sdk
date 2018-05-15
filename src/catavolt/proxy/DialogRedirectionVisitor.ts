@@ -1,23 +1,14 @@
 import {Base64} from "../util/Base64";
 import {DialogProxyTools} from "./DialogProxyTools";
-import {JsonObjectVisitor} from "./JsonObjectVisitor";
+import {RedirectionVisitor} from "./RedirectionVisitor";
 
 /**
  *
  */
-export class DialogRedirectionVisitor implements JsonObjectVisitor {
-
-    private _enclosedJsonObject: any;
+export class DialogRedirectionVisitor extends RedirectionVisitor {
 
     constructor(value: string | object) {
-        if (!value) {
-            throw new Error('DialogRedirectionVisitor -- null value exception')
-        }
-        if (typeof value === 'string') {
-            this._enclosedJsonObject = JSON.parse(value as string);
-        } else {
-            this._enclosedJsonObject = value;
-        }
+        super(value);
     }
 
     // --- State Management Helpers --- //
@@ -34,25 +25,11 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
         return (new DialogRedirectionVisitor(dialogRedirection)).visitId();
     }
 
-    // --- State Import/Export --- //
-
-    public copyAsJsonObject(): object {
-        return JSON.parse(this.copyAsJsonString());
-    }
-
-    public copyAsJsonString(): string {
-        return JSON.stringify(this.enclosedJsonObject());
-    }
-
-    public enclosedJsonObject() {
-        return this._enclosedJsonObject;
-    }
-
     // --- State Management --- //
 
     public deriveDialogIdsFromDialogNameAndRecordId() {
-        let dialogName = this.enclosedJsonObject()['dialogName'];
-        if (!dialogName) {
+        let derivedDialogId = this.enclosedJsonObject()['dialogName'];
+        if (!derivedDialogId) {
             throw new Error("Cannot propagate dialog name -- dialog name not found")
         }
         const referringObject = this.visitReferringObject();
@@ -65,12 +42,24 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
             // referring object being a dialog redirection. This is because workbench redirections have a
             // synthetic record id that we do NOT want to include as part of the redirection id.
             const recordId = this.visitRecordId();
-            if (recordId) {
+            // TODO: Fix the error in Dialog Service that returns null record ids as a string literal of "null"
+            if (recordId && recordId !== 'null') {
                 const recordIdEncoded = Base64.encodeUrlSafeString(recordId);
-                dialogName = `${dialogName}@${recordIdEncoded}`;
+                derivedDialogId = `${derivedDialogId}@${recordIdEncoded}`;
             }
         }
-        this.propagateDialogId(dialogName);
+        this.propagateDialogId(derivedDialogId);
+    }
+
+    public deriveDialogIdsFromDialogNameAndSuffix(suffix: string) {
+        let derivedDialogId = this.enclosedJsonObject()['dialogName'];
+        if (!derivedDialogId) {
+            throw new Error("Cannot propagate dialog name -- dialog name not found")
+        }
+        if (suffix) {
+            derivedDialogId = derivedDialogId + '_' + suffix;
+        }
+        this.propagateDialogId(derivedDialogId);
     }
 
     public propagateDialogId(dialogId: string) {
@@ -87,28 +76,20 @@ export class DialogRedirectionVisitor implements JsonObjectVisitor {
         return this.enclosedJsonObject().dialogId;
     }
 
-    public visitId(): string {
-        return this.enclosedJsonObject().id;
+    public visitAndSetDialogId(dialogId: string) {
+        this.enclosedJsonObject().dialogId = dialogId;
+    }
+
+    public visitDialogName(): string {
+        return this.enclosedJsonObject().dialogName;
+    }
+
+    public visitAndSetDialogName(dialogName: string) {
+        this.enclosedJsonObject().dialogName = dialogName;
     }
 
     public visitRecordId(): string {
         return this.enclosedJsonObject().recordId;
-    }
-
-    public visitReferringDialogId(): string {
-        return this.visitReferringObject()['dialogId'];
-    }
-
-    public visitReferringDialogMode(): string {
-        return this.visitReferringObject()['dialogMode'];
-    }
-
-    public visitAndSetReferringDialogMode(dialogMode: string) {
-        this.visitReferringObject()['dialogMode'] = dialogMode;
-    }
-
-    public visitReferringObject(): object {
-        return this.enclosedJsonObject().referringObject;
     }
 
 }

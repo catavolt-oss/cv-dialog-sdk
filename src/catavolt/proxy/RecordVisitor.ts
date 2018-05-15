@@ -21,12 +21,6 @@ export class RecordVisitor implements JsonObjectVisitor {
         if (!DialogProxyTools.isRecordModel(this._enclosedJsonObject)) {
             throw new Error("Object passed to RecordVisitor is not a Record");
         }
-        if (!this._enclosedJsonObject.id) {
-            throw new Error('Invalid record -- missing id field');
-        }
-        if (typeof this._enclosedJsonObject.id !== 'string') {
-            throw new Error('Invalid record set -- id field is not a string');
-        }
         if (!this._enclosedJsonObject.properties) {
             throw new Error('Invalid record -- missing properties field');
         }

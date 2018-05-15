@@ -398,16 +398,15 @@ export class SdaDialogDelegateTools {
         return storage.getJson(key).then(jsonObject => new DialogVisitor(jsonObject));
     }
 
-    public static showAllStorageKeys(): Promise<void> {
-        return storage.getAllKeys().then(allKeys => {
-            const keyCount = allKeys.length;
-            Log.info(`SdaDialogDelegateTools::showAllStorageKeys -- key count: ${allKeys.length}`);
-            for (let i = keyCount - 1; i > -1; --i) {
-                Log.info(`SdaDialogDelegateTools::showAllStorageKeys -- key[${i}]: ${allKeys[i]}`);
-            }
-        }).catch(allKeysError => {
-            Log.error("SdaDialogDelegateTools::showAllStorageKeys -- error getting all keys from storage: " + allKeysError);
-        });
+    public static async showAllStorageKeysAndValues(): Promise<void> {
+        const thisMethod = 'SdaDialogDelegateTools::showAllStorageKeysAndValues';
+        const allKeys = await storage.getAllKeys();
+        Log.info(`${thisMethod} -- ************** BEGIN SHOW ALL STORAGE KEYS AND VALUES **************`);
+        for (const k of allKeys) {
+            const v = await storage.getItem(k);
+            Log.info(`${thisMethod} -- ${k}: ${v}`);
+        }
+        Log.info(`${thisMethod} -- ************** END SHOW ALL STORAGE KEYS AND VALUES **************`);
     }
 
     public static writeDialogDelegateState(tenantId: string, stateVisitor: SdaDialogDelegateStateVisitor): Promise<void> {
@@ -415,11 +414,6 @@ export class SdaDialogDelegateTools {
         const key = this.createStorageKey(tenantId, userId, this.DIALOG_DELEGATE_STATE_KEY);
         return storage.setJson(key, stateVisitor.enclosedJsonObject());
     }
-
-    // public static writeOfflineDocumentContentChunk(tenantId: string, userId: string, offlineDocumentsListDialogId: string, documentId: string, sequence: number, largePropertyVisitor: LargePropertyVisitor): Promise<void> {
-    //     const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.content.${offlineDocumentsListDialogId}_alias_OpenLatestFile_${documentId}.${sequence}`;
-    //     return storage.setJson(key, largePropertyVisitor.enclosedJsonObject());
-    // }
 
     public static writeOfflineSession(tenantId: string, userId: string, offlineSessionVisitor: SessionVisitor): Promise<void> {
         const key = this.createStorageKey(tenantId, userId, this.OFFLINE_SESSION_KEY);

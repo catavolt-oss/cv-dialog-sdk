@@ -1,6 +1,6 @@
 /**
  */
-export class SdaPostCreateCommentMenuActionJsonSample {
+export class Documents_CreateComment_FORM_REDIRECTION {
 
     private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/9/actions/alias_CreateComment';
 
