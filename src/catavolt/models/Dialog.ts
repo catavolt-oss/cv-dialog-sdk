@@ -305,8 +305,11 @@ export abstract class Dialog {
     protected updateSettingsWithNewDialogProperties(referringObject: ReferringObject) {
         if (referringObject) {
             if (referringObject.isDialogReferrer()) {
-                // @TODO - remove the uppercase conversion once all DialogModes come back from server as uppercase
-                this.dialogMode = (referringObject as ReferringDialog).dialogMode.toUpperCase() as DialogMode;
+                const referringDialog:ReferringDialog = referringObject as ReferringDialog;
+                if(referringDialog.dialogMode) {
+                    // @TODO - remove the uppercase conversion once all DialogModes come back from server as uppercase
+                    this.dialogMode = referringDialog.dialogMode.toUpperCase() as DialogMode;
+                }
             }
         }
     }
