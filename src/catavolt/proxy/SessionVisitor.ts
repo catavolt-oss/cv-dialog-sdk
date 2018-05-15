@@ -52,6 +52,10 @@ export class SessionVisitor implements JsonObjectVisitor {
         return this.enclosedJsonObject().id;
     }
 
+    public visitTenantId(): string {
+        return this.enclosedJsonObject().tenantId;
+    }
+
     public visitUserId(): string {
         return this.enclosedJsonObject().userId;
     }

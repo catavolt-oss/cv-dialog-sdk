@@ -149,6 +149,23 @@ export class DialogRequest {
         }
     }
 
+    public deconstructPutPropertyPath(): any {
+        return {
+            tenantId: this._resourcePathElems[1],
+            sessionId: this._resourcePathElems[3],
+            dialogId: this._resourcePathElems[5],
+            propertyName: this._resourcePathElems[7]
+        }
+    }
+
+    public deconstructPutRecordPath(): any {
+        return {
+            tenantId: this._resourcePathElems[1],
+            sessionId: this._resourcePathElems[3],
+            dialogId: this._resourcePathElems[5]
+        }
+    }
+
     public dialogId(): string {
         return this._resourcePathElems[5];
     }
@@ -343,6 +360,16 @@ export class DialogRequest {
         }
         const pathFields = this.deconstructPostWorkbenchActionPath();
         return pathFields.actionId === actionId;
+    }
+
+    public isPutPropertyPath(): boolean {
+        return (
+            this._resourcePathElems.length === 8 &&
+            this._resourcePathElems[0] === DialogRequest.TENANTS &&
+            this._resourcePathElems[2] === DialogRequest.SESSIONS &&
+            this._resourcePathElems[4] === DialogRequest.DIALOGS &&
+            this._resourcePathElems[6] === DialogRequest.RECORD
+        );
     }
 
     public isPutRecordPath(): boolean {

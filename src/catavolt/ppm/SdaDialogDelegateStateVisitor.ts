@@ -1,5 +1,6 @@
 import {JsonObjectVisitor} from "../proxy";
 import {BriefcaseVisitor} from "./BriefcaseVisitor";
+import {MobileCommentsRecordSetVisitor} from "./MobileCommentsRecordSetVisitor";
 import {WorkPackagesRecordSetVisitor} from "./WorkPackagesRecordSetVisitor";
 
 /**
@@ -99,6 +100,10 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
 
     public visitAndSetUserId(userId: string) {
         this.enclosedJsonObject().userId = userId;
+    }
+
+    public visitMobileCommentsRecordSet(): MobileCommentsRecordSetVisitor {
+        return new MobileCommentsRecordSetVisitor(this.enclosedJsonObject().mobileComments);
     }
 
     public visitWorkPackagesRecordSet(): WorkPackagesRecordSetVisitor {
