@@ -353,6 +353,17 @@ export class SdaDialogDelegateTools {
         return storage.getJson(key).then(jsonObject => new RecordVisitor(jsonObject));
     }
 
+    public static async showAllStorageKeys(): Promise<void> {
+        const thisMethod = 'SdaDialogDelegateTools::showAllStorageKeys';
+        Log.info(`${thisMethod} -- ************** BEGIN SHOW ALL STORAGE KEYS **************`);
+        const allKeys = await storage.getAllKeys();
+        for (const k of allKeys) {
+            const v = await storage.getItem(k);
+            Log.info(`${thisMethod} -- ${k}`);
+        }
+        Log.info(`${thisMethod} -- ************** END SHOW ALL STORAGE KEYS **************`);
+    }
+
     public static async showAllStorageKeysAndValues(): Promise<void> {
         const thisMethod = 'SdaDialogDelegateTools::showAllStorageKeysAndValues';
         Log.info(`${thisMethod} -- ************** BEGIN SHOW ALL STORAGE KEYS AND VALUES **************`);

@@ -441,7 +441,7 @@ export class SdaDialogDelegate implements DialogDelegate {
     private async initializeAfterCreateSession(request: DialogRequest, sessionVisitor: SessionVisitor): Promise<void> {
         const thisMethod = 'SdaDialogDelegate::initializeAfterCreateSession';
         const pathFields = request.deconstructPostSessionsPath();
-        Log.info(`${thisMethod} -- showing storage keys`);
+        await SdaDialogDelegateTools.showAllStorageKeys();
         await SdaDialogDelegateTools.showAllStorageKeysAndValues();
         const dialogDelegateStateVisitor = await SdaDialogDelegateTools.readDialogDelegateStateVisitor(pathFields.tenantId, sessionVisitor.visitUserId());
         Log.info(`${thisMethod} -- dialog delegate state before initializing: ${dialogDelegateStateVisitor.copyAsJsonString()}`);
@@ -541,15 +541,15 @@ export class SdaDialogDelegate implements DialogDelegate {
             throw new Error(`Unexpected result when getting work packages dialog: ${workPackagesDialogJcr.statusCode}`);
         }
         const workPackagesRootDialogVisitor = new DialogVisitor(workPackagesDialogJcr.value);
-        const workPakcagesListDialogVisitor = workPackagesRootDialogVisitor.visitChildAtName(SdaDialogDelegateTools.WORK_PACKAGES_LIST_DIALOG_NAME);
-        const workPackagesQueryRecordsPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${workPakcagesListDialogVisitor.visitId()}/records`;
-        const onlineQueryParameters = {
+        const workPackagesListDialogVisitor = workPackagesRootDialogVisitor.visitChildAtName(SdaDialogDelegateTools.WORK_PACKAGES_LIST_DIALOG_NAME);
+        const workPackagesQueryRecordsPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${workPackagesListDialogVisitor.visitId()}/records`;
+        const workPackagesQueryParameters = {
             fetchDirection: "FORWARD",
             fetchMaxRecords: 999,
             type: "hxgn.api.dialog.QueryParameters"
         };
         Log.info(`${thisMethod} -- getting work packages record set: ${workPackagesQueryRecordsPath}`);
-        const workPackagesQueryRecordsJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), workPackagesQueryRecordsPath, onlineQueryParameters);
+        const workPackagesQueryRecordsJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), workPackagesQueryRecordsPath, workPackagesQueryParameters);
         if (workPackagesQueryRecordsJcr.statusCode !== 200) {
             throw new Error(`Unexpected result when getting records: ${workPackagesQueryRecordsJcr.statusCode} ${JSON.stringify(workPackagesQueryRecordsJcr.value)}`);
         }
@@ -564,17 +564,84 @@ export class SdaDialogDelegate implements DialogDelegate {
             for (const k of allKeys) {
                 if (k.startsWith(createCommentActionSignature)) {
                     Log.info(`${thisMethod} -- create comment activity exists for work package: ${workPackageId}`);
-                    break;
+                    const dialogRedirectionJsonObject = await storage.getJson(k);
+                    const dialogRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJsonObject);
+                    Log.info(`${thisMethod} -- create comment activity exists for work package: ${workPackageId} at redirection: ${dialogRedirectionVisitor.copyAsJsonString()}`);
+                    const dialogId = dialogRedirectionVisitor.visitDialogId();
+                    Log.info(`${thisMethod} -- create comment activity exists for work package: ${workPackageId} at dialog id: ${dialogId}`);
+                    const documentId = dialogRedirectionVisitor.visitRecordId();
+                    Log.info(`${thisMethod} -- create comment activity exists for work package: ${workPackageId} at document id: ${documentId}`);
+                    const dialogIdAndSuffix = dialogId.split('$');
+                    const suffix = dialogIdAndSuffix[1];
+                    Log.info(`${thisMethod} -- create comment activity exists for work package: ${workPackageId} at suffix: ${suffix}`);
+                    const recordCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${suffix}.recordcommit`;
+                    const recordCommitJsonObject = await storage.getJson(recordCommitKey);
+                    if (recordCommitJsonObject) {
+                        Log.info(`${thisMethod} -- committed comment exists for work package: ${JSON.stringify(recordCommitJsonObject)}`);
+                        // ***** Navigate work package into documents *****
+                        const documentsMenuActionPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${workPackagesListDialogVisitor.visitId()}/actions/alias_Open`;
+                        const documentsMenuActionParameters = {
+                            targets: [workPackageId],
+                            type: "hxgn.api.dialog.ActionParameters"
+                        };
+                        Log.info(`${thisMethod} -- getting documents redirection: ${documentsMenuActionPath}`);
+                        const documentsDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), documentsMenuActionPath, documentsMenuActionParameters);
+                        if (documentsDialogRedirectionJcr.statusCode !== 303) {
+                            throw new Error(`Unexpected result when posting for documents: ${documentsDialogRedirectionJcr.statusCode} ${JSON.stringify(documentsDialogRedirectionJcr.value)}`);
+                        }
+                        const documentsRedirectionVisitor = new DialogRedirectionVisitor(documentsDialogRedirectionJcr.value);
+                        const documentsDialogPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${documentsRedirectionVisitor.visitDialogId()}`;
+                        Log.info(`${thisMethod} -- getting documents dialog: ${documentsDialogPath}`);
+                        const documentsDialogJcr = await DialogProxyTools.commonFetchClient().getJson(this.delegateBaseUrl(), documentsDialogPath);
+                        if (documentsDialogJcr.statusCode !== 200) {
+                            throw new Error(`Unexpected result when getting documents dialog: ${documentsDialogJcr.statusCode}`);
+                        }
+                        const documentsRootDialogVisitor = new DialogVisitor(documentsDialogJcr.value);
+                        const documentsListDialogVisitor = documentsRootDialogVisitor.visitChildAtName(SdaDialogDelegateTools.DOCUMENTS_LIST_DIALOG_NAME);
+                        const createCommentMenuActionPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${documentsListDialogVisitor.visitId()}/actions/alias_CreateComment`;
+                        const createCommentMenuActionParameters = {
+                            targets: [documentId],
+                            type: "hxgn.api.dialog.ActionParameters"
+                        };
+                        Log.info(`${thisMethod} -- opening a create comments dialog: ${createCommentMenuActionPath}`);
+                        const createCommentDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), createCommentMenuActionPath, createCommentMenuActionParameters);
+                        if (createCommentDialogRedirectionJcr.statusCode !== 303) {
+                            throw new Error(`Unexpected result when posting for create comment: ${createCommentDialogRedirectionJcr.statusCode} ${JSON.stringify(createCommentDialogRedirectionJcr.value)}`);
+                        }
+                        const createCommentDialogRedirectionVisitor = new DialogRedirectionVisitor(createCommentDialogRedirectionJcr.value);
+                        const createCommentDialogPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${createCommentDialogRedirectionVisitor.visitDialogId()}`;
+                        Log.info(`${thisMethod} -- getting create comment dialog: ${createCommentMenuActionPath}`);
+                        const createCommentDialogJcr = await DialogProxyTools.commonFetchClient().getJson(this.delegateBaseUrl(), createCommentDialogPath);
+                        if (createCommentDialogJcr.statusCode !== 200) {
+                            throw new Error(`Unexpected result when getting create comment dialog: ${createCommentDialogJcr.statusCode} ${JSON.stringify(createCommentDialogJcr.value)}`);
+                        }
+                        const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${suffix}.propertycommit$P_IMAGE`;
+                        const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
+                        if (propertyCommitJsonObject) {
+                            const commitCreateCommentPropertyPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${createCommentDialogRedirectionVisitor.visitDialogId()}/record/P_IMAGE`;
+                            for (const writeLargeProperty of propertyCommitJsonObject) {
+                                Log.info(`${thisMethod} -- committing create comment large property: ${commitCreateCommentPropertyPath}`);
+                                const commitCreateCommentPropertyJcr = await DialogProxyTools.commonFetchClient().putJson(this.delegateBaseUrl(), commitCreateCommentPropertyPath, writeLargeProperty);
+                                if (commitCreateCommentPropertyJcr.statusCode !== 200) {
+                                    Log.error(`Unexpected result when committing create comment large property: ${commitCreateCommentPropertyJcr.statusCode} ${JSON.stringify(commitCreateCommentPropertyJcr.value)}`);
+                                    break;
+                                }
+                            }
+                        }
+                        const commitCreateCommentRecordPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${createCommentDialogRedirectionVisitor.visitDialogId()}/record`;
+                        Log.info(`${thisMethod} -- committing create comment: ${commitCreateCommentRecordPath}`);
+                        const commitCreateCommentRecordJcr = await DialogProxyTools.commonFetchClient().putJson(this.delegateBaseUrl(), commitCreateCommentRecordPath, recordCommitJsonObject);
+                        Log.info(`${thisMethod} -- commit create comment result: ${commitCreateCommentRecordJcr.statusCode} ${JSON.stringify(commitCreateCommentRecordJcr.value)}`);
+                    }
                 }
             }
         }
         // TODO: Clear transactions
-// TODO: REMOVE DISABLED
-        // this._dialogDelegateStateVisitor.visitAndClearSelectedWorkPackageIds();
-        // this._dialogDelegateStateVisitor.visitMobileCommentsRecordSet().visitAndClearRecords();
-        // this.delegateWorkPackagesRecordSetVisitor().visitAndClearRecords();
-        // this.delegateBriefcaseVisitor().visitAndSetOnline(true);
-        // await SdaDialogDelegateTools.writeDialogDelegateState(pathFields.tenantId, this._dialogDelegateStateVisitor);
+        this._dialogDelegateStateVisitor.visitAndClearSelectedWorkPackageIds();
+        this._dialogDelegateStateVisitor.visitMobileCommentsRecordSet().visitAndClearRecords();
+        this.delegateWorkPackagesRecordSetVisitor().visitAndClearRecords();
+        this.delegateBriefcaseVisitor().visitAndSetOnline(true);
+        await SdaDialogDelegateTools.writeDialogDelegateState(pathFields.tenantId, this._dialogDelegateStateVisitor);
         const nullRedirection = SdaDialogDelegateTools.constructEnterOfflineModeNullRedirection(pathFields.tenantId, pathFields.sessionId);
         return new JsonClientResponse(nullRedirection, 303);
     }
