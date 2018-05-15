@@ -1,31 +1,36 @@
-import { JsonObjectVisitor } from './JsonObjectVisitor';
-import { DialogProxyTools } from './DialogProxyTools';
+import {Base64} from "../util";
+import {DialogProxyTools} from "./DialogProxyTools";
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
 export class DialogVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
+        if (!value) {
+            throw new Error('DialogVisitor -- null value exception')
+        }
         if (typeof value === 'string') {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
             this._enclosedJsonObject = value;
         }
-        if (!DialogProxyTools.isDialogObject(this._enclosedJsonObject)) {
-            throw new Error('Object passed to DialogVisitor is not a Dialog');
+        if (!DialogProxyTools.isDialogModel(this._enclosedJsonObject)) {
+            throw new Error("Object passed to DialogVisitor is not a Dialog");
         }
     }
 
     // --- State Management Helpers --- //
 
     public static propagateTenantIdAndSessionId(dialog: object, tenantId: string, sessionId: string) {
-        new DialogVisitor(dialog).propagateTenantIdAndSessionId(tenantId, sessionId);
+        (new DialogVisitor(dialog)).propagateTenantIdAndSessionId(tenantId, sessionId);
     }
 
     public static visitId(dialog: object): string {
-        return new DialogVisitor(dialog).visitId();
+        return (new DialogVisitor(dialog)).visitId();
     }
 
     // --- State Import/Export --- //
@@ -43,6 +48,50 @@ export class DialogVisitor implements JsonObjectVisitor {
     }
 
     // --- State Management --- //
+
+    /**
+     * The record id targeted by the root dialog (usually a Form) will be used to help derive new dialog ids for all.
+     */
+    public deriveDialogIdsFromDialogNameAndRecordId() {
+        let derivedDialogId = this.enclosedJsonObject()['dialogName'];
+        if (!derivedDialogId) {
+            throw new Error("Cannot derive dialog ids -- dialog name not found")
+        }
+        let rootRecordId = null;
+        const referringObject = this.visitReferringObject();
+        if (DialogProxyTools.isReferringDialogModel(referringObject)) {
+            rootRecordId = this.visitRecordId();
+            // TODO: Fix the error in Dialog Service that returns null record ids as a string literal of "null"
+            if (rootRecordId && rootRecordId !== 'null') {
+                const recordIdEncoded = Base64.encodeUrlSafeString(rootRecordId);
+                derivedDialogId = `${derivedDialogId}@${recordIdEncoded}`;
+            }
+        }
+        this.visitAndSetId(derivedDialogId);
+        if (this.enclosedJsonObject()['children']) {
+            for (const c of this.enclosedJsonObject()['children']) {
+                const dialogVisitor = new DialogVisitor(c);
+                dialogVisitor.deriveDialogIdsFromDialogName(rootRecordId);
+            }
+        }
+    }
+
+    public deriveDialogIdsFromDialogNameAndSuffix(suffix: string) {
+        let derivedDialogId = this.enclosedJsonObject()['dialogName'];
+        if (!derivedDialogId) {
+            throw new Error("Cannot propagate dialog ids -- dialog name not found")
+        }
+        if (suffix) {
+            derivedDialogId = derivedDialogId + '$' + suffix;
+        }
+        this.visitAndSetId(derivedDialogId);
+        if (this.enclosedJsonObject()['children']) {
+            for (const c of this.enclosedJsonObject()['children']) {
+                const dialogVisitor = new DialogVisitor(c);
+                dialogVisitor.deriveDialogIdsFromDialogNameAndSuffix(suffix);
+            }
+        }
+    }
 
     public propagateTenantIdAndSessionId(tenantId: string, sessionId: string) {
         this.enclosedJsonObject()['tenantId'] = tenantId;
@@ -95,4 +144,40 @@ export class DialogVisitor implements JsonObjectVisitor {
         }
         return false;
     }
+
+    public visitRecordId(): string {
+        return this.enclosedJsonObject().recordId;
+    }
+
+    public visitAndSetRecordId(recordId: string) {
+        this.enclosedJsonObject().recordId = recordId;
+    }
+
+    public visitReferringObject(): object {
+        return this.enclosedJsonObject().referringObject;
+    }
+
+    private deriveDialogIdsFromDialogName(rootRecordId: string) {
+        let dialogName = this.enclosedJsonObject()['dialogName'];
+        if (!dialogName) {
+            throw new Error("Cannot propagate dialog name -- dialog name not found")
+        }
+        // TODO: Fix the error in Dialog Service that returns null record ids as a string literal of "null"
+        if (rootRecordId && rootRecordId !== 'null') {
+            const recordIdEncoded = Base64.encodeUrlSafeString(rootRecordId);
+            dialogName = `${dialogName}@${recordIdEncoded}`;
+        }
+
+
+        if (rootRecordId) {
+        }
+        this.visitAndSetId(dialogName);
+        if (this.enclosedJsonObject()['children']) {
+            for (const c of this.enclosedJsonObject()['children']) {
+                const dialogVisitor = new DialogVisitor(c);
+                dialogVisitor.deriveDialogIdsFromDialogName(rootRecordId);
+            }
+        }
+    }
+
 }

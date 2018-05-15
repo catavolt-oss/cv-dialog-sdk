@@ -1,12 +1,16 @@
-import { JsonObjectVisitor } from './JsonObjectVisitor';
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
 export class ReadLargePropertyParametersVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
+        if (!value) {
+            throw new Error('ReadLargePropertyParametersVisitor -- null value exception')
+        }
         if (typeof value === 'string') {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
@@ -17,7 +21,7 @@ export class ReadLargePropertyParametersVisitor implements JsonObjectVisitor {
     // --- State Management Helpers --- //
 
     public static visitSequence(jsonObject: object): number {
-        return new ReadLargePropertyParametersVisitor(jsonObject).visitSequence();
+        return (new ReadLargePropertyParametersVisitor(jsonObject)).visitSequence();
     }
 
     // --- State Import/Export --- //
@@ -39,4 +43,5 @@ export class ReadLargePropertyParametersVisitor implements JsonObjectVisitor {
     public visitSequence(): number {
         return this.enclosedJsonObject().sequence;
     }
+
 }

@@ -1,21 +1,25 @@
-import { DialogProxyTools } from './DialogProxyTools';
-import { JsonObjectVisitor } from './JsonObjectVisitor';
-import { RecordVisitor } from './RecordVisitor';
+import {DialogProxyTools} from "./DialogProxyTools";
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
+import {RecordVisitor} from "./RecordVisitor";
 
 /**
  *
  */
 export class RecordSetVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
+        if (!value) {
+            throw new Error('RecordSetVisitor -- null value exception')
+        }
         if (typeof value === 'string') {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
             this._enclosedJsonObject = value;
         }
-        if (!DialogProxyTools.isRecordSetObject(this._enclosedJsonObject)) {
-            throw new Error('Object passed to RecordSetVisitor is not a RecordSet');
+        if (!DialogProxyTools.isRecordSetModel(this._enclosedJsonObject)) {
+            throw new Error("Object passed to RecordSetVisitor is not a RecordSet");
         }
         if (!this._enclosedJsonObject.records) {
             throw new Error('Invalid record set -- missing records field');
@@ -28,7 +32,7 @@ export class RecordSetVisitor implements JsonObjectVisitor {
     // --- State Management Helpers --- //
 
     public static addOrUpdateRecord(jsonObject: object, recordState: RecordVisitor) {
-        new RecordSetVisitor(jsonObject).addOrUpdateRecord(recordState);
+        (new RecordSetVisitor(jsonObject)).addOrUpdateRecord(recordState);
     }
 
     public static emptyRecordSetVisitor(): RecordSetVisitor {
@@ -36,7 +40,7 @@ export class RecordSetVisitor implements JsonObjectVisitor {
             defaultActionId: null,
             records: [],
             hasMore: false,
-            type: 'hxgn.api.dialog.RecordSet'
+            type: "hxgn.api.dialog.RecordSet"
         });
     }
 
@@ -79,6 +83,24 @@ export class RecordSetVisitor implements JsonObjectVisitor {
         }
     }
 
+    public fromRecordId(recordId: string) {
+        if (!recordId) {
+            return;
+        }
+        const records = [];
+        let found = false;
+        for (const r of this.visitRecords()) {
+            if (found) {
+                records.push(r);
+            } else {
+                if (r.visitRecordId() === recordId) {
+                    found = true;
+                }
+            }
+        }
+        return this.enclosedJsonObject().records = records;
+    }
+
     public recordCount(): number {
         return this.enclosedJsonObject().records.length;
     }
@@ -110,4 +132,5 @@ export class RecordSetVisitor implements JsonObjectVisitor {
             yield new RecordVisitor(this.enclosedJsonObject().records[index++]);
         }
     }
+
 }

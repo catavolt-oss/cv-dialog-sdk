@@ -1,655 +1,521 @@
-import { BlobClientResponse } from '../client/BlobClientResponse';
-import { JsonClientResponse } from '../client/JsonClientResponse';
-import { TextClientResponse } from '../client/TextClientResponse';
-import { storage } from '../storage';
-import { Log } from '../util/Log';
-import { FetchClient } from '../ws/FetchClient';
+import {JsonClientResponse} from "../client/JsonClientResponse";
+import {storage} from "../storage";
+import {Base64} from "../util/Base64";
+import {Log} from "../util/Log";
+import {StringDictionary} from "../util/StringDictionary";
+import {FetchClient} from "../ws/FetchClient";
+import {ContentRedirectionVisitor} from "./ContentRedirectionVisitor";
+import {DialogRedirectionVisitor} from "./DialogRedirectionVisitor";
+import {DialogRequest} from "./DialogRequest";
+import {DialogVisitor} from "./DialogVisitor";
+import {LargePropertyVisitor} from "./LargePropertyVisitor";
+import {ReadLargePropertyParametersVisitor} from "./ReadLargePropertyParametersVisitor";
+import {RecordSetVisitor} from "./RecordSetVisitor";
+import {RecordVisitor} from "./RecordVisitor";
+import {WriteLargePropertyParametersVisitor} from "./WriteLargePropertyParametersVisitor";
 
+/**
+ *
+ */
 export class DialogProxyTools {
-    public static ACTIONS = 'actions';
-    public static AVAILABLE_VALUES = 'availableValues';
-    public static AVAILABLE_VIEWS = 'availableViews';
-    public static CONTENT = 'content';
-    public static DIALOGS = 'dialogs';
-    public static RECORD = 'record';
-    public static RECORDS = 'records';
-    public static REDIRECTIONS = 'redirections';
-    public static SELECTED_VIEW = 'selectedView';
-    public static SESSIONS = 'sessions';
-    public static TENANTS = 'tenants';
-    public static VIEW_MODE = 'viewMode';
-    public static WORKBENCHES = 'workbenches';
 
     // Model Types
-    public static ACTION_PARAMETERS_MODEL_TYPE = 'hxgn.api.dialog.ActionParameters';
-    public static ANNOTATION_MODEL_TYPE = 'hxgn.api.dialog.Annotation';
-    public static DIALOG_MESSAGE_MODEL_TYPE = 'hxgn.api.dialog.DialogMessage';
-    public static EDITOR_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.EditorDialog';
-    public static LOGIN_MODEL_TYPE = 'hxgn.api.dialog.Login';
-    public static PROPERTY_MODEL_TYPE = 'hxgn.api.dialog.Property';
-    public static PROPERTY_DEF_MODEL_TYPE = 'hxgn.api.dialog.PropertyDef';
-    public static QUERY_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.QueryDialog';
-    public static RECORD_MODEL_TYPE = 'hxgn.api.dialog.Record';
-    public static RECORD_SET_MODEL_TYPE = 'hxgn.api.dialog.RecordSet';
-    public static SESSION_MODEL_TYPE = 'hxgn.api.dialog.Session';
+    private static ACTION_PARAMETERS_MODEL_TYPE = 'hxgn.api.dialog.ActionParameters';
+    private static ANNOTATION_MODEL_TYPE = 'hxgn.api.dialog.Annotation';
+    private static DIALOG_MESSAGE_MODEL_TYPE = 'hxgn.api.dialog.DialogMessage';
+    private static EDITOR_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.EditorDialog';
+    private static LOGIN_MODEL_TYPE = 'hxgn.api.dialog.Login';
+    private static PROPERTY_MODEL_TYPE = 'hxgn.api.dialog.Property';
+    private static PROPERTY_DEF_MODEL_TYPE = 'hxgn.api.dialog.PropertyDef';
+    private static QUERY_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.QueryDialog';
+    private static RECORD_MODEL_TYPE = 'hxgn.api.dialog.Record';
+    private static RECORD_SET_MODEL_TYPE = 'hxgn.api.dialog.RecordSet';
+    private static REFERRING_DIALOG_MODEL_TYPE = 'hxgn.api.dialog.ReferringDialog';
+    private static REFERRING_WORKBENCH_MODEL_TYPE = 'hxgn.api.dialog.ReferringWorkbench';
+    private static SESSION_MODEL_TYPE = 'hxgn.api.dialog.Session';
 
-    public static COMMON_FETCH_CLIENT = new FetchClient();
+    // Storage Keys
+    private static CONTENT_STORAGE_KEY =            '${userId}.${tenantId}.${contentId}.${sequence}';
+    private static DIALOG_STORAGE_KEY =             '${userId}.${tenantId}.${dialogId}.dialog';
+    private static PROPERTY_COMMIT_STORAGE_KEY =    '${userId}.${tenantId}.${dialogId}.propertycommit$${propertyName}';
+    private static RECORD_SET_STORAGE_KEY =         '${userId}.${tenantId}.${dialogId}.recordset';
+    private static RECORD_STORAGE_KEY =             '${userId}.${tenantId}.${dialogId}.record';
+    private static RECORD_COMMIT_STORAGE_KEY =      '${userId}.${tenantId}.${dialogId}.recordcommit';
+    private static REDIRECTION_STORAGE_KEY =        '${userId}.${tenantId}.${stateId}.${actionId}.redirection';
+
+    private static COMMON_FETCH_CLIENT = new FetchClient();
+
+    public static async captureDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string): Promise<object> {
+        const thisMethod = 'DialogProxyTools::captureDialog';
+        // GET DIALOG //
+        const resourcePath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}`;
+        Log.info(`${thisMethod} -- capturing online dialog: ${resourcePath}`);
+        const dialogJcr = await DialogProxyTools.commonFetchClient().getJson(baseUrl, resourcePath);
+        if (dialogJcr.statusCode !== 200) {
+            throw new Error(`Unexpected result when getting dialog ${dialogId}: ${dialogJcr.statusCode}`);
+        }
+        Log.info(`${thisMethod} -- dialog: ${JSON.stringify(dialogJcr.value)}`);
+        // WRITE DIALOG //
+        const dialogVisitor = new DialogVisitor(dialogJcr.value);
+        const beforeDialog = dialogVisitor.copyAsJsonObject();
+        dialogVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+        Log.info(`${thisMethod} -- writing online dialog to offline dialog id: ${dialogVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- writing online dialog to offline storage: ${dialogVisitor.copyAsJsonString()}`);
+        await this.writeDialog(userId, tenantId, dialogVisitor);
+        return {beforeDialog, afterDialog: dialogVisitor.enclosedJsonObject()};
+    }
+
+    public static async captureMenuActionRedirectionAndDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string, actionId: string, targetId: string, impliedTargetId): Promise<any> {
+        const thisMethod = 'DialogProxyTools::captureMenuActionRedirectionAndDialog';
+        const resourcePath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions/${actionId}`;
+        Log.info(`${thisMethod} -- capturing menu redirection and dialog: ${resourcePath}`);
+        // GET REDIRECTION //
+        const actionParameters = {
+            targets: [targetId],
+            type: "hxgn.api.dialog.ActionParameters"
+        };
+        Log.info(`${thisMethod} -- capturing online dialog redirection: ${resourcePath}`);
+        const dialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, resourcePath, actionParameters);
+        if (dialogRedirectionJcr.statusCode !== 303) {
+            throw new Error(`Unexpected result when posting menu dialog ${dialogId} action ${actionId}: ${dialogRedirectionJcr.statusCode}`);
+        }
+        Log.info(`${thisMethod} -- menu action redirection: ${JSON.stringify(dialogRedirectionJcr.value)}`);
+        // WRITE REDIRECTION //
+        const dialogRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJcr.value);
+        const beforeDialogRedirection = dialogRedirectionVisitor.copyAsJsonObject();
+        dialogRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+        let actionIdAtTargetId = actionId;
+        if (targetId) {
+            const targetIdEncoded = Base64.encodeUrlSafeString(targetId);
+            actionIdAtTargetId = actionIdAtTargetId + '@' + targetIdEncoded;
+        }
+        Log.info(`${thisMethod} -- writing online dialog redirection with dialog id: ${dialogRedirectionVisitor.visitDialogId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection with referring dialog id: ${dialogRedirectionVisitor.visitReferringDialogId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection with record id: ${dialogRedirectionVisitor.visitRecordId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection to offline redirection id: ${dialogRedirectionVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection to offline storage: ${dialogRedirectionVisitor.copyAsJsonString()}`);
+
+        let dialogIdAtTargetId = dialogRedirectionVisitor.visitReferringDialogId();
+        if (impliedTargetId) {
+            const impliedTargetIdEncoded = Base64.encodeUrlSafeString(impliedTargetId);
+            dialogIdAtTargetId = dialogIdAtTargetId + '@' + impliedTargetIdEncoded;
+        }
+        await this.writeDialogRedirection(userId, tenantId, dialogIdAtTargetId, actionIdAtTargetId, dialogRedirectionVisitor);
+        // CAPTURE DIALOG //
+        const beforeDialogId = beforeDialogRedirection['dialogId'];
+        const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId);
+        return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),
+            beforeDialog: beforeAndAfterDialog['beforeDialog'], afterDialog: beforeAndAfterDialog['afterDialog']};
+    }
+
+    public static async captureRecord(userId: string, baseUrl: string, tenantId: string, sessionId: string, beforeAndAfterValues: any, listDialogName: string): Promise<RecordVisitor> {
+        const thisMethod = 'DialogProxyTools::captureRecord';
+        // ONLINE
+        const onlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
+        const onlineEditorDialogVisitor = onlineRootDialogVisitor.visitChildAtName(listDialogName);
+        const onlineEditorDialogId = onlineEditorDialogVisitor.visitId();
+        const onlineEditorRecordPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${onlineEditorDialogId}/record`;
+        Log.info(`${thisMethod} -- capturing online record: ${onlineEditorRecordPath}`);
+        const onlineEditorRecordJcr = await DialogProxyTools.commonFetchClient().getJson(baseUrl, onlineEditorRecordPath);
+        if (onlineEditorRecordJcr.statusCode !== 200) {
+            throw new Error(`Unexpected result when getting record: ${onlineEditorRecordJcr.statusCode}`);
+        }
+        const onlineEditorRecordVisitor = new RecordVisitor(onlineEditorRecordJcr.value);
+        // OFFLINE
+        const offlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.afterDialog);
+        const offlineEditorDialogVisitor = offlineRootDialogVisitor.visitChildAtName(listDialogName);
+        const offlineEditorDialogId = offlineEditorDialogVisitor.visitId();
+        // WRITE TO STORAGE
+        Log.info(`${thisMethod} -- writing online record to offline editor dialog id: ${offlineEditorDialogId}`);
+        Log.info(`${thisMethod} -- writing online record to offline storage: ${onlineEditorRecordVisitor.copyAsJsonString()}`);
+        await DialogProxyTools.writeRecord(userId, tenantId, offlineEditorDialogId, onlineEditorRecordVisitor);
+        return onlineEditorRecordVisitor;
+    }
+
+    public static async captureRecordSet(userId: string, baseUrl: string, tenantId: string, sessionId: string, beforeAndAfterValues: any, listDialogName: string): Promise<RecordSetVisitor> {
+        const thisMethod = 'DialogProxyTools::captureRecordSet';
+        // ONLINE
+        const onlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
+        const onlineQueryDialogVisitor = onlineRootDialogVisitor.visitChildAtName(listDialogName);
+        const onlineQueryDialogId = onlineQueryDialogVisitor.visitId();
+        const onlineQueryRecordsPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${onlineQueryDialogId}/records`;
+        const onlineQueryParameters = {
+            fetchDirection: "FORWARD",
+            fetchMaxRecords: 999,
+            type: "hxgn.api.dialog.QueryParameters"
+        };
+        Log.info(`${thisMethod} -- capturing online record set: ${onlineQueryRecordsPath}`);
+        const onlineQueryRecordsJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, onlineQueryRecordsPath, onlineQueryParameters);
+        if (onlineQueryRecordsJcr.statusCode !== 200) {
+            throw new Error(`Unexpected result when getting records: ${onlineQueryRecordsJcr.statusCode}`);
+        }
+        const onlineQueryRecordSetVisitor = new RecordSetVisitor(onlineQueryRecordsJcr.value);
+        // OFFLINE
+        const offlineRootDialogVisitor = new DialogVisitor(beforeAndAfterValues.afterDialog);
+        const offlineQueryDialogVisitor = offlineRootDialogVisitor.visitChildAtName(listDialogName);
+        const offlineQueryDialogId = offlineQueryDialogVisitor.visitId();
+        // WRITE TO STORAGE
+        Log.info(`${thisMethod} -- writing online record set to offline query dialog id: ${offlineQueryDialogId}`);
+        Log.info(`${thisMethod} -- writing online record set to offline storage: ${onlineQueryRecordSetVisitor.copyAsJsonString()}`);
+        await DialogProxyTools.writeRecordSet(userId, tenantId, offlineQueryDialogId, onlineQueryRecordSetVisitor);
+        return onlineQueryRecordSetVisitor;
+    }
+
+    public static async captureWorkbenchActionRedirectionAndDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, workbenchId: string, actionId: string): Promise<any> {
+        const thisMethod = 'DialogProxyTools::captureWorkbenchActionRedirectionAndDialog';
+        const resourcePath = `tenants/${tenantId}/sessions/${sessionId}/workbenches/${workbenchId}/actions/${actionId}`;
+        Log.info(`${thisMethod} -- capturing workbench redirection and dialog: ${resourcePath}`);
+        // GET REDIRECTION //
+        Log.info(`${thisMethod} -- capturing online dialog redirection: ${resourcePath}`);
+        const dialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, resourcePath, {});
+        if (dialogRedirectionJcr.statusCode !== 303) {
+            throw new Error(`Unexpected result when posting workbench ${workbenchId} action ${actionId}: ${dialogRedirectionJcr.statusCode}`);
+        }
+        Log.info(`${thisMethod} -- workbench action redirection: ${JSON.stringify(dialogRedirectionJcr.value)}`);
+        // WRITE REDIRECTION //
+        const dialogRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJcr.value);
+        const beforeDialogRedirection = dialogRedirectionVisitor.copyAsJsonObject();
+        dialogRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+        Log.info(`${thisMethod} -- writing online dialog redirection to offline redirection id: ${dialogRedirectionVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- writing online dialog redirection to offline storage: ${dialogRedirectionVisitor.copyAsJsonString()}`);
+        await this.writeDialogRedirection(userId, tenantId, workbenchId, actionId, dialogRedirectionVisitor);
+        // CAPTURE DIALOG //
+        const beforeDialogId = beforeDialogRedirection['dialogId'];
+        const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId);
+        return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),
+            beforeDialog: beforeAndAfterDialog['beforeDialog'], afterDialog: beforeAndAfterDialog['afterDialog']};
+    }
 
     public static commonFetchClient(): FetchClient {
         return this.COMMON_FETCH_CLIENT;
     }
 
     public static constructDialogMessageModel(message: string) {
-        return { type: this.DIALOG_MESSAGE_MODEL_TYPE, message };
+        return {type: this.DIALOG_MESSAGE_MODEL_TYPE, message};
     }
 
     public static constructLoginModel(userId: string, password: string): object {
         return {
-            userId: 'jordan',
-            password: 'jordan1',
-            clientType: 'MOBILE',
-            deviceProperties: {},
-            type: this.LOGIN_MODEL_TYPE
+            "userId": userId,
+            "password": password,
+            "clientType": "MOBILE",
+            "deviceProperties": {},
+            "type": this.LOGIN_MODEL_TYPE
         };
     }
 
-    public static constructRequestNotValidDuringOfflineMode(
-        action: string,
-        resourcePath: string
-    ): Promise<JsonClientResponse> {
-        return Promise.resolve(
-            new JsonClientResponse(
-                this.constructDialogMessageModel(`${action} at ${resourcePath} is not valid during offline mode: `),
-                400
-            )
-        );
+    public static constructRequestNotValidDuringOfflineMode(action: string, resourcePath: string): JsonClientResponse {
+        return new JsonClientResponse(this.constructDialogMessageModel(`${action} at ${resourcePath} is not valid during offline mode: `), 400);
+    }
+
+    /**
+     * Construct an empty null redirection with the following defaults:
+     * referringObject will be a type of "hxgn.api.dialog.ReferringDialog"
+     *      dialogAlias=null
+     *      dialogName=null
+     *      dialogMode='READ'
+     *      actionId=null
+     *      dialogId=null
+     * refreshNeeded=true
+     * id=randomly generated value
+     */
+    public static constructNullRedirection(tenantId: string, sessionId: string): StringDictionary {
+        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
+        return {
+            "tenantId": tenantId,
+            "referringObject": {
+                "dialogMode": "READ",
+                "dialogAlias": null,
+                "dialogName": null,
+                "actionId": null,
+                "type": "hxgn.api.dialog.ReferringDialog",
+                "dialogId": null
+            },
+            "refreshNeeded": true,
+            "sessionId": sessionId,
+            "id": nullRedirectionId,
+            "type": "hxgn.api.dialog.NullRedirection"
+        };
     }
 
     public static constructNullRedirectionId(): string {
         return `null_redirection__offline_${Date.now()}`;
     }
 
-    public static deconstructDeleteSessionPath(path: string[]): any {
-        return {
-            tenantId: path[1],
-            sessionId: path[3]
-        };
-    }
+    // ----- MODEL QUERY METHODS ----- //
 
-    public static deconstructGetDialogPath(path: string[]): any {
-        return {
-            tenantId: path[1],
-            sessionId: path[3],
-            dialogId: path[5]
-        };
-    }
-
-    public static deconstructGetRecordPath(path: string[]): any {
-        return {
-            tenantId: path[1],
-            sessionId: path[3],
-            dialogId: path[5]
-        };
-    }
-
-    public static deconstructGetRedirectionPath(path: string[]): any {
-        return {
-            tenantId: path[1],
-            sessionId: path[3],
-            redirectionId: path[5]
-        };
-    }
-
-    public static deconstructPostMenuActionPath(path: string[]): any {
-        return {
-            tenantId: path[1],
-            sessionId: path[3],
-            dialogId: path[5],
-            actionId: path[7]
-        };
-    }
-
-    public static deconstructPostRecordsPath(path: string[]): any {
-        return {
-            tenantId: path[1],
-            sessionId: path[3],
-            dialogId: path[5]
-        };
-    }
-
-    public static deconstructPostSessionContentPath(path: string[]): any {
-        return {
-            tenantId: path[1],
-            sessionId: path[3],
-            contentId: path[5]
-        };
-    }
-
-    public static deconstructPostSessionsPath(path: string[]): any {
-        return {
-            tenantId: path[1]
-        };
-    }
-
-    public static deconstructPostWorkbenchActionPath(path: string[]): any {
-        return {
-            tenantId: path[1],
-            sessionId: path[3],
-            workbenchId: path[5],
-            actionId: path[7]
-        };
-    }
-
-    public static deleteAllDialogState(tenantId: string, userId: string, dialogId: string) {
-        const dialog = this.readDialogState(tenantId, userId, dialogId);
-        if (dialog) {
-            this.deleteAllDialogStateFor(tenantId, userId, dialog);
-        } else {
-            this.deleteRedirectionState(tenantId, userId, dialogId);
-        }
-    }
-
-    public static deleteAllDialogStateFor(tenantId: string, userId: string, dialog: any) {
-        const dialogChildren = dialog.children;
-        if (dialogChildren) {
-            for (const child of dialogChildren) {
-                this.deleteAllDialogStateFor(tenantId, userId, child);
-            }
-        }
-        this.deleteRedirectionState(tenantId, userId, dialog.id);
-        this.deleteDialogState(tenantId, userId, dialog.id);
-        this.deleteRecordSetState(tenantId, userId, dialog.id);
-        this.deleteRecordState(tenantId, userId, dialog.id);
-        this.deleteDialogParentState(tenantId, userId, dialog.id);
-        this.deleteDialogAliasState(tenantId, userId, dialog.id);
-        this.deleteDialogReferringAliasState(tenantId, userId, dialog.id);
-    }
-
-    public static deleteAllState(tenantId: string, userId: string) {
-        storage
-            .getAllKeys()
-            .then(allKeys => {
-                const keyCount = allKeys.length;
-                for (let i = keyCount - 1; i > -1; --i) {
-                    const key = allKeys[i];
-                    Log.debug('DialogProxyTools::deleteAllState -- removing from storage: ' + key);
-                    storage.removeItem(key).catch(removeItemError => {
-                        Log.error('DialogProxyTools::deleteAllState -- error removing item: ' + removeItemError);
-                    });
-                }
-            })
-            .catch(allKeysError => {
-                Log.error('DialogProxyTools::deleteAllState -- error getting all keys from storage: ' + allKeysError);
-            });
-    }
-
-    public static deleteAllWorkbenchNavigation(tenantId: string, userId: string, navigationKey: string) {
-        const previousNavigation = DialogProxyTools.readNavigationState(tenantId, userId, navigationKey);
-        if (previousNavigation) {
-            DialogProxyTools.deleteAllDialogState(tenantId, userId, previousNavigation.redirectionId);
-        }
-    }
-
-    public static deleteDialogAliasState(tenantId: string, userId: string, dialogId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias');
-    }
-
-    public static deleteDialogParentState(tenantId: string, userId: string, childId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
-    }
-
-    public static deleteDialogReferringAliasState(tenantId: string, userId: string, dialogId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias');
-    }
-
-    public static deleteDialogState(tenantId: string, userId: string, dialogId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId);
-    }
-
-    public static deleteNavigationState(tenantId: string, userId: string, navigationId: string) {
-        this.deletePersistentState(tenantId, userId, 'navigation.' + navigationId);
-    }
-
-    public static deletePersistentState(tenantId: string, userId: string, stateId: string) {
-        const key: string = tenantId + '.' + userId + '.' + stateId;
-        storage
-            .removeItem(key)
-            .catch(removeItemError => Log.error('Error removing item from storage: ' + removeItemError));
-    }
-
-    public static deleteRecordSetState(tenantId: string, userId: string, dialogId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet');
-    }
-
-    public static deleteRecordState(tenantId: string, userId: string, dialogId: string) {
-        this.deletePersistentState(tenantId, userId, 'dialog.' + dialogId + '.record');
-    }
-
-    public static deleteRedirectionState(tenantId: string, userId: string, redirectionId: string) {
-        this.deletePersistentState(tenantId, userId, 'redirection.' + redirectionId);
-    }
-
-    public static deleteSessionState(tenantId: string, userId: string) {
-        this.deletePersistentState(tenantId, userId, 'session');
-    }
-
-    public static findDialogState(tenantId: string, userId: string, dialogId: string): any {
-        const dialog = this.findRootDialogState(tenantId, userId, dialogId);
-        if (!dialog) {
-            return null;
-        }
-        return this.findDialogStateWithin(tenantId, userId, dialog, dialogId);
-    }
-
-    public static findDialogStateWithin(tenantId: string, userId: string, dialog: any, targetId: string): any {
-        if (dialog && dialog.id === targetId) {
-            return dialog;
-        }
-        const dialogChildren = dialog.children;
-        if (dialogChildren) {
-            for (const child of dialogChildren) {
-                const nestedDialog = this.findDialogStateWithin(tenantId, userId, child, targetId);
-                if (nestedDialog) {
-                    return nestedDialog;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static findRecordProperty(record: any, propertyName: string): any {
-        for (const p of record.properties) {
-            if (p.name === propertyName) {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    public static findRecordPropertyValue(record: any, propertyName: string): any {
-        const p = this.findRecordProperty(record, propertyName);
-        return p ? p.value : null;
-    }
-
-    public static findRootDialogState(tenantId: string, userId: string, dialogId: string): any {
-        const dialog = this.readDialogState(tenantId, userId, dialogId);
-        if (dialog) {
-            return dialog;
-        }
-        const parentId = this.readDialogParentState(tenantId, userId, dialogId);
-        if (parentId) {
-            return this.findRootDialogState(tenantId, userId, parentId);
-        }
-        return null;
-    }
-
-    public static isCreateSessionRequest(path: string[]): boolean {
-        return path.length === 3 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
-    }
-
-    public static isDeleteSessionRequest(path: string[]): boolean {
-        return path.length === 4 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
-    }
-
-    public static isGetAvailableViews(path: string[]): boolean {
-        return (
-            path.length === 7 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.AVAILABLE_VIEWS
-        );
-    }
-
-    public static isGetDialog(path: string[]): boolean {
-        return (
-            path.length === 6 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS
-        );
-    }
-
-    public static isGetRecord(path: string[]): boolean {
-        return (
-            path.length === 7 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.RECORD
-        );
-    }
-
-    public static isGetRedirection(path: string[]): boolean {
-        return (
-            path.length === 6 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.REDIRECTIONS
-        );
-    }
-
-    public static isGetSelectedView(path: string[]): boolean {
-        return (
-            path.length === 7 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.SELECTED_VIEW
-        );
-    }
-
-    public static isGetSession(path: string[]): boolean {
-        return path.length === 4 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
-    }
-
-    public static isGetTenant(path: string[]): boolean {
-        return path.length === 2 && path[0] === DialogProxyTools.TENANTS;
-    }
-
-    public static isGetTenants(path: string[]): boolean {
-        return path.length === 1 && path[0] === DialogProxyTools.TENANTS;
-    }
-
-    public static isGetViewMode(path: string[]): boolean {
-        return (
-            path.length === 7 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.VIEW_MODE
-        );
-    }
-
-    public static isGetWorkbenches(path: string[]): boolean {
-        return (
-            path.length === 5 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.WORKBENCHES
-        );
-    }
-
-    public static isPostAvailableValues(path: string[]): boolean {
-        return (
-            path.length === 9 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.RECORD &&
-            path[8] === DialogProxyTools.AVAILABLE_VALUES
-        );
-    }
-
-    public static isPostMenuAction(path: string[]): boolean {
-        return (
-            path.length === 8 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.ACTIONS
-        );
-    }
-
-    public static isPostRecords(path: string[]): boolean {
-        return (
-            path.length === 7 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.RECORDS
-        );
-    }
-
-    public static isPostSession(path: string[]): boolean {
-        return path.length === 3 && path[0] === DialogProxyTools.TENANTS && path[2] === DialogProxyTools.SESSIONS;
-    }
-
-    public static isPostSessionContent(path: string[]): boolean {
-        return (
-            path.length === 6 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.CONTENT
-        );
-    }
-
-    public static isPostWorkbenchAction(path: string[]): boolean {
-        return (
-            path.length === 8 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.WORKBENCHES &&
-            path[6] === DialogProxyTools.ACTIONS
-        );
-    }
-
-    public static isPutRecord(path: string[]): boolean {
-        return (
-            path.length === 7 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.RECORD
-        );
-    }
-
-    public static isPutSelectedView(path: string[]): boolean {
-        return (
-            path.length === 8 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.SELECTED_VIEW
-        );
-    }
-
-    public static isPutViewMode(path: string[]): boolean {
-        return (
-            path.length === 8 &&
-            path[0] === DialogProxyTools.TENANTS &&
-            path[2] === DialogProxyTools.SESSIONS &&
-            path[4] === DialogProxyTools.DIALOGS &&
-            path[6] === DialogProxyTools.VIEW_MODE
-        );
-    }
-
-    public static isActionParametersObject(jsonObject: object): boolean {
+    public static isActionParametersModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
         return jsonObject['type'] === this.ACTION_PARAMETERS_MODEL_TYPE;
     }
 
-    public static isAnnotationObject(jsonObject: object): boolean {
+    public static isAnnotationModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
         return jsonObject['type'] === this.ANNOTATION_MODEL_TYPE;
     }
 
-    public static isDialogObject(jsonObject: object): boolean {
+    public static isDialogModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
-        return (
-            jsonObject['type'] === this.EDITOR_DIALOG_MODEL_TYPE || jsonObject['type'] === this.QUERY_DIALOG_MODEL_TYPE
-        );
+        return jsonObject['type'] === this.EDITOR_DIALOG_MODEL_TYPE ||
+            jsonObject['type'] === this.QUERY_DIALOG_MODEL_TYPE;
     }
 
-    public static isLoginObject(jsonObject: object): boolean {
+    public static isLoginModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
         return jsonObject['type'] === this.LOGIN_MODEL_TYPE;
     }
 
-    public static isPropertyObject(jsonObject: object): boolean {
+    public static isPropertyModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
         return jsonObject['type'] === this.PROPERTY_MODEL_TYPE;
     }
 
-    public static isPropertyDefObject(jsonObject: object): boolean {
+    public static isPropertyDefModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
         return jsonObject['type'] === this.PROPERTY_DEF_MODEL_TYPE;
     }
 
-    public static isRecordObject(jsonObject: object): boolean {
+    public static isRecordModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
         return jsonObject['type'] === this.RECORD_MODEL_TYPE;
     }
 
-    public static isRecordSetObject(jsonObject: object): boolean {
+    public static isRecordSetModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
         return jsonObject['type'] === this.RECORD_SET_MODEL_TYPE;
     }
 
-    public static isSessionObject(jsonObject: object): boolean {
+    public static isReferringDialogModel(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.REFERRING_DIALOG_MODEL_TYPE;
+    }
+
+    public static isReferringWorkbenchModel(jsonObject: object): boolean {
+        if (!jsonObject || !jsonObject['type']) {
+            return false;
+        }
+        return jsonObject['type'] === this.REFERRING_WORKBENCH_MODEL_TYPE;
+    }
+
+    public static isSessionModel(jsonObject: object): boolean {
         if (!jsonObject || !jsonObject['type']) {
             return false;
         }
         return jsonObject['type'] === this.SESSION_MODEL_TYPE;
     }
 
-    public static readDialogAliasState(tenantId: string, userId: string, dialogId: string) {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias');
+    // ----- PATH QUERY METHODS ----- //
+
+    public static readDialogAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
+        return this.readDialogAsVisitor(userId, request).then(dialogVisitor => {
+            return dialogVisitor ?
+                new JsonClientResponse(dialogVisitor.enclosedJsonObject(), 200) :
+                this.constructRequestNotValidDuringOfflineMode('readDialogAsOfflineResponse', request.resourcePath());
+        });
     }
 
-    public static readDialogParentState(tenantId: string, userId: string, childId: string): any {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + childId + '.parent');
+    public static readDialogAsVisitor(userId: string, request: DialogRequest): Promise<DialogVisitor> {
+        const thisMethod = 'DialogProxyTools::readDialogAsVisitor';
+        const pathFields = request.deconstructGetDialogPath();
+        const tenantId = pathFields.tenantId;
+        const sessionId = pathFields.sessionId;
+        const dialogId = pathFields.dialogId;
+        let key = this.DIALOG_STORAGE_KEY.replace('${tenantId}', tenantId);
+        key = key.replace('${userId}', userId);
+        key = key.replace('${dialogId}', dialogId);
+        Log.info(`${thisMethod} -- reading for dialog at key: ${key}`);
+        return storage.getJson(key).then(jsonObject => jsonObject ? new DialogVisitor(jsonObject) : null);
     }
 
-    public static readDialogReferringAliasState(tenantId: string, userId: string, dialogId: string) {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias');
+    public static readDialogRedirectionAsVisitor(userId: string, tenantId: string, stateId: string, actionId: string): Promise<DialogRedirectionVisitor> {
+        const thisMethod = 'DialogProxyTools::readDialogRedirectionAsVisitor';
+        let key = this.REDIRECTION_STORAGE_KEY.replace('${tenantId}', tenantId);
+        key = key.replace('${userId}', userId);
+        key = key.replace('${stateId}', stateId);
+        key = key.replace('${actionId}', actionId);
+        Log.info(`${thisMethod} -- reading for redirection at key: ${key}`);
+        return storage.getJson(key).then(jsonObject => jsonObject ? new DialogRedirectionVisitor(jsonObject) : null);
     }
 
-    public static readDialogState(tenantId: string, userId: string, dialogId: string): any {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId);
+    public static readMenuActionRedirectionAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
+        const pathFields = request.deconstructPostMenuActionPath();
+        let actionIdAtTargetId = request.actionId();
+        const targetId = request.targetId();
+        if (targetId) {
+            const targetIdEncoded = Base64.encodeUrlSafeString(targetId);
+            actionIdAtTargetId = `${request.actionId()}@${targetIdEncoded}`;
+        }
+        return this.readDialogRedirectionAsVisitor(userId, pathFields.tenantId, pathFields.dialogId, actionIdAtTargetId).then(dialogRedirectionVisitor => {
+            return dialogRedirectionVisitor ?
+                new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303) :
+                this.constructRequestNotValidDuringOfflineMode('readMenuActionRedirectionAsOfflineResponse', request.resourcePath());
+        });
     }
 
-    public static readNavigationState(tenantId: string, userId: string, navigationId: string): any {
-        return this.readPersistentState(tenantId, userId, 'navigation.' + navigationId);
+    public static readRecordAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
+        return this.readRecordAsVisitor(userId, request).then(recordVisitor => {
+            return recordVisitor ?
+                new JsonClientResponse(recordVisitor.enclosedJsonObject(), 200) :
+                this.constructRequestNotValidDuringOfflineMode('readRecordAsOfflineResponse', request.resourcePath());
+        });
     }
 
-    public static readPersistentState(tenantId: string, userId: string, stateId: string): Promise<any> {
-        const key: string = tenantId + '.' + userId + '.' + stateId;
-        return storage
-            .getItem(key)
-            .then(json => {
-                return json ? JSON.parse(json) : null;
-            })
-            .catch(getItemError => 'Error getting item from storage: ' + getItemError);
+    public static readRecordAsVisitor(userId: string, request: DialogRequest): Promise<RecordVisitor> {
+        const pathFields = request.deconstructGetRecordPath();
+        const tenantId = pathFields.tenantId;
+        const sessionId = pathFields.sessionId;
+        const dialogId = pathFields.dialogId;
+        let key = this.RECORD_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        return storage.getJson(key).then(jsonObject => jsonObject ? new RecordVisitor(jsonObject) : null);
     }
 
-    public static readRecordSetState(tenantId: string, userId: string, dialogId: string): any {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet');
+    public static readRecordSetAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
+        return this.readRecordSetAsVisitor(userId, request).then(recordSetVisitor => {
+            return recordSetVisitor ?
+                new JsonClientResponse(recordSetVisitor.enclosedJsonObject(), 200) :
+                this.constructRequestNotValidDuringOfflineMode('readRecordSetAsOfflineResponse', request.resourcePath());
+        });
     }
 
-    public static readRecordState(tenantId: string, userId: string, dialogId: string): any {
-        return this.readPersistentState(tenantId, userId, 'dialog.' + dialogId + '.record');
+    public static async readRecordSetAsVisitor(userId: string, request: DialogRequest): Promise<RecordSetVisitor> {
+        const pathFields = request.deconstructPostRecordsPath();
+        const tenantId = pathFields.tenantId;
+        const sessionId = pathFields.sessionId;
+        const dialogId = pathFields.dialogId;
+        let key = this.RECORD_SET_STORAGE_KEY.replace('${tenantId}', tenantId);
+        key = key.replace('${userId}', userId);
+        key = key.replace('${dialogId}', dialogId);
+        const jsonObject = await storage.getJson(key);
+        if (!jsonObject) {
+            return null;
+        }
+        const recordSetVisitor = new RecordSetVisitor(jsonObject);
+        if (request.body().fromRecordId) {
+            recordSetVisitor.fromRecordId(request.body().fromRecordId);
+        }
+        return recordSetVisitor;
     }
 
-    public static readRedirectionState(tenantId: string, userId: string, redirectionId: string): any {
-        return this.readPersistentState(tenantId, userId, 'redirection.' + redirectionId);
+    public static readSessionContentAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
+        const pathFields = request.deconstructPostSessionContentPath();
+        const tenantId = pathFields.tenantId;
+        const contentId = pathFields.contentId;
+        const parametersVisitor = new ReadLargePropertyParametersVisitor(request.body());
+        const sequence = parametersVisitor.visitSequence();
+        return this.readSessionContentAsVisitor(userId, tenantId, contentId, sequence).then(largePropertyVisitor => {
+            return largePropertyVisitor ?
+                new JsonClientResponse(largePropertyVisitor.enclosedJsonObject(), 200) :
+                this.constructRequestNotValidDuringOfflineMode('readSessionContentAsOfflineResponse', request.resourcePath());
+        });
     }
 
-    public static readSessionState(tenantId: string, userId: string): any {
-        return this.readPersistentState(tenantId, userId, 'session');
+    public static readSessionContentAsVisitor(userId: string, tenantId: string, contentId: string, sequence: number): Promise<LargePropertyVisitor> {
+        let key = this.CONTENT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${contentId}', contentId);
+        key = key.replace('${sequence}', sequence.toString());
+        return storage.getJson(key).then(jsonObject => jsonObject ? new LargePropertyVisitor(jsonObject) : null);
     }
 
-    public static writeAllDialogParentState(tenantId: string, userId: string, parent: any) {
-        const dialogChildren = parent.children;
-        if (dialogChildren) {
-            for (let i = 0; i < dialogChildren.length; i++) {
-                const child = dialogChildren[i];
-                this.writeDialogParentState(tenantId, userId, child, i, parent);
+    public static readWorkbenchActionRedirectionAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
+        const pathFields = request.deconstructPostWorkbenchActionPath();
+        return this.readDialogRedirectionAsVisitor(userId, pathFields.tenantId, pathFields.workbenchId, pathFields.actionId).then(dialogRedirectionVisitor => {
+            return dialogRedirectionVisitor ?
+                new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303) :
+                this.constructRequestNotValidDuringOfflineMode('readWorkbenchActionRedirectionAsOfflineResponse', request.resourcePath());
+        });
+    }
+
+    public static writeContentChunk(userId: string, tenantId: string, contentId: string, sequence: number, largePropertyVisitor: LargePropertyVisitor): Promise<void> {
+        let key = this.CONTENT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${contentId}', contentId);
+        key = key.replace('${sequence}', sequence.toString());
+        return storage.setJson(key, largePropertyVisitor.enclosedJsonObject());
+    }
+
+    public static writeContentRedirection(userId: string, tenantId: string, stateId: string, actionId: string,
+                                          contentRedirectionVistor: ContentRedirectionVisitor): Promise<void>
+    {
+        let key = this.REDIRECTION_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${stateId}', stateId);
+        key = key.replace('${actionId}', actionId);
+        return storage.setJson(key, contentRedirectionVistor.enclosedJsonObject());
+    }
+
+    public static writeDialog(userId: string, tenantId: string, dialogVisitor: DialogVisitor): Promise<void> {
+        let key = this.DIALOG_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogVisitor.visitId());
+        return storage.setJson(key, dialogVisitor.enclosedJsonObject());
+    }
+
+    public static writeDialogRedirection(userId: string, tenantId: string, stateId: string, actionId: string,
+                                         dialogRedirectionVistor: DialogRedirectionVisitor): Promise<void>
+    {
+        let key = this.REDIRECTION_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${stateId}', stateId);
+        key = key.replace('${actionId}', actionId);
+        return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
+    }
+
+    public static async writePropertyCommit(userId: string, tenantId: string, dialogId: string, propertyName: string, writeLargePropertyParametersVisitor: WriteLargePropertyParametersVisitor): Promise<void> {
+        let key = this.PROPERTY_COMMIT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        key = key.replace('${propertyName}', propertyName);
+        let writeHistory = [];
+        if (writeLargePropertyParametersVisitor.visitAppend()) {
+            const jsonObject = await storage.getJson(key);
+            if (jsonObject) {
+                writeHistory = jsonObject;
             }
         }
+        writeHistory.push(writeLargePropertyParametersVisitor.enclosedJsonObject());
+        return storage.setJson(key, writeHistory);
     }
 
-    public static writeDialogAliasState(
-        tenantId: string,
-        userId: string,
-        dialogId: string,
-        alias: any
-    ): Promise<boolean> {
-        return this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.alias', alias);
+    public static writeRecord(userId: string, tenantId: string, dialogId: string, recordVisitor: RecordVisitor): Promise<void> {
+        let key = this.RECORD_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        return storage.setJson(key, recordVisitor.enclosedJsonObject());
     }
 
-    public static writeDialogParentState(
-        tenantId: string,
-        userId: string,
-        child: any,
-        childIndex: number,
-        parent: any
-    ) {
-        this.writePersistentState(tenantId, userId, 'dialog.' + child.id + '.parent', parent.id);
-        const parentAlias = this.readDialogAliasState(tenantId, userId, parent.id);
-        this.writeDialogAliasState(tenantId, userId, child.id, parentAlias + '_' + childIndex);
-        this.writeAllDialogParentState(tenantId, userId, child);
+    public static writeRecordCommit(userId: string, tenantId: string, dialogId: string, recordVisitor: RecordVisitor): Promise<void> {
+        let key = this.RECORD_COMMIT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        return storage.setJson(key, recordVisitor.enclosedJsonObject());
     }
 
-    public static writeDialogReferringAliasState(
-        tenantId: string,
-        userId: string,
-        dialogId: string,
-        referringAlias: any
-    ) {
-        this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.referringAlias', referringAlias);
+    public static writeRecordSet(userId: string, tenantId: string, dialogId: string, recordSetVisitor: RecordSetVisitor): Promise<void> {
+        let key = this.RECORD_SET_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        return storage.setJson(key, recordSetVisitor.enclosedJsonObject());
     }
 
-    public static writeDialogState(tenantId: string, userId: string, dialog: any): Promise<boolean> {
-        return this.writePersistentState(tenantId, userId, 'dialog.' + dialog.id, dialog);
-    }
-
-    public static writePersistentState(
-        tenantId: string,
-        userId: string,
-        stateId: string,
-        state: any
-    ): Promise<boolean> {
-        const key: string = tenantId + '.' + userId + '.' + stateId;
-        return storage
-            .setItem(key, JSON.stringify(state))
-            .then(value => {
-                return true;
-            })
-            .catch(setItemError => {
-                Log.error('Error setting item in storage: ' + setItemError);
-                return false;
-            });
-    }
-
-    public static writeRecordSetState(
-        tenantId: string,
-        userId: string,
-        dialogId: string,
-        recordSet: any
-    ): Promise<boolean> {
-        return this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.recordSet', recordSet);
-    }
-
-    public static writeRecordState(tenantId: string, userId: string, dialogId: string, record: any): Promise<boolean> {
-        return this.writePersistentState(tenantId, userId, 'dialog.' + dialogId + '.record', record);
-    }
-
-    public static writeNavigationState(tenantId: string, userId: string, navigation: any): Promise<boolean> {
-        return this.writePersistentState(tenantId, userId, 'navigation.' + navigation.id, navigation);
-    }
-
-    public static writeRedirectionState(tenantId: string, userId: string, redirection: any): Promise<boolean> {
-        return this.writePersistentState(tenantId, userId, 'redirection.' + redirection.id, redirection);
-    }
-
-    public static writeSessionState(session: any): Promise<boolean> {
-        return this.writePersistentState(session.tenantId, session.userId, 'session', session);
-    }
 }

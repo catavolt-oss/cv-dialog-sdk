@@ -1,11 +1,13 @@
-import { JsonObjectVisitor } from '../proxy';
-import { BriefcaseVisitor } from './BriefcaseVisitor';
-import { WorkPackagesRecordSetVisitor } from './WorkPackagesRecordSetVisitor';
+import {JsonObjectVisitor} from "../proxy";
+import {BriefcaseVisitor} from "./BriefcaseVisitor";
+import {MobileCommentsRecordSetVisitor} from "./MobileCommentsRecordSetVisitor";
+import {WorkPackagesRecordSetVisitor} from "./WorkPackagesRecordSetVisitor";
 
 /**
  *
  */
 export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
+
     private _enclosedJsonObject: any;
 
     constructor(state: string | object) {
@@ -73,7 +75,7 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
     }
 
     public visitAndClearSelectedWorkPackageIds() {
-        return (this.enclosedJsonObject().selectedWorkPackageIds = []);
+        return this.enclosedJsonObject().selectedWorkPackageIds = [];
     }
 
     public visitSessionId(): string {
@@ -100,7 +102,12 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
         this.enclosedJsonObject().userId = userId;
     }
 
+    public visitMobileCommentsRecordSet(): MobileCommentsRecordSetVisitor {
+        return new MobileCommentsRecordSetVisitor(this.enclosedJsonObject().mobileComments);
+    }
+
     public visitWorkPackagesRecordSet(): WorkPackagesRecordSetVisitor {
         return new WorkPackagesRecordSetVisitor(this.enclosedJsonObject().workPackages);
     }
+
 }

@@ -1,20 +1,24 @@
-import { DialogProxyTools } from './DialogProxyTools';
-import { JsonObjectVisitor } from './JsonObjectVisitor';
+import {DialogProxyTools} from "./DialogProxyTools";
+import {JsonObjectVisitor} from "./JsonObjectVisitor";
 
 /**
  *
  */
-export class AnnotationVisitor implements JsonObjectVisitor {
+export class AnnotationVisitor implements JsonObjectVisitor{
+
     private _enclosedJsonObject: any;
 
     constructor(value: string | object) {
+        if (!value) {
+            throw new Error('AnnotationVisitor -- null value exception')
+        }
         if (typeof value === 'string') {
             this._enclosedJsonObject = JSON.parse(value as string);
         } else {
             this._enclosedJsonObject = value;
         }
-        if (!DialogProxyTools.isAnnotationObject(this._enclosedJsonObject)) {
-            throw new Error('Object passed to AnnotationVisitor is not an Annotation');
+        if (!DialogProxyTools.isAnnotationModel(this._enclosedJsonObject)) {
+            throw new Error("Object passed to AnnotationVisitor is not an Annotation");
         }
     }
 
@@ -35,4 +39,5 @@ export class AnnotationVisitor implements JsonObjectVisitor {
     }
 
     // --- State Management --- //
+
 }
