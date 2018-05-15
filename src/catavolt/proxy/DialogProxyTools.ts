@@ -2,6 +2,7 @@ import {JsonClientResponse} from "../client/JsonClientResponse";
 import {storage} from "../storage";
 import {Base64} from "../util/Base64";
 import {Log} from "../util/Log";
+import {StringDictionary} from "../util/StringDictionary";
 import {FetchClient} from "../ws/FetchClient";
 import {ContentRedirectionVisitor} from "./ContentRedirectionVisitor";
 import {DialogRedirectionVisitor} from "./DialogRedirectionVisitor";
@@ -202,6 +203,36 @@ export class DialogProxyTools {
 
     public static constructRequestNotValidDuringOfflineMode(action: string, resourcePath: string): JsonClientResponse {
         return new JsonClientResponse(this.constructDialogMessageModel(`${action} at ${resourcePath} is not valid during offline mode: `), 400);
+    }
+
+    /**
+     * Construct an empty null redirection with the following defaults:
+     * referringObject will be a type of "hxgn.api.dialog.ReferringDialog"
+     *      dialogAlias=null
+     *      dialogName=null
+     *      dialogMode='READ'
+     *      actionId=null
+     *      dialogId=null
+     * refreshNeeded=true
+     * id=randomly generated value
+     */
+    public static constructNullRedirection(tenantId: string, sessionId: string): StringDictionary {
+        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
+        return {
+            "tenantId": tenantId,
+            "referringObject": {
+                "dialogMode": "READ",
+                "dialogAlias": null,
+                "dialogName": null,
+                "actionId": null,
+                "type": "hxgn.api.dialog.ReferringDialog",
+                "dialogId": null
+            },
+            "refreshNeeded": true,
+            "sessionId": sessionId,
+            "id": nullRedirectionId,
+            "type": "hxgn.api.dialog.NullRedirection"
+        };
     }
 
     public static constructNullRedirectionId(): string {

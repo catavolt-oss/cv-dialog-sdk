@@ -583,7 +583,11 @@ export class Briefcase_Briefcase_FORM {
                     "propertyName": "picture",
                     "heading": "picture",
                     "type": "hxgn.api.dialog.Column"
-                }, {"propertyName": "status", "heading": "status", "type": "hxgn.api.dialog.Column"}],
+                }, {
+                    "propertyName": "status",
+                    "heading": "status",
+                    "type": "hxgn.api.dialog.Column"
+                }],
                 "name": "Default",
                 "alias": "Briefcase_Briefcase_MobileComments",
                 "style": "DEFAULT",

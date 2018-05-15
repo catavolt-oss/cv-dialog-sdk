@@ -15,5 +15,6 @@ export * from './PropertyVisitor';
 export * from './ReadLargePropertyParametersVisitor';
 export * from './RecordVisitor';
 export * from './RecordSetVisitor';
+export * from './RedirectionVisitor';
 export * from './SessionVisitor';
 export * from './ValueIterator';

@@ -140,6 +140,15 @@ export class DialogRequest {
         }
     }
 
+    public deconstructPutViewModePath(): any {
+        return {
+            tenantId: this._resourcePathElems[1],
+            sessionId: this._resourcePathElems[3],
+            dialogId: this._resourcePathElems[5],
+            viewMode: this._resourcePathElems[7]
+        }
+    }
+
     public dialogId(): string {
         return this._resourcePathElems[5];
     }
