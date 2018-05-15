@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.14.0"></a>
+# [4.14.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.13.1...v4.14.0) (2018-05-15)
+
+
+### Bug Fixes
+
+* defensive check on dialogMode ([e314abf](https://github.com/catavolt-oss/cv-dialog-sdk/commit/e314abf))
+
+
+### Features
+
+* progress towards offline support for SDA ([22e95f9](https://github.com/catavolt-oss/cv-dialog-sdk/commit/22e95f9))
+* progress towards offline support for SDA ([cfc3eb7](https://github.com/catavolt-oss/cv-dialog-sdk/commit/cfc3eb7))
+* progress towards offline support for SDA ([6bb244f](https://github.com/catavolt-oss/cv-dialog-sdk/commit/6bb244f))
+* progress towards offline support for SDA ([e41dc14](https://github.com/catavolt-oss/cv-dialog-sdk/commit/e41dc14))
+* progress towards offline support for SDA ([9a79f05](https://github.com/catavolt-oss/cv-dialog-sdk/commit/9a79f05))
+* progress towards offline support for SDA ([832a309](https://github.com/catavolt-oss/cv-dialog-sdk/commit/832a309))
+
+
+
 <a name="4.13.1"></a>
 ## [4.13.1](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.13.0...v4.13.1) (2018-05-11)
 
