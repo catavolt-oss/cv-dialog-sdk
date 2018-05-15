@@ -18,3 +18,4 @@ export * from './RecordSetVisitor';
 export * from './RedirectionVisitor';
 export * from './SessionVisitor';
 export * from './ValueIterator';
+export * from './WriteLargePropertyParametersVisitor';

@@ -81,9 +81,8 @@ export class DialogVisitor implements JsonObjectVisitor {
         if (!derivedDialogId) {
             throw new Error("Cannot propagate dialog ids -- dialog name not found")
         }
-        // TODO: Fix the error in Dialog Service that returns null record ids as a string literal of "null"
         if (suffix) {
-            derivedDialogId = derivedDialogId + '_' + suffix;
+            derivedDialogId = derivedDialogId + '$' + suffix;
         }
         this.visitAndSetId(derivedDialogId);
         if (this.enclosedJsonObject()['children']) {
@@ -148,6 +147,10 @@ export class DialogVisitor implements JsonObjectVisitor {
 
     public visitRecordId(): string {
         return this.enclosedJsonObject().recordId;
+    }
+
+    public visitAndSetRecordId(recordId: string) {
+        this.enclosedJsonObject().recordId = recordId;
     }
 
     public visitReferringObject(): object {

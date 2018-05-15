@@ -1,4 +1,5 @@
 export * from './BriefcaseVisitor';
+export * from './MobileCommentsRecordSetVisitor';
 export * from './SdaDialogDelegate';
 export * from './SdaDialogDelegateStateVisitor';
 export * from './SdaDialogDelegateTools';

@@ -12,6 +12,7 @@ import {LargePropertyVisitor} from "./LargePropertyVisitor";
 import {ReadLargePropertyParametersVisitor} from "./ReadLargePropertyParametersVisitor";
 import {RecordSetVisitor} from "./RecordSetVisitor";
 import {RecordVisitor} from "./RecordVisitor";
+import {WriteLargePropertyParametersVisitor} from "./WriteLargePropertyParametersVisitor";
 
 /**
  *
@@ -34,11 +35,13 @@ export class DialogProxyTools {
     private static SESSION_MODEL_TYPE = 'hxgn.api.dialog.Session';
 
     // Storage Keys
-    private static CONTENT_STORAGE_KEY =     '${userId}.${tenantId}.${contentId}.${sequence}';
-    private static DIALOG_STORAGE_KEY =      '${userId}.${tenantId}.${dialogId}.dialog';
-    private static RECORD_SET_STORAGE_KEY =  '${userId}.${tenantId}.${dialogId}.recordset';
-    private static RECORD_STORAGE_KEY =      '${userId}.${tenantId}.${dialogId}.record';
-    private static REDIRECTION_STORAGE_KEY = '${userId}.${tenantId}.${stateId}.${actionId}.redirection';
+    private static CONTENT_STORAGE_KEY =            '${userId}.${tenantId}.${contentId}.${sequence}';
+    private static DIALOG_STORAGE_KEY =             '${userId}.${tenantId}.${dialogId}.dialog';
+    private static PROPERTY_COMMIT_STORAGE_KEY =    '${userId}.${tenantId}.${dialogId}.propertycommit$${propertyName}';
+    private static RECORD_SET_STORAGE_KEY =         '${userId}.${tenantId}.${dialogId}.recordset';
+    private static RECORD_STORAGE_KEY =             '${userId}.${tenantId}.${dialogId}.record';
+    private static RECORD_COMMIT_STORAGE_KEY =      '${userId}.${tenantId}.${dialogId}.recordcommit';
+    private static REDIRECTION_STORAGE_KEY =        '${userId}.${tenantId}.${stateId}.${actionId}.redirection';
 
     private static COMMON_FETCH_CLIENT = new FetchClient();
 
@@ -193,8 +196,8 @@ export class DialogProxyTools {
 
     public static constructLoginModel(userId: string, password: string): object {
         return {
-            "userId": "jordan",
-            "password": "jordan1",
+            "userId": userId,
+            "password": password,
             "clientType": "MOBILE",
             "deviceProperties": {},
             "type": this.LOGIN_MODEL_TYPE
@@ -452,7 +455,7 @@ export class DialogProxyTools {
     }
 
     public static writeContentRedirection(userId: string, tenantId: string, stateId: string, actionId: string,
-                                          contentRedirectionVistor: ContentRedirectionVisitor)
+                                          contentRedirectionVistor: ContentRedirectionVisitor): Promise<void>
     {
         let key = this.REDIRECTION_STORAGE_KEY.replace('${userId}', userId);
         key = key.replace('${tenantId}', tenantId);
@@ -461,7 +464,7 @@ export class DialogProxyTools {
         return storage.setJson(key, contentRedirectionVistor.enclosedJsonObject());
     }
 
-    public static writeDialog(userId: string, tenantId: string, dialogVisitor: DialogVisitor) {
+    public static writeDialog(userId: string, tenantId: string, dialogVisitor: DialogVisitor): Promise<void> {
         let key = this.DIALOG_STORAGE_KEY.replace('${userId}', userId);
         key = key.replace('${tenantId}', tenantId);
         key = key.replace('${dialogId}', dialogVisitor.visitId());
@@ -469,7 +472,7 @@ export class DialogProxyTools {
     }
 
     public static writeDialogRedirection(userId: string, tenantId: string, stateId: string, actionId: string,
-                                         dialogRedirectionVistor: DialogRedirectionVisitor)
+                                         dialogRedirectionVistor: DialogRedirectionVisitor): Promise<void>
     {
         let key = this.REDIRECTION_STORAGE_KEY.replace('${userId}', userId);
         key = key.replace('${tenantId}', tenantId);
@@ -478,14 +481,37 @@ export class DialogProxyTools {
         return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
     }
 
-    public static writeRecord(userId: string, tenantId: string, dialogId: string, recordVisitor: RecordVisitor) {
+    public static async writePropertyCommit(userId: string, tenantId: string, dialogId: string, propertyName: string, writeLargePropertyParametersVisitor: WriteLargePropertyParametersVisitor): Promise<void> {
+        let key = this.PROPERTY_COMMIT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        key = key.replace('${propertyName}', propertyName);
+        let writeHistory = [];
+        if (writeLargePropertyParametersVisitor.visitAppend()) {
+            const jsonObject = await storage.getJson(key);
+            if (jsonObject) {
+                writeHistory = jsonObject;
+            }
+        }
+        writeHistory.push(writeLargePropertyParametersVisitor.enclosedJsonObject());
+        return storage.setJson(key, writeHistory);
+    }
+
+    public static writeRecord(userId: string, tenantId: string, dialogId: string, recordVisitor: RecordVisitor): Promise<void> {
         let key = this.RECORD_STORAGE_KEY.replace('${userId}', userId);
         key = key.replace('${tenantId}', tenantId);
         key = key.replace('${dialogId}', dialogId);
         return storage.setJson(key, recordVisitor.enclosedJsonObject());
     }
 
-    public static writeRecordSet(userId: string, tenantId: string, dialogId: string, recordSetVisitor: RecordSetVisitor) {
+    public static writeRecordCommit(userId: string, tenantId: string, dialogId: string, recordVisitor: RecordVisitor): Promise<void> {
+        let key = this.RECORD_COMMIT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        return storage.setJson(key, recordVisitor.enclosedJsonObject());
+    }
+
+    public static writeRecordSet(userId: string, tenantId: string, dialogId: string, recordSetVisitor: RecordSetVisitor): Promise<void> {
         let key = this.RECORD_SET_STORAGE_KEY.replace('${userId}', userId);
         key = key.replace('${tenantId}', tenantId);
         key = key.replace('${dialogId}', dialogId);

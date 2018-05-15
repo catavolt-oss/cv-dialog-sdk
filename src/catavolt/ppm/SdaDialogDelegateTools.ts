@@ -1,9 +1,5 @@
-import {ContentRedirectionVisitor} from "../proxy/ContentRedirectionVisitor";
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
-import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
 import {DialogRequest} from "../proxy/DialogRequest";
-import {DialogVisitor} from "../proxy/DialogVisitor";
-import {LargePropertyVisitor} from "../proxy/LargePropertyVisitor";
 import {RecordSetVisitor} from "../proxy/RecordSetVisitor";
 import {RecordVisitor} from "../proxy/RecordVisitor";
 import {SessionVisitor} from "../proxy/SessionVisitor";
@@ -109,11 +105,11 @@ export class SdaDialogDelegateTools {
     }
 
     public static constructEnterOfflineModeNullRedirection(tenantId: string, sessionId: string): StringDictionary {
-        return this.constructOfflineModeNullRedirection(tenantId, sessionId, this.ENTER_OFFLINE_MODE_MENU_ACTION_ID);
+        return this.constructBriefcaseNullRedirection(tenantId, sessionId, this.ENTER_OFFLINE_MODE_MENU_ACTION_ID);
     }
 
     public static constructExitOfflineModeNullRedirection(tenantId: string, sessionId: string): StringDictionary {
-        return this.constructOfflineModeNullRedirection(tenantId, sessionId, this.EXIT_OFFLINE_MODE_MENU_ACTION_ID);
+        return this.constructBriefcaseNullRedirection(tenantId, sessionId, this.EXIT_OFFLINE_MODE_MENU_ACTION_ID);
     }
 
     public static constructOfflineLogoutResponse(sessionId: string) {
@@ -333,7 +329,8 @@ export class SdaDialogDelegateTools {
                     briefcase: Briefcase_Briefcase_Details_RECORD.copyOfResponse(),
                     selectedWorkPackageIds: [],
                     userId: null,
-                    workPackages: RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject()
+                    workPackages: RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject(),
+                    mobileComments: RecordSetVisitor.emptyRecordSetVisitor().enclosedJsonObject()
                 };
                 Log.info('SdaDialogDelegateTools::readDelegateState -- returning defaults: ' + JSON.stringify(jsonObject));
             }
@@ -341,35 +338,9 @@ export class SdaDialogDelegateTools {
         });
     }
 
-    public static readOfflineDocumentContentChunk(tenantId: string, userId: string, contentId, sequence: number): Promise<LargePropertyVisitor> {
-        const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.content.${contentId}.${sequence}`;
-        return storage.getJson(key).then(jsonObject => new LargePropertyVisitor(jsonObject));
-    }
-
-    public static readOfflineDocumentContentRedirection(tenantId: string, userId: string, documentsListDialogId: string, documentId: string): Promise<ContentRedirectionVisitor> {
-        const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.${documentsListDialogId}.alias_OpenLatestFile(${documentId}).redirection`;
-        return storage.getJson(key).then(jsonObject => new ContentRedirectionVisitor(jsonObject));
-    }
-
-    public static readOfflineDocumentsListRecordSet(tenantId: string, userId: string, dialogId: string): Promise<RecordSetVisitor> {
-        const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.dialog.${dialogId}.recordSet`;
-        return storage.getJson(key).then(jsonObject => new RecordSetVisitor(jsonObject));
-    }
-
     public static readOfflineDocumentsPropertiesRecord(tenantId: string, userId: string, dialogId: string): Promise<RecordVisitor> {
         const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.dialog.${dialogId}.record`;
         return storage.getJson(key).then(jsonObject => new RecordVisitor(jsonObject));
-    }
-
-    public static readOfflineDocumentsRedirection(tenantId: string, userId: string, workPackageId: string): Promise<DialogRedirectionVisitor> {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_DOCUMENTS_REDIRECTION_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.getJson(key).then(jsonObject => new DialogRedirectionVisitor(jsonObject));
-    }
-
-    public static readOfflineDocumentsRootDialog(tenantId: string, userId: string, dialogId: string): Promise<DialogVisitor> {
-        const key = `${userId}.${tenantId}.ppm.sda.workPackages.documents.dialog.${dialogId}`;
-        return storage.getJson(key).then(jsonObject => new DialogVisitor(jsonObject));
     }
 
     public static readOfflineSession(tenantId: string, userId: string): Promise<SessionVisitor> {
@@ -377,31 +348,15 @@ export class SdaDialogDelegateTools {
         return storage.getJson(key).then(jsonObject => new SessionVisitor(jsonObject));
     }
 
-    public static readOfflineTagsListRecordSet(tenantId: string, userId: string, dialogId: string): Promise<RecordSetVisitor> {
-        const key = `${userId}.${tenantId}.ppm.sda.workPackages.tags.dialog.${dialogId}.recordSet`;
-        return storage.getJson(key).then(jsonObject => new RecordSetVisitor(jsonObject));
-    }
-
     public static readOfflineTagsPropertiesRecord(tenantId: string, userId: string, dialogId: string): Promise<RecordVisitor> {
         const key = `${userId}.${tenantId}.ppm.sda.workPackages.tags.dialog.${dialogId}.record`;
         return storage.getJson(key).then(jsonObject => new RecordVisitor(jsonObject));
     }
 
-    public static readOfflineTagsRedirection(tenantId: string, userId: string, workPackageId: string): Promise<DialogRedirectionVisitor> {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_REDIRECTION_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.getJson(key).then(jsonObject => new DialogRedirectionVisitor(jsonObject));
-    }
-
-    public static readOfflineTagsRootDialog(tenantId: string, userId: string, dialogId: string): Promise<DialogVisitor> {
-        const key = `${userId}.${tenantId}.ppm.sda.workPackages.tags.dialog.${dialogId}`;
-        return storage.getJson(key).then(jsonObject => new DialogVisitor(jsonObject));
-    }
-
     public static async showAllStorageKeysAndValues(): Promise<void> {
         const thisMethod = 'SdaDialogDelegateTools::showAllStorageKeysAndValues';
-        const allKeys = await storage.getAllKeys();
         Log.info(`${thisMethod} -- ************** BEGIN SHOW ALL STORAGE KEYS AND VALUES **************`);
+        const allKeys = await storage.getAllKeys();
         for (const k of allKeys) {
             const v = await storage.getItem(k);
             Log.info(`${thisMethod} -- ${k}: ${v}`);
@@ -420,31 +375,7 @@ export class SdaDialogDelegateTools {
         return storage.setJson(key, offlineSessionVisitor.enclosedJsonObject());
     }
 
-    public static writeOfflineTagsDialogListRecordSet(tenantId: string, userId: string, workPackageId: string, recordSetVisitor: RecordSetVisitor) {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_LIST_RECORD_SET_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.setJson(key, recordSetVisitor.enclosedJsonObject());
-    }
-
-    public static writeOfflineTagsDialogPropertiesRecord(tenantId: string, userId: string, workPackageId: string, recordVisitor: RecordVisitor) {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_PROPERTIES_RECORD_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.setJson(key, recordVisitor.enclosedJsonObject());
-    }
-
-    public static writeOfflineTagsDialogRoot(tenantId: string, userId: string, workPackageId: string, dialogVisitor: DialogVisitor) {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_DIALOG_ROOT_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.setJson(key, dialogVisitor.enclosedJsonObject());
-    }
-
-    public static writeOfflineTagsRedirection(tenantId: string, userId: string, workPackageId: string, dialogRedirectionVistor: DialogRedirectionVisitor) {
-        let key = this.createStorageKey(tenantId, userId, this.OFFLINE_TAGS_REDIRECTION_KEY);
-        key = key.replace('${workPackageId}', workPackageId);
-        return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
-    }
-
-    private static constructOfflineModeNullRedirection(tenantId: string, sessionId: string, actionId: string): StringDictionary {
+    private static constructBriefcaseNullRedirection(tenantId: string, sessionId: string, actionId: string): StringDictionary {
         const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
         return {
             "tenantId": tenantId,

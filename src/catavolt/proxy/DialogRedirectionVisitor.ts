@@ -57,7 +57,7 @@ export class DialogRedirectionVisitor extends RedirectionVisitor {
             throw new Error("Cannot propagate dialog name -- dialog name not found")
         }
         if (suffix) {
-            derivedDialogId = derivedDialogId + '_' + suffix;
+            derivedDialogId = derivedDialogId + '$' + suffix;
         }
         this.propagateDialogId(derivedDialogId);
     }
@@ -90,6 +90,10 @@ export class DialogRedirectionVisitor extends RedirectionVisitor {
 
     public visitRecordId(): string {
         return this.enclosedJsonObject().recordId;
+    }
+
+    public visitAndSetRecordId(recordId: string) {
+        this.enclosedJsonObject().recordId = recordId;
     }
 
 }
