@@ -14,8 +14,7 @@ npm install --save cv-dialog-sdk
 
 ### The Catavolt Dialog Model
 The Catavolt Dialog Model represents an '***Abstract User Interface***', managed by the server, and delivered to the 
-clien``t
- (this SDK) to be used as an instruction set for rendering the client's UI.  This system differs subtley, but 
+client (this SDK) to be used as an instruction set for rendering the client's UI.  This system differs subtley, but 
  significantly from traditional client/server architectures in that rather than targeting a specific resource (i.e. 
  next page), the client simply asks the server to redirect it to the 'next' resource (often without knowing 
  specifically what that resource will be).  
