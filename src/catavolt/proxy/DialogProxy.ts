@@ -5,7 +5,9 @@ import {TextClientResponse} from "../client/TextClientResponse";
 import {VoidClientResponse} from "../client/VoidClientResponse";
 import {StreamProducer} from '../io/StreamProducer';
 import {SdaDialogDelegate} from "../ppm/SdaDialogDelegate";
+import {CvLocale} from "../util";
 import {Log} from '../util/Log';
+import {StatusListener} from "../util/StatusListener";
 import {StringDictionary} from '../util/StringDictionary';
 import {DialogDelegate} from "./DialogDelegate";
 import {DialogProxyTools} from './DialogProxyTools';
@@ -20,6 +22,8 @@ export class DialogProxy implements Client {
     private _initializedRejectFn: (error) => void;
     private _initializedResolveFn: (value) => void;
     private _lastActivity: Date = new Date();
+    private _locale:CvLocale;
+    private _statusListener:StatusListener;
 
     constructor() {
         this._initialized = false;
@@ -28,6 +32,11 @@ export class DialogProxy implements Client {
             this._initializedRejectFn = reject;
         });
         this._dialogDelegateChain = [new SdaDialogDelegate()];
+    }
+
+    public addStatusListener(statusListener:StatusListener, locale:CvLocale) {
+        this._statusListener = statusListener;
+        this._locale = locale;
     }
 
     get lastActivity(): Date {

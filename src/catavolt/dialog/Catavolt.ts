@@ -20,6 +20,7 @@ import { DialogProxy } from '../proxy/DialogProxy';
 import { CvLocale } from '../util/CvLocale';
 import { Log } from '../util/Log';
 import { ObjUtil } from '../util/ObjUtil';
+import {StatusListener} from "../util/StatusListener";
 import { FetchClient } from '../ws/FetchClient';
 import { CatavoltApi } from './CatavoltApi';
 import { DialogApi } from './DialogApi';
@@ -110,6 +111,10 @@ export class CatavoltApiImpl implements CatavoltApi {
      */
     public addStaticDeviceProp(propName: string, propValue: string): void {
         this._devicePropsStatic[propName] = propValue;
+    }
+
+    public addStatusListener(statusListener:StatusListener):void {
+       this._dialogApi.addStatusListener(statusListener, this.locale);
     }
 
     /**

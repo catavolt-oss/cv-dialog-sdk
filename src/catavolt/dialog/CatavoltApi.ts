@@ -3,6 +3,7 @@ import { StreamProducer } from '../io/StreamProducer';
 import { ClientType, Dialog, DialogRedirection, Redirection, Session, WorkbenchAction } from '../models';
 import { LargeProperty } from '../models/LargeProperty';
 import { CvLocale } from '../util';
+import {StatusListener} from "../util/StatusListener";
 import { FeatureSet } from './Catavolt';
 import { DialogApi } from './DialogApi';
 
@@ -34,6 +35,8 @@ export interface CatavoltApi {
      * @param propValue
      */
     addStaticDeviceProp(propName: string, propValue: string): void;
+
+    addStatusListener(statusListener:StatusListener): void;
 
     changePasswordAndLogin(
         tenantId: string,

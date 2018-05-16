@@ -10,3 +10,5 @@ export * from './StringUtil';
 export * from './StringDictionary';
 export * from './Dictionary';
 export * from './CvLocale';
+export * from './StatusListener';
+export * from './StatusType';

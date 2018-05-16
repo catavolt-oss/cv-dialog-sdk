@@ -102,6 +102,8 @@
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_proxy_dialogproxy_.dialogproxy.html#_initializedrejectfn" class="tsd-kind-icon">_initialized<wbr>Reject<wbr>Fn</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_proxy_dialogproxy_.dialogproxy.html#_initializedresolvefn" class="tsd-kind-icon">_initialized<wbr>Resolve<wbr>Fn</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_proxy_dialogproxy_.dialogproxy.html#_lastactivity" class="tsd-kind-icon">_last<wbr>Activity</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_proxy_dialogproxy_.dialogproxy.html#_locale" class="tsd-kind-icon">_locale</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="_proxy_dialogproxy_.dialogproxy.html#_statuslistener" class="tsd-kind-icon">_status<wbr>Listener</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -113,6 +115,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#addstatuslistener" class="tsd-kind-icon">add<wbr>Status<wbr>Listener</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#deletejson" class="tsd-kind-icon">delete<wbr>Json</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#getblob" class="tsd-kind-icon">get<wbr>Blob</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#getjson" class="tsd-kind-icon">get<wbr>Json</a></li>
@@ -141,7 +144,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:22</li>
+									<li>Defined in proxy/DialogProxy.ts:26</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="_proxy_dialogproxy_.dialogproxy.html" class="tsd-signature-type">DialogProxy</a></h4>
@@ -157,7 +160,7 @@
 					<div class="tsd-signature tsd-kind-icon">_dialog<wbr>Delegate<wbr>Chain<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_proxy_dialogdelegate_.dialogdelegate.html" class="tsd-signature-type">DialogDelegate</a><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in proxy/DialogProxy.ts:17</li>
+							<li>Defined in proxy/DialogProxy.ts:19</li>
 						</ul>
 					</aside>
 				</section>
@@ -167,7 +170,7 @@
 					<div class="tsd-signature tsd-kind-icon">_initialized<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in proxy/DialogProxy.ts:18</li>
+							<li>Defined in proxy/DialogProxy.ts:20</li>
 						</ul>
 					</aside>
 				</section>
@@ -177,7 +180,7 @@
 					<div class="tsd-signature tsd-kind-icon">_initialized<wbr>Pr<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in proxy/DialogProxy.ts:19</li>
+							<li>Defined in proxy/DialogProxy.ts:21</li>
 						</ul>
 					</aside>
 				</section>
@@ -187,7 +190,7 @@
 					<div class="tsd-signature tsd-kind-icon">_initialized<wbr>Reject<wbr>Fn<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in proxy/DialogProxy.ts:20</li>
+							<li>Defined in proxy/DialogProxy.ts:22</li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -218,7 +221,7 @@
 					<div class="tsd-signature tsd-kind-icon">_initialized<wbr>Resolve<wbr>Fn<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in proxy/DialogProxy.ts:21</li>
+							<li>Defined in proxy/DialogProxy.ts:23</li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -249,7 +252,27 @@
 					<div class="tsd-signature tsd-kind-icon">_last<wbr>Activity<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Date</span><span class="tsd-signature-symbol"> =&nbsp;new Date()</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in proxy/DialogProxy.ts:22</li>
+							<li>Defined in proxy/DialogProxy.ts:24</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="_locale" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _locale</h3>
+					<div class="tsd-signature tsd-kind-icon">_locale<span class="tsd-signature-symbol">:</span> <a href="_util_cvlocale_.cvlocale.html" class="tsd-signature-type">CvLocale</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in proxy/DialogProxy.ts:25</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="_statuslistener" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _status<wbr>Listener</h3>
+					<div class="tsd-signature tsd-kind-icon">_status<wbr>Listener<span class="tsd-signature-symbol">:</span> <a href="../modules/_util_statuslistener_.html#statuslistener" class="tsd-signature-type">StatusListener</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in proxy/DialogProxy.ts:26</li>
 						</ul>
 					</aside>
 				</section>
@@ -266,7 +289,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:33</li>
+									<li>Defined in proxy/DialogProxy.ts:42</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Date</span></h4>
@@ -276,6 +299,33 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="addstatuslistener" class="tsd-anchor"></a>
+					<h3>add<wbr>Status<wbr>Listener</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Status<wbr>Listener<span class="tsd-signature-symbol">(</span>statusListener<span class="tsd-signature-symbol">: </span><a href="../modules/_util_statuslistener_.html#statuslistener" class="tsd-signature-type">StatusListener</a>, locale<span class="tsd-signature-symbol">: </span><a href="_util_cvlocale_.cvlocale.html" class="tsd-signature-type">CvLocale</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#addstatuslistener">addStatusListener</a></p>
+								<ul>
+									<li>Defined in proxy/DialogProxy.ts:37</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>statusListener: <a href="../modules/_util_statuslistener_.html#statuslistener" class="tsd-signature-type">StatusListener</a></h5>
+								</li>
+								<li>
+									<h5>locale: <a href="_util_cvlocale_.cvlocale.html" class="tsd-signature-type">CvLocale</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="deletejson" class="tsd-anchor"></a>
 					<h3>delete<wbr>Json</h3>
@@ -287,7 +337,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#deletejson">deleteJson</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:72</li>
+									<li>Defined in proxy/DialogProxy.ts:81</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -314,7 +364,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#getblob">getBlob</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:37</li>
+									<li>Defined in proxy/DialogProxy.ts:46</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -341,7 +391,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#getjson">getJson</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:57</li>
+									<li>Defined in proxy/DialogProxy.ts:66</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -371,7 +421,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#gettext">getText</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:42</li>
+									<li>Defined in proxy/DialogProxy.ts:51</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -398,7 +448,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#openstream">openStream</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:47</li>
+									<li>Defined in proxy/DialogProxy.ts:56</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -425,7 +475,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#postjson">postJson</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:62</li>
+									<li>Defined in proxy/DialogProxy.ts:71</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -455,7 +505,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#postmultipart">postMultipart</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:52</li>
+									<li>Defined in proxy/DialogProxy.ts:61</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -484,7 +534,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:103</li>
+									<li>Defined in proxy/DialogProxy.ts:112</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -501,7 +551,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:117</li>
+									<li>Defined in proxy/DialogProxy.ts:126</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -531,7 +581,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#putjson">putJson</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:67</li>
+									<li>Defined in proxy/DialogProxy.ts:76</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -560,7 +610,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:77</li>
+									<li>Defined in proxy/DialogProxy.ts:86</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -623,8 +673,17 @@
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 								<a href="_proxy_dialogproxy_.dialogproxy.html#_lastactivity" class="tsd-kind-icon">_last<wbr>Activity</a>
 							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="_proxy_dialogproxy_.dialogproxy.html#_locale" class="tsd-kind-icon">_locale</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="_proxy_dialogproxy_.dialogproxy.html#_statuslistener" class="tsd-kind-icon">_status<wbr>Listener</a>
+							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="_proxy_dialogproxy_.dialogproxy.html#lastactivity" class="tsd-kind-icon">last<wbr>Activity</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_proxy_dialogproxy_.dialogproxy.html#addstatuslistener" class="tsd-kind-icon">add<wbr>Status<wbr>Listener</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_proxy_dialogproxy_.dialogproxy.html#deletejson" class="tsd-kind-icon">delete<wbr>Json</a>
