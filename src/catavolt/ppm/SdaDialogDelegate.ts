@@ -339,6 +339,11 @@ export class SdaDialogDelegate implements DialogDelegate {
             return null;
         }
         Log.info(`${thisMethod} -- document content redirection: ${JSON.stringify(redirectionJcr.value)}`);
+        // CLARIFICATION: We can navigate to the same document from multiple locations, therefore documents are shared
+        // among entities by reference. Specifically a work package and tag can share the same document. We capitalize
+        // on this fact by rewriting the content redirection identifier as derivative of the document id. The effect
+        // allows us to determine if we have already downloaded the content, and if we have, to reference the same
+        // content from multiple redirections.
         const contentRedirectionVisitor = new ContentRedirectionVisitor(redirectionJcr.value);
         const onlineContentId = contentRedirectionVisitor.visitId();
         const actionIdAtRecordId = `${actionId}@${nextDocumentIdEncoded}`;

@@ -37,7 +37,7 @@ export class Documents_CreateComment_FORM_REDIRECTION {
         "id": "10",
         "dialogName": "Documents_CreateComment_FORM",
         "selectedViewId": "AAABACcaAAAAACfn351699060:1257:331442876:10",
-        "dialogDescription": "New Run Action"
+        "dialogDescription": "Create Comment"
     };
 
     public static copyOfResponse(): object {

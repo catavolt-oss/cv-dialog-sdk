@@ -61,7 +61,7 @@ export class Documents_CreateComment_FORM {
             "DataSource": "HexagonSDA"
         },
         "dialogMode": "CREATE",
-        "description": "New Run Action",
+        "description": "Create Comment",
         "referringObject": {
             "dialogMode": "LIST",
             "dialogAlias": "Workpackage_Documents_Documents",
