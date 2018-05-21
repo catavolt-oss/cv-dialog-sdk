@@ -17,6 +17,8 @@ import {RecordVisitor} from "../proxy/RecordVisitor";
 import {RedirectionVisitor} from "../proxy/RedirectionVisitor";
 import {SessionVisitor} from "../proxy/SessionVisitor";
 import {ValueIterator} from "../proxy/ValueIterator";
+import {WriteLargePropertyParametersVisitor} from "../proxy/WriteLargePropertyParametersVisitor";
+import {storage} from "../storage";
 import {Base64} from "../util/Base64";
 import {Log} from '../util/Log';
 import {StringDictionary} from '../util/StringDictionary';
@@ -31,8 +33,6 @@ import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
 import {SdaDialogDelegateTools} from "./SdaDialogDelegateTools";
 import {SelectedWorkPackageVisitor} from "./SelectedWorkPackageVisitor";
 import {WorkPackagesRecordSetVisitor} from "./WorkPackagesRecordSetVisitor";
-import {WriteLargePropertyParametersVisitor} from "../proxy";
-import {storage} from "../storage";
 
 export class SdaDialogDelegate implements DialogDelegate {
 

@@ -9,6 +9,6 @@ export interface JsonObjectVisitor {
 
     copyAsJsonString(): string;
 
-    enclosedJsonObject();
+    enclosedJsonObject(): any;
 
 }
