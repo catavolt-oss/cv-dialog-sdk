@@ -1,5 +1,6 @@
 import { StreamProducer } from '../io/StreamProducer';
-import { StringDictionary } from '../util';
+import {CvLocale, StringDictionary} from '../util';
+import {StatusListener} from "../util/StatusListener";
 import { BlobClientResponse } from './BlobClientResponse';
 import { JsonClientResponse } from './JsonClientResponse';
 import { TextClientResponse } from './TextClientResponse';
@@ -7,6 +8,8 @@ import { VoidClientResponse } from './VoidClientResponse';
 
 export interface Client {
     lastActivity: Date;
+
+    addStatusListener(statusListener:StatusListener, locale:CvLocale);
 
     getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse>;
 

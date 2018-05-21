@@ -24,7 +24,8 @@ import {
     WorkbenchAction,
     WriteLargePropertyParameters
 } from '../models';
-import { Base64 } from '../util';
+import {Base64, CvLocale} from '../util';
+import {StatusListener} from "../util/StatusListener";
 import { StringDictionary } from '../util/StringDictionary';
 import { DialogApi } from './DialogApi';
 
@@ -38,6 +39,10 @@ export class DialogService implements DialogApi {
     // @TODO
     public addAttachment(tenantId: string, sessionId: string, dialogId: string, attachment: Attachment): Promise<void> {
         return Promise.resolve(null);
+    }
+
+    public addStatusListener(statusListener:StatusListener, locale:CvLocale) {
+        this.client.addStatusListener(statusListener, locale);
     }
 
     public createSession(tenantId: string, login: Login): Promise<Session | Redirection> {

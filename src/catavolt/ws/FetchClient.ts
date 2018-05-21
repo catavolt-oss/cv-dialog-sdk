@@ -5,12 +5,20 @@ import { ReadableStreamClientResponse } from '../client/StreamingClientResponse'
 import { TextClientResponse } from '../client/TextClientResponse';
 import { VoidClientResponse } from '../client/VoidClientResponse';
 import { StreamProducer } from '../io/StreamProducer';
-import { Log, StringDictionary } from '../util';
+import {CvLocale, Log, StringDictionary} from '../util';
+import {StatusListener} from "../util/StatusListener";
 
 export type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export class FetchClient implements Client {
     private _lastActivity: Date = new Date();
+    private _locale:CvLocale;
+    private _statusListener:StatusListener;
+
+    public addStatusListener(statusListener:StatusListener, locale:CvLocale) {
+       this._statusListener = statusListener;
+       this._locale = locale;
+    }
 
     public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
