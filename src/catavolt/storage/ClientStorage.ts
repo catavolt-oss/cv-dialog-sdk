@@ -1,102 +1,79 @@
 import { Storage } from './Storage';
 
-enum ApiType {
-    LOCAL_STORAGE,
-    ASYNC_STORAGE
-}
-
 export const setCvStorageApi = storageApi => {
     ClientStorage.setStorageApi(storageApi);
 };
 
 class ClientStorage implements Storage {
-    private static _storageApi;
-    // default to window.localStorage
-    private static _type: ApiType = ApiType.LOCAL_STORAGE;
+    private static _storage:Storage;
 
     public static setStorageApi(storageApi) {
-        ClientStorage._storageApi = storageApi;
-        if (ClientStorage._storageApi) {
-            if (ClientStorage._storageApi.getAllKeys) {
+        if (storageApi) {
+            if (storageApi.getAllKeys) {
                 // Assume AsyncStorage
-                ClientStorage._type = ApiType.ASYNC_STORAGE;
+                ClientStorage._storage = new AsyncStorageAdapter(storageApi);
             } else {
                 // Assume window.localStorage
-                ClientStorage._type = ApiType.LOCAL_STORAGE;
+                ClientStorage._storage = new LocalStorageAdapter(storageApi);
+            }
+        }
+    }
+
+    constructor() {
+        // Attempt to set the default storage backend to localStorage
+        if (!ClientStorage._storage) {
+            if  (typeof(localStorage) !== 'undefined') {
+                if (localStorage && localStorage.getItem) {
+                    ClientStorage.setStorageApi(localStorage);
+                }
             }
         }
     }
 
     public getItem(key: string): Promise<string> {
-        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
-            return this.getItemAsyncStorage(key, ClientStorage._storageApi);
-        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
-            // @TODO
-        }
+        return ClientStorage._storage.getItem(key);
     }
 
     public getJson(key: string): Promise<any> {
-        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
-            return this.getJsonAsyncStorage(key, ClientStorage._storageApi);
-        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
-            // @TODO
-        }
+        return ClientStorage._storage.getJson(key);
     }
 
     public setItem(key: string, value: string): Promise<void> {
-        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
-            return this.setItemAsyncStorage(key, value, ClientStorage._storageApi);
-        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
-            // @TODO
-        }
+        return ClientStorage._storage.setItem(key, value);
     }
 
     public setJson(key: string, value: any): Promise<void> {
-        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
-            return this.setJsonAsyncStorage(key, value, ClientStorage._storageApi);
-        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
-            // @TODO
-        }
+        return ClientStorage._storage.setJson(key, value);
     }
 
     public removeItem(key: string): Promise<void> {
-        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
-            return this.removeItemAsyncStorage(key, ClientStorage._storageApi);
-        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
-            // @TODO
-        }
+        return ClientStorage._storage.removeItem(key);
     }
 
     public clearAll(): Promise<void> {
-        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
-            return this.clearAllAsyncStorage(ClientStorage._storageApi);
-        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
-            // @TODO
-        }
+        return ClientStorage._storage.clearAll();
     }
 
     public getAllKeys(): Promise<string[]> {
-        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
-            return this.getAllKeysAsyncStorage(ClientStorage._storageApi);
-        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
-            // @TODO
-        }
+        return ClientStorage._storage.getAllKeys();
     }
 
     public multiRemove(keys: Array<string>): Promise<void> {
-        if (ClientStorage._type === ApiType.ASYNC_STORAGE) {
-            return this.multiRemoveAsyncStorage(keys, ClientStorage._storageApi);
-        } else if (ClientStorage._type === ApiType.LOCAL_STORAGE) {
-            // @TODO
-        }
+        return ClientStorage._storage.multiRemove(keys);
     }
 
-    private getItemAsyncStorage(key: string, api) {
-        return api.getItem(key);
+}
+
+class AsyncStorageAdapter implements Storage {
+
+    constructor(readonly api:any){}
+
+    public getItem(key: string) {
+        return this.api.getItem(key);
     }
 
-    private getJsonAsyncStorage(key: string, api) {
-        return api.getItem(key).then(value => {
+    public getJson(key: string) {
+        return this.api.getItem(key).then(value => {
             try {
                 return JSON.parse(value);
             } catch (err) {
@@ -105,35 +82,130 @@ class ClientStorage implements Storage {
         });
     }
 
-    private setItemAsyncStorage(key: string, value: string, api) {
-        return api.setItem(key, value);
+    public setItem(key: string, value: string) {
+        return this.api.setItem(key, value);
     }
 
-    private setJsonAsyncStorage(key: string, value: any, api) {
+    public setJson(key: string, value: any) {
         let stringVal = null;
         try {
             stringVal = JSON.stringify(value);
         } catch (err) {
             return Promise.reject(new Error(`Storage::setItem(${key}) failed to stringify JSON value`));
         }
-        return api.setItem(key, stringVal);
+        return this.api.setItem(key, stringVal);
     }
 
-    private removeItemAsyncStorage(key: string, api) {
-        return api.removeItem(key);
+    public removeItem(key: string) {
+        return this.api.removeItem(key);
     }
 
-    private clearAllAsyncStorage(api) {
-        return api.clear();
+    public clearAll() {
+        return this.api.clear();
     }
 
-    private getAllKeysAsyncStorage(api) {
-        return api.getAllKeys();
+    public getAllKeys() {
+        return this.api.getAllKeys();
     }
 
-    private multiRemoveAsyncStorage(keys: Array<string>, api) {
-        return api.multiRemove(keys);
+    public multiRemove(keys: Array<string>) {
+        return this.api.multiRemove(keys);
+    }
+}
+
+class LocalStorageAdapter implements Storage {
+
+    constructor(readonly api){}
+
+    public getItem(key: string):Promise<string> {
+        return new Promise((resolve, reject) => {
+           try {
+               const value:string = this.api.getItem(key);
+               resolve(value);
+           } catch (e) {
+               reject(e);
+           }
+        });
+    }
+
+    public getJson(key: string):Promise<any> {
+        return new Promise((resolve, reject) => {
+            try {
+                resolve(JSON.parse(this.api.getItem(key)));
+            } catch (err) {
+                reject(Error(`Storage::getItem('${key}') parse JSON failed`));
+            }
+        });
+    }
+
+    public setItem(key: string, value: string):Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                resolve(this.api.setItem(key, value));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    public setJson(key: string, value: any):Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                const stringVal = JSON.stringify(value);
+                resolve(this.api.setItem(key, stringVal));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    public removeItem(key: string):Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                resolve(this.api.removeItem(key));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    public clearAll():Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                resolve(this.api.clear());
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    public getAllKeys():Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            try {
+                const keys:Array<string> = [];
+                for(let i:number = 0; i < this.api.length; i++) {
+                   keys.push(this.api.key(i));
+                }
+                resolve(keys);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    public multiRemove(keys: Array<string>):Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                keys.forEach((key) => {
+                    this.api.removeItem(key);
+                });
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        });
     }
 }
 
 export const storage: Storage = new ClientStorage();
+

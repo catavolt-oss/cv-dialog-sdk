@@ -1,7 +1,6 @@
 /**
  * Created by rburson on 9/1/17.
  */
-
 import test from "blue-tape";
 
 import {Catavolt, propertyFormatter} from "../../catavolt/dialog/Catavolt";
@@ -29,7 +28,7 @@ import {LogLevel} from "../../catavolt/util/Log";
  */
 /* tslint:disable */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['cvtutorial', 'wsmith', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 const currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;

@@ -1,4 +1,3 @@
-import { DialogService } from '../dialog';
 import { CatavoltApi } from '../dialog/CatavoltApi';
 import { StreamConsumer } from '../io/StreamConsumer';
 import { Base64 } from '../util/Base64';
@@ -15,7 +14,6 @@ import { ReadLargePropertyParameters } from './ReadLargePropertyParameters';
 import { Record } from './Record';
 import { RecordDef } from './RecordDef';
 import { Redirection } from './Redirection';
-import { RedirectionUtil } from './RedirectionUtil';
 import { ReferringDialog } from './ReferringDialog';
 import { ReferringObject } from './ReferringObject';
 import { DialogType } from './types';
