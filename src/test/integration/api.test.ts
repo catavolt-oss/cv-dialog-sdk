@@ -1,6 +1,8 @@
 /**
  * Created by rburson on 9/1/17.
  */
+
+import "babel-polyfill";
 import test from "blue-tape";
 
 import {Catavolt, propertyFormatter} from "../../catavolt/dialog/Catavolt";
