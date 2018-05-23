@@ -157,6 +157,10 @@ export class DialogVisitor implements JsonObjectVisitor {
         return this.enclosedJsonObject().referringObject;
     }
 
+    public visitAndSetReferringDialogId(dialogId: string) {
+        this.visitReferringObject()['dialogId'] = dialogId;
+    }
+
     private deriveDialogIdsFromDialogName(rootRecordId: string) {
         let dialogName = this.enclosedJsonObject()['dialogName'];
         if (!dialogName) {

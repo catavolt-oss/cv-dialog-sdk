@@ -45,7 +45,7 @@ export class DialogProxyTools {
 
     private static COMMON_FETCH_CLIENT = new FetchClient();
 
-    public static async captureDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string): Promise<object> {
+    public static async captureDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string, referringDialogId): Promise<object> {
         const thisMethod = 'DialogProxyTools::captureDialog';
         // GET DIALOG //
         const resourcePath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}`;
@@ -59,13 +59,17 @@ export class DialogProxyTools {
         const dialogVisitor = new DialogVisitor(dialogJcr.value);
         const beforeDialog = dialogVisitor.copyAsJsonObject();
         dialogVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+        // Not all referring objects are dialogs, so we must check that a dialog id is present
+        if (referringDialogId) {
+            dialogVisitor.visitAndSetReferringDialogId(referringDialogId);
+        }
         Log.info(`${thisMethod} -- writing online dialog to offline dialog id: ${dialogVisitor.visitId()}`);
         Log.info(`${thisMethod} -- writing online dialog to offline storage: ${dialogVisitor.copyAsJsonString()}`);
         await this.writeDialog(userId, tenantId, dialogVisitor);
         return {beforeDialog, afterDialog: dialogVisitor.enclosedJsonObject()};
     }
 
-    public static async captureMenuActionRedirectionAndDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string, actionId: string, targetId: string, impliedTargetId): Promise<any> {
+    public static async captureMenuActionRedirectionAndDialog(userId: string, baseUrl: string, tenantId: string, sessionId: string, dialogId: string, offlineDialogId: string, actionId: string, targetId: string): Promise<any> {
         const thisMethod = 'DialogProxyTools::captureMenuActionRedirectionAndDialog';
         const resourcePath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/actions/${actionId}`;
         Log.info(`${thisMethod} -- capturing menu redirection and dialog: ${resourcePath}`);
@@ -84,6 +88,7 @@ export class DialogProxyTools {
         const dialogRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJcr.value);
         const beforeDialogRedirection = dialogRedirectionVisitor.copyAsJsonObject();
         dialogRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+        dialogRedirectionVisitor.visitAndSetReferringDialogId(offlineDialogId);
         let actionIdAtTargetId = actionId;
         if (targetId) {
             const targetIdEncoded = Base64.encodeUrlSafeString(targetId);
@@ -94,16 +99,11 @@ export class DialogProxyTools {
         Log.info(`${thisMethod} -- writing online dialog redirection with record id: ${dialogRedirectionVisitor.visitRecordId()}`);
         Log.info(`${thisMethod} -- writing online dialog redirection to offline redirection id: ${dialogRedirectionVisitor.visitId()}`);
         Log.info(`${thisMethod} -- writing online dialog redirection to offline storage: ${dialogRedirectionVisitor.copyAsJsonString()}`);
-
-        let dialogIdAtTargetId = dialogRedirectionVisitor.visitReferringDialogId();
-        if (impliedTargetId) {
-            const impliedTargetIdEncoded = Base64.encodeUrlSafeString(impliedTargetId);
-            dialogIdAtTargetId = dialogIdAtTargetId + '@' + impliedTargetIdEncoded;
-        }
-        await this.writeDialogRedirection(userId, tenantId, dialogIdAtTargetId, actionIdAtTargetId, dialogRedirectionVisitor);
+        const referringDialogId = dialogRedirectionVisitor.visitReferringDialogId();
+        await this.writeDialogRedirection(userId, tenantId, referringDialogId, actionIdAtTargetId, dialogRedirectionVisitor);
         // CAPTURE DIALOG //
         const beforeDialogId = beforeDialogRedirection['dialogId'];
-        const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId);
+        const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId, referringDialogId);
         return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),
             beforeDialog: beforeAndAfterDialog['beforeDialog'], afterDialog: beforeAndAfterDialog['afterDialog']};
     }
@@ -181,7 +181,7 @@ export class DialogProxyTools {
         await this.writeDialogRedirection(userId, tenantId, workbenchId, actionId, dialogRedirectionVisitor);
         // CAPTURE DIALOG //
         const beforeDialogId = beforeDialogRedirection['dialogId'];
-        const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId);
+        const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId, null);
         return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),
             beforeDialog: beforeAndAfterDialog['beforeDialog'], afterDialog: beforeAndAfterDialog['afterDialog']};
     }
