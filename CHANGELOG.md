@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.15.0"></a>
+# [4.15.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.14.0...v4.15.0) (2018-05-24)
+
+
+### Bug Fixes
+
+* fix inclusion of babel-transform library ([8832867](https://github.com/catavolt-oss/cv-dialog-sdk/commit/8832867))
+
+
+### Features
+
+* add StatusListener to SDK ([411aa96](https://github.com/catavolt-oss/cv-dialog-sdk/commit/411aa96))
+* changed 'New Run Action' to 'Create Comment' ([5a6129e](https://github.com/catavolt-oss/cv-dialog-sdk/commit/5a6129e))
+* progress towards offline support for SDA ([716efa4](https://github.com/catavolt-oss/cv-dialog-sdk/commit/716efa4))
+* progress towards offline support for SDA ([98fe83c](https://github.com/catavolt-oss/cv-dialog-sdk/commit/98fe83c))
+* progress towards offline support for SDA ([e64037d](https://github.com/catavolt-oss/cv-dialog-sdk/commit/e64037d))
+* refactor storage and added localstorage impl ([1f20b57](https://github.com/catavolt-oss/cv-dialog-sdk/commit/1f20b57))
+
+
+
 <a name="4.14.0"></a>
 # [4.14.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.13.1...v4.14.0) (2018-05-15)
 
