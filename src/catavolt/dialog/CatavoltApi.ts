@@ -21,6 +21,10 @@ export interface CatavoltApi {
 
     readonly DEFAULT_LOCALE: CvLocale;
 
+    /**
+     *
+     * @param {ClientListener} clientListener
+     */
     addClientListener(clientListener:ClientListener): void;
 
     /**
@@ -121,6 +125,11 @@ export interface CatavoltApi {
      */
     refreshSession(tenantId: string, sessionId: string): Promise<Session>;
 
+    /**
+     *
+     * @param {ClientListener} clientListener
+     */
+    removeClientListener(clientListener:ClientListener): void;
     /**
      *
      * @param {string} contentId

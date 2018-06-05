@@ -44,6 +44,10 @@ export class DialogProxy implements Client {
         this._locale = locale;
     }
 
+    public removeClientListener(clientListener: ClientListener) {
+        this._clientListener = null;
+    }
+
     get lastActivity(): Date {
         return this._lastActivity;
     }

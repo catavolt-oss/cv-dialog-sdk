@@ -112,6 +112,10 @@ export class CatavoltApiImpl implements CatavoltApi {
         this._devicePropsStatic[propName] = propValue;
     }
 
+    /**
+     *
+     * @param {ClientListener} clientListener
+     */
     public addClientListener(clientListener:ClientListener):void {
        this._dialogApi.addClientListener(clientListener, this.locale);
     }
@@ -383,6 +387,14 @@ export class CatavoltApiImpl implements CatavoltApi {
      */
     get remainingSessionTime(): number {
         return this.clientTimeoutMillis - (new Date().getTime() - this.dialogApi.lastServiceActivity.getTime());
+    }
+
+    /**
+     *
+     * @param {ClientListener} clientListener
+     */
+    public removeClientListener(clientListener:ClientListener): void {
+        this._dialogApi.removeClientListener(clientListener);
     }
 
     /**

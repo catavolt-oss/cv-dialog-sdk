@@ -45,6 +45,10 @@ export class DialogService implements DialogApi {
         this.client.addClientListener(clientListener, locale);
     }
 
+    public removeClientListener(clientListener:ClientListener) {
+        this.client.removeClientListener(clientListener);
+    }
+
     public createSession(tenantId: string, login: Login): Promise<Session | Redirection> {
         return this.post(`tenants/${tenantId}/sessions`, login).then(jsonClientResponse =>
             new DialogServiceResponse<Session>(jsonClientResponse).responseValueOrRedirect()

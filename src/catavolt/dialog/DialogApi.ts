@@ -30,6 +30,8 @@ export interface DialogApi {
 
     addClientListener(clientListener:ClientListener, locale:CvLocale);
 
+    removeClientListener(clientListener:ClientListener);
+
     createSession(tenantId: string, login: Login): Promise<Session | Redirection>;
 
     getSession(tenantId: string, sessionId: string): Promise<Session>;

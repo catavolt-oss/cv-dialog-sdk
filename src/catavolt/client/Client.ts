@@ -12,6 +12,8 @@ export interface Client {
 
     addClientListener(clientListener: ClientListener, locale: CvLocale);
 
+    removeClientListener(clientListener: ClientListener);
+
     getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse>;
 
     getText(baseUrl: string, resourcePath?: string): Promise<TextClientResponse>;

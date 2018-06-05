@@ -20,6 +20,10 @@ export class FetchClient implements Client {
        this._locale = locale;
     }
 
+    public removeClientListener(clientListener: ClientListener) {
+        this._clientListener = null;
+    }
+
     public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {
         const url = resourcePath ? `${baseUrl}/${resourcePath}` : baseUrl;
         return this.processRequest(url, 'GET').then((response: Response) => {
