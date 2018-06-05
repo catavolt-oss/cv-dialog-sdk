@@ -576,13 +576,13 @@ export class SdaDialogDelegate implements DialogDelegate {
         // ------------------------------------------- //
         // CREATE A NEW SESSION
         // ------------------------------------------- //
-        const sessionJcr = await this.performLoginForOnlineProcessing(pathFields.tenantId);
+        /*const sessionJcr = await this.performLoginForOnlineProcessing(pathFields.tenantId);
         if (sessionJcr.statusCode !== 200) {
             return sessionJcr;
         }
-        const onlineSessionVisitor = new SessionVisitor(sessionJcr.value);
-        const tenantId = onlineSessionVisitor.visitTenantId();
-        const sessionId = onlineSessionVisitor.visitId();
+        const onlineSessionVisitor = new SessionVisitor(sessionJcr.value); */
+        const tenantId = pathFields.tenantId;
+        const sessionId = pathFields.sessionId;
         // ------------------------------------------- //
         // GET LATEST ONLINE WORK PACKAGES
         // ------------------------------------------- //
