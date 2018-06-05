@@ -1,4 +1,5 @@
 import { Client } from '../client/Client';
+import {ClientListener} from "../client/ClientListener";
 import { JsonClientResponse } from '../client/JsonClientResponse';
 import { StreamProducer } from '../io/StreamProducer';
 import {
@@ -25,7 +26,6 @@ import {
     WriteLargePropertyParameters
 } from '../models';
 import {Base64, CvLocale} from '../util';
-import {StatusListener} from "../util/StatusListener";
 import { StringDictionary } from '../util/StringDictionary';
 import { DialogApi } from './DialogApi';
 
@@ -41,8 +41,8 @@ export class DialogService implements DialogApi {
         return Promise.resolve(null);
     }
 
-    public addStatusListener(statusListener:StatusListener, locale:CvLocale) {
-        this.client.addStatusListener(statusListener, locale);
+    public addClientListener(clientListener:ClientListener, locale:CvLocale) {
+        this.client.addClientListener(clientListener, locale);
     }
 
     public createSession(tenantId: string, login: Login): Promise<Session | Redirection> {

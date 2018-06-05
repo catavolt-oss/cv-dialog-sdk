@@ -1,22 +1,22 @@
 import { BlobClientResponse } from '../client/BlobClientResponse';
 import { Client } from '../client/Client';
+import {ClientListener} from "../client/ClientListener";
 import { JsonClientResponse } from '../client/JsonClientResponse';
 import { ReadableStreamClientResponse } from '../client/StreamingClientResponse';
 import { TextClientResponse } from '../client/TextClientResponse';
 import { VoidClientResponse } from '../client/VoidClientResponse';
 import { StreamProducer } from '../io/StreamProducer';
 import {CvLocale, Log, StringDictionary} from '../util';
-import {StatusListener} from "../util/StatusListener";
 
 export type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export class FetchClient implements Client {
     private _lastActivity: Date = new Date();
     private _locale:CvLocale;
-    private _statusListener:StatusListener;
+    private _clientListener:ClientListener;
 
-    public addStatusListener(statusListener:StatusListener, locale:CvLocale) {
-       this._statusListener = statusListener;
+    public addClientListener(clientListener: ClientListener, locale:CvLocale) {
+       this._clientListener = clientListener;
        this._locale = locale;
     }
 

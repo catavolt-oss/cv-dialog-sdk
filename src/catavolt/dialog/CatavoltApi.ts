@@ -1,9 +1,9 @@
+import {ClientListener} from "../client/ClientListener";
 import { StreamConsumer } from '../io/StreamConsumer';
 import { StreamProducer } from '../io/StreamProducer';
 import { ClientType, Dialog, DialogRedirection, Redirection, Session, WorkbenchAction } from '../models';
 import { LargeProperty } from '../models/LargeProperty';
 import { CvLocale } from '../util';
-import {StatusListener} from "../util/StatusListener";
 import { FeatureSet } from './Catavolt';
 import { DialogApi } from './DialogApi';
 
@@ -21,6 +21,8 @@ export interface CatavoltApi {
 
     readonly DEFAULT_LOCALE: CvLocale;
 
+    addClientListener(clientListener:ClientListener): void;
+
     /**
      * Add or replace a dynamic device property (func)
      * @param propName
@@ -35,8 +37,6 @@ export interface CatavoltApi {
      * @param propValue
      */
     addStaticDeviceProp(propName: string, propValue: string): void;
-
-    addStatusListener(statusListener:StatusListener): void;
 
     changePasswordAndLogin(
         tenantId: string,

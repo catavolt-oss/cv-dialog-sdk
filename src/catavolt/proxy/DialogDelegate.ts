@@ -3,12 +3,12 @@ import {JsonClientResponse} from "../client/JsonClientResponse";
 import {TextClientResponse} from "../client/TextClientResponse";
 import {VoidClientResponse} from "../client/VoidClientResponse";
 import {StreamProducer} from "../io/StreamProducer";
-import {StringDictionary} from "../util/StringDictionary";
+import {DialogProxy} from "./DialogProxy";
 import {DialogRequest} from "./DialogRequest";
 
 export interface DialogDelegate {
 
-    initialize(): Promise<void>;
+    initialize(dialogProxy: DialogProxy): Promise<void>;
 
     getBlob(request: DialogRequest): Promise<BlobClientResponse>;
 

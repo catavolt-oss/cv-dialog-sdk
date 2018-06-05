@@ -1,4 +1,6 @@
 import {BlobClientResponse} from "../client/BlobClientResponse";
+import {ClientEvent} from "../client/ClientEvent";
+import {ClientEventType} from "../client/ClientEventType";
 import {JsonClientResponse} from "../client/JsonClientResponse";
 import {TextClientResponse} from "../client/TextClientResponse";
 import {VoidClientResponse} from "../client/VoidClientResponse";
@@ -6,6 +8,7 @@ import {StreamProducer} from '../io/StreamProducer';
 import {ActionParametersVisitor} from "../proxy/ActionParametersVisitor";
 import {ContentRedirectionVisitor} from "../proxy/ContentRedirectionVisitor";
 import {DialogDelegate} from "../proxy/DialogDelegate";
+import {DialogProxy} from "../proxy/DialogProxy";
 import {DialogProxyTools} from "../proxy/DialogProxyTools";
 import {DialogRedirectionVisitor} from "../proxy/DialogRedirectionVisitor";
 import {DialogRequest} from "../proxy/DialogRequest";
@@ -42,10 +45,12 @@ export class SdaDialogDelegate implements DialogDelegate {
     private static ALIAS_SHOW_TAGS_MENU_ACTION_ID = 'alias_ShowTags';
     private static OPEN_MENU_ACTION_ID = 'open';
 
+    private _dialogProxy: DialogProxy;
     private _dialogDelegateStateVisitor: SdaDialogDelegateStateVisitor = null;
 
-    public initialize(): Promise<void> {
-        Log.info("SdaDialogDelegate::initialize -- nothing to initialize");
+    public initialize(dialogProxy: DialogProxy): Promise<void> {
+        Log.info("SdaDialogDelegate::initialize -- setting dialog proxy");
+        this._dialogProxy = dialogProxy;
         return Promise.resolve();
     }
 
@@ -284,6 +289,7 @@ export class SdaDialogDelegate implements DialogDelegate {
 
     private captureOfflineSession(request: DialogRequest): Promise<JsonClientResponse> {
         const thisMethod = 'SdaDialogDelegate::captureOfflineSession';
+        this.notifyClientListener({message: 'Capturing session for offline', eventType: ClientEventType.MESSAGE});
         const resourcePath = `tenants/${request.tenantId()}/sessions/${request.sessionId()}`;
         const sessionPr = DialogProxyTools.commonFetchClient().getJson(request.baseUrl(), resourcePath);
         return sessionPr.then(sessionJcr => {
@@ -297,6 +303,7 @@ export class SdaDialogDelegate implements DialogDelegate {
     private async captureNextOfflineWorkPackage(baseUrl: string, tenantId: string, sessionId: string, onlineWorkPackagesListDialogId: string, offlineWorkPackagesListDialogId: string, nextWorkPackageId: string): Promise<void> {
         const thisMethod = 'SdaDialogDelegate::captureNextOfflineWorkPackage';
         Log.info(`${thisMethod} -- capturing work package for offline: ${nextWorkPackageId}`);
+        this.notifyClientListener({message: `Capturing work package for offline: ${nextWorkPackageId}`, eventType: ClientEventType.MESSAGE});
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, onlineWorkPackagesListDialogId, offlineWorkPackagesListDialogId, SdaDialogDelegate.ALIAS_OPEN_MENU_ACTION_ID, nextWorkPackageId);
         await DialogProxyTools.captureRecord(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeAndAfterValues, SdaDialogDelegateTools.DOCUMENTS_PROPERTIES_DIALOG_NAME);
         const documentsRecordSetVisitor = await DialogProxyTools.captureRecordSet(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeAndAfterValues, SdaDialogDelegateTools.DOCUMENTS_LIST_DIALOG_NAME);
@@ -312,6 +319,7 @@ export class SdaDialogDelegate implements DialogDelegate {
     private async captureNextOfflineTags(baseUrl: string, tenantId: string, sessionId: string, beforeDocumentsListDialog: DialogVisitor, afterDocumentsListDialog: DialogVisitor, nextWorkPackageId: string): Promise<void> {
         const thisMethod = 'SdaDialogDelegate::captureNextOfflineTags';
         Log.info(`${thisMethod} -- capturing tags for offline: ${nextWorkPackageId}`);
+        this.notifyClientListener({message: `Capturing tags for offline: ${nextWorkPackageId}`, eventType: ClientEventType.MESSAGE});
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeDocumentsListDialog.visitId(), afterDocumentsListDialog.visitId(), SdaDialogDelegate.ALIAS_SHOW_TAGS_MENU_ACTION_ID, null);
         await DialogProxyTools.captureRecord(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeAndAfterValues, SdaDialogDelegateTools.TAGS_PROPERTIES_DIALOG_NAME);
         const tagsRecordSetVisitor = await DialogProxyTools.captureRecordSet(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeAndAfterValues, SdaDialogDelegateTools.TAGS_LIST_DIALOG_NAME);
@@ -327,6 +335,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const thisMethod = 'SdaDialogDelegate::captureNextOfflineTag';
         const nextTagRecordId = nextTagRecordVisitor.visitRecordId();
         Log.info(`${thisMethod} -- capturing tag for offline: ${nextTagRecordId}`);
+        this.notifyClientListener({message: `Capturing tag for offline: ${nextTagRecordId}`, eventType: ClientEventType.MESSAGE});
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeTagsListDialog.visitId(), afterTagsListDialog.visitId(), SdaDialogDelegate.OPEN_MENU_ACTION_ID, nextTagRecordId);
         await DialogProxyTools.captureRecord(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeAndAfterValues, SdaDialogDelegateTools.TAG_DETAILS_PROPERTIES_DIALOG_NAME);
         const tagDetailsListRecordSetVisitor = await DialogProxyTools.captureRecordSet(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeAndAfterValues, SdaDialogDelegateTools.TAG_DETAILS_LIST_DIALOG_NAME);
@@ -346,6 +355,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         Log.info(`${thisMethod} -- offline list dialog id: ${offlineDocumentsListDialogId}`);
         // GET REDIRECTION //
         const nextDocumentId = nextDocumentRecordVisitor.visitRecordId();
+        this.notifyClientListener({message: `Capturing offline document: ${nextDocumentId}`, eventType: ClientEventType.MESSAGE});
         const nextDocumentIdEncoded = Base64.encodeUrlSafeString(nextDocumentId);
         Log.info(`${thisMethod} -- next document id: ${nextDocumentId} encoded as: ${nextDocumentIdEncoded}`);
         const redirectionPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${onlineDocumentsListDialogId}/actions/${SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID}`;
@@ -496,6 +506,13 @@ export class SdaDialogDelegate implements DialogDelegate {
         Log.info(`${thisMethod} -- done initializing`);
     }
 
+    private notifyClientListener(clientEvent: ClientEvent) {
+        const clientListener = this._dialogProxy.clientListener();
+        if (clientListener) {
+            clientListener(clientEvent);
+        }
+    }
+
     private performBriefcaseWorkbenchActionRequest(request: DialogRequest): Promise<JsonClientResponse> {
         const pathFields = request.deconstructPostWorkbenchActionPath();
         const dialogRedirection = Briefcase_Briefcase_FORM_REDIRECTION.copyOfResponse();
@@ -542,6 +559,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                 this.delegateBriefcaseVisitor().visitAndSetOnline(false);
                 return SdaDialogDelegateTools.writeDialogDelegateState(pathFields.tenantId, this._dialogDelegateStateVisitor).then(nullValue => {
                     const nullRedirection = SdaDialogDelegateTools.constructEnterOfflineModeNullRedirection(pathFields.tenantId, pathFields.sessionId);
+                    this.notifyClientListener({message: 'Enter offline mode completed', eventType: ClientEventType.OFFLINE});
                     return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
                 });
             });
@@ -576,11 +594,13 @@ export class SdaDialogDelegate implements DialogDelegate {
         // ------------------------------------------- //
         // CREATE A NEW SESSION
         // ------------------------------------------- //
-        /*const sessionJcr = await this.performLoginForOnlineProcessing(pathFields.tenantId);
-        if (sessionJcr.statusCode !== 200) {
-            return sessionJcr;
-        }
-        const onlineSessionVisitor = new SessionVisitor(sessionJcr.value); */
+        // this.notifyClientListener({message: 'Performing login for synchronize', eventType: ClientEventType.MESSAGE});
+        // const sessionJcr = await this.performLoginForOnlineProcessing(pathFields.tenantId);
+        // if (sessionJcr.statusCode !== 200) {
+        //     return sessionJcr;
+        // }
+        // const onlineSessionVisitor = new SessionVisitor(sessionJcr.value);
+        // const tenantId = onlineSessionVisitor.visitTenantId();
         const tenantId = pathFields.tenantId;
         const sessionId = pathFields.sessionId;
         // ------------------------------------------- //
@@ -588,6 +608,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         // ------------------------------------------- //
         const workPackagesWorkbenchActionPath = `tenants/${tenantId}/sessions/${sessionId}/workbenches/SDAWorkbench/actions/WorkPackages`;
         Log.info(`${thisMethod} -- getting work packages redirection: ${workPackagesWorkbenchActionPath}`);
+        this.notifyClientListener({message: 'Getting latest work packages', eventType: ClientEventType.MESSAGE});
         const workPackagesRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), workPackagesWorkbenchActionPath, {});
         if (workPackagesRedirectionJcr.statusCode !== 303) {
             throw new Error(`Unexpected result when posting for online work packages: ${workPackagesRedirectionJcr.statusCode}`);
@@ -617,12 +638,14 @@ export class SdaDialogDelegate implements DialogDelegate {
         // ------------------------------------------- //
         for (const workPackageId of this._dialogDelegateStateVisitor.visitSelectedWorkPackageIds()) {
             Log.info(`${thisMethod} -- synchronizing selected work package: ${workPackageId}`);
+            this.notifyClientListener({message: `Synchronizing work package: ${workPackageId}`, eventType: ClientEventType.MESSAGE});
             const workPackageIdEncoded = Base64.encodeUrlSafeString(workPackageId);
             Log.info(`${thisMethod} -- synchronizing selected work package encoded id: ${workPackageIdEncoded}`);
             // --------------------------------------------------------- //
             // NAVIGATE INTO THIS WORK PACKAGE FOR DOCUMENTS
             // NOTE: WE ARE NOT RETRIEVING DOCUMENT RECORDS
             // --------------------------------------------------------- //
+            this.notifyClientListener({message: `Retrieving documents for work package: ${workPackageId}`, eventType: ClientEventType.MESSAGE});
             const documentsMenuActionPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${workPackagesListDialogVisitor.visitId()}/actions/${SdaDialogDelegate.ALIAS_OPEN_MENU_ACTION_ID}`;
             const documentsMenuActionParameters = {
                 targets: [workPackageId],
@@ -674,6 +697,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                             type: "hxgn.api.dialog.ActionParameters"
                         };
                         Log.info(`${thisMethod} -- opening a create document comment dialog: ${createCommentMenuActionPath}`);
+                        this.notifyClientListener({message: `Synchronizing document comment: ${workPackageId}`, eventType: ClientEventType.MESSAGE});
                         const createCommentDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), createCommentMenuActionPath, createCommentMenuActionParameters);
                         if (createCommentDialogRedirectionJcr.statusCode !== 303) {
                             throw new Error(`Unexpected result when posting for create document comment: ${createCommentDialogRedirectionJcr.statusCode} ${JSON.stringify(createCommentDialogRedirectionJcr.value)}`);
@@ -691,6 +715,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                         const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${suffix}.propertycommit$P_IMAGE`;
                         const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
                         if (propertyCommitJsonObject) {
+                            this.notifyClientListener({message: `Writing image for document comment: ${documentId}`, eventType: ClientEventType.MESSAGE});
                             const commitCreateCommentPropertyPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${createCommentDialogRedirectionVisitor.visitDialogId()}/record/P_IMAGE`;
                             for (const writeLargeProperty of propertyCommitJsonObject) {
                                 Log.info(`${thisMethod} -- committing create document comment large property: ${commitCreateCommentPropertyPath}`);
@@ -723,6 +748,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                 type: "hxgn.api.dialog.ActionParameters"
             };
             Log.info(`${thisMethod} -- getting tags redirection: ${tagsMenuActionPath}`);
+            this.notifyClientListener({message: `Getting tags for work package: ${workPackageId}`, eventType: ClientEventType.MESSAGE});
             const tagsDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), tagsMenuActionPath, tagsMenuActionParameters);
             if (tagsDialogRedirectionJcr.statusCode !== 303) {
                 throw new Error(`Unexpected result when posting for tags: ${tagsDialogRedirectionJcr.statusCode} ${JSON.stringify(tagsDialogRedirectionJcr.value)}`);
@@ -783,6 +809,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                             type: "hxgn.api.dialog.ActionParameters"
                         };
                         Log.info(`${thisMethod} -- opening a create tag comment dialog: ${createCommentMenuActionPath}`);
+                        this.notifyClientListener({message: `Synchronizing tag comment: ${tagId}`, eventType: ClientEventType.MESSAGE});
                         const createCommentDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), createCommentMenuActionPath, createCommentMenuActionParameters);
                         if (createCommentDialogRedirectionJcr.statusCode !== 303) {
                             throw new Error(`Unexpected result when posting for create tag comment: ${createCommentDialogRedirectionJcr.statusCode} ${JSON.stringify(createCommentDialogRedirectionJcr.value)}`);
@@ -800,6 +827,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                         const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${suffix}.propertycommit$P_IMAGE`;
                         const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
                         if (propertyCommitJsonObject) {
+                            this.notifyClientListener({message: `Writing image for tag comment: ${tagId}`, eventType: ClientEventType.MESSAGE});
                             const commitCreateCommentPropertyPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${createCommentDialogRedirectionVisitor.visitDialogId()}/record/P_IMAGE`;
                             for (const writeLargeProperty of propertyCommitJsonObject) {
                                 Log.info(`${thisMethod} -- committing create tag comment large property: ${commitCreateCommentPropertyPath}`);
@@ -863,11 +891,13 @@ export class SdaDialogDelegate implements DialogDelegate {
                         // NAVIGATE TO THE "CREATE COMMENT" DIALOG
                         // ------------------------------------------------- //
                         const createCommentMenuActionPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${openTagDetailsListDialog.visitId()}/actions/${SdaDialogDelegate.ALIAS_CREATE_COMMENT_MENU_ACTION_ID}`;
+                        const tagDocumentId = createCommentForTagDocRedirectionVisitor.visitRecordId();
                         const createCommentMenuActionParameters = {
-                            targets: [createCommentForTagDocRedirectionVisitor.visitRecordId()],
+                            targets: [tagDocumentId],
                             type: "hxgn.api.dialog.ActionParameters"
                         };
                         Log.info(`${thisMethod} -- opening a create tag doc comment dialog: ${createCommentMenuActionPath}`);
+                        this.notifyClientListener({message: `Synchronizing tag document comment: ${tagDocumentId}`, eventType: ClientEventType.MESSAGE});
                         const createCommentDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), createCommentMenuActionPath, createCommentMenuActionParameters);
                         if (createCommentDialogRedirectionJcr.statusCode !== 303) {
                             throw new Error(`Unexpected result when posting for create tag doc comment: ${createCommentDialogRedirectionJcr.statusCode} ${JSON.stringify(createCommentDialogRedirectionJcr.value)}`);
@@ -885,6 +915,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                         const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${createCommentForTagDocSuffix}.propertycommit$P_IMAGE`;
                         const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
                         if (propertyCommitJsonObject) {
+                            this.notifyClientListener({message: `Writing image for tag comment: ${tagDocumentId}`, eventType: ClientEventType.MESSAGE});
                             const commitCreateCommentPropertyPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${createCommentDialogRedirectionVisitor.visitDialogId()}/record/P_IMAGE`;
                             for (const writeLargeProperty of propertyCommitJsonObject) {
                                 Log.info(`${thisMethod} -- committing create tag doc comment large property: ${commitCreateCommentPropertyPath}`);
@@ -912,6 +943,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         this._dialogDelegateStateVisitor.visitAndClearSelectedWorkPackageIds();
         this._dialogDelegateStateVisitor.visitMobileCommentsRecordSet().visitAndClearRecords();
         this.delegateWorkPackagesRecordSetVisitor().visitAndClearRecords();
+        this.notifyClientListener({message: 'Exit offline mode completed', eventType: ClientEventType.ONLINE});
         this.delegateBriefcaseVisitor().visitAndSetOnline(true);
         await SdaDialogDelegateTools.writeDialogDelegateState(pathFields.tenantId, this._dialogDelegateStateVisitor);
         const nullRedirection = SdaDialogDelegateTools.constructEnterOfflineModeNullRedirection(pathFields.tenantId, pathFields.sessionId);

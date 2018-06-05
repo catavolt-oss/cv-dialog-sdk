@@ -1,5 +1,6 @@
 import {BlobClientResponse} from "../client/BlobClientResponse";
 import {Client} from "../client/Client";
+import {ClientListener} from "../client/ClientListener";
 import {JsonClientResponse} from "../client/JsonClientResponse";
 import {TextClientResponse} from "../client/TextClientResponse";
 import {VoidClientResponse} from "../client/VoidClientResponse";
@@ -7,7 +8,6 @@ import {StreamProducer} from '../io/StreamProducer';
 import {SdaDialogDelegate} from "../ppm/SdaDialogDelegate";
 import {CvLocale} from "../util";
 import {Log} from '../util/Log';
-import {StatusListener} from "../util/StatusListener";
 import {StringDictionary} from '../util/StringDictionary';
 import {DialogDelegate} from "./DialogDelegate";
 import {DialogProxyTools} from './DialogProxyTools';
@@ -16,14 +16,14 @@ import {ValueIterator} from "./ValueIterator";
 
 export class DialogProxy implements Client {
 
+    private _clientListener: ClientListener;
     private _dialogDelegateChain: DialogDelegate[];
     private _initialized: boolean;
     private _initializedPr: Promise<boolean>;
     private _initializedRejectFn: (error) => void;
     private _initializedResolveFn: (value) => void;
     private _lastActivity: Date = new Date();
-    private _locale:CvLocale;
-    private _statusListener:StatusListener;
+    private _locale: CvLocale;
 
     constructor() {
         this._initialized = false;
@@ -34,8 +34,13 @@ export class DialogProxy implements Client {
         this._dialogDelegateChain = [new SdaDialogDelegate()];
     }
 
-    public addStatusListener(statusListener:StatusListener, locale:CvLocale) {
-        this._statusListener = statusListener;
+    public clientListener() {
+        return this._clientListener;
+    }
+
+    // TODO: Shouldn't CvLocale either be a property of the Client or the Listener, not an extra parameter?
+    public addClientListener(clientListener: ClientListener, locale: CvLocale) {
+        this._clientListener = clientListener;
         this._locale = locale;
     }
 
@@ -112,7 +117,7 @@ export class DialogProxy implements Client {
     private async prepareForActivity(): Promise<boolean> {
         if (!this._initialized) {
             Log.info("DialogProxy::prepareForActivity -- waiting for all DialogDelegates to initialize");
-            const allDelegatesInitializing = this._dialogDelegateChain.map(d => d.initialize());
+            const allDelegatesInitializing = this._dialogDelegateChain.map(d => d.initialize(this));
             await Promise.all(allDelegatesInitializing);
             this._initialized = true;
             Log.info("DialogProxy::prepareForActivity -- all DialogDelegates are initialized");

@@ -1,3 +1,4 @@
+import { ClientListener } from "../client/ClientListener";
 import { StreamConsumer } from '../io/StreamConsumer';
 import { StreamProducer } from '../io/StreamProducer';
 import {
@@ -20,8 +21,6 @@ import { DialogProxy } from '../proxy/DialogProxy';
 import { CvLocale } from '../util/CvLocale';
 import { Log } from '../util/Log';
 import { ObjUtil } from '../util/ObjUtil';
-import {StatusListener} from "../util/StatusListener";
-import { FetchClient } from '../ws/FetchClient';
 import { CatavoltApi } from './CatavoltApi';
 import { DialogApi } from './DialogApi';
 import { DialogService } from './DialogService';
@@ -113,8 +112,8 @@ export class CatavoltApiImpl implements CatavoltApi {
         this._devicePropsStatic[propName] = propValue;
     }
 
-    public addStatusListener(statusListener:StatusListener):void {
-       this._dialogApi.addStatusListener(statusListener, this.locale);
+    public addClientListener(clientListener:ClientListener):void {
+       this._dialogApi.addClientListener(clientListener, this.locale);
     }
 
     /**
