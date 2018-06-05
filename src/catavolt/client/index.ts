@@ -3,6 +3,9 @@
  */
 
 export * from './Client';
+export * from './ClientEvent';
+export * from './ClientEventType';
+export * from './ClientListener';
 export * from './ClientResponse';
 export * from './JsonClientResponse';
 export * from './BlobClientResponse';

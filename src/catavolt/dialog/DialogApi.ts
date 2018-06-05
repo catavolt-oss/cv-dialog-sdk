@@ -1,3 +1,4 @@
+import {ClientListener} from "../client/ClientListener";
 import { StreamProducer } from '../io/StreamProducer';
 import {
     ActionParameters,
@@ -21,15 +22,13 @@ import {
     WriteLargePropertyParameters
 } from '../models';
 import {CvLocale} from "../util";
-import {StatusListener} from "../util/StatusListener";
 
 export interface DialogApi {
     lastServiceActivity: Date;
 
-
     addAttachment(tenantId: string, sessionId: string, dialogId: string, attachment: Attachment): Promise<void>;
 
-    addStatusListener(statusListener:StatusListener, locale:CvLocale);
+    addClientListener(clientListener:ClientListener, locale:CvLocale);
 
     createSession(tenantId: string, login: Login): Promise<Session | Redirection>;
 
