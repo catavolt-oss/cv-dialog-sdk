@@ -18,7 +18,7 @@ export class CatavoltAuth {
         return jsonResponse.value['redirection'];
     }
 
-    private static _getOAuthReqUrl(tenantId: string): string {
+    public static _getOAuthReqUrl(tenantId: string): string {
         return `https://oauth.catavolt.net/oauth/${tenantId}/v1/authorize?callback=true&redirection=false`;
     }
 }
