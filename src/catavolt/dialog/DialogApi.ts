@@ -24,6 +24,7 @@ import {
 import {CvLocale} from "../util";
 
 export interface DialogApi {
+    isOffline:boolean;
     lastServiceActivity: Date;
 
     addAttachment(tenantId: string, sessionId: string, dialogId: string, attachment: Attachment): Promise<void>;

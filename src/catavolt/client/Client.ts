@@ -8,7 +8,9 @@ import {VoidClientResponse} from './VoidClientResponse';
 
 export interface Client {
 
-    lastActivity: Date;
+    readonly lastActivity: Date;
+
+    readonly isOffline: boolean;
 
     addClientListener(clientListener: ClientListener, locale: CvLocale);
 

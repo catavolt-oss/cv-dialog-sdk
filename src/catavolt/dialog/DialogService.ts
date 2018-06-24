@@ -294,6 +294,10 @@ export class DialogService implements DialogApi {
         return this.stream(url);
     }
 
+    get isOffline(): boolean {
+        return this.client.isOffline;
+    }
+
     get lastServiceActivity(): Date {
         return this.client.lastActivity;
     }

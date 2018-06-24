@@ -239,6 +239,14 @@ export class CatavoltApiImpl implements CatavoltApi {
     }
 
     /**
+     * Check offline status
+     * @returns {boolean}
+     */
+    get isOffline(): boolean {
+       return this.dialogApi.isOffline;
+    }
+
+    /**
      * Log in and retrieve the Session
      *
      * @param tenantId

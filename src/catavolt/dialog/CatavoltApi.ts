@@ -15,6 +15,7 @@ export interface CatavoltApi {
     readonly deviceProps: { [p: string]: string };
     readonly dialogApi: DialogApi;
     readonly isLoggedIn: boolean;
+    readonly isOffline: boolean;
     readonly remainingSessionTime: number;
     readonly session: Session;
     readonly sessionHasExpired: boolean;
