@@ -1,6 +1,6 @@
 {
   "name": "cv-dialog-sdk",
-  "version": "4.16.2",
+  "version": "4.17.0",
   "description": "Catavolt Dialog Javascript API",
   "main": "./src/js/catavolt.js",
   "typings": "./src/tsd/catavolt.d.ts",

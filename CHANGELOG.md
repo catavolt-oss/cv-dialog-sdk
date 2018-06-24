@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.17.0"></a>
+# [4.17.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.16.2...v4.17.0) (2018-06-24)
+
+
+### Features
+
+* added capture of userid and password when entering offline mode ([24d11ab](https://github.com/catavolt-oss/cv-dialog-sdk/commit/24d11ab))
+
+
+
 <a name="4.16.2"></a>
 ## [4.16.2](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.16.1...v4.16.2) (2018-06-18)
 
