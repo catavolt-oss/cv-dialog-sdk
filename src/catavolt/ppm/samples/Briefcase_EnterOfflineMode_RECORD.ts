@@ -1,39 +1,39 @@
 /**
  */
-export class Briefcase_Briefcase_Details_RECORD {
+export class Briefcase_EnterOfflineMode_RECORD {
 
-    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/10/record';
+    private static PATH = 'tenants/${tenantId}/sessions/${sessionId}/dialogs/15/record';
 
     private static RESPONSE = {
-        "dialogAlias": "Briefcase_Briefcase_Details",
+        "dialogAlias": "Briefcase_EnterOfflineMode",
         "annotations": [],
-        "id": "1",
+        "id": null,
         "type": "hxgn.api.dialog.Record",
-        "dialogName": "Briefcase_Briefcase_Details",
+        "dialogName": "Briefcase_EnterOfflineMode",
         "properties": [{
-            "name": "password",
+            "name": "P_PASSWORD",
             "format": null,
             "annotations": [],
             "type": "hxgn.api.dialog.Property",
-            "value": null
+            "value": ""
         }, {
-            "name": "briefcaseid",
+            "name": "P_USERID",
             "format": null,
             "annotations": [],
             "type": "hxgn.api.dialog.Property",
-            "value": "1"
+            "value": "SomeUser"
         }, {
-            "name": "online",
+            "name": "P_ONLINE",
             "format": null,
             "annotations": [],
             "type": "hxgn.api.dialog.Property",
             "value": true
         }, {
-            "name": "ZZREPEAT_ACTION_PROPERTY_NAMEZZ",
+            "name": "P_PASSWORD_CONFIRM",
             "format": null,
             "annotations": [],
             "type": "hxgn.api.dialog.Property",
-            "value": true
+            "value": ""
         }]
     };
 

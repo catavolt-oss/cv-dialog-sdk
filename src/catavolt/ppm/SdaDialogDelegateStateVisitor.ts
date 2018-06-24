@@ -62,12 +62,12 @@ export class SdaDialogDelegateStateVisitor implements JsonObjectVisitor {
         return new BriefcaseVisitor(this.enclosedJsonObject().briefcase);
     }
 
-    public visitPassword(): string {
-        return this.enclosedJsonObject().password;
+    public visitLoginHash(): string {
+        return this.enclosedJsonObject().loginHash;
     }
 
-    public visitAndSetPassword(password: string) {
-        this.enclosedJsonObject().password = password;
+    public visitAndSetLoginHash(loginHash: string) {
+        this.enclosedJsonObject().loginHash = loginHash;
     }
 
     public visitSelectedWorkPackageIds(): string[] {

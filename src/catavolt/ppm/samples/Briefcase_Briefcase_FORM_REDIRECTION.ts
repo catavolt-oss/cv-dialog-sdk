@@ -15,7 +15,7 @@ export class Briefcase_Briefcase_FORM_REDIRECTION {
         },
         "sessionId": "${sessionId}",
         "type": "hxgn.api.dialog.DialogRedirection",
-        "dialogId": "1",
+        "dialogId": "8",
         "viewMode": "READ",
         "dialogClassName": "com.catavolt.app.extender.dialog.CatavoltSatelliteEntityEditorModel",
         "domainClassName": "cx.AAABACcSAAAAAF8B.com.catavolt.sql.hexagonsdaopAAABACcRAAAAAF7t.briefcase",
@@ -24,7 +24,7 @@ export class Briefcase_Briefcase_FORM_REDIRECTION {
         "dialogAlias": "Briefcase_Briefcase_FORM",
         "tenantId": "${tenantId}",
         "refreshNeeded": false,
-        "id": "1",
+        "id": "8",
         "dialogName": "Briefcase_Briefcase_FORM",
         "selectedViewId": "AAABACcXAAAAAF8e",
         "dialogDescription": "Briefcase: 1"

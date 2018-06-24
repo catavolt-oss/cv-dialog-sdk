@@ -13,18 +13,21 @@ import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
 export class SdaDialogDelegateTools {
 
     // Dialog Ids
-    public static OFFLINE_BRIEFCASE_DIALOG_COMMENTS_ID = 'offline_briefcase_comments';
-    public static OFFLINE_BRIEFCASE_DIALOG_DETAILS_ID = 'offline_briefcase_details';
-    public static OFFLINE_BRIEFCASE_DIALOG_ROOT_ID = 'offline_briefcase';
-    public static OFFLINE_BRIEFCASE_DIALOG_WORK_PACKAGES_ID = 'offline_briefcase_workPackages';
-    public static OFFLINE_WORK_PACKAGES_DIALOG_LIST_ID = 'offline_workPackages_list';
-    public static OFFLINE_WORK_PACKAGES_DIALOG_ROOT_ID = 'offline_workPackages';
+    public static BRIEFCASE_COMMENTS_DIALOG_ID = 'briefcase_comments';
+    public static BRIEFCASE_DETAILS_DIALOG_ID = 'briefcase_details';
+    public static BRIEFCASE_ROOT_DIALOG_ID = 'briefcase';
+    public static BRIEFCASE_WORK_PACKAGES_DIALOG_ID = 'briefcase_workPackages';
+
+    public static BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_ID = 'briefcase_enter_offline_details';
+    public static BRIEFCASE_ENTER_OFFLINE_ROOT_DIALOG_ID = 'briefcase_enter_offline';
 
     // Dialog Names
     public static BRIEFCASE_DETAILS_DIALOG_NAME = 'Briefcase_Briefcase_Details';
     public static BRIEFCASE_MOBILE_COMMENTS_DIALOG_NAME = 'Briefcase_Briefcase_MobileComments';
     public static BRIEFCASE_ROOT_DIALOG_NAME = 'Briefcase_Briefcase_FORM';
     public static BRIEFCASE_WORK_PACKAGES_DIALOG_NAME = 'Briefcase_Briefcase_Workpackages';
+
+    public static BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_NAME = 'Briefcase_EnterOfflineMode';
 
     public static DOCUMENTS_ROOT_DIALOG_NAME = 'Workpackage_Documents_FORM';
     public static DOCUMENTS_PROPERTIES_DIALOG_NAME = 'Workpackage_Documents_Properties';
@@ -79,12 +82,41 @@ export class SdaDialogDelegateTools {
         };
     }
 
-    public static constructEnterOfflineModeNullRedirection(tenantId: string, sessionId: string): StringDictionary {
-        return this.constructBriefcaseNullRedirection(tenantId, sessionId, this.ENTER_OFFLINE_MODE_MENU_ACTION_ID);
+    public static constructBriefcaseEnterOfflineDetailsNullRedirection(tenantId: string, sessionId: string, refreshNeeded: boolean): StringDictionary {
+        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
+        // TODO: What should a ReferringDialog contain as an action id when the action is a 'PUT viewMode'?
+        return {
+            "tenantId": tenantId,
+            "referringObject": {
+                "dialogMode": "DESTROYED",
+                "dialogName": this.BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_NAME,
+                "dialogAlias": this.BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_NAME,
+                "type": "hxgn.api.dialog.ReferringDialog",
+                "dialogId": this.BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_ID
+            },
+            "refreshNeeded": refreshNeeded,
+            "sessionId": sessionId,
+            "id": nullRedirectionId,
+            "type": "hxgn.api.dialog.NullRedirection"
+        };
     }
 
     public static constructExitOfflineModeNullRedirection(tenantId: string, sessionId: string): StringDictionary {
-        return this.constructBriefcaseNullRedirection(tenantId, sessionId, this.EXIT_OFFLINE_MODE_MENU_ACTION_ID);
+        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
+        return {
+            "tenantId": tenantId,
+            "referringObject": {
+                "dialogMode": "READ",
+                "dialogAlias": "Briefcase_Briefcase_Details",
+                "actionId": this.EXIT_OFFLINE_MODE_MENU_ACTION_ID,
+                "type": "hxgn.api.dialog.ReferringDialog",
+                "dialogId": this.BRIEFCASE_DETAILS_DIALOG_ID
+            },
+            "refreshNeeded": true,
+            "sessionId": sessionId,
+            "id": nullRedirectionId,
+            "type": "hxgn.api.dialog.NullRedirection"
+        };
     }
 
     public static constructOfflineLogoutResponse(sessionId: string) {
@@ -112,6 +144,20 @@ export class SdaDialogDelegateTools {
         };
     }
 
+    public static createOfflineLoginHash(tenantId: string, sessionId: string, userId: string, password: string): string {
+        const source =`OFFLINE_LOGIN:${tenantId}/${sessionId}/${userId}/${password}`;
+        // TODO: insert crypto hashing here
+        return source;
+    }
+
+    public static isBriefcaseEnterOfflineDetailsDialogId(dialogId: string): boolean {
+        return dialogId === this.BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_ID;
+    }
+
+    public static isBriefcaseEnterOfflineDialogId(dialogId: string): boolean {
+        return dialogId === this.BRIEFCASE_ENTER_OFFLINE_ROOT_DIALOG_ID;
+    }
+
     public static isBriefcaseWorkbenchActionRequest(dialogRequest: DialogRequest): boolean {
         return dialogRequest.isPostWorkbenchActionPathWithActionId(SdaDialogDelegateTools.BRIEFCASE_WORKBENCH_ACTION_ID);
     }
@@ -125,19 +171,19 @@ export class SdaDialogDelegateTools {
     }
 
     public static isOfflineBriefcaseCommentsRecordSetRequest(dialogRequest: DialogRequest): boolean {
-        return dialogRequest.isPostRecordsPathWithDialogId(this.OFFLINE_BRIEFCASE_DIALOG_COMMENTS_ID);
+        return dialogRequest.isPostRecordsPathWithDialogId(this.BRIEFCASE_COMMENTS_DIALOG_ID);
     }
 
     public static isOfflineBriefcaseDialogId(dialogId: string): boolean {
-        return dialogId === this.OFFLINE_BRIEFCASE_DIALOG_ROOT_ID;
+        return dialogId === this.BRIEFCASE_ROOT_DIALOG_ID;
     }
 
     public static isOfflineBriefcaseDetailsDialogId(dialogId: string): boolean {
-        return dialogId === this.OFFLINE_BRIEFCASE_DIALOG_DETAILS_ID;
+        return dialogId === this.BRIEFCASE_DETAILS_DIALOG_ID;
     }
 
     public static isOfflineBriefcaseWorkPackagesDialogId(dialogId: string): boolean {
-        return dialogId === this.OFFLINE_BRIEFCASE_DIALOG_WORK_PACKAGES_ID;
+        return dialogId === this.BRIEFCASE_WORK_PACKAGES_DIALOG_ID;
     }
 
     public static isOfflineBriefcaseWorkPackagesRequest(dialogRequest: DialogRequest): boolean {
@@ -274,24 +320,6 @@ export class SdaDialogDelegateTools {
     public static writeOfflineSession(tenantId: string, userId: string, offlineSessionVisitor: SessionVisitor): Promise<void> {
         const key = this.createStorageKey(tenantId, userId, this.OFFLINE_SESSION_KEY);
         return storage.setJson(key, offlineSessionVisitor.enclosedJsonObject());
-    }
-
-    private static constructBriefcaseNullRedirection(tenantId: string, sessionId: string, actionId: string): StringDictionary {
-        const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();
-        return {
-            "tenantId": tenantId,
-            "referringObject": {
-                "dialogMode": "READ",
-                "dialogAlias": "Briefcase_Briefcase_Details",
-                "actionId": actionId,
-                "type": "hxgn.api.dialog.ReferringDialog",
-                "dialogId": this.OFFLINE_BRIEFCASE_DIALOG_DETAILS_ID
-            },
-            "refreshNeeded": true,
-            "sessionId": sessionId,
-            "id": nullRedirectionId,
-            "type": "hxgn.api.dialog.NullRedirection"
-        };
     }
 
     private static createStorageKey(tenantId: string, userId: string, keyTemplate: string): string {
