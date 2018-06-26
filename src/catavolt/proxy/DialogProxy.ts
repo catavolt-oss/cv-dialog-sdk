@@ -48,6 +48,12 @@ export class DialogProxy implements Client {
         this._clientListener = null;
     }
 
+    public isOnline(): boolean {
+        return this._dialogDelegateChain &&
+            this._dialogDelegateChain.length > 0 &&
+            this._dialogDelegateChain[0].isOnline();
+    }
+
     get lastActivity(): Date {
         return this._lastActivity;
     }

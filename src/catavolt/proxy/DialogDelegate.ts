@@ -10,6 +10,8 @@ export interface DialogDelegate {
 
     initialize(dialogProxy: DialogProxy): Promise<void>;
 
+    isOnline(): boolean;
+
     getBlob(request: DialogRequest): Promise<BlobClientResponse>;
 
     getText(request: DialogRequest): Promise<TextClientResponse>;

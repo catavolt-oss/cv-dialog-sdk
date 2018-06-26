@@ -59,6 +59,12 @@ export class SdaDialogDelegate implements DialogDelegate {
         return Promise.resolve();
     }
 
+    public isOnline() {
+        return this._dialogDelegateStateVisitor &&
+            this._dialogDelegateStateVisitor.visitBriefcase() &&
+            this._dialogDelegateStateVisitor.visitBriefcase().visitOnline();
+    }
+
     // --- Request Handlers --- //
 
     public getBlob(request: DialogRequest): Promise<BlobClientResponse> | null {
