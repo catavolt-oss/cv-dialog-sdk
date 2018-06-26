@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.17.1"></a>
+## [4.17.1](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.17.0...v4.17.1) (2018-06-26)
+
+
+### Bug Fixes
+
+* add isOnline support to offline code and delegates ([5e0b7f2](https://github.com/catavolt-oss/cv-dialog-sdk/commit/5e0b7f2))
+
+
+
 <a name="4.17.0"></a>
 # [4.17.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.16.2...v4.17.0) (2018-06-24)
 
