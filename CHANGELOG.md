@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.18.0"></a>
+# [4.18.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.17.1...v4.18.0) (2018-06-27)
+
+
+### Features
+
+* add SessionTimer ([9e3aa7c](https://github.com/catavolt-oss/cv-dialog-sdk/commit/9e3aa7c))
+
+
+
 <a name="4.17.1"></a>
 ## [4.17.1](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.17.0...v4.17.1) (2018-06-26)
 
