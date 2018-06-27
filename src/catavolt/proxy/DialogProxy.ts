@@ -58,9 +58,8 @@ export class DialogProxy implements Client {
         return this._lastActivity;
     }
 
-    // @TODO - implement this
     get isOffline():boolean {
-        return false;
+        return !this.isOnline();
     }
 
     public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {

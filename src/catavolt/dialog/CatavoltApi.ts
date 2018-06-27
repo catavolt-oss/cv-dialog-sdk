@@ -16,6 +16,7 @@ export interface CatavoltApi {
     readonly dialogApi: DialogApi;
     readonly isLoggedIn: boolean;
     readonly isOffline: boolean;
+    onSessionExpiration:()=>void;
     readonly remainingSessionTime: number;
     readonly session: Session;
     readonly sessionHasExpired: boolean;
@@ -131,6 +132,7 @@ export interface CatavoltApi {
      * @param {ClientListener} clientListener
      */
     removeClientListener(clientListener:ClientListener): void;
+
     /**
      *
      * @param {string} contentId

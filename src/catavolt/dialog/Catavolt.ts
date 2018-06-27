@@ -21,6 +21,7 @@ import { DialogProxy } from '../proxy/DialogProxy';
 import { CvLocale } from '../util/CvLocale';
 import { Log } from '../util/Log';
 import { ObjUtil } from '../util/ObjUtil';
+import {SessionTimer} from "../util/SessionTimer";
 import { CatavoltApi } from './CatavoltApi';
 import { DialogApi } from './DialogApi';
 import { DialogService } from './DialogService';
@@ -32,6 +33,7 @@ export class CatavoltApiImpl implements CatavoltApi {
     private static _singleton: CatavoltApiImpl;
 
     private static ONE_HOUR_IN_MILLIS: number = 60 * 60 * 1000;
+    private static CHECK_SESSION_INTERVAL_MILLIS: number = 30 * 1000;
     // defaults
     private static SERVER_URL: string = 'https://dialog.hxgn-api.net';
     private static SERVER_VERSION = 'v0';
@@ -43,8 +45,9 @@ export class CatavoltApiImpl implements CatavoltApi {
     private _session: Session;
     private _devicePropsDynamic: { [index: string]: () => string };
     private _devicePropsStatic: { [index: string]: string };
-
     private _locale: CvLocale = null;
+    private _sessionTimer:SessionTimer = null;
+    private _onSessionExpiration = null;
 
     /* ********************
             Statics
@@ -83,6 +86,12 @@ export class CatavoltApiImpl implements CatavoltApi {
         }
         this._devicePropsStatic = {};
         this._devicePropsDynamic = {};
+
+        this._sessionTimer = new SessionTimer(()=>this.remainingSessionTime,
+                                              CatavoltApiImpl.CHECK_SESSION_INTERVAL_MILLIS,
+                                              ()=>{ this.logout().then(()=>{
+                                                  this._onSessionExpiration && this._onSessionExpiration();
+                                              }); });
 
         this.initDialogApi(serverUrl, serverVersion);
 
@@ -262,6 +271,7 @@ export class CatavoltApiImpl implements CatavoltApi {
         userId: string,
         password: string
     ): Promise<Session | Redirection> {
+
         if (this.isLoggedIn) {
             return this.logout().then(result => this.processLogin(tenantId, clientType, userId, password));
         } else {
@@ -295,11 +305,13 @@ export class CatavoltApiImpl implements CatavoltApi {
                 .deleteSession(this.session.tenantId, this.session.id)
                 .then(result => {
                     this._session = null;
+                    this._sessionTimer.stopSessionTimer();
                     return result;
                 })
                 .catch(error => {
                     Log.error(`Error logging out ${error}`);
                     this._session = null;
+                    this._sessionTimer.stopSessionTimer();
                     return { sessionId };
                 });
         } else {
@@ -422,6 +434,14 @@ export class CatavoltApiImpl implements CatavoltApi {
     }
 
     /**
+     * Function that will be notified when the session expires
+     * @param {() => void} onSessionExpiration
+     */
+    set onSessionExpiration(onSessionExpiration:()=>void) {
+        this._onSessionExpiration = onSessionExpiration;
+    }
+
+    /**
      *
      * @param {string} contentId
      * @param {StreamConsumer} streamConsumer
@@ -454,6 +474,7 @@ export class CatavoltApiImpl implements CatavoltApi {
         return this.dialogApi.createSession(tenantId, login).then((result: Session | Redirection) => {
             if (result.type === TypeNames.SessionTypeName) {
                 this._session = result as Session;
+                this._sessionTimer.resetSessionTimer();
                 return result;
             } else {
                 return result;
