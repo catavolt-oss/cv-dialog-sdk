@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.18.1"></a>
+## [4.18.1](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.18.0...v4.18.1) (2018-07-03)
+
+
+### Bug Fixes
+
+* fix boolean logic for isOnline ([2b22cca](https://github.com/catavolt-oss/cv-dialog-sdk/commit/2b22cca))
+
+
+
 <a name="4.18.0"></a>
 # [4.18.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.17.1...v4.18.0) (2018-06-27)
 
