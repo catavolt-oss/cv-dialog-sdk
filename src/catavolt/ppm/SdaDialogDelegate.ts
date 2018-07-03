@@ -60,8 +60,8 @@ export class SdaDialogDelegate implements DialogDelegate {
     }
 
     public isOnline() {
-        return this._dialogDelegateStateVisitor &&
-            this._dialogDelegateStateVisitor.visitBriefcase() &&
+        return !this._dialogDelegateStateVisitor ||
+            !this._dialogDelegateStateVisitor.visitBriefcase() ||
             this._dialogDelegateStateVisitor.visitBriefcase().visitOnline();
     }
 
