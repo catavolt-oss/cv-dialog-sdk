@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.18.2"></a>
+## [4.18.2](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.18.1...v4.18.2) (2018-07-05)
+
+
+### Bug Fixes
+
+* allow concurrent calls to QueryScroller.refresh ([0e939e9](https://github.com/catavolt-oss/cv-dialog-sdk/commit/0e939e9))
+
+
+
 <a name="4.18.1"></a>
 ## [4.18.1](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.18.0...v4.18.1) (2018-07-03)
 
