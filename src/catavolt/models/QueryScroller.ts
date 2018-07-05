@@ -29,6 +29,7 @@ export class QueryScroller {
     private _hasMoreForward: boolean;
     private _nextPagePromise: Promise<RecordSet>;
     private _prevPagePromise: Promise<RecordSet>;
+    private _refreshPromise: Promise<Record[]>;
     private _firstResultRecordId: string;
 
     constructor(
@@ -162,12 +163,20 @@ export class QueryScroller {
     }
 
     public refresh(numRows: number = this.pageSize): Promise<Record[]> {
-        this.clear();
-        return this.pageForward(numRows).then((recordList: Record[]) => {
-            if (recordList.length > 0) {
-                this._firstResultRecordId = recordList[0].id;
+        if(this._refreshPromise) {
+           this._refreshPromise = this._refreshPromise.then((records: Record[])=>{
+               this.clear();
+               return this.pageForward(numRows);
+           });
+        } else {
+            this.clear();
+            this._refreshPromise = this.pageForward(numRows);
+        }
+        return this._refreshPromise.then((records: Record[]) => {
+            if (records.length > 0) {
+                this._firstResultRecordId = records[0].id;
             }
-            return recordList;
+            return records;
         });
     }
 
