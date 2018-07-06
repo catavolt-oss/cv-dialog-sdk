@@ -69,6 +69,14 @@ export class DialogRequest {
         return this._body;
     }
 
+    public deconstructDeleteDialogPath(): any {
+        return {
+            tenantId: this._resourcePathElems[1],
+            sessionId: this._resourcePathElems[3],
+            dialogId: this._resourcePathElems[5]
+        }
+    }
+
     public deconstructDeleteSessionPath(): any {
         return {
             tenantId: this._resourcePathElems[1],
@@ -178,6 +186,15 @@ export class DialogRequest {
         return this._resourcePathElems.length === 3 &&
             this._resourcePathElems[0] === DialogRequest.TENANTS &&
             this._resourcePathElems[2] === DialogRequest.SESSIONS;
+    }
+
+    public isDeleteDialogPath(): boolean {
+        return (
+            this._resourcePathElems.length === 6 &&
+            this._resourcePathElems[0] === DialogRequest.TENANTS &&
+            this._resourcePathElems[2] === DialogRequest.SESSIONS &&
+            this._resourcePathElems[4] === DialogRequest.DIALOGS
+        );
     }
 
     public isDeleteSessionPath(): boolean {
