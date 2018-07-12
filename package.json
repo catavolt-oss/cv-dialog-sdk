@@ -1,6 +1,6 @@
 {
   "name": "cv-dialog-sdk",
-  "version": "4.19.0",
+  "version": "4.19.3",
   "description": "Catavolt Dialog Javascript API",
   "main": "./src/js/catavolt.js",
   "typings": "./src/tsd/catavolt.d.ts",
@@ -65,8 +65,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "./makeDocs && git add .",
-      "commit-msg": "commitlint -e $GIT_PARAMS"
+      "pre-commit_TJ": "./makeDocs && git add .",
+      "commit-msg_TJ": "commitlint -e $GIT_PARAMS"
     }
   }
 }
