@@ -50,7 +50,9 @@ export class DialogVisitor implements JsonObjectVisitor {
     // --- State Management --- //
 
     /**
-     * The record id targeted by the root dialog (usually a Form) will be used to help derive new dialog ids for all.
+     * The record id targeted by the root dialog (usually a Form) will be used to help derive new dialog ids for the
+     * root and all of its children. The derived dialog id is a concatenation of the dialogName with a '@' and the
+     * root record id.
      */
     public deriveDialogIdsFromDialogNameAndRecordId() {
         let derivedDialogId = this.enclosedJsonObject()['dialogName'];
@@ -76,6 +78,14 @@ export class DialogVisitor implements JsonObjectVisitor {
         }
     }
 
+    /**
+     * Traverse this dialog and its children and derive their dailog ids by concatenating each dialog's
+     * dialogName with a '$' and the given suffix. Dialog ids ending withs a suffix are synthetic. Its possible
+     * that a dialog id may have a suffix and a specific record id. In this case the dialog id will contain
+     * a '$' and an '@' so that each field can be parsed separately.
+     *
+     * @param {string} suffix
+     */
     public deriveDialogIdsFromDialogNameAndSuffix(suffix: string) {
         let derivedDialogId = this.enclosedJsonObject()['dialogName'];
         if (!derivedDialogId) {

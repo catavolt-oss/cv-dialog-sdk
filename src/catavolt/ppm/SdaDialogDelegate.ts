@@ -365,17 +365,15 @@ export class SdaDialogDelegate implements DialogDelegate {
 
     // --- Others --- //
 
-    private captureOfflineSession(baseUrl: string, tenantId: string, sessionId: string): Promise<JsonClientResponse> {
+    private async captureOfflineSession(baseUrl: string, tenantId: string, sessionId: string): Promise<JsonClientResponse> {
         const thisMethod = 'SdaDialogDelegate::captureOfflineSession';
         this.notifyClientListener({message: 'Capturing session for offline', eventType: ClientEventType.MESSAGE});
         const resourcePath = `tenants/${tenantId}/sessions/${sessionId}`;
-        const sessionPr = DialogProxyTools.commonFetchClient().getJson(baseUrl, resourcePath);
-        return sessionPr.then(sessionJcr => {
-            Log.info(`${thisMethod} -- session value: ${JSON.stringify(sessionJcr.value)}`);
-            const sessionVisitor = new SessionVisitor(sessionJcr.value);
-            return SdaDialogDelegateTools.writeOfflineSession(tenantId, this.delegateUserId(), sessionVisitor)
-                .then(nullValue => sessionJcr);
-        });
+        const sessionJcr = await DialogProxyTools.commonFetchClient().getJson(baseUrl, resourcePath);
+        Log.info(`${thisMethod} -- session value: ${JSON.stringify(sessionJcr.value)}`);
+        const sessionVisitor = new SessionVisitor(sessionJcr.value);
+        await SdaDialogDelegateTools.writeOfflineSession(tenantId, this.delegateUserId(), sessionVisitor);
+        return sessionJcr;
     }
 
     private async captureNextOfflineWorkPackage(baseUrl: string, tenantId: string, sessionId: string, onlineWorkPackagesListDialogId: string, offlineWorkPackagesListDialogId: string, nextWorkPackageId: string): Promise<void> {
@@ -625,27 +623,24 @@ export class SdaDialogDelegate implements DialogDelegate {
         return null;
     }
 
-    private performEnterOfflineModeContinueRequest(baseUrl: string, tenantId: string, sessionId: string): Promise<JsonClientResponse> {
+    private async performEnterOfflineModeContinueRequest(baseUrl: string, tenantId: string, sessionId: string): Promise<JsonClientResponse> {
         if (!this.delegateOnline()) {
             const dialogMessage = DialogProxyTools.constructDialogMessageModel("Already offline");
             return Promise.resolve(new JsonClientResponse(dialogMessage, 400));
         }
-        return this.captureOfflineWorkPackages(baseUrl, tenantId, sessionId).then(nullWorkPackagesValue => {
-            return this.captureOfflineSession(baseUrl, tenantId, sessionId).then(offlineSessionJcr => {
-                this.delegateBriefcaseVisitor().visitAndSetOnline(false);
-                return SdaDialogDelegateTools.writeDialogDelegateState(tenantId, this._dialogDelegateStateVisitor).then(nullValue => {
-                    const nullRedirection = SdaDialogDelegateTools.constructBriefcaseEnterOfflineDetailsNullRedirection(tenantId, sessionId, true);
-                    this.notifyClientListener({
-                        message: 'Enter offline mode completed',
-                        eventType: ClientEventType.OFFLINE
-                    });
-                    return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
-                });
-            });
+        await this.captureOfflineWorkPackages(baseUrl, tenantId, sessionId);
+        const offlineSessionJcr = await this.captureOfflineSession(baseUrl, tenantId, sessionId);
+        this.delegateBriefcaseVisitor().visitAndSetOnline(false);
+        await SdaDialogDelegateTools.writeDialogDelegateState(tenantId, this._dialogDelegateStateVisitor);
+        const nullRedirection = SdaDialogDelegateTools.constructBriefcaseEnterOfflineDetailsNullRedirection(tenantId, sessionId, true);
+        this.notifyClientListener({
+            message: 'Enter offline mode completed',
+            eventType: ClientEventType.OFFLINE
         });
+        return Promise.resolve(new JsonClientResponse(nullRedirection, 303));
     }
 
-    private performEnterOfflineModeMenuActionRequest(request: DialogRequest): Promise<JsonClientResponse> {
+    private async performEnterOfflineModeMenuActionRequest(request: DialogRequest): Promise<JsonClientResponse> {
         const pathFields = request.deconstructPostMenuActionPath();
         const dialogRedirection = Briefcase_EnterOfflineMode_REDIRECTION.copyOfResponse();
         DialogRedirectionVisitor.propagateDialogId(dialogRedirection, SdaDialogDelegateTools.BRIEFCASE_ENTER_OFFLINE_ROOT_DIALOG_ID);
@@ -672,7 +667,7 @@ export class SdaDialogDelegate implements DialogDelegate {
      *
      */
     private async performExitOfflineModeMenuActionRequest(request: DialogRequest): Promise<JsonClientResponse> {
-        const thisMethod = 'SdaDialogDelegate::performOfflineBriefcaseWorkPackagesRequest';
+        const thisMethod = 'SdaDialogDelegate::performExitOfflineModeMenuActionRequest';
         if (this.delegateOnline()) {
             const dialogMessage = DialogProxyTools.constructDialogMessageModel("Already online");
             return Promise.resolve(new JsonClientResponse(dialogMessage, 400));
