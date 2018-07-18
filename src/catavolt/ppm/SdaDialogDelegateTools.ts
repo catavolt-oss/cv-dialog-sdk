@@ -61,8 +61,8 @@ export class SdaDialogDelegateTools {
     private static SESSION_ID_MODEL_TYPE = 'hxgn.api.dialog.SessionId';
 
     // Storage Keys
-    private static DIALOG_DELEGATE_STATE_KEY = '${userId}.${tenantId}.SdaDialogDelegate.state';
-    private static OFFLINE_SESSION_KEY = '${userId}.${tenantId}.OfflineSession';
+    private static DIALOG_DELEGATE_STATE_KEY = '${userId}.${tenantId}.SdaDialogDelegate.delegatestate';
+    private static OFFLINE_SESSION_KEY = '${userId}.${tenantId}.offlinesession';
 
     public static constructAddToBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
         const nullRedirectionId = DialogProxyTools.constructNullRedirectionId();

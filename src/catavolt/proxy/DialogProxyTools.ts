@@ -35,12 +35,12 @@ export class DialogProxyTools {
     private static SESSION_MODEL_TYPE = 'hxgn.api.dialog.Session';
 
     // Storage Keys
-    private static CONTENT_STORAGE_KEY =            '${userId}.${tenantId}.${contentId}.${sequence}';
+    private static CONTENT_STORAGE_KEY =            '${userId}.${tenantId}.${contentId}.${sequence}.content';
     private static DIALOG_STORAGE_KEY =             '${userId}.${tenantId}.${dialogId}.dialog';
-    private static PROPERTY_COMMIT_STORAGE_KEY =    '${userId}.${tenantId}.${dialogId}.propertycommit$${propertyName}';
+    private static PROPERTY_COMMIT_STORAGE_KEY =    '${userId}.${tenantId}.${dialogId}.${propertyName}.propertycommit';
+    private static RECORD_COMMIT_STORAGE_KEY =      '${userId}.${tenantId}.${dialogId}.recordcommit';
     private static RECORD_SET_STORAGE_KEY =         '${userId}.${tenantId}.${dialogId}.recordset';
     private static RECORD_STORAGE_KEY =             '${userId}.${tenantId}.${dialogId}.record';
-    private static RECORD_COMMIT_STORAGE_KEY =      '${userId}.${tenantId}.${dialogId}.recordcommit';
     private static REDIRECTION_STORAGE_KEY =        '${userId}.${tenantId}.${stateId}.${actionId}.redirection';
 
     private static COMMON_FETCH_CLIENT = new FetchClient();

@@ -603,8 +603,6 @@ export class SdaDialogDelegate implements DialogDelegate {
         const thisMethod = 'SdaDialogDelegate::performCreateSessionRequest';
         const pathFields = request.deconstructPostSessionsPath();
         const loginVisitor = new LoginVisitor(request.body());
-        await SdaDialogDelegateTools.showAllStorageKeys();
-        await SdaDialogDelegateTools.showAllStorageKeysAndValues();
         const delegateState = await SdaDialogDelegateTools.readDialogDelegateStateVisitor(pathFields.tenantId, loginVisitor.visitUserId());
         if (!delegateState) {
             return null;
@@ -810,7 +808,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                         // ------------------------------------------------- //
                         // IF AN IMAGE WAS POSTED IN OFFLINE, POST IT NOW
                         // ------------------------------------------------- //
-                        const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${suffix}.propertycommit$P_IMAGE`;
+                        const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${suffix}.P_IMAGE.propertycommit`;
                         const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
                         if (propertyCommitJsonObject) {
                             this.notifyClientListener({
@@ -931,7 +929,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                         // ------------------------------------------------- //
                         // IF AN IMAGE WAS POSTED IN OFFLINE, POST IT NOW
                         // ------------------------------------------------- //
-                        const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${suffix}.propertycommit$P_IMAGE`;
+                        const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${suffix}.P_IMAGE.propertycommit`;
                         const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
                         if (propertyCommitJsonObject) {
                             this.notifyClientListener({
@@ -1025,7 +1023,7 @@ export class SdaDialogDelegate implements DialogDelegate {
                         // ------------------------------------------------- //
                         // IF AN IMAGE WAS POSTED IN OFFLINE, POST IT NOW
                         // ------------------------------------------------- //
-                        const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${createCommentForTagDocSuffix}.propertycommit$P_IMAGE`;
+                        const propertyCommitKey = `${this.delegateUserId()}.${tenantId}.Documents_CreateComment$${createCommentForTagDocSuffix}.P_IMAGE.propertycommit`;
                         const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
                         if (propertyCommitJsonObject) {
                             this.notifyClientListener({
