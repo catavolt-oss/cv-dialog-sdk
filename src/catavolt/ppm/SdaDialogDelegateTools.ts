@@ -12,14 +12,14 @@ import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
 
 export class SdaDialogDelegateTools {
 
-    // Dialog Ids
-    public static BRIEFCASE_COMMENTS_DIALOG_ID = 'briefcase_comments';
-    public static BRIEFCASE_DETAILS_DIALOG_ID = 'briefcase_details';
+    // Briefcase Dialog Ids
     public static BRIEFCASE_ROOT_DIALOG_ID = 'briefcase';
-    public static BRIEFCASE_WORK_PACKAGES_DIALOG_ID = 'briefcase_workPackages';
+    public static BRIEFCASE_COMMENTS_DIALOG_ID = SdaDialogDelegateTools.BRIEFCASE_ROOT_DIALOG_ID + '_comments';
+    public static BRIEFCASE_DETAILS_DIALOG_ID = SdaDialogDelegateTools.BRIEFCASE_ROOT_DIALOG_ID + '_details';
+    public static BRIEFCASE_WORK_PACKAGES_DIALOG_ID = SdaDialogDelegateTools.BRIEFCASE_ROOT_DIALOG_ID + '_workPackages';
 
-    public static BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_ID = 'briefcase_enter_offline_details';
-    public static BRIEFCASE_ENTER_OFFLINE_ROOT_DIALOG_ID = 'briefcase_enter_offline';
+    public static BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_ID = SdaDialogDelegateTools.BRIEFCASE_ROOT_DIALOG_ID + '_enter_offline_details';
+    public static BRIEFCASE_ENTER_OFFLINE_ROOT_DIALOG_ID = SdaDialogDelegateTools.BRIEFCASE_ROOT_DIALOG_ID + '_enter_offline';
 
     // Dialog Names
     public static BRIEFCASE_DETAILS_DIALOG_NAME = 'Briefcase_Briefcase_Details';
@@ -309,6 +309,10 @@ export class SdaDialogDelegateTools {
             Log.info(`${thisMethod} -- ${k}: ${v}`);
         }
         Log.info(`${thisMethod} -- ************** END SHOW ALL STORAGE KEYS AND VALUES **************`);
+    }
+
+    public static startsWithBriefcaseRootDialogId(dialogId: string): boolean {
+        return dialogId.startsWith(this.BRIEFCASE_ROOT_DIALOG_ID);
     }
 
     public static writeDialogDelegateState(tenantId: string, stateVisitor: SdaDialogDelegateStateVisitor): Promise<void> {

@@ -270,6 +270,15 @@ export class SdaDialogDelegate implements DialogDelegate {
         if (request.isDeleteSessionPath()) {
             return this.performDeleteSessionRequest(request);
         }
+        // Whether online or offline, we need to short-circuit the deletion of briefcase dialogs. The briefcase dialogs
+        // are 100% client-side only and are synthesized for each use.
+        if (request.isDeleteDialogPath() && SdaDialogDelegateTools.startsWithBriefcaseRootDialogId(request.dialogId())) {
+            const response = {
+                "dialogId": request.dialogId(),
+                "type": "hxgn.api.dialog.DialogId"
+            };
+            return Promise.resolve(new JsonClientResponse(response, 200));
+        }
         if (!this.delegateOnline()) {
             const pathFields = request.deconstructDeleteDialogPath();
             if (request.isDeleteDialogPath()) {
