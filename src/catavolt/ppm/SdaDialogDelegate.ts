@@ -142,27 +142,27 @@ export class SdaDialogDelegate implements DialogDelegate {
             if (SdaDialogDelegateTools.isOfflineTagsPropertiesDialogId(pathFields.dialogId)) {
                 return this.performOfflineTagsPropertiesRecordRequest(request);
             }
-            if (pathFields.dialogId.startsWith('MobileComment_Details_Properties')) {
-                const response = MobileComment_Details_RECORD.copyOfResponse();
-                const recordVisitor = new RecordVisitor(response);
-                return Promise.resolve(new JsonClientResponse(recordVisitor.enclosedJsonObject(), 200));
-            }
+            // if (pathFields.dialogId.startsWith('MobileComment_Details_Properties')) {
+            //     const response = MobileComment_Details_RECORD.copyOfResponse();
+            //     const recordVisitor = new RecordVisitor(response);
+            //     return Promise.resolve(new JsonClientResponse(recordVisitor.enclosedJsonObject(), 200));
+            // }
         }
         if (!this.delegateOnline()) {
             if (request.isGetDialogPath()) {
                 // TODO: synthesized redirections and dialogs need to be written to storage as they are
                 // synthesized and then later deleted when the UI invokes 'deleteJson' on the dialog path.
                 const pathFields = request.deconstructGetDialogPath();
-                if (pathFields.dialogId.startsWith('MobileComment_Details_FORM')) {
-                    const dialogJson = MobileComment_Details_FORM.copyOfResponse();
-                    const dialogVisitor = new DialogVisitor(dialogJson);
-                    dialogVisitor.propagateTenantIdAndSessionId(pathFields.tenantId, pathFields.sessionId);
-                    dialogVisitor.deriveDialogIdsFromDialogNameAndRecordId();
-                    // TODO: THIS IS A HACK UNTIL I CAN RETRIEVE THE UNDERLYING REDIRECTION
-                    // TODO: See note above regarding writing synthesized redirections to storage for later use
-                    dialogVisitor.visitAndSetId(pathFields.dialogId);
-                    return Promise.resolve(new JsonClientResponse(dialogJson, 200));
-                }
+                // if (pathFields.dialogId.startsWith('MobileComment_Details_FORM')) {
+                //     const dialogJson = MobileComment_Details_FORM.copyOfResponse();
+                //     const dialogVisitor = new DialogVisitor(dialogJson);
+                //     dialogVisitor.propagateTenantIdAndSessionId(pathFields.tenantId, pathFields.sessionId);
+                //     dialogVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+                //     // TODO: THIS IS A HACK UNTIL I CAN RETRIEVE THE UNDERLYING REDIRECTION
+                //     // TODO: See note above regarding writing synthesized redirections to storage for later use
+                //     dialogVisitor.visitAndSetId(pathFields.dialogId);
+                //     return Promise.resolve(new JsonClientResponse(dialogJson, 200));
+                // }
                 return DialogProxyTools.readDialogAsOfflineResponse(this.delegateUserId(), request);
             }
             if (request.isGetRecordPath()) {
@@ -202,8 +202,14 @@ export class SdaDialogDelegate implements DialogDelegate {
                     return this.performOfflineShowDocsMenuAction(request);
                 } else if (request.actionId() === 'alias_CreateComment') {
                     return this.performOfflineCreateCommentMenuAction(request);
-                } else if (request.actionId() === SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID) {
-                    return this.performOfflineShowLatestMenuAction(request);
+                // } else if (request.actionId() === SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID) {
+                //     return this.performOfflineShowLatestMenuAction(request);
+                } else if (request.actionId() === SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID) {
+                    return DialogProxyTools.readMenuActionRedirectionAsVisitor(this.delegateUserId(), request).then(dialogRedirectionVisitor => {
+                        return dialogRedirectionVisitor ?
+                            new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303) :
+                            new JsonClientResponse(DialogProxyTools.constructDialogMessageModel('Latest file not found'), 400);
+                    });
                 }
                 return DialogProxyTools.readMenuActionRedirectionAsOfflineResponse(this.delegateUserId(), request);
             } else if (request.isPostRecordsPath()) {
@@ -389,7 +395,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const thisMethod = 'SdaDialogDelegate::captureNextOfflineWorkPackage';
         Log.info(`${thisMethod} -- capturing work package for offline: ${nextWorkPackageId}`);
         this.notifyClientListener({
-            message: `Capturing work package for offline: ${nextWorkPackageId}`,
+            message: `Capturing work package: ${nextWorkPackageId}`,
             eventType: ClientEventType.MESSAGE
         });
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, onlineWorkPackagesListDialogId, offlineWorkPackagesListDialogId, SdaDialogDelegate.ALIAS_OPEN_MENU_ACTION_ID, nextWorkPackageId);
@@ -399,6 +405,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const afterDocumentsListDialog = (new DialogVisitor(beforeAndAfterValues.afterDialog)).visitChildAtName(SdaDialogDelegateTools.DOCUMENTS_LIST_DIALOG_NAME);
         for (const r of documentsRecordSetVisitor.visitRecords()) {
             await this.captureNextOfflineDocumentContent(baseUrl, tenantId, sessionId, beforeDocumentsListDialog, afterDocumentsListDialog, r);
+            await this.captureNextOfflineLastComment(baseUrl, tenantId, sessionId, beforeDocumentsListDialog, afterDocumentsListDialog, r);
         }
         await this.captureNextOfflineTags(baseUrl, tenantId, sessionId, beforeDocumentsListDialog, afterDocumentsListDialog, nextWorkPackageId);
         return null;
@@ -408,7 +415,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const thisMethod = 'SdaDialogDelegate::captureNextOfflineTags';
         Log.info(`${thisMethod} -- capturing tags for offline: ${nextWorkPackageId}`);
         this.notifyClientListener({
-            message: `Capturing tags for offline: ${nextWorkPackageId}`,
+            message: `Capturing tags: ${nextWorkPackageId}`,
             eventType: ClientEventType.MESSAGE
         });
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeDocumentsListDialog.visitId(), afterDocumentsListDialog.visitId(), SdaDialogDelegate.ALIAS_SHOW_TAGS_MENU_ACTION_ID, null);
@@ -418,6 +425,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const afterTagsListDialog = (new DialogVisitor(beforeAndAfterValues.afterDialog)).visitChildAtName(SdaDialogDelegateTools.TAGS_LIST_DIALOG_NAME);
         for (const r of tagsRecordSetVisitor.visitRecords()) {
             await this.captureNextOfflineTag(baseUrl, tenantId, sessionId, beforeTagsListDialog, afterTagsListDialog, r);
+            await this.captureNextOfflineLastComment(baseUrl, tenantId, sessionId, beforeTagsListDialog, afterTagsListDialog, r);
         }
         return null;
     }
@@ -427,7 +435,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const nextTagRecordId = nextTagRecordVisitor.visitRecordId();
         Log.info(`${thisMethod} -- capturing tag for offline: ${nextTagRecordId}`);
         this.notifyClientListener({
-            message: `Capturing tag for offline: ${nextTagRecordId}`,
+            message: `Capturing tag: ${nextTagRecordId}`,
             eventType: ClientEventType.MESSAGE
         });
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeTagsListDialog.visitId(), afterTagsListDialog.visitId(), SdaDialogDelegate.OPEN_MENU_ACTION_ID, nextTagRecordId);
@@ -437,6 +445,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const afterTagDetailsListDialog = (new DialogVisitor(beforeAndAfterValues.afterDialog)).visitChildAtName(SdaDialogDelegateTools.TAG_DETAILS_LIST_DIALOG_NAME);
         for (const r of tagDetailsListRecordSetVisitor.visitRecords()) {
             await this.captureNextOfflineDocumentContent(baseUrl, tenantId, sessionId, beforeTagDetailsListDialog, afterTagDetailsListDialog, r);
+            await this.captureNextOfflineLastComment(baseUrl, tenantId, sessionId, beforeTagDetailsListDialog, afterTagDetailsListDialog, r);
         }
         return null;
     }
@@ -450,7 +459,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         // GET REDIRECTION //
         const nextDocumentId = nextDocumentRecordVisitor.visitRecordId();
         this.notifyClientListener({
-            message: `Capturing offline document: ${nextDocumentId}`,
+            message: `Capturing document: ${nextDocumentId}`,
             eventType: ClientEventType.MESSAGE
         });
         const nextDocumentIdEncoded = Base64.encodeUrlSafeString(nextDocumentId);
@@ -486,6 +495,70 @@ export class SdaDialogDelegate implements DialogDelegate {
             // If the document has been previously captured from a shared reference, then we are done
             return null;
         }
+        // GET AND WRITE CONTENT TO LOCAL STORAGE //
+        let nextSequence = 0;
+        while (true) {
+            const contentPath = `tenants/${tenantId}/sessions/${sessionId}/content/${onlineContentId}`;
+            const readLargePropertyParametersJson = {
+                maxBytes: 131072,
+                sequence: nextSequence,
+                type: "hxgn.api.dialog.ReadLargePropertyParameters"
+            };
+            const largePropertyJcr = await DialogProxyTools.commonFetchClient().postJson(this._dialogDelegateStateVisitor.visitBaseUrl(), contentPath, readLargePropertyParametersJson);
+            if (largePropertyJcr.statusCode !== 200) {
+                throw new Error(`Unexpected result when reading content: ${onlineContentId}`);
+            }
+            const largePropertyVisitor = new LargePropertyVisitor(largePropertyJcr.value);
+            await DialogProxyTools.writeContentChunk(this.delegateUserId(), tenantId, offlineContentId, nextSequence, largePropertyVisitor);
+            if (!largePropertyVisitor.visitHasMore()) {
+                break;
+            }
+            nextSequence++;
+        }
+        return null;
+    }
+
+    private async captureNextOfflineLastComment(baseUrl: string, tenantId: string, sessionId: string, beforeDocumentsListDialog: DialogVisitor, afterDocumentsListDialog: DialogVisitor, nextDocumentRecordVisitor: RecordVisitor): Promise<void> {
+        const thisMethod = 'SdaDialogDelegate::captureNextOfflineLastComment';
+        const nextRecordId = nextDocumentRecordVisitor.visitRecordId();
+        Log.info(`${thisMethod} -- capturing last comment: ${nextRecordId}`);
+        this.notifyClientListener({
+            message: `Capturing last comment: ${nextRecordId}`,
+            eventType: ClientEventType.MESSAGE
+        });
+        const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeDocumentsListDialog.visitId(), afterDocumentsListDialog.visitId(), SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID, nextRecordId);
+        const beforeDialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
+        const beforePropertiesDialogVisitor = beforeDialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_DETAILS_PROPERTIES_DIALOG_NAME);
+        if (beforeDialogVisitor.visitDialogName() !== SdaDialogDelegateTools.MOBILE_COMMENT_DETAILS_ROOT_DIALOG_NAME) {
+            return;
+        }
+        const afterDialogVisitor = new DialogVisitor(beforeAndAfterValues.afterDialog);
+        const afterPropertiesDialogVisitor = afterDialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_DETAILS_PROPERTIES_DIALOG_NAME);
+        Log.info(`${thisMethod} -- latest document before dialog id: ${beforePropertiesDialogVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- latest document after dialog id: ${afterPropertiesDialogVisitor.visitId()}`);
+        await DialogProxyTools.captureRecord(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeAndAfterValues, SdaDialogDelegateTools.MOBILE_COMMENT_DETAILS_PROPERTIES_DIALOG_NAME);
+        const nextRecordIdEncoded = Base64.encodeUrlSafeString(nextRecordId);
+        Log.info(`${thisMethod} -- show latest next record id: ${nextRecordId} encoded as: ${nextRecordIdEncoded}`);
+        const redirectionPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${beforePropertiesDialogVisitor.visitId()}/actions/${SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID}`;
+        const redirectionParameters = {
+            targets: [],
+            type: "hxgn.api.dialog.ActionParameters"
+        };
+        const redirectionJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, redirectionPath, redirectionParameters);
+        if (redirectionJcr.statusCode !== 303) {
+            throw new Error(`Unexpected result when opening Latest Document: ${nextRecordId}`);
+        }
+         // TODO: this is a hack for "document not found" scenario -- fix later
+        if (redirectionJcr.value['type'] === 'hxgn.api.dialog.DialogRedirection') {
+            Log.info(`${thisMethod} -- skipping dialog redirection (latest document not found): ${JSON.stringify(redirectionJcr.value)}`);
+            return null;
+        }
+        Log.info(`${thisMethod} -- last comment content redirection: ${JSON.stringify(redirectionJcr.value)}`);
+        const contentRedirectionVisitor = new ContentRedirectionVisitor(redirectionJcr.value);
+        const onlineContentId = contentRedirectionVisitor.visitId();
+        const offlineContentId = `content_redirection_${nextRecordIdEncoded}`;
+        contentRedirectionVisitor.visitAndSetId(offlineContentId);
+        await DialogProxyTools.writeContentRedirection(this.delegateUserId(), tenantId, afterPropertiesDialogVisitor.visitId(), SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID, contentRedirectionVisitor);
         // GET AND WRITE CONTENT TO LOCAL STORAGE //
         let nextSequence = 0;
         while (true) {

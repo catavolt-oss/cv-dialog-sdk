@@ -356,6 +356,14 @@ export class DialogProxyTools {
     }
 
     public static readMenuActionRedirectionAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
+        return this.readMenuActionRedirectionAsVisitor(userId, request).then(dialogRedirectionVisitor => {
+            return dialogRedirectionVisitor ?
+                new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303) :
+                this.constructRequestNotValidDuringOfflineMode('readMenuActionRedirectionAsOfflineResponse', request.resourcePath());
+        });
+    }
+
+    public static readMenuActionRedirectionAsVisitor(userId: string, request: DialogRequest): Promise<DialogRedirectionVisitor> {
         const pathFields = request.deconstructPostMenuActionPath();
         let actionIdAtTargetId = request.actionId();
         const targetId = request.targetId();
@@ -363,11 +371,7 @@ export class DialogProxyTools {
             const targetIdEncoded = Base64.encodeUrlSafeString(targetId);
             actionIdAtTargetId = `${request.actionId()}@${targetIdEncoded}`;
         }
-        return this.readDialogRedirectionAsVisitor(userId, pathFields.tenantId, pathFields.dialogId, actionIdAtTargetId).then(dialogRedirectionVisitor => {
-            return dialogRedirectionVisitor ?
-                new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303) :
-                this.constructRequestNotValidDuringOfflineMode('readMenuActionRedirectionAsOfflineResponse', request.resourcePath());
-        });
+        return this.readDialogRedirectionAsVisitor(userId, pathFields.tenantId, pathFields.dialogId, actionIdAtTargetId);
     }
 
     public static readRecordAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {

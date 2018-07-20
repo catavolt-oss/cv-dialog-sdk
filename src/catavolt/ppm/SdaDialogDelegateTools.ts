@@ -29,9 +29,14 @@ export class SdaDialogDelegateTools {
 
     public static BRIEFCASE_ENTER_OFFLINE_DETAILS_DIALOG_NAME = 'Briefcase_EnterOfflineMode';
 
-    public static DOCUMENTS_ROOT_DIALOG_NAME = 'Workpackage_Documents_FORM';
-    public static DOCUMENTS_PROPERTIES_DIALOG_NAME = 'Workpackage_Documents_Properties';
     public static DOCUMENTS_LIST_DIALOG_NAME = 'Workpackage_Documents_Documents';
+    public static DOCUMENTS_PROPERTIES_DIALOG_NAME = 'Workpackage_Documents_Properties';
+    public static DOCUMENTS_ROOT_DIALOG_NAME = 'Workpackage_Documents_FORM';
+
+    public static MOBILE_COMMENT_DETAILS_PROPERTIES_DIALOG_NAME = 'MobileComment_Details_Properties';
+    public static MOBILE_COMMENT_DETAILS_ROOT_DIALOG_NAME = 'MobileComment_Details_FORM';
+    public static MOBILE_COMMENT_NOT_AVAILABLE_CHILD_DIALOG_NAME = 'MobileComment_CommentNotAvailable';
+    public static MOBILE_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_NAME = 'MobileComment_CommentNotAvailable_FORM';
 
     public static TAGS_ROOT_DIALOG_NAME = 'Workpackage_Tags_FORM';
     public static TAGS_PROPERTIES_DIALOG_NAME = 'Workpackage_Tags_Properties';
