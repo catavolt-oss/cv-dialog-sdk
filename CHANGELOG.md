@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.20.0"></a>
+# [4.20.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.19.3...v4.20.0) (2018-07-20)
+
+
+### Features
+
+* changed naming scheme for storage keys to always end in a well-known suffix ([7759d3c](https://github.com/catavolt-oss/cv-dialog-sdk/commit/7759d3c))
+* fixed bug where code tries to delete briefcase dialogs that do not exist ([d4db641](https://github.com/catavolt-oss/cv-dialog-sdk/commit/d4db641))
+* refactored code that captures offline comments ([af669d1](https://github.com/catavolt-oss/cv-dialog-sdk/commit/af669d1))
+* refactored several methods to use the async protocol ([b094065](https://github.com/catavolt-oss/cv-dialog-sdk/commit/b094065))
+
+
+
 <a name="4.19.3"></a>
 ## [4.19.3](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.19.0...v4.19.3) (2018-07-12)
 
