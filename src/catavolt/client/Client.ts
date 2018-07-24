@@ -10,7 +10,7 @@ export interface Client {
 
     readonly lastActivity: Date;
 
-    readonly isOffline: boolean;
+    isOffline(userInfo:{}): Promise<boolean>;
 
     addClientListener(clientListener: ClientListener, locale: CvLocale);
 

@@ -15,7 +15,6 @@ export interface CatavoltApi {
     readonly deviceProps: { [p: string]: string };
     readonly dialogApi: DialogApi;
     readonly isLoggedIn: boolean;
-    readonly isOffline: boolean;
     onSessionExpiration:()=>void;
     readonly remainingSessionTime: number;
     readonly session: Session;
@@ -67,6 +66,12 @@ export interface CatavoltApi {
      * @returns {boolean}
      */
     isFeatureSetAvailable(featureSet: FeatureSet): boolean;
+
+    /**
+     *
+     * @param userInfo
+     */
+    isOffline(userInfo:{}): Promise<boolean>;
 
     /**
      * Log in and retrieve the Session

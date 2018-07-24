@@ -24,7 +24,6 @@ import {
 import {CvLocale} from "../util";
 
 export interface DialogApi {
-    isOffline:boolean;
     lastServiceActivity: Date;
 
     addAttachment(tenantId: string, sessionId: string, dialogId: string, attachment: Attachment): Promise<void>;
@@ -55,6 +54,8 @@ export interface DialogApi {
     deleteDialog(tenantId: string, sessionId: string, dialogId: string): Promise<{ dialogId: string }>;
 
     getActions(tenantId: string, sessionId: string, dialogId: string): Promise<Array<Menu>>;
+
+    isOffline(userInfo:{}): Promise<boolean>;
 
     performAction(
         tenantId: string,

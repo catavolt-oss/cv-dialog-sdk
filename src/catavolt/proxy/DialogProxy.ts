@@ -48,18 +48,26 @@ export class DialogProxy implements Client {
         this._clientListener = null;
     }
 
-    public isOnline(): boolean {
+    // @TODO @Glenn
+    // userInfo will be userInfo['userName'] and userInfo['tenantId']
+    public isOnline(userInfo:{}): Promise<boolean> {
+
+        return Promise.resolve(true);
+
+        // Previously....
+        /*
         return this._dialogDelegateChain &&
             this._dialogDelegateChain.length > 0 &&
             this._dialogDelegateChain[0].isOnline();
+            */
+    }
+
+    public async isOffline(userInfo:{}): Promise<boolean> {
+        return ! await this.isOnline(userInfo);
     }
 
     get lastActivity(): Date {
         return this._lastActivity;
-    }
-
-    get isOffline():boolean {
-        return !this.isOnline();
     }
 
     public getBlob(baseUrl: string, resourcePath?: string): Promise<BlobClientResponse> {

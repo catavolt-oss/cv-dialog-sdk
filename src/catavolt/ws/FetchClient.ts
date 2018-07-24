@@ -11,10 +11,13 @@ import {CvLocale, Log, StringDictionary} from '../util';
 export type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export class FetchClient implements Client {
-    public readonly isOffline:boolean = false;
     private _lastActivity: Date = new Date();
     private _locale:CvLocale;
     private _clientListener:ClientListener;
+
+    public isOffline(userInfo:{}):Promise<boolean> {
+       return Promise.resolve(false);
+    }
 
     public addClientListener(clientListener: ClientListener, locale:CvLocale) {
        this._clientListener = clientListener;

@@ -249,10 +249,12 @@ export class CatavoltApiImpl implements CatavoltApi {
 
     /**
      * Check offline status
-     * @returns {boolean}
+     *
+     * @param userInfo
+     * @returns {Promise<boolean>}
      */
-    get isOffline(): boolean {
-       return this.dialogApi.isOffline;
+    public isOffline(userInfo:{}): Promise<boolean> {
+        return this.dialogApi.isOffline(userInfo);
     }
 
     /**
