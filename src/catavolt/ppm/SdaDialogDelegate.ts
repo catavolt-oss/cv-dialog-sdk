@@ -142,27 +142,9 @@ export class SdaDialogDelegate implements DialogDelegate {
             if (SdaDialogDelegateTools.isOfflineTagsPropertiesDialogId(pathFields.dialogId)) {
                 return this.performOfflineTagsPropertiesRecordRequest(request);
             }
-            // if (pathFields.dialogId.startsWith('MobileComment_Details_Properties')) {
-            //     const response = MobileComment_Details_RECORD.copyOfResponse();
-            //     const recordVisitor = new RecordVisitor(response);
-            //     return Promise.resolve(new JsonClientResponse(recordVisitor.enclosedJsonObject(), 200));
-            // }
         }
         if (!this.delegateOnline()) {
             if (request.isGetDialogPath()) {
-                // TODO: synthesized redirections and dialogs need to be written to storage as they are
-                // synthesized and then later deleted when the UI invokes 'deleteJson' on the dialog path.
-                const pathFields = request.deconstructGetDialogPath();
-                // if (pathFields.dialogId.startsWith('MobileComment_Details_FORM')) {
-                //     const dialogJson = MobileComment_Details_FORM.copyOfResponse();
-                //     const dialogVisitor = new DialogVisitor(dialogJson);
-                //     dialogVisitor.propagateTenantIdAndSessionId(pathFields.tenantId, pathFields.sessionId);
-                //     dialogVisitor.deriveDialogIdsFromDialogNameAndRecordId();
-                //     // TODO: THIS IS A HACK UNTIL I CAN RETRIEVE THE UNDERLYING REDIRECTION
-                //     // TODO: See note above regarding writing synthesized redirections to storage for later use
-                //     dialogVisitor.visitAndSetId(pathFields.dialogId);
-                //     return Promise.resolve(new JsonClientResponse(dialogJson, 200));
-                // }
                 return DialogProxyTools.readDialogAsOfflineResponse(this.delegateUserId(), request);
             }
             if (request.isGetRecordPath()) {
@@ -200,10 +182,10 @@ export class SdaDialogDelegate implements DialogDelegate {
             } else if (request.isPostMenuActionPath()) {
                 if (request.actionId() === 'alias_ShowDocs') {
                     return this.performOfflineShowDocsMenuAction(request);
-                } else if (request.actionId() === 'alias_CreateComment') {
+                } else if (request.actionId() === SdaDialogDelegate.ALIAS_CREATE_COMMENT_MENU_ACTION_ID) {
                     return this.performOfflineCreateCommentMenuAction(request);
-                // } else if (request.actionId() === SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID) {
-                //     return this.performOfflineShowLatestMenuAction(request);
+                } else if (request.actionId() === SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID) {
+                    return this.performOfflineShowLatestMenuAction(request);
                 } else if (request.actionId() === SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID) {
                     return DialogProxyTools.readMenuActionRedirectionAsVisitor(this.delegateUserId(), request).then(dialogRedirectionVisitor => {
                         return dialogRedirectionVisitor ?
@@ -646,8 +628,9 @@ export class SdaDialogDelegate implements DialogDelegate {
     private async initializeAfterCreateSession(request: DialogRequest, sessionVisitor: SessionVisitor): Promise<void> {
         const thisMethod = 'SdaDialogDelegate::initializeAfterCreateSession';
         const pathFields = request.deconstructPostSessionsPath();
-        await SdaDialogDelegateTools.showAllStorageKeys();
-        await SdaDialogDelegateTools.showAllStorageKeysAndValues();
+        // await DialogProxyTools.showStoredDialogNavigation();
+        await DialogProxyTools.showAllStorageKeys();
+        // await DialogProxyTools.showAllStorageKeysAndValues();
         const dialogDelegateStateVisitor = await SdaDialogDelegateTools.readDialogDelegateStateVisitor(pathFields.tenantId, sessionVisitor.visitUserId());
         Log.info(`${thisMethod} -- dialog delegate state before initializing: ${dialogDelegateStateVisitor.copyAsJsonString()}`);
         Log.info(`${thisMethod} -- selected work packages count: ${dialogDelegateStateVisitor.visitSelectedWorkPackageIds().length}`);
@@ -1207,16 +1190,56 @@ export class SdaDialogDelegate implements DialogDelegate {
     }
 
     private async performOfflineShowLatestMenuAction(request: DialogRequest): Promise<JsonClientResponse> {
+        const thisMethod = 'SdaDialogDelegate::performOfflineShowLatestMenuAction';
+        Log.info(`${thisMethod} -- SHOW LATEST REQUEST ${request.resourcePath()}`);
+        Log.info(`${thisMethod} -- SHOW LATEST BODY ${JSON.stringify(request.body())}`);
+
+        // CHECK IF A "CREATE COMMENT" EXISTS THAT WILL OVERRIDE THE LATEST
         const actionParameters = new ActionParametersVisitor(request.body());
         const recordId = actionParameters.visitTargetsValue()[0];
-        // TODO: synthesized redirections and dialogs need to be written to storage as they are
-        // synthesized and then later deleted when the UI invokes 'deleteJson' on the dialog path.
-        const showLatestRedirectionVisitor = new DialogRedirectionVisitor(MobileComment_Details_FORM_REDIRECTION.copyOfResponse());
-        showLatestRedirectionVisitor.propagateTenantIdAndSessionId(request.tenantId(), request.sessionId());
-        showLatestRedirectionVisitor.visitAndSetReferringDialogId(request.dialogId());
-        showLatestRedirectionVisitor.visitAndSetRecordId(recordId);
-        showLatestRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
-        return new JsonClientResponse(showLatestRedirectionVisitor.enclosedJsonObject(), 303);
+        const recordIdEncoded = Base64.encodeUrlSafeString(recordId);
+        const actionIdAtRecordId = `${SdaDialogDelegate.ALIAS_CREATE_COMMENT_MENU_ACTION_ID}@${recordIdEncoded}`;
+        const createCommentRedirectionKey = DialogProxyTools.constructRedirectionStorageKey(this.delegateUserId(), request.tenantId(), request.dialogId(), actionIdAtRecordId);
+        Log.info(`${thisMethod} -- CHECKING FOR CREATE COMMENT AT ${createCommentRedirectionKey}`);
+        const dialogRedirectionJsonObject = await storage.getJson(createCommentRedirectionKey);
+        Log.info(`${thisMethod} -- RESULT OF CHECK ${JSON.stringify(dialogRedirectionJsonObject)}`);
+        if (dialogRedirectionJsonObject) {
+            // TODO: synthesized redirections and dialogs need to be deleted when the UI invokes 'deleteJson' on the dialog path.
+            // Capture a new timestamp used to derive dialog ids
+            const timeInMillis = Date.now().toString();
+            // --- RETRIEVE LAST CREATE COMMENT ---
+            const createCommentRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJsonObject);
+            Log.info(`${thisMethod} -- last create comment dialog id: ${createCommentRedirectionVisitor.visitDialogId()}`);
+            const createCommentChildDialogName= 'Documents_CreateComment';
+            const createCommentSuffix = createCommentRedirectionVisitor.visitDialogId().split('$')[1];
+            const createCommentChildDialogId = createCommentChildDialogName + '$' + createCommentSuffix;
+            const createCommentRecordVistor = await DialogProxyTools.readRecordCommitAsVisitor(this.delegateUserId(), request.tenantId(), createCommentChildDialogId);
+            Log.info(`${thisMethod} -- last create record: ${createCommentRecordVistor.copyAsJsonString()}`);
+            // --- REDIRECTION ---
+            const showLatestRedirectionVisitor = new DialogRedirectionVisitor(MobileComment_Details_FORM_REDIRECTION.copyOfResponse());
+            showLatestRedirectionVisitor.propagateTenantIdAndSessionId(request.tenantId(), request.sessionId());
+            showLatestRedirectionVisitor.visitAndSetReferringDialogId(request.dialogId());
+            showLatestRedirectionVisitor.visitAndSetRecordId(recordId);
+            // showLatestRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
+            showLatestRedirectionVisitor.deriveDialogIdsFromDialogNameAndSuffix(timeInMillis);
+            Log.info(`${thisMethod} -- synthesizing dialog redirection ${showLatestRedirectionVisitor.copyAsJsonString()}`);
+            await DialogProxyTools.writeDialogRedirection(this.delegateUserId(), request.tenantId(), showLatestRedirectionVisitor.visitDialogId(), SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID, showLatestRedirectionVisitor);
+            // --- DIALOG ---
+            const showLatestDialogVisitor = new DialogVisitor(MobileComment_Details_FORM.copyOfResponse());
+            showLatestDialogVisitor.propagateTenantIdAndSessionId(request.tenantId(), request.sessionId());
+            showLatestDialogVisitor.deriveDialogIdsFromDialogNameAndSuffix(timeInMillis);
+            Log.info(`${thisMethod} -- synthesizing dialog ${showLatestDialogVisitor.copyAsJsonString()}`);
+            await DialogProxyTools.writeDialog(this.delegateUserId(), request.tenantId(), showLatestDialogVisitor);
+            // --- RECORD ---
+            const showLatestRecordVisitor = new RecordVisitor(MobileComment_Details_RECORD.copyOfResponse());
+            showLatestRecordVisitor.visitAndSetPropertyValueAt('Name', createCommentRecordVistor.visitPropertyValueAt('P_NAME'));
+            showLatestRecordVisitor.visitAndSetPropertyValueAt('Description', createCommentRecordVistor.visitPropertyValueAt('P_DESCRIPTION'));
+            Log.info(`${thisMethod} -- synthesizing record ${showLatestRecordVisitor.copyAsJsonString()}`);
+            await DialogProxyTools.writeRecord(this.delegateUserId(), request.tenantId(), 'MobileComment_Details_Properties$' + timeInMillis, showLatestRecordVisitor);
+            return new JsonClientResponse(showLatestRedirectionVisitor.enclosedJsonObject(), 303);
+        }
+        // IF A "CREATE COMMENT" DOES NOT EXIST
+        return DialogProxyTools.readMenuActionRedirectionAsOfflineResponse(this.delegateUserId(), request);
     }
 
     private async performOfflineTagsPropertiesRecordRequest(request: DialogRequest): Promise<JsonClientResponse> {

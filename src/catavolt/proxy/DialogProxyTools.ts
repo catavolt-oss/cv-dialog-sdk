@@ -204,6 +204,14 @@ export class DialogProxyTools {
         };
     }
 
+    public static constructRedirectionStorageKey(userId: string, tenantId: string, stateId: string, actionId: string): string {
+        let key = this.REDIRECTION_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${stateId}', stateId);
+        key = key.replace('${actionId}', actionId);
+        return key;
+    }
+
     public static constructRequestNotValidDuringOfflineMode(action: string, resourcePath: string): JsonClientResponse {
         return new JsonClientResponse(this.constructDialogMessageModel(`${action} at ${resourcePath} is not valid during offline mode: `), 400);
     }
@@ -347,10 +355,7 @@ export class DialogProxyTools {
 
     public static readDialogRedirectionAsVisitor(userId: string, tenantId: string, stateId: string, actionId: string): Promise<DialogRedirectionVisitor> {
         const thisMethod = 'DialogProxyTools::readDialogRedirectionAsVisitor';
-        let key = this.REDIRECTION_STORAGE_KEY.replace('${tenantId}', tenantId);
-        key = key.replace('${userId}', userId);
-        key = key.replace('${stateId}', stateId);
-        key = key.replace('${actionId}', actionId);
+        const key = this.constructRedirectionStorageKey(userId, tenantId, stateId, actionId);
         Log.info(`${thisMethod} -- reading for redirection at key: ${key}`);
         return storage.getJson(key).then(jsonObject => jsonObject ? new DialogRedirectionVisitor(jsonObject) : null);
     }
@@ -375,19 +380,29 @@ export class DialogProxyTools {
     }
 
     public static readRecordAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
-        return this.readRecordAsVisitor(userId, request).then(recordVisitor => {
+        return this.readRecordAsVisitorFromRequest(userId, request).then(recordVisitor => {
             return recordVisitor ?
                 new JsonClientResponse(recordVisitor.enclosedJsonObject(), 200) :
                 this.constructRequestNotValidDuringOfflineMode('readRecordAsOfflineResponse', request.resourcePath());
         });
     }
 
-    public static readRecordAsVisitor(userId: string, request: DialogRequest): Promise<RecordVisitor> {
+    public static readRecordAsVisitor(userId: string, tenantId: string, dialogId: string): Promise<RecordVisitor> {
+        let key = this.RECORD_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        return storage.getJson(key).then(jsonObject => jsonObject ? new RecordVisitor(jsonObject) : null);
+    }
+
+    public static readRecordAsVisitorFromRequest(userId: string, request: DialogRequest): Promise<RecordVisitor> {
         const pathFields = request.deconstructGetRecordPath();
         const tenantId = pathFields.tenantId;
-        const sessionId = pathFields.sessionId;
         const dialogId = pathFields.dialogId;
-        let key = this.RECORD_STORAGE_KEY.replace('${userId}', userId);
+        return this.readRecordAsVisitor(userId, tenantId, dialogId);
+    }
+
+    public static readRecordCommitAsVisitor(userId: string, tenantId: string, dialogId: string): Promise<RecordVisitor> {
+        let key = this.RECORD_COMMIT_STORAGE_KEY.replace('${userId}', userId);
         key = key.replace('${tenantId}', tenantId);
         key = key.replace('${dialogId}', dialogId);
         return storage.getJson(key).then(jsonObject => jsonObject ? new RecordVisitor(jsonObject) : null);
@@ -450,6 +465,41 @@ export class DialogProxyTools {
         });
     }
 
+    public static async showStoredDialogNavigation(): Promise<void> {
+        const thisMethod = 'DialogProxyTools::showAllRedirectionStorageKeys';
+        Log.info(`${thisMethod} -- ************** BEGIN SHOW ALL REDIRECTION STORAGE KEYS **************`);
+        const allKeys = await storage.getAllKeys();
+        for (const k of allKeys) {
+            if (k.endsWith('.redirection')) {
+                const redirection = await storage.getJson(k);
+                Log.info(`${thisMethod} -- ${k} => \n${redirection.dialogName}(id=${redirection.id})\n`);
+            }
+        }
+        Log.info(`${thisMethod} -- ************** END SHOW ALL REDIRECTION STORAGE KEYS **************`);
+    }
+
+    public static async showAllStorageKeys(): Promise<void> {
+        const thisMethod = 'DialogProxyTools::showAllStorageKeys';
+        Log.info(`${thisMethod} -- ************** BEGIN SHOW ALL STORAGE KEYS **************`);
+        const allKeys = await storage.getAllKeys();
+        for (const k of allKeys) {
+            const v = await storage.getItem(k);
+            Log.info(`${thisMethod} -- ${k}`);
+        }
+        Log.info(`${thisMethod} -- ************** END SHOW ALL STORAGE KEYS **************`);
+    }
+
+    public static async showAllStorageKeysAndValues(): Promise<void> {
+        const thisMethod = 'DialogProxyTools::showAllStorageKeysAndValues';
+        Log.info(`${thisMethod} -- ************** BEGIN SHOW ALL STORAGE KEYS AND VALUES **************`);
+        const allKeys = await storage.getAllKeys();
+        for (const k of allKeys) {
+            const v = await storage.getItem(k);
+            Log.info(`${thisMethod} -- ${k}: ${v}`);
+        }
+        Log.info(`${thisMethod} -- ************** END SHOW ALL STORAGE KEYS AND VALUES **************`);
+    }
+
     public static writeContentChunk(userId: string, tenantId: string, contentId: string, sequence: number, largePropertyVisitor: LargePropertyVisitor): Promise<void> {
         let key = this.CONTENT_STORAGE_KEY.replace('${userId}', userId);
         key = key.replace('${tenantId}', tenantId);
@@ -461,10 +511,7 @@ export class DialogProxyTools {
     public static writeContentRedirection(userId: string, tenantId: string, stateId: string, actionId: string,
                                           contentRedirectionVistor: ContentRedirectionVisitor): Promise<void>
     {
-        let key = this.REDIRECTION_STORAGE_KEY.replace('${userId}', userId);
-        key = key.replace('${tenantId}', tenantId);
-        key = key.replace('${stateId}', stateId);
-        key = key.replace('${actionId}', actionId);
+        const key = this.constructRedirectionStorageKey(userId, tenantId, stateId, actionId);
         return storage.setJson(key, contentRedirectionVistor.enclosedJsonObject());
     }
 
@@ -478,10 +525,7 @@ export class DialogProxyTools {
     public static writeDialogRedirection(userId: string, tenantId: string, stateId: string, actionId: string,
                                          dialogRedirectionVistor: DialogRedirectionVisitor): Promise<void>
     {
-        let key = this.REDIRECTION_STORAGE_KEY.replace('${userId}', userId);
-        key = key.replace('${tenantId}', tenantId);
-        key = key.replace('${stateId}', stateId);
-        key = key.replace('${actionId}', actionId);
+        const key = this.constructRedirectionStorageKey(userId, tenantId, stateId, actionId);
         return storage.setJson(key, dialogRedirectionVistor.enclosedJsonObject());
     }
 

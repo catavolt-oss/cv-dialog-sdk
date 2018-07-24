@@ -27,7 +27,7 @@ export class MobileComment_Details_RECORD {
             "format": null,
             "annotations": [],
             "type": "hxgn.api.dialog.Property",
-            "value": "Tad Doc name 29 0718"
+            "value": "Tag Doc name 29 0718"
         }]
     };
 

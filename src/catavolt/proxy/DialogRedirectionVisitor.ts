@@ -52,6 +52,7 @@ export class DialogRedirectionVisitor extends RedirectionVisitor {
     }
 
     public deriveDialogIdsFromDialogNameAndSuffix(suffix: string) {
+        // NOTE: If it's ever needed, this suffix scheme could also append the record id using an '@' sign
         let derivedDialogId = this.enclosedJsonObject()['dialogName'];
         if (!derivedDialogId) {
             throw new Error("Cannot propagate dialog name -- dialog name not found")

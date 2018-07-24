@@ -27,12 +27,6 @@ export class RecordVisitor implements JsonObjectVisitor {
         if (!Array.isArray(this._enclosedJsonObject.properties)) {
             throw new Error('Invalid record set -- properties field is not an array');
         }
-        if (!this._enclosedJsonObject.annotations) {
-            throw new Error('Invalid record -- missing annotations field');
-        }
-        if (!Array.isArray(this._enclosedJsonObject.annotations)) {
-            throw new Error('Invalid record set -- annotations field is not an array');
-        }
     }
 
     // --- State Management Helpers --- //
