@@ -49,10 +49,11 @@ export class DialogProxy implements Client {
     }
 
     public isOnline(userInfo:{}): Promise<boolean> {
-        Log.info(`DialogProxy::isOnline userInfo -- ${JSON.stringify(userInfo)}`);
-        return this._dialogDelegateChain &&
-            this._dialogDelegateChain.length > 0 &&
-            this._dialogDelegateChain[0].isOnline(userInfo);
+        if(this._dialogDelegateChain && this._dialogDelegateChain.length > 0) {
+            return this._dialogDelegateChain[0].isOnline(userInfo);
+        } else {
+            return Promise.resolve(false);
+        }
     }
 
     public async isOffline(userInfo:{}): Promise<boolean> {
