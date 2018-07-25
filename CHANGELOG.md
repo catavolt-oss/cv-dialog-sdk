@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.21.0"></a>
+# [4.21.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.20.0...v4.21.0) (2018-07-25)
+
+
+### Bug Fixes
+
+* isOnline should return Promise ([1c9fcfe](https://github.com/catavolt-oss/cv-dialog-sdk/commit/1c9fcfe))
+
+
+### Features
+
+* added tenantId and userId to isOnline method on DialogProxy ([b8fd2b0](https://github.com/catavolt-oss/cv-dialog-sdk/commit/b8fd2b0))
+* refactoring of code and additional support for last comments ([8bc9f7b](https://github.com/catavolt-oss/cv-dialog-sdk/commit/8bc9f7b))
+
+
+
 <a name="4.20.0"></a>
 # [4.20.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.19.3...v4.20.0) (2018-07-20)
 
