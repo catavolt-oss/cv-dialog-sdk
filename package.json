@@ -65,8 +65,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit_TJ": "./makeDocs && git add .",
-      "commit-msg_TJ": "commitlint -e $GIT_PARAMS"
+      "pre-commit": "./makeDocs && git add .",
+      "commit-msg": "commitlint -e $GIT_PARAMS"
     }
   }
 }

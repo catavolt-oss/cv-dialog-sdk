@@ -104,7 +104,6 @@
 						<section class="tsd-index-section ">
 							<h3>Accessors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#lastserviceactivity" class="tsd-kind-icon">last<wbr>Service<wbr>Activity</a></li>
 							</ul>
 						</section>
@@ -136,6 +135,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#getworkbench" class="tsd-kind-icon">get<wbr>Workbench</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#getworkbenchactions" class="tsd-kind-icon">get<wbr>Workbench<wbr>Actions</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#getworkbenches" class="tsd-kind-icon">get<wbr>Workbenches</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#opencontentstream" class="tsd-kind-icon">open<wbr>Content<wbr>Stream</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#performaction" class="tsd-kind-icon">perform<wbr>Action</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_dialogservice_.dialogservice.html#performworkbenchaction" class="tsd-kind-icon">perform<wbr>Workbench<wbr>Action</a></li>
@@ -219,23 +219,6 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Accessors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
-					<a name="isoffline" class="tsd-anchor"></a>
-					<h3>is<wbr>Offline</h3>
-					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> isOffline<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in dialog/DialogService.ts:297</li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
-						</li>
-					</ul>
-				</section>
 				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
 					<a name="lastserviceactivity" class="tsd-anchor"></a>
 					<h3>last<wbr>Service<wbr>Activity</h3>
@@ -1011,6 +994,30 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="isoffline" class="tsd-anchor"></a>
+					<h3>is<wbr>Offline</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Offline<span class="tsd-signature-symbol">(</span>userInfo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">__type</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_dialog_dialogapi_.dialogapi.html">DialogApi</a>.<a href="../interfaces/_dialog_dialogapi_.dialogapi.html#isoffline">isOffline</a></p>
+								<ul>
+									<li>Defined in dialog/DialogService.ts:297</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>userInfo: <span class="tsd-signature-type">__type</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="opencontentstream" class="tsd-anchor"></a>
 					<h3>open<wbr>Content<wbr>Stream</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -1390,9 +1397,6 @@
 								<a href="_dialog_dialogservice_.dialogservice.html#client" class="tsd-kind-icon">client</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="_dialog_dialogservice_.dialogservice.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="_dialog_dialogservice_.dialogservice.html#lastserviceactivity" class="tsd-kind-icon">last<wbr>Service<wbr>Activity</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
@@ -1469,6 +1473,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_dialog_dialogservice_.dialogservice.html#getworkbenches" class="tsd-kind-icon">get<wbr>Workbenches</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_dialog_dialogservice_.dialogservice.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_dialog_dialogservice_.dialogservice.html#opencontentstream" class="tsd-kind-icon">open<wbr>Content<wbr>Stream</a>

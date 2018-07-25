@@ -213,7 +213,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:164</li>
+									<li>Defined in proxy/DialogVisitor.ts:174</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -236,12 +236,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:55</li>
+									<li>Defined in proxy/DialogVisitor.ts:57</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>The record id targeted by the root dialog (usually a Form) will be used to help derive new dialog ids for all.</p>
+									<p>The record id targeted by the root dialog (usually a Form) will be used to help derive new dialog ids for the
+										root and all of its children. The derived dialog id is a concatenation of the dialogName with a &#39;@&#39; and the
+									root record id.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -258,13 +260,23 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:79</li>
+									<li>Defined in proxy/DialogVisitor.ts:89</li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Traverse this dialog and its children and derive their dailog ids by concatenating each dialog&#39;s
+										dialogName with a &#39;$&#39; and the given suffix. Dialog ids ending withs a suffix are synthetic. Its possible
+										that a dialog id may have a suffix and a specific record id. In this case the dialog id will contain
+									a &#39;$&#39; and an &#39;@&#39; so that each field can be parsed separately.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>suffix: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -299,7 +311,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:96</li>
+									<li>Defined in proxy/DialogVisitor.ts:106</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -325,7 +337,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:115</li>
+									<li>Defined in proxy/DialogVisitor.ts:125</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -348,7 +360,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:152</li>
+									<li>Defined in proxy/DialogVisitor.ts:162</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -371,7 +383,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:160</li>
+									<li>Defined in proxy/DialogVisitor.ts:170</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -394,7 +406,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:119</li>
+									<li>Defined in proxy/DialogVisitor.ts:129</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -417,7 +429,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:123</li>
+									<li>Defined in proxy/DialogVisitor.ts:133</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -440,7 +452,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:139</li>
+									<li>Defined in proxy/DialogVisitor.ts:149</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -466,7 +478,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:107</li>
+									<li>Defined in proxy/DialogVisitor.ts:117</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -483,7 +495,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:111</li>
+									<li>Defined in proxy/DialogVisitor.ts:121</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -500,7 +512,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:148</li>
+									<li>Defined in proxy/DialogVisitor.ts:158</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -517,7 +529,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogVisitor.ts:156</li>
+									<li>Defined in proxy/DialogVisitor.ts:166</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>

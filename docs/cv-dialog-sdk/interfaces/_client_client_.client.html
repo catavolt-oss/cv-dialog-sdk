@@ -91,7 +91,6 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_client_client_.client.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="_client_client_.client.html#lastactivity" class="tsd-kind-icon">last<wbr>Activity</a></li>
 							</ul>
 						</section>
@@ -103,6 +102,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_client_client_.client.html#getblob" class="tsd-kind-icon">get<wbr>Blob</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_client_client_.client.html#getjson" class="tsd-kind-icon">get<wbr>Json</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_client_client_.client.html#gettext" class="tsd-kind-icon">get<wbr>Text</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_client_client_.client.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_client_client_.client.html#openstream" class="tsd-kind-icon">open<wbr>Stream</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_client_client_.client.html#postjson" class="tsd-kind-icon">post<wbr>Json</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter"><a href="_client_client_.client.html#postmultipart" class="tsd-kind-icon">post<wbr>Multipart</a></li>
@@ -115,16 +115,6 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="isoffline" class="tsd-anchor"></a>
-					<h3>is<wbr>Offline</h3>
-					<div class="tsd-signature tsd-kind-icon">is<wbr>Offline<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in client/Client.ts:13</li>
-						</ul>
-					</aside>
-				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="lastactivity" class="tsd-anchor"></a>
 					<h3>last<wbr>Activity</h3>
@@ -268,6 +258,29 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_client_textclientresponse_.textclientresponse.html" class="tsd-signature-type">TextClientResponse</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="isoffline" class="tsd-anchor"></a>
+					<h3>is<wbr>Offline</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Offline<span class="tsd-signature-symbol">(</span>userInfo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">__type</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in client/Client.ts:13</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>userInfo: <span class="tsd-signature-type">__type</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -434,9 +447,6 @@
 						<a href="_client_client_.client.html" class="tsd-kind-icon">Client</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="_client_client_.client.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="_client_client_.client.html#lastactivity" class="tsd-kind-icon">last<wbr>Activity</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
@@ -453,6 +463,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_client_client_.client.html#gettext" class="tsd-kind-icon">get<wbr>Text</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_client_client_.client.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="_client_client_.client.html#openstream" class="tsd-kind-icon">open<wbr>Stream</a>
