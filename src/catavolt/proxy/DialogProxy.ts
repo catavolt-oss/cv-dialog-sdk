@@ -48,18 +48,11 @@ export class DialogProxy implements Client {
         this._clientListener = null;
     }
 
-    // @TODO @Glenn
-    // userInfo will be userInfo['userName'] and userInfo['tenantId']
     public isOnline(userInfo:{}): Promise<boolean> {
-
-        return Promise.resolve(true);
-
-        // Previously....
-        /*
+        Log.info(`DialogProxy::isOnline userInfo -- ${JSON.stringify(userInfo)}`);
         return this._dialogDelegateChain &&
             this._dialogDelegateChain.length > 0 &&
-            this._dialogDelegateChain[0].isOnline();
-            */
+            this._dialogDelegateChain[0].isOnline(userInfo);
     }
 
     public async isOffline(userInfo:{}): Promise<boolean> {

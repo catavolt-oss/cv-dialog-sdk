@@ -61,10 +61,14 @@ export class SdaDialogDelegate implements DialogDelegate {
         return Promise.resolve();
     }
 
-    public isOnline() {
-        return !this._dialogDelegateStateVisitor ||
-            !this._dialogDelegateStateVisitor.visitBriefcase() ||
-            this._dialogDelegateStateVisitor.visitBriefcase().visitOnline();
+    public async isOnline(userInfo:{}): Promise<boolean> {
+        Log.info(`SdaDialogDelegate::isOnline userInfo -- ${JSON.stringify(userInfo)}`);
+        const userId = userInfo['userId'];
+        const tenantId = userInfo['tenantId'];
+        const dialogDelegateStateVisitor = await SdaDialogDelegateTools.readDialogDelegateStateVisitor(tenantId, userId);
+        return !dialogDelegateStateVisitor ||
+            !dialogDelegateStateVisitor.visitBriefcase() ||
+            dialogDelegateStateVisitor.visitBriefcase().visitOnline();
     }
 
     // --- Request Handlers --- //
@@ -630,7 +634,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         const pathFields = request.deconstructPostSessionsPath();
         // await DialogProxyTools.showStoredDialogNavigation();
         await DialogProxyTools.showAllStorageKeys();
-        // await DialogProxyTools.showAllStorageKeysAndValues();
+        await DialogProxyTools.showAllStorageKeysAndValues();
         const dialogDelegateStateVisitor = await SdaDialogDelegateTools.readDialogDelegateStateVisitor(pathFields.tenantId, sessionVisitor.visitUserId());
         Log.info(`${thisMethod} -- dialog delegate state before initializing: ${dialogDelegateStateVisitor.copyAsJsonString()}`);
         Log.info(`${thisMethod} -- selected work packages count: ${dialogDelegateStateVisitor.visitSelectedWorkPackageIds().length}`);
@@ -1193,7 +1197,6 @@ export class SdaDialogDelegate implements DialogDelegate {
         const thisMethod = 'SdaDialogDelegate::performOfflineShowLatestMenuAction';
         Log.info(`${thisMethod} -- SHOW LATEST REQUEST ${request.resourcePath()}`);
         Log.info(`${thisMethod} -- SHOW LATEST BODY ${JSON.stringify(request.body())}`);
-
         // CHECK IF A "CREATE COMMENT" EXISTS THAT WILL OVERRIDE THE LATEST
         const actionParameters = new ActionParametersVisitor(request.body());
         const recordId = actionParameters.visitTargetsValue()[0];
