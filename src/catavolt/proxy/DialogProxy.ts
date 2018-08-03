@@ -48,16 +48,20 @@ export class DialogProxy implements Client {
         this._clientListener = null;
     }
 
-    public isOnline(userInfo:{}): Promise<boolean> {
+    public isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean> {
         if(this._dialogDelegateChain && this._dialogDelegateChain.length > 0) {
-            return this._dialogDelegateChain[0].isOnline(userInfo);
+            return this._dialogDelegateChain[0].isAnyUserInBriefcaseMode(tenantId);
         } else {
             return Promise.resolve(false);
         }
     }
 
-    public async isOffline(userInfo:{}): Promise<boolean> {
-        return ! await this.isOnline(userInfo);
+    public isUserInBriefcaseMode(userInfo:{}): Promise<boolean> {
+        if(this._dialogDelegateChain && this._dialogDelegateChain.length > 0) {
+            return this._dialogDelegateChain[0].isUserInBriefcaseMode(userInfo);
+        } else {
+            return Promise.resolve(false);
+        }
     }
 
     get lastActivity(): Date {

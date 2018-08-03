@@ -10,7 +10,9 @@ export interface DialogDelegate {
 
     initialize(dialogProxy: DialogProxy): Promise<void>;
 
-    isOnline(userInfo:{}): Promise<boolean>;
+    isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean>;
+
+    isUserInBriefcaseMode(userInfo:{}): Promise<boolean>;
 
     getBlob(request: DialogRequest): Promise<BlobClientResponse>;
 

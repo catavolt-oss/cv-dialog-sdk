@@ -61,14 +61,25 @@ export class SdaDialogDelegate implements DialogDelegate {
         return Promise.resolve();
     }
 
-    public async isOnline(userInfo:{}): Promise<boolean> {
-        Log.info(`SdaDialogDelegate::isOnline userInfo -- ${JSON.stringify(userInfo)}`);
+    public async isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean> {
+        const dialogDelegateStateKeys: string[] = await SdaDialogDelegateTools.readDialogDelegateStateKeys(tenantId);
+        for (const k of dialogDelegateStateKeys) {
+            const fields: string[] = k.split('.');
+            const userId = fields[0];
+            if (await this.isUserInBriefcaseMode({userId, tenantId})) {
+                return true;
+            }
+        }
+    }
+
+    public async isUserInBriefcaseMode(userInfo:{}): Promise<boolean> {
+        Log.info(`SdaDialogDelegate::isUserInBriefcaseMode userInfo -- ${JSON.stringify(userInfo)}`);
         const userId = userInfo['userId'];
         const tenantId = userInfo['tenantId'];
         const dialogDelegateStateVisitor = await SdaDialogDelegateTools.readDialogDelegateStateVisitor(tenantId, userId);
-        return !dialogDelegateStateVisitor ||
-            !dialogDelegateStateVisitor.visitBriefcase() ||
-            dialogDelegateStateVisitor.visitBriefcase().visitOnline();
+        return dialogDelegateStateVisitor &&
+            dialogDelegateStateVisitor.visitBriefcase() &&
+            !dialogDelegateStateVisitor.visitBriefcase().visitOnline();
     }
 
     // --- Request Handlers --- //
@@ -568,6 +579,33 @@ export class SdaDialogDelegate implements DialogDelegate {
         return null;
     }
 
+    private async captureOfflineWorkPackages(baseUrl: string, tenantId: string, sessionId: string): Promise<void> {
+        const thisMethod = 'SdaDialogDelegate::captureOfflineWorkPackages';
+        // CAPTURE OFFLINE WORK PACKAGES REDIRECTION AND ROOT DIALOG
+        Log.info(`${thisMethod} -- capturing work packages list for offline`);
+        const userId = this.delegateUserId();
+        const beforeAndAfterValues = await DialogProxyTools.captureWorkbenchActionRedirectionAndDialog(userId, baseUrl, tenantId, sessionId, 'SDAWorkbench', 'WorkPackages');
+        // CAPTURE OFFLINE WORK PACKAGES RECORD SET
+        Log.info(`${thisMethod} -- capturing selected work packages for offline`);
+        const dialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
+        const listDialogVisitor = dialogVisitor.visitChildAtName(SdaDialogDelegateTools.WORK_PACKAGES_LIST_DIALOG_NAME);
+        const listDialogId = listDialogVisitor.visitId();
+        const sampleRecordSet = SdaPostWorkPackagesRecords1JsonSample.copyOfResponse();
+        const recordSetVisitor = new RecordSetVisitor(sampleRecordSet);
+        recordSetVisitor.visitAndClearRecords();
+        recordSetVisitor.visitAndSetHasMore(false);
+        for (const wpv of this.delegateWorkPackagesRecordSetVisitor().visitRecords()) {
+            if (wpv.visitBriefcase()) {
+                recordSetVisitor.addOrUpdateRecord(wpv);
+            }
+        }
+        await DialogProxyTools.writeRecordSet(userId, tenantId, SdaDialogDelegateTools.WORK_PACKAGES_LIST_DIALOG_NAME, recordSetVisitor);
+        const workPackageIdsIterator = new ValueIterator(this.delegateSelectedWorkPackageIds());
+        while (!workPackageIdsIterator.done()) {
+            await this.captureNextOfflineWorkPackage(baseUrl, tenantId, sessionId, listDialogId, SdaDialogDelegateTools.WORK_PACKAGES_LIST_DIALOG_NAME, workPackageIdsIterator.next());
+        }
+    }
+
     private constructCreateCommentNullRedirection(tenantId: string, sessionId: string, dialogId: string): JsonClientResponse {
         const nullRedirection = DialogProxyTools.constructNullRedirection(tenantId, sessionId);
         const nullRedirectionVisitor = new RedirectionVisitor(nullRedirection);
@@ -600,33 +638,6 @@ export class SdaDialogDelegate implements DialogDelegate {
 
     private delegateWorkPackagesRecordSetVisitor(): WorkPackagesRecordSetVisitor {
         return this._dialogDelegateStateVisitor.visitWorkPackagesRecordSet();
-    }
-
-    private async captureOfflineWorkPackages(baseUrl: string, tenantId: string, sessionId: string): Promise<void> {
-        const thisMethod = 'SdaDialogDelegate::captureOfflineWorkPackages';
-        // CAPTURE OFFLINE WORK PACKAGES REDIRECTION AND ROOT DIALOG
-        Log.info(`${thisMethod} -- capturing work packages list for offline`);
-        const userId = this.delegateUserId();
-        const beforeAndAfterValues = await DialogProxyTools.captureWorkbenchActionRedirectionAndDialog(userId, baseUrl, tenantId, sessionId, 'SDAWorkbench', 'WorkPackages');
-        // CAPTURE OFFLINE WORK PACKAGES RECORD SET
-        Log.info(`${thisMethod} -- capturing selected work packages for offline`);
-        const dialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
-        const listDialogVisitor = dialogVisitor.visitChildAtName(SdaDialogDelegateTools.WORK_PACKAGES_LIST_DIALOG_NAME);
-        const listDialogId = listDialogVisitor.visitId();
-        const sampleRecordSet = SdaPostWorkPackagesRecords1JsonSample.copyOfResponse();
-        const recordSetVisitor = new RecordSetVisitor(sampleRecordSet);
-        recordSetVisitor.visitAndClearRecords();
-        recordSetVisitor.visitAndSetHasMore(false);
-        for (const wpv of this.delegateWorkPackagesRecordSetVisitor().visitRecords()) {
-            if (wpv.visitBriefcase()) {
-                recordSetVisitor.addOrUpdateRecord(wpv);
-            }
-        }
-        await DialogProxyTools.writeRecordSet(userId, tenantId, SdaDialogDelegateTools.WORK_PACKAGES_LIST_DIALOG_NAME, recordSetVisitor);
-        const workPackageIdsIterator = new ValueIterator(this.delegateSelectedWorkPackageIds());
-        while (!workPackageIdsIterator.done()) {
-            await this.captureNextOfflineWorkPackage(baseUrl, tenantId, sessionId, listDialogId, SdaDialogDelegateTools.WORK_PACKAGES_LIST_DIALOG_NAME, workPackageIdsIterator.next());
-        }
     }
 
     private async initializeAfterCreateSession(request: DialogRequest, sessionVisitor: SessionVisitor): Promise<void> {

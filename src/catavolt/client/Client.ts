@@ -10,7 +10,9 @@ export interface Client {
 
     readonly lastActivity: Date;
 
-    isOffline(userInfo:{}): Promise<boolean>;
+    isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean>;
+
+    isUserInBriefcaseMode(userInfo:{}): Promise<boolean>;
 
     addClientListener(clientListener: ClientListener, locale: CvLocale);
 

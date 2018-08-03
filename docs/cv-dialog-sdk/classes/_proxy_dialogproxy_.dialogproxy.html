@@ -121,8 +121,8 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#getblob" class="tsd-kind-icon">get<wbr>Blob</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#getjson" class="tsd-kind-icon">get<wbr>Json</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#gettext" class="tsd-kind-icon">get<wbr>Text</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#isonline" class="tsd-kind-icon">is<wbr>Online</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#isanyuserinbriefcasemode" class="tsd-kind-icon">is<wbr>Any<wbr>User<wbr>InBriefcase<wbr>Mode</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#isuserinbriefcasemode" class="tsd-kind-icon">is<wbr>User<wbr>InBriefcase<wbr>Mode</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#openstream" class="tsd-kind-icon">open<wbr>Stream</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#postjson" class="tsd-kind-icon">post<wbr>Json</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_proxy_dialogproxy_.dialogproxy.html#postmultipart" class="tsd-kind-icon">post<wbr>Multipart</a></li>
@@ -293,7 +293,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:63</li>
+									<li>Defined in proxy/DialogProxy.ts:67</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Date</span></h4>
@@ -376,7 +376,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#deletejson">deleteJson</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:102</li>
+									<li>Defined in proxy/DialogProxy.ts:106</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -403,7 +403,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#getblob">getBlob</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:67</li>
+									<li>Defined in proxy/DialogProxy.ts:71</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -430,7 +430,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#getjson">getJson</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:87</li>
+									<li>Defined in proxy/DialogProxy.ts:91</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -460,7 +460,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#gettext">getText</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:72</li>
+									<li>Defined in proxy/DialogProxy.ts:76</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -477,23 +477,23 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="isoffline" class="tsd-anchor"></a>
-					<h3>is<wbr>Offline</h3>
+					<a name="isanyuserinbriefcasemode" class="tsd-anchor"></a>
+					<h3>is<wbr>Any<wbr>User<wbr>InBriefcase<wbr>Mode</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Offline<span class="tsd-signature-symbol">(</span>userInfo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">__type</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Any<wbr>User<wbr>InBriefcase<wbr>Mode<span class="tsd-signature-symbol">(</span>tenantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#isoffline">isOffline</a></p>
+								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#isanyuserinbriefcasemode">isAnyUserInBriefcaseMode</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:59</li>
+									<li>Defined in proxy/DialogProxy.ts:51</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>userInfo: <span class="tsd-signature-type">__type</span></h5>
+									<h5>tenantId: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -501,16 +501,17 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="isonline" class="tsd-anchor"></a>
-					<h3>is<wbr>Online</h3>
+					<a name="isuserinbriefcasemode" class="tsd-anchor"></a>
+					<h3>is<wbr>User<wbr>InBriefcase<wbr>Mode</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Online<span class="tsd-signature-symbol">(</span>userInfo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">__type</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">is<wbr>User<wbr>InBriefcase<wbr>Mode<span class="tsd-signature-symbol">(</span>userInfo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">__type</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#isuserinbriefcasemode">isUserInBriefcaseMode</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:51</li>
+									<li>Defined in proxy/DialogProxy.ts:59</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -534,7 +535,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#openstream">openStream</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:77</li>
+									<li>Defined in proxy/DialogProxy.ts:81</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -561,7 +562,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#postjson">postJson</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:92</li>
+									<li>Defined in proxy/DialogProxy.ts:96</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -591,7 +592,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#postmultipart">postMultipart</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:82</li>
+									<li>Defined in proxy/DialogProxy.ts:86</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -620,7 +621,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:133</li>
+									<li>Defined in proxy/DialogProxy.ts:137</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -637,7 +638,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:147</li>
+									<li>Defined in proxy/DialogProxy.ts:151</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -667,7 +668,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_client_client_.client.html">Client</a>.<a href="../interfaces/_client_client_.client.html#putjson">putJson</a></p>
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:97</li>
+									<li>Defined in proxy/DialogProxy.ts:101</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -720,7 +721,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in proxy/DialogProxy.ts:107</li>
+									<li>Defined in proxy/DialogProxy.ts:111</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -811,10 +812,10 @@
 								<a href="_proxy_dialogproxy_.dialogproxy.html#gettext" class="tsd-kind-icon">get<wbr>Text</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_proxy_dialogproxy_.dialogproxy.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a>
+								<a href="_proxy_dialogproxy_.dialogproxy.html#isanyuserinbriefcasemode" class="tsd-kind-icon">is<wbr>Any<wbr>User<wbr>InBriefcase<wbr>Mode</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_proxy_dialogproxy_.dialogproxy.html#isonline" class="tsd-kind-icon">is<wbr>Online</a>
+								<a href="_proxy_dialogproxy_.dialogproxy.html#isuserinbriefcasemode" class="tsd-kind-icon">is<wbr>User<wbr>InBriefcase<wbr>Mode</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_proxy_dialogproxy_.dialogproxy.html#openstream" class="tsd-kind-icon">open<wbr>Stream</a>

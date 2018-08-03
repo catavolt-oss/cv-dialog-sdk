@@ -66,7 +66,8 @@ export class SdaDialogDelegateTools {
     private static SESSION_ID_MODEL_TYPE = 'hxgn.api.dialog.SessionId';
 
     // Storage Keys
-    private static DIALOG_DELEGATE_STATE_KEY = '${userId}.${tenantId}.SdaDialogDelegate.delegatestate';
+    private static DIALOG_DELEGATE_STATE_KEY_SUFFIX = 'SdaDialogDelegate.delegatestate';
+    private static DIALOG_DELEGATE_STATE_KEY = '${userId}.${tenantId}.' + SdaDialogDelegateTools.DIALOG_DELEGATE_STATE_KEY_SUFFIX;
     private static OFFLINE_SESSION_KEY = '${userId}.${tenantId}.offlinesession';
 
     public static constructAddToBriefcaseNullRedirection(tenantId: string, sessionId: string, referringDialogId: string): StringDictionary {
@@ -258,6 +259,17 @@ export class SdaDialogDelegateTools {
         });
         // Return original dialog WITH patches
         return originalDialog;
+    }
+
+    public static async readDialogDelegateStateKeys(tenantId: string): Promise<string[]> {
+        const keys: string[] = await storage.getAllKeys();
+        const dialogDelegateStateKeysForTenant = [];
+        for (const k of keys) {
+            if (k.endsWith(this.DIALOG_DELEGATE_STATE_KEY_SUFFIX) && k.includes(`.${tenantId}.`)) {
+                dialogDelegateStateKeysForTenant.push(k);
+            }
+        }
+        return dialogDelegateStateKeysForTenant;
     }
 
     public static readDialogDelegateStateVisitor(tenantId: string, userId: string): Promise<SdaDialogDelegateStateVisitor> {

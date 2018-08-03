@@ -15,7 +15,11 @@ export class FetchClient implements Client {
     private _locale:CvLocale;
     private _clientListener:ClientListener;
 
-    public isOffline(userInfo:{}):Promise<boolean> {
+    public isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean> {
+        return Promise.resolve(false);
+    }
+
+    public isUserInBriefcaseMode(userInfo:{}):Promise<boolean> {
        return Promise.resolve(false);
     }
 
