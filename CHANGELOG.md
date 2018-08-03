@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.22.0"></a>
+# [4.22.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.21.0...v4.22.0) (2018-08-03)
+
+
+### Features
+
+* extended support for briefcase-mode checking ([27ee3e7](https://github.com/catavolt-oss/cv-dialog-sdk/commit/27ee3e7))
+
+
+
 <a name="4.21.0"></a>
 # [4.21.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.20.0...v4.21.0) (2018-07-25)
 
