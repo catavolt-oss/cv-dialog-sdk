@@ -250,11 +250,20 @@ export class CatavoltApiImpl implements CatavoltApi {
     /**
      * Check offline status
      *
+     * @param tenantId
+     */
+    public isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean> {
+        return this.dialogApi.isAnyUserInBriefcaseMode(tenantId);
+    }
+
+    /**
+     * Check offline status
+     *
      * @param userInfo
      * @returns {Promise<boolean>}
      */
-    public isOffline(userInfo:{}): Promise<boolean> {
-        return this.dialogApi.isOffline(userInfo);
+    public isUserInBriefcaseMode(userInfo:{}): Promise<boolean> {
+        return this.dialogApi.isUserInBriefcaseMode(userInfo);
     }
 
     /**

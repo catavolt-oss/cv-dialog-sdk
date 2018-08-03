@@ -294,7 +294,11 @@ export class DialogService implements DialogApi {
         return this.stream(url);
     }
 
-    public isOffline(userInfo:{}): Promise<boolean> {
+    public isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean> {
+        return this.client.isAnyUserInBriefcaseMode(tenantId);
+    }
+
+    public isUserInBriefcaseMode(userInfo:{}): Promise<boolean> {
         return this.client.isUserInBriefcaseMode(userInfo);
     }
 

@@ -55,7 +55,9 @@ export interface DialogApi {
 
     getActions(tenantId: string, sessionId: string, dialogId: string): Promise<Array<Menu>>;
 
-    isOffline(userInfo:{}): Promise<boolean>;
+    isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean>;
+
+    isUserInBriefcaseMode(userInfo:{}): Promise<boolean>;
 
     performAction(
         tenantId: string,

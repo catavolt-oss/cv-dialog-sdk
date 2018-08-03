@@ -68,10 +68,17 @@ export interface CatavoltApi {
     isFeatureSetAvailable(featureSet: FeatureSet): boolean;
 
     /**
+     * Check offline status
+     *
+     * @param tenantId
+     */
+    isAnyUserInBriefcaseMode(tenantId: string): Promise<boolean>;
+
+    /**
      *
      * @param userInfo
      */
-    isOffline(userInfo:{}): Promise<boolean>;
+    isUserInBriefcaseMode(userInfo:{}): Promise<boolean>;
 
     /**
      * Log in and retrieve the Session

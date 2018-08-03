@@ -145,8 +145,9 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#changepasswordandlogin" class="tsd-kind-icon">change<wbr>Password<wbr>And<wbr>Login</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#getredirection" class="tsd-kind-icon">get<wbr>Redirection</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#initdialogapi" class="tsd-kind-icon">init<wbr>Dialog<wbr>Api</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#isanyuserinbriefcasemode" class="tsd-kind-icon">is<wbr>Any<wbr>User<wbr>InBriefcase<wbr>Mode</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#isfeaturesetavailable" class="tsd-kind-icon">is<wbr>Feature<wbr>Set<wbr>Available</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#isuserinbriefcasemode" class="tsd-kind-icon">is<wbr>User<wbr>InBriefcase<wbr>Mode</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#login" class="tsd-kind-icon">login</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#loginwithtoken" class="tsd-kind-icon">login<wbr>With<wbr>Token</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_dialog_catavolt_.catavoltapiimpl.html#logout" class="tsd-kind-icon">logout</a></li>
@@ -543,7 +544,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:442</li>
+									<li>Defined in dialog/Catavolt.ts:451</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -587,7 +588,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:410</li>
+									<li>Defined in dialog/Catavolt.ts:419</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -609,7 +610,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:426</li>
+									<li>Defined in dialog/Catavolt.ts:435</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -631,7 +632,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:434</li>
+									<li>Defined in dialog/Catavolt.ts:443</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -844,7 +845,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#getredirection">getRedirection</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:362</li>
+									<li>Defined in dialog/Catavolt.ts:371</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -892,6 +893,37 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="isanyuserinbriefcasemode" class="tsd-anchor"></a>
+					<h3>is<wbr>Any<wbr>User<wbr>InBriefcase<wbr>Mode</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Any<wbr>User<wbr>InBriefcase<wbr>Mode<span class="tsd-signature-symbol">(</span>tenantId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#isanyuserinbriefcasemode">isAnyUserInBriefcaseMode</a></p>
+								<ul>
+									<li>Defined in dialog/Catavolt.ts:255</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Check offline status</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>tenantId: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="isfeaturesetavailable" class="tsd-anchor"></a>
 					<h3>is<wbr>Feature<wbr>Set<wbr>Available</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -926,17 +958,17 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="isoffline" class="tsd-anchor"></a>
-					<h3>is<wbr>Offline</h3>
+					<a name="isuserinbriefcasemode" class="tsd-anchor"></a>
+					<h3>is<wbr>User<wbr>InBriefcase<wbr>Mode</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Offline<span class="tsd-signature-symbol">(</span>userInfo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">__type</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">is<wbr>User<wbr>InBriefcase<wbr>Mode<span class="tsd-signature-symbol">(</span>userInfo<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">__type</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#isoffline">isOffline</a></p>
+								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#isuserinbriefcasemode">isUserInBriefcaseMode</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:256</li>
+									<li>Defined in dialog/Catavolt.ts:265</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -965,7 +997,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#login">login</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:270</li>
+									<li>Defined in dialog/Catavolt.ts:279</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1005,7 +1037,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#loginwithtoken">loginWithToken</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:284</li>
+									<li>Defined in dialog/Catavolt.ts:293</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1038,7 +1070,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#logout">logout</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:303</li>
+									<li>Defined in dialog/Catavolt.ts:312</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1061,7 +1093,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#opendialog">openDialog</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:335</li>
+									<li>Defined in dialog/Catavolt.ts:344</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1085,7 +1117,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#opendialogwithid">openDialogWithId</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:324</li>
+									<li>Defined in dialog/Catavolt.ts:333</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1109,7 +1141,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#openstream">openStream</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:344</li>
+									<li>Defined in dialog/Catavolt.ts:353</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1138,7 +1170,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#performworkbenchaction">performWorkbenchAction</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:371</li>
+									<li>Defined in dialog/Catavolt.ts:380</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1168,7 +1200,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#performworkbenchactionforid">performWorkbenchActionForId</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:381</li>
+									<li>Defined in dialog/Catavolt.ts:390</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1200,7 +1232,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:458</li>
+									<li>Defined in dialog/Catavolt.ts:467</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1239,7 +1271,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#refreshsession">refreshSession</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:399</li>
+									<li>Defined in dialog/Catavolt.ts:408</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1271,7 +1303,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#removeclientlistener">removeClientListener</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:418</li>
+									<li>Defined in dialog/Catavolt.ts:427</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1299,7 +1331,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#streamcontent">streamContent</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:452</li>
+									<li>Defined in dialog/Catavolt.ts:461</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1328,7 +1360,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html">CatavoltApi</a>.<a href="../interfaces/_dialog_catavoltapi_.catavoltapi.html#todialogorredirection">toDialogOrRedirection</a></p>
 								<ul>
-									<li>Defined in dialog/Catavolt.ts:349</li>
+									<li>Defined in dialog/Catavolt.ts:358</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1464,10 +1496,13 @@
 								<a href="_dialog_catavolt_.catavoltapiimpl.html#initdialogapi" class="tsd-kind-icon">init<wbr>Dialog<wbr>Api</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_dialog_catavolt_.catavoltapiimpl.html#isanyuserinbriefcasemode" class="tsd-kind-icon">is<wbr>Any<wbr>User<wbr>InBriefcase<wbr>Mode</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_dialog_catavolt_.catavoltapiimpl.html#isfeaturesetavailable" class="tsd-kind-icon">is<wbr>Feature<wbr>Set<wbr>Available</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_dialog_catavolt_.catavoltapiimpl.html#isoffline" class="tsd-kind-icon">is<wbr>Offline</a>
+								<a href="_dialog_catavolt_.catavoltapiimpl.html#isuserinbriefcasemode" class="tsd-kind-icon">is<wbr>User<wbr>InBriefcase<wbr>Mode</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_dialog_catavolt_.catavoltapiimpl.html#login" class="tsd-kind-icon">login</a>
