@@ -682,16 +682,19 @@ export class SdaDialogDelegate implements DialogDelegate {
         const pathFields = request.deconstructPostSessionsPath();
         const loginVisitor = new LoginVisitor(request.body());
         const delegateState = await SdaDialogDelegateTools.readDialogDelegateStateVisitor(pathFields.tenantId, loginVisitor.visitUserId());
-        if (!delegateState) {
+        if (!delegateState || delegateState.visitBriefcase().visitOnline()) {
             return null;
         }
-        if (!delegateState.visitBriefcase().visitOnline()) {
-            return SdaDialogDelegateTools.readOfflineSession(pathFields.tenantId, delegateState.visitUserId()).then(offlineSessionVisitor => {
-                Log.info(`${thisMethod} -- returning offline session: ${offlineSessionVisitor.copyAsJsonString()}`);
-                return new JsonClientResponse(offlineSessionVisitor.enclosedJsonObject(), 200);
-            });
+        const offlineSessionId = delegateState.visitSessionId();
+        const offlineLoginHash = delegateState.visitLoginHash();
+        const candidateLoginHash = SdaDialogDelegateTools.createOfflineLoginHash(pathFields.tenantId, offlineSessionId, loginVisitor.visitUserId(), loginVisitor.visitPassword());
+        if (candidateLoginHash !== offlineLoginHash) {
+            const dialogMessage = DialogProxyTools.constructDialogMessageModel("User Id or Password is not valid");
+            return Promise.resolve(new JsonClientResponse(dialogMessage, 400));
         }
-        return null;
+        const offlineSessionVisitor = await SdaDialogDelegateTools.readOfflineSession(pathFields.tenantId, delegateState.visitUserId());
+        Log.info(`${thisMethod} -- returning offline session: ${offlineSessionVisitor.copyAsJsonString()}`);
+        return new JsonClientResponse(offlineSessionVisitor.enclosedJsonObject(), 200);
     }
 
     private performDeleteSessionRequest(request: DialogRequest): Promise<JsonClientResponse> {
@@ -1229,6 +1232,8 @@ export class SdaDialogDelegate implements DialogDelegate {
             const createCommentChildDialogId = createCommentChildDialogName + '$' + createCommentSuffix;
             const createCommentRecordVistor = await DialogProxyTools.readRecordCommitAsVisitor(this.delegateUserId(), request.tenantId(), createCommentChildDialogId);
             Log.info(`${thisMethod} -- last create record: ${createCommentRecordVistor.copyAsJsonString()}`);
+            const commentNameValue = createCommentRecordVistor.visitPropertyValueAt('P_NAME');
+            const commentDescValue = createCommentRecordVistor.visitPropertyValueAt('P_DESCRIPTION');
             // --- REDIRECTION ---
             const showLatestRedirectionVisitor = new DialogRedirectionVisitor(MobileComment_Details_FORM_REDIRECTION.copyOfResponse());
             showLatestRedirectionVisitor.propagateTenantIdAndSessionId(request.tenantId(), request.sessionId());
@@ -1240,14 +1245,16 @@ export class SdaDialogDelegate implements DialogDelegate {
             await DialogProxyTools.writeDialogRedirection(this.delegateUserId(), request.tenantId(), showLatestRedirectionVisitor.visitDialogId(), SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID, showLatestRedirectionVisitor);
             // --- DIALOG ---
             const showLatestDialogVisitor = new DialogVisitor(MobileComment_Details_FORM.copyOfResponse());
+            showLatestDialogVisitor.visitAndSetDescription(`Mobile Comment: ${commentNameValue}`);
+            showLatestDialogVisitor.visitChildAtName('MobileComment_Details_Properties').visitAndSetDescription(`Mobile Comment: ${commentNameValue}`);
             showLatestDialogVisitor.propagateTenantIdAndSessionId(request.tenantId(), request.sessionId());
             showLatestDialogVisitor.deriveDialogIdsFromDialogNameAndSuffix(timeInMillis);
             Log.info(`${thisMethod} -- synthesizing dialog ${showLatestDialogVisitor.copyAsJsonString()}`);
             await DialogProxyTools.writeDialog(this.delegateUserId(), request.tenantId(), showLatestDialogVisitor);
             // --- RECORD ---
             const showLatestRecordVisitor = new RecordVisitor(MobileComment_Details_RECORD.copyOfResponse());
-            showLatestRecordVisitor.visitAndSetPropertyValueAt('Name', createCommentRecordVistor.visitPropertyValueAt('P_NAME'));
-            showLatestRecordVisitor.visitAndSetPropertyValueAt('Description', createCommentRecordVistor.visitPropertyValueAt('P_DESCRIPTION'));
+            showLatestRecordVisitor.visitAndSetPropertyValueAt('Name', commentNameValue);
+            showLatestRecordVisitor.visitAndSetPropertyValueAt('Description', commentDescValue);
             Log.info(`${thisMethod} -- synthesizing record ${showLatestRecordVisitor.copyAsJsonString()}`);
             await DialogProxyTools.writeRecord(this.delegateUserId(), request.tenantId(), 'MobileComment_Details_Properties$' + timeInMillis, showLatestRecordVisitor);
             return new JsonClientResponse(showLatestRedirectionVisitor.enclosedJsonObject(), 303);

@@ -114,6 +114,14 @@ export class DialogVisitor implements JsonObjectVisitor {
         }
     }
 
+    public visitDescription(): string {
+        return this.enclosedJsonObject().description;
+    }
+
+    public visitAndSetDescription(description: string) {
+        this.enclosedJsonObject().description = description;
+    }
+
     public visitDialogName(): string {
         return this.enclosedJsonObject().dialogName;
     }
