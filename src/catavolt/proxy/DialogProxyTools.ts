@@ -379,6 +379,14 @@ export class DialogProxyTools {
         return this.readDialogRedirectionAsVisitor(userId, pathFields.tenantId, pathFields.dialogId, actionIdAtTargetId);
     }
 
+    public static readPropertyCommit(userId: string, tenantId: string, dialogId: string, propertyName: string): Promise<any> {
+        let key = this.PROPERTY_COMMIT_STORAGE_KEY.replace('${userId}', userId);
+        key = key.replace('${tenantId}', tenantId);
+        key = key.replace('${dialogId}', dialogId);
+        key = key.replace('${propertyName}', propertyName);
+        return storage.getJson(key);
+    }
+
     public static readRecordAsOfflineResponse(userId: string, request: DialogRequest): Promise<JsonClientResponse> {
         return this.readRecordAsVisitorFromRequest(userId, request).then(recordVisitor => {
             return recordVisitor ?

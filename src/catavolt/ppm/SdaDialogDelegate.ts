@@ -72,7 +72,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         }
     }
 
-    public async isUserInBriefcaseMode(userInfo:{}): Promise<boolean> {
+    public async isUserInBriefcaseMode(userInfo: {}): Promise<boolean> {
         Log.info(`SdaDialogDelegate::isUserInBriefcaseMode userInfo -- ${JSON.stringify(userInfo)}`);
         const userId = userInfo['userId'];
         const tenantId = userInfo['tenantId'];
@@ -545,7 +545,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         if (redirectionJcr.statusCode !== 303) {
             throw new Error(`Unexpected result when opening Latest Document: ${nextRecordId}`);
         }
-         // TODO: this is a hack for "document not found" scenario -- fix later
+        // TODO: this is a hack for "document not found" scenario -- fix later
         if (redirectionJcr.value['type'] === 'hxgn.api.dialog.DialogRedirection') {
             Log.info(`${thisMethod} -- skipping dialog redirection (latest document not found): ${JSON.stringify(redirectionJcr.value)}`);
             return null;
@@ -1227,13 +1227,15 @@ export class SdaDialogDelegate implements DialogDelegate {
             // --- RETRIEVE LAST CREATE COMMENT ---
             const createCommentRedirectionVisitor = new DialogRedirectionVisitor(dialogRedirectionJsonObject);
             Log.info(`${thisMethod} -- last create comment dialog id: ${createCommentRedirectionVisitor.visitDialogId()}`);
-            const createCommentChildDialogName= 'Documents_CreateComment';
+            const createCommentChildDialogName = 'Documents_CreateComment';
             const createCommentSuffix = createCommentRedirectionVisitor.visitDialogId().split('$')[1];
             const createCommentChildDialogId = createCommentChildDialogName + '$' + createCommentSuffix;
             const createCommentRecordVistor = await DialogProxyTools.readRecordCommitAsVisitor(this.delegateUserId(), request.tenantId(), createCommentChildDialogId);
             Log.info(`${thisMethod} -- last create record: ${createCommentRecordVistor.copyAsJsonString()}`);
             const commentNameValue = createCommentRecordVistor.visitPropertyValueAt('P_NAME');
             const commentDescValue = createCommentRecordVistor.visitPropertyValueAt('P_DESCRIPTION');
+            // --- RETRIEVE LAST CREATE COMMENT LATEST FILE ---
+            const createCommentPropertyCommit = await DialogProxyTools.readPropertyCommit(this.delegateUserId(), request.tenantId(), createCommentChildDialogId, 'P_IMAGE');
             // --- REDIRECTION ---
             const showLatestRedirectionVisitor = new DialogRedirectionVisitor(MobileComment_Details_FORM_REDIRECTION.copyOfResponse());
             showLatestRedirectionVisitor.propagateTenantIdAndSessionId(request.tenantId(), request.sessionId());
@@ -1241,6 +1243,7 @@ export class SdaDialogDelegate implements DialogDelegate {
             showLatestRedirectionVisitor.visitAndSetRecordId(recordId);
             // showLatestRedirectionVisitor.deriveDialogIdsFromDialogNameAndRecordId();
             showLatestRedirectionVisitor.deriveDialogIdsFromDialogNameAndSuffix(timeInMillis);
+            const mobileCommentDetailsFormSyntheticDialogId = showLatestRedirectionVisitor.visitDialogId();
             Log.info(`${thisMethod} -- synthesizing dialog redirection ${showLatestRedirectionVisitor.copyAsJsonString()}`);
             await DialogProxyTools.writeDialogRedirection(this.delegateUserId(), request.tenantId(), showLatestRedirectionVisitor.visitDialogId(), SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID, showLatestRedirectionVisitor);
             // --- DIALOG ---
@@ -1256,7 +1259,52 @@ export class SdaDialogDelegate implements DialogDelegate {
             showLatestRecordVisitor.visitAndSetPropertyValueAt('Name', commentNameValue);
             showLatestRecordVisitor.visitAndSetPropertyValueAt('Description', commentDescValue);
             Log.info(`${thisMethod} -- synthesizing record ${showLatestRecordVisitor.copyAsJsonString()}`);
-            await DialogProxyTools.writeRecord(this.delegateUserId(), request.tenantId(), 'MobileComment_Details_Properties$' + timeInMillis, showLatestRecordVisitor);
+            const mobileCommentDetailsSyntheticDialogId = 'MobileComment_Details_Properties$' + timeInMillis;
+            await DialogProxyTools.writeRecord(this.delegateUserId(), request.tenantId(), mobileCommentDetailsSyntheticDialogId, showLatestRecordVisitor);
+            // --- LATEST FILE ---
+            if (createCommentPropertyCommit) {
+                // tenants/${tenantId}/sessions/${sessionId}/dialogs/MobileComment_Details_Properties$1533726759363/actions/alias_OpenLatestFile
+                const contentRedirectionId = `content_redirection_${timeInMillis}`;
+                const latestFileRedirectionJson = {
+                    "tenantId": "hexagonsdaop",
+                    "referringObject": {
+                        "dialogType": "hxgn.api.dialog.EditorDialog",
+                        "dialogMode": "READ",
+                        "dialogAlias": "MobileComment_Details_Properties",
+                        "dialogProperties": {"globalRefresh": "true", "localRefresh": "true"},
+                        "actionId": "alias_OpenLatestFile",
+                        "rootDialogName": "MobileComment_Details_FORM",
+                        "type": "hxgn.api.dialog.ReferringDialog",
+                        "dialogId": mobileCommentDetailsSyntheticDialogId,
+                        "dialogName": "MobileComment_Details_Properties",
+                        "rootDialogId": mobileCommentDetailsFormSyntheticDialogId
+                    },
+                    "sessionId": request.sessionId(),
+                    "id": contentRedirectionId,
+                    "type": "hxgn.api.dialog.ContentRedirection",
+                    "contentType": "image/png"
+                };
+                const latestFileRedirectionVisitor = new ContentRedirectionVisitor(latestFileRedirectionJson);
+                Log.info(`${thisMethod} -- synthesizing record ${showLatestRecordVisitor.copyAsJsonString()}`);
+                await DialogProxyTools.writeContentRedirection(this.delegateUserId(), request.tenantId(), mobileCommentDetailsSyntheticDialogId, SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID , latestFileRedirectionVisitor);
+                if (createCommentPropertyCommit) {
+                    for (let i=0; i < createCommentPropertyCommit.length; i++) {
+                        const propertyCommit = createCommentPropertyCommit[i];
+                        Log.info(`${thisMethod} -- PROPERTY COMMIT ${JSON.stringify(propertyCommit)}`);
+                        const largePropertyJson = {
+                            byteCount: btoa(propertyCommit['encodedData']).length,
+                            encodedData: propertyCommit['encodedData'],
+                            contentType: 'image/png',
+                            hasMore: i < (createCommentPropertyCommit.length - 1),
+                            type: 'hxgn.api.dialog.LargeProperty'
+                        };
+                        const largePropertyVisitor = new LargePropertyVisitor(largePropertyJson);
+                        Log.info(`${thisMethod} -- WRITING CONTENT CHUNK ${JSON.stringify(largePropertyJson)}`);
+                        await DialogProxyTools.writeContentChunk(this.delegateUserId(), request.tenantId(), contentRedirectionId, i, largePropertyVisitor);
+                    }
+                }
+            }
+            // --- RETURN REDIRECTION ---
             return new JsonClientResponse(showLatestRedirectionVisitor.enclosedJsonObject(), 303);
         }
         // IF A "CREATE COMMENT" DOES NOT EXIST
