@@ -371,7 +371,7 @@ export abstract class Dialog {
                 return this.catavolt.dialogApi
                     .writeProperty(this.tenantId, this.sessionId, this.id, propertyName, params)
                     .then(() => {
-                        f(ptr + Dialog.CHAR_CHUNK_SIZE);
+                        return f(ptr + Dialog.CHAR_CHUNK_SIZE);
                     });
             } else {
                 return Promise.resolve();
