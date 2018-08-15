@@ -37,6 +37,9 @@ import {Documents_CreateComment_RECORD} from "./samples/Documents_CreateComment_
 import {MobileComment_Details_FORM} from "./samples/MobileComment_Details_FORM";
 import {MobileComment_Details_FORM_REDIRECTION} from "./samples/MobileComment_Details_FORM_REDIRECTION";
 import {MobileComment_Details_RECORD} from "./samples/MobileComment_Details_RECORD";
+import {MobileComment_ImageNotAvailable_FORM} from "./samples/MobileComment_ImageNotAvailable_FORM";
+import {MobileComment_ImageNotAvailable_FORM_REDIRECTION} from "./samples/MobileComment_ImageNotAvailable_FORM_REDIRECTION";
+import {MobileComment_ImageNotAvailable_RECORD} from "./samples/MobileComment_ImageNotAvailable_RECORD";
 import {SdaPostWorkPackagesRecords1JsonSample} from "./samples/SdaPostWorkPackagesRecords1JsonSample";
 import {SdaDialogDelegateStateVisitor} from "./SdaDialogDelegateStateVisitor";
 import {SdaDialogDelegateTools} from "./SdaDialogDelegateTools";
@@ -157,9 +160,23 @@ export class SdaDialogDelegate implements DialogDelegate {
             if (SdaDialogDelegateTools.isOfflineTagsPropertiesDialogId(pathFields.dialogId)) {
                 return this.performOfflineTagsPropertiesRecordRequest(request);
             }
+            if (pathFields.dialogId === SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_ID) {
+                const recordJson = MobileComment_ImageNotAvailable_RECORD.copyOfResponse();
+                return Promise.resolve(new JsonClientResponse(recordJson, 200));
+            }
         }
         if (!this.delegateOnline()) {
             if (request.isGetDialogPath()) {
+                const pathFields = request.deconstructGetDialogPath();
+                if (pathFields.dialogId === SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_ROOT_DIALOG_ID) {
+                    const dialogJson = MobileComment_ImageNotAvailable_FORM.copyOfResponse();
+                    const dialogVisitor = new DialogVisitor(dialogJson);
+                    dialogVisitor.visitAndSetId(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_ROOT_DIALOG_ID);
+                    dialogVisitor.propagateTenantIdAndSessionId(pathFields.tenantId, pathFields.sessionId);
+                    dialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME).visitAndSetId(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_ID);
+                    dialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME).visitAndSetRootDialogId(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_ROOT_DIALOG_ID);
+                    return Promise.resolve(new JsonClientResponse(dialogJson, 200));
+                }
                 return DialogProxyTools.readDialogAsOfflineResponse(this.delegateUserId(), request);
             }
             if (request.isGetRecordPath()) {
@@ -203,9 +220,16 @@ export class SdaDialogDelegate implements DialogDelegate {
                     return this.performOfflineShowLatestMenuAction(request);
                 } else if (request.actionId() === SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID) {
                     return DialogProxyTools.readMenuActionRedirectionAsVisitor(this.delegateUserId(), request).then(dialogRedirectionVisitor => {
-                        return dialogRedirectionVisitor ?
-                            new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303) :
-                            new JsonClientResponse(DialogProxyTools.constructDialogMessageModel('Latest file not found'), 400);
+                        if (dialogRedirectionVisitor) {
+                            return new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303);
+                        } else {
+                            // return new JsonClientResponse(DialogProxyTools.constructDialogMessageModel('Latest file not found'), 400);
+                            const pathFields = request.deconstructPostMenuActionPath();
+                            const dialogRedirection = MobileComment_ImageNotAvailable_FORM_REDIRECTION.copyOfResponse();
+                            DialogRedirectionVisitor.propagateDialogId(dialogRedirection, SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_ROOT_DIALOG_ID);
+                            DialogRedirectionVisitor.propagateTenantIdAndSessionId(dialogRedirection, pathFields.tenantId, pathFields.sessionId);
+                            return new JsonClientResponse(dialogRedirection, 303);
+                        }
                     });
                 }
                 return DialogProxyTools.readMenuActionRedirectionAsOfflineResponse(this.delegateUserId(), request);
@@ -243,6 +267,15 @@ export class SdaDialogDelegate implements DialogDelegate {
                 const pathFields = request.deconstructPutViewModePath();
                 if (pathFields.dialogId.startsWith('Documents_CreateComment$') && pathFields.viewMode === 'READ') {
                     return Promise.resolve(this.constructCreateCommentNullRedirection(pathFields.tenantId, pathFields.sessionId, pathFields.dialogId));
+                }
+                if (pathFields.dialogId === SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_ID) {
+                    const nullRedirection = DialogProxyTools.constructNullRedirection(pathFields.tenantId, pathFields.sessionId);
+                    const nullRedirectionVisitor = new RedirectionVisitor(nullRedirection);
+                    nullRedirectionVisitor.visitAndSetReferringDialogAlias(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME);
+                    nullRedirectionVisitor.visitAndSetReferringDialogName(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME);
+                    nullRedirectionVisitor.visitAndSetReferringDialogId(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_ID);
+                    nullRedirectionVisitor.visitAndSetReferringDialogMode('DESTROYED');
+                    return Promise.resolve(new JsonClientResponse(nullRedirectionVisitor.enclosedJsonObject(), 303));
                 }
                 return null;
             }

@@ -33,6 +33,10 @@ export class DialogVisitor implements JsonObjectVisitor {
         return (new DialogVisitor(dialog)).visitId();
     }
 
+    public static visitAndSetId(dialog: object, id: string) {
+        (new DialogVisitor(dialog)).visitAndSetId(id);
+    }
+
     // --- State Import/Export --- //
 
     public copyAsJsonObject(): object {
@@ -132,6 +136,10 @@ export class DialogVisitor implements JsonObjectVisitor {
 
     public visitAndSetId(id: string) {
         this.enclosedJsonObject().id = id;
+    }
+
+    public visitAndSetRootDialogId(rootDialogId: string) {
+        this.enclosedJsonObject().rootDialogId = rootDialogId;
     }
 
     public visitChildAt(index: number): DialogVisitor {
