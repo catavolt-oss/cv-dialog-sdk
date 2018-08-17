@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.26.0"></a>
+# [4.26.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.25.0...v4.26.0) (2018-08-17)
+
+
+### Features
+
+* fixed last comment bugs ([bb1c75e](https://github.com/catavolt-oss/cv-dialog-sdk/commit/bb1c75e))
+* fixed last comment bugs ([1d5ca1e](https://github.com/catavolt-oss/cv-dialog-sdk/commit/1d5ca1e))
+
+
+
 <a name="4.25.0"></a>
 # [4.25.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.24.0...v4.25.0) (2018-08-15)
 
