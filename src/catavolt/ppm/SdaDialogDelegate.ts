@@ -34,6 +34,9 @@ import {Briefcase_EnterOfflineMode_REDIRECTION} from "./samples/Briefcase_EnterO
 import {Documents_CreateComment_FORM} from "./samples/Documents_CreateComment_FORM";
 import {Documents_CreateComment_FORM_REDIRECTION} from "./samples/Documents_CreateComment_FORM_REDIRECTION";
 import {Documents_CreateComment_RECORD} from "./samples/Documents_CreateComment_RECORD";
+import {MobileComment_CommentNotAvailable_FORM} from "./samples/MobileComment_CommentNotAvailable_FORM";
+import {MobileComment_CommentNotAvailable_FORM_REDIRECTION} from "./samples/MobileComment_CommentNotAvailable_FORM_REDIRECTION";
+import {MobileComment_CommentNotAvailable_RECORD} from "./samples/MobileComment_CommentNotAvailable_RECORD";
 import {MobileComment_Details_FORM} from "./samples/MobileComment_Details_FORM";
 import {MobileComment_Details_FORM_REDIRECTION} from "./samples/MobileComment_Details_FORM_REDIRECTION";
 import {MobileComment_Details_RECORD} from "./samples/MobileComment_Details_RECORD";
@@ -164,6 +167,10 @@ export class SdaDialogDelegate implements DialogDelegate {
                 const recordJson = MobileComment_ImageNotAvailable_RECORD.copyOfResponse();
                 return Promise.resolve(new JsonClientResponse(recordJson, 200));
             }
+            if (pathFields.dialogId === SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_ID) {
+                const recordJson = MobileComment_CommentNotAvailable_RECORD.copyOfResponse();
+                return Promise.resolve(new JsonClientResponse(recordJson, 200));
+            }
         }
         if (!this.delegateOnline()) {
             if (request.isGetDialogPath()) {
@@ -175,6 +182,15 @@ export class SdaDialogDelegate implements DialogDelegate {
                     dialogVisitor.propagateTenantIdAndSessionId(pathFields.tenantId, pathFields.sessionId);
                     dialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME).visitAndSetId(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_ID);
                     dialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME).visitAndSetRootDialogId(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_ROOT_DIALOG_ID);
+                    return Promise.resolve(new JsonClientResponse(dialogJson, 200));
+                }
+                if (pathFields.dialogId === SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_ID) {
+                    const dialogJson = MobileComment_CommentNotAvailable_FORM.copyOfResponse();
+                    const dialogVisitor = new DialogVisitor(dialogJson);
+                    dialogVisitor.visitAndSetId(SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_ID);
+                    dialogVisitor.propagateTenantIdAndSessionId(pathFields.tenantId, pathFields.sessionId);
+                    dialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_NAME).visitAndSetId(SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_ID);
+                    dialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_NAME).visitAndSetRootDialogId(SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_ID);
                     return Promise.resolve(new JsonClientResponse(dialogJson, 200));
                 }
                 return DialogProxyTools.readDialogAsOfflineResponse(this.delegateUserId(), request);
@@ -274,6 +290,15 @@ export class SdaDialogDelegate implements DialogDelegate {
                     nullRedirectionVisitor.visitAndSetReferringDialogAlias(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME);
                     nullRedirectionVisitor.visitAndSetReferringDialogName(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME);
                     nullRedirectionVisitor.visitAndSetReferringDialogId(SdaDialogDelegateTools.MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_ID);
+                    nullRedirectionVisitor.visitAndSetReferringDialogMode('DESTROYED');
+                    return Promise.resolve(new JsonClientResponse(nullRedirectionVisitor.enclosedJsonObject(), 303));
+                }
+                if (pathFields.dialogId === SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_ID) {
+                    const nullRedirection = DialogProxyTools.constructNullRedirection(pathFields.tenantId, pathFields.sessionId);
+                    const nullRedirectionVisitor = new RedirectionVisitor(nullRedirection);
+                    nullRedirectionVisitor.visitAndSetReferringDialogAlias(SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_NAME);
+                    nullRedirectionVisitor.visitAndSetReferringDialogName(SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_NAME);
+                    nullRedirectionVisitor.visitAndSetReferringDialogId(SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_ID);
                     nullRedirectionVisitor.visitAndSetReferringDialogMode('DESTROYED');
                     return Promise.resolve(new JsonClientResponse(nullRedirectionVisitor.enclosedJsonObject(), 303));
                 }
@@ -550,13 +575,13 @@ export class SdaDialogDelegate implements DialogDelegate {
 
     private async captureNextOfflineLastComment(baseUrl: string, tenantId: string, sessionId: string, beforeDocumentsListDialog: DialogVisitor, afterDocumentsListDialog: DialogVisitor, nextDocumentRecordVisitor: RecordVisitor): Promise<void> {
         const thisMethod = 'SdaDialogDelegate::captureNextOfflineLastComment';
-        const nextRecordId = nextDocumentRecordVisitor.visitRecordId();
-        Log.info(`${thisMethod} -- capturing last comment: ${nextRecordId}`);
+        const nextDocumentRecordId = nextDocumentRecordVisitor.visitRecordId();
+        Log.info(`${thisMethod} -- capturing last comment: ${nextDocumentRecordId}`);
         this.notifyClientListener({
-            message: `Capturing last comment: ${nextRecordId}`,
+            message: `Capturing last comment at document id: ${nextDocumentRecordId}`,
             eventType: ClientEventType.MESSAGE
         });
-        const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeDocumentsListDialog.visitId(), afterDocumentsListDialog.visitId(), SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID, nextRecordId);
+        const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeDocumentsListDialog.visitId(), afterDocumentsListDialog.visitId(), SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID, nextDocumentRecordId);
         const beforeDialogVisitor = new DialogVisitor(beforeAndAfterValues.beforeDialog);
         const beforePropertiesDialogVisitor = beforeDialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_DETAILS_PROPERTIES_DIALOG_NAME);
         if (beforeDialogVisitor.visitDialogName() !== SdaDialogDelegateTools.MOBILE_COMMENT_DETAILS_ROOT_DIALOG_NAME) {
@@ -564,11 +589,12 @@ export class SdaDialogDelegate implements DialogDelegate {
         }
         const afterDialogVisitor = new DialogVisitor(beforeAndAfterValues.afterDialog);
         const afterPropertiesDialogVisitor = afterDialogVisitor.visitChildAtName(SdaDialogDelegateTools.MOBILE_COMMENT_DETAILS_PROPERTIES_DIALOG_NAME);
-        Log.info(`${thisMethod} -- latest document before dialog id: ${beforePropertiesDialogVisitor.visitId()}`);
-        Log.info(`${thisMethod} -- latest document after dialog id: ${afterPropertiesDialogVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- last comment before dialog id: ${beforePropertiesDialogVisitor.visitId()}`);
+        Log.info(`${thisMethod} -- last comment after dialog id: ${afterPropertiesDialogVisitor.visitId()}`);
         await DialogProxyTools.captureRecord(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeAndAfterValues, SdaDialogDelegateTools.MOBILE_COMMENT_DETAILS_PROPERTIES_DIALOG_NAME);
-        const nextRecordIdEncoded = Base64.encodeUrlSafeString(nextRecordId);
-        Log.info(`${thisMethod} -- show latest next record id: ${nextRecordId} encoded as: ${nextRecordIdEncoded}`);
+        const lastCommentRecordId = beforeDialogVisitor.visitRecordId();
+        const lastCommentRecordIdEncoded = Base64.encodeUrlSafeString(lastCommentRecordId);
+        Log.info(`${thisMethod} -- last comment record id: ${lastCommentRecordId} encoded as: ${lastCommentRecordIdEncoded}`);
         const redirectionPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${beforePropertiesDialogVisitor.visitId()}/actions/${SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID}`;
         const redirectionParameters = {
             targets: [],
@@ -576,7 +602,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         };
         const redirectionJcr = await DialogProxyTools.commonFetchClient().postJson(baseUrl, redirectionPath, redirectionParameters);
         if (redirectionJcr.statusCode !== 303) {
-            throw new Error(`Unexpected result when opening Latest Document: ${nextRecordId}`);
+            throw new Error(`Unexpected result when opening Last Comment: ${nextDocumentRecordId}`);
         }
         // TODO: this is a hack for "document not found" scenario -- fix later
         if (redirectionJcr.value['type'] === 'hxgn.api.dialog.DialogRedirection') {
@@ -586,7 +612,7 @@ export class SdaDialogDelegate implements DialogDelegate {
         Log.info(`${thisMethod} -- last comment content redirection: ${JSON.stringify(redirectionJcr.value)}`);
         const contentRedirectionVisitor = new ContentRedirectionVisitor(redirectionJcr.value);
         const onlineContentId = contentRedirectionVisitor.visitId();
-        const offlineContentId = `content_redirection_${nextRecordIdEncoded}`;
+        const offlineContentId = `content_redirection_${lastCommentRecordIdEncoded}`;
         contentRedirectionVisitor.visitAndSetId(offlineContentId);
         await DialogProxyTools.writeContentRedirection(this.delegateUserId(), tenantId, afterPropertiesDialogVisitor.visitId(), SdaDialogDelegate.ALIAS_OPEN_LATEST_FILE_MENU_ACTION_ID, contentRedirectionVisitor);
         // GET AND WRITE CONTENT TO LOCAL STORAGE //
@@ -1341,7 +1367,20 @@ export class SdaDialogDelegate implements DialogDelegate {
             return new JsonClientResponse(showLatestRedirectionVisitor.enclosedJsonObject(), 303);
         }
         // IF A "CREATE COMMENT" DOES NOT EXIST
-        return DialogProxyTools.readMenuActionRedirectionAsOfflineResponse(this.delegateUserId(), request);
+        const dialogRedirectionVisitor = await DialogProxyTools.readMenuActionRedirectionAsVisitor(this.delegateUserId(), request);
+        // SUBTLE CODE BELOW: We override the dialog navigation in either case:
+        // (1) There is no dialog redirection for SHOW_LATEST
+        // (2) We captured a COMMENT_NOT_AVAILABLE dialog when switching to offline mode
+        if (dialogRedirectionVisitor) {
+            if (dialogRedirectionVisitor.visitDialogName() !== SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_NAME) {
+                return new JsonClientResponse(dialogRedirectionVisitor.enclosedJsonObject(), 303);
+            }
+        }
+        const pathFields = request.deconstructPostMenuActionPath();
+        const dialogRedirection = MobileComment_CommentNotAvailable_FORM_REDIRECTION.copyOfResponse();
+        DialogRedirectionVisitor.propagateDialogId(dialogRedirection, SdaDialogDelegateTools.MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_ID);
+        DialogRedirectionVisitor.propagateTenantIdAndSessionId(dialogRedirection, pathFields.tenantId, pathFields.sessionId);
+        return new JsonClientResponse(dialogRedirection, 303);
     }
 
     private async performOfflineTagsPropertiesRecordRequest(request: DialogRequest): Promise<JsonClientResponse> {

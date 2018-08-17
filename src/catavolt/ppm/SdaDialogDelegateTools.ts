@@ -36,14 +36,15 @@ export class SdaDialogDelegateTools {
     public static MOBILE_COMMENT_DETAILS_PROPERTIES_DIALOG_NAME = 'MobileComment_Details_Properties';
     public static MOBILE_COMMENT_DETAILS_ROOT_DIALOG_NAME = 'MobileComment_Details_FORM';
 
-    public static MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_ROOT_DIALOG_ID = 'image_not_available';
     public static MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_ID = 'image_not_available_details';
-
     public static MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_DETAILS_DIALOG_NAME = 'MobileComment_ImageNotAvailable';
+    public static MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_ROOT_DIALOG_ID = 'image_not_available';
     public static MOBILE_COMMENT_IMAGE_NOT_AVAILABLE_ROOT_DIALOG_NAME = 'MobileComment_ImageNotAvailable_FORM';
 
-    public static MOBILE_COMMENT_NOT_AVAILABLE_CHILD_DIALOG_NAME = 'MobileComment_CommentNotAvailable';
-    public static MOBILE_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_NAME = 'MobileComment_CommentNotAvailable_FORM';
+    public static MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_ID = 'comment_not_available_details';
+    public static MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_DETAILS_DIALOG_NAME = 'MobileComment_CommentNotAvailable';
+    public static MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_ID = 'comment_not_available';
+    public static MOBILE_COMMENT_COMMENT_NOT_AVAILABLE_ROOT_DIALOG_NAME = 'MobileComment_CommentNotAvailable_FORM';
 
     public static TAGS_ROOT_DIALOG_NAME = 'Workpackage_Tags_FORM';
     public static TAGS_PROPERTIES_DIALOG_NAME = 'Workpackage_Tags_Properties';
