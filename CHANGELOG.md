@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.25.0"></a>
+# [4.25.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.24.0...v4.25.0) (2018-08-15)
+
+
+### Bug Fixes
+
+* fix writeProperty promise sync ([65c3839](https://github.com/catavolt-oss/cv-dialog-sdk/commit/65c3839))
+
+
+### Features
+
+* changed image not found error message to a dialog ([f999fba](https://github.com/catavolt-oss/cv-dialog-sdk/commit/f999fba))
+
+
+
 <a name="4.24.0"></a>
 # [4.24.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.23.0...v4.24.0) (2018-08-08)
 
