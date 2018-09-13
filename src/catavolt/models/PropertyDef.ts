@@ -39,7 +39,7 @@ export class PropertyDef {
     }
 
     get isCodeRefType(): boolean {
-        return this.propertyType === TypeNames.CodeRefTypeName;
+        return this.format === 'code-ref'
     }
 
     get isDateType(): boolean {
@@ -114,7 +114,7 @@ export class PropertyDef {
     }
 
     get isObjRefType(): boolean {
-        return this.propertyType === TypeNames.ObjectRefTypeName;
+        return this.format === 'object-ref';
     }
 
     get isPasswordType(): boolean {
