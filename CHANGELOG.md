@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.26.2"></a>
+## [4.26.2](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.26.1...v4.26.2) (2018-09-15)
+
+
+### Bug Fixes
+
+* parse of TimeValue fix ([ece4cd6](https://github.com/catavolt-oss/cv-dialog-sdk/commit/ece4cd6))
+
+
+
 <a name="4.26.1"></a>
 ## [4.26.1](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.26.0...v4.26.1) (2018-09-13)
 
