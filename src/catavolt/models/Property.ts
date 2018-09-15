@@ -198,7 +198,7 @@ export class Property {
                 const i = value.indexOf('T0:');
                 return moment(i > -1 ? value.substring(0, i) : value).toDate();
             } else if (format === 'time') {
-                TimeValue.fromString(value);
+                return TimeValue.fromString(value);
             } else {
                 return value;
             }
