@@ -20,18 +20,18 @@ export class AttributeCellValue extends CellValue {
     }
 
     get isComboBoxEntryMethod(): boolean {
-        return this.entryMethod && this.entryMethod === 'COMBO_BOX';
+        return this.entryMethod && this.entryMethod === 'ENTRY_METHOD_COMBO_BOX';
     }
 
     get isDropDownEntryMethod(): boolean {
-        return this.entryMethod && this.entryMethod === 'DROP_DOWN';
+        return this.entryMethod && this.entryMethod === 'ENTRY_METHOD_DROP_DOWN';
     }
 
     get isIconEntryMethod(): boolean {
-        return this.entryMethod && this.entryMethod === 'ICON_CHOOSER';
+        return this.entryMethod && this.entryMethod === 'ENTRY_METHOD_ICON_CHOOSER';
     }
 
     get isTextFieldEntryMethod(): boolean {
-        return !this.entryMethod || this.entryMethod === 'TEXT_FIELD';
+        return !this.entryMethod || this.entryMethod === 'ENTRY_METHOD_TEXT_FIELD';
     }
 }

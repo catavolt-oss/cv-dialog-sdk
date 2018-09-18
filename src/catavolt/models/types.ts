@@ -1,4 +1,4 @@
-export type AttributeCellValueEntryMethod = 'COMBO_BOX' | 'DROP_DOWN' | 'TEXT_FIELD' | 'ICON_CHOOSER';
+export type AttributeCellValueEntryMethod = 'ENTRY_METHOD_COMBO_BOX' | 'ENTRY_METHOD_DROP_DOWN' | 'ENTRY_METHOD_TEXT_FIELD' | 'ENTRY_METHOD_ICON_CHOOSER';
 export type ClientType = 'DESKTOP' | 'MOBILE';
 export type DialogMessageMessageType = 'CONFIRM' | 'ERROR' | 'INFO' | 'WARN';
 
