@@ -40,7 +40,7 @@ export class CatavoltApiImpl implements CatavoltApi {
 
     public readonly DEFAULT_LOCALE: CvLocale = new CvLocale('en');
 
-    public dataLastChangedTime: Date = new Date(0);
+    public dataLastChangedTime: Date = new Date();
     private _dialogApi: DialogApi;
     private _session: Session;
     private _devicePropsDynamic: { [index: string]: () => string };
