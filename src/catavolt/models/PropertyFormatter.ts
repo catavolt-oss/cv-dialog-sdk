@@ -139,7 +139,7 @@ export class PropertyFormatter {
         } else if ((propDef && propDef.isDateType) || value instanceof Date) {
             return moment(value as Date)
                 .locale(locales)
-                .format('L');
+                .format('l');
         } else if ((propDef && propDef.isTimeType) || value instanceof TimeValue) {
             return moment(value as TimeValue)
                 .locale(locales)

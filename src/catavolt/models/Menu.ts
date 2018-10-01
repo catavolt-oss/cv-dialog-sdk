@@ -50,6 +50,12 @@ export class Menu {
         });
     }
 
+    public findActionBarMenu(): Menu {
+        return Menu.findSubMenu(this, (md: Menu) => {
+            return md.id === 'ACTION_BAR';
+        });
+    }
+
     get isPresaveDirective(): boolean {
         return this.directive && this.directive === 'PRESAVE';
     }
