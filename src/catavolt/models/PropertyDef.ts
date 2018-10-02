@@ -19,9 +19,10 @@ export class PropertyDef {
         readonly format: string,
         readonly length: number,
         readonly propertyName: string,
+        readonly propertyType: string,
         readonly scale: number,
         readonly semanticType: string,
-        readonly propertyType: string,
+        readonly upperCaseOnly: boolean,
         readonly writeAllowed: boolean,
         readonly writeEnabled: boolean
     ) {}
@@ -105,6 +106,10 @@ export class PropertyDef {
         return this.semanticType === 'MONEY';
     }
 
+    get isNameType(): boolean {
+        return this.semanticType === 'NAME';
+    }
+
     get isNumericType(): boolean {
         return this.isDecimalType || this.isIntType || this.isDoubleType || this.isLongType || this.isFloatType;
     }
@@ -122,7 +127,7 @@ export class PropertyDef {
     }
 
     get isPercentType(): boolean {
-        return this.semanticType === 'PERCENT';
+        return this.semanticType === 'PERCENTAGE';
     }
 
     get isSignatureType(): boolean {

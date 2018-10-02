@@ -63,7 +63,7 @@ class PrivatePropFormats {
         '$0,0.000000000',
         '$0,0.0000000000'
     ];
-    public static moneyFormatGeneric: string = '$0,0.[0000000000000000000000000]';
+    public static moneyFormatGeneric: string = '$0,0.00[0000000000000000000000000]';
     public static percentFormat: string[] = [
         '0,0%',
         '0,0%',
@@ -223,7 +223,7 @@ export class PropertyFormatter {
         this.moneyFormat = PrivatePropFormats.moneyFormat.slice(0);
         this.moneyFormatGeneric = PrivatePropFormats.moneyFormatGeneric;
         this.percentFormat = PrivatePropFormats.percentFormat.slice(0);
-        this.percentFormatGeneric = PrivatePropFormats.decimalFormatGeneric;
+        this.percentFormatGeneric = PrivatePropFormats.percentFormatGeneric;
         this.wholeFormat = PrivatePropFormats.wholeFormat;
     }
 
@@ -240,7 +240,7 @@ export class PropertyFormatter {
      */
     public toStringRead(o: any, propDef: PropertyDef): string {
         if (typeof o === 'number') {
-            if (propDef && propDef.semanticType !== 'DATA_UNFORMATTED_NUMBER') {
+            if (propDef && !propDef.isUnformattedNumericType) {
                 if (propDef.isMoneyType) {
                     let f =
                         propDef.displayScale < this.moneyFormat.length

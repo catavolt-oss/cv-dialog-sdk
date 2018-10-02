@@ -112,6 +112,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#propertytype" class="tsd-kind-icon">property<wbr>Type</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#scale" class="tsd-kind-icon">scale</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#semantictype" class="tsd-kind-icon">semantic<wbr>Type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#uppercaseonly" class="tsd-kind-icon">upper<wbr>Case<wbr>Only</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#writeallowed" class="tsd-kind-icon">write<wbr>Allowed</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#writeenabled" class="tsd-kind-icon">write<wbr>Enabled</a></li>
 							</ul>
@@ -139,6 +140,7 @@
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#islongtype" class="tsd-kind-icon">is<wbr>Long<wbr>Type</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#ismaplocationtype" class="tsd-kind-icon">is<wbr>Map<wbr>Location<wbr>Type</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#ismoneytype" class="tsd-kind-icon">is<wbr>Money<wbr>Type</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#isnametype" class="tsd-kind-icon">is<wbr>Name<wbr>Type</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#isnumerictype" class="tsd-kind-icon">is<wbr>Numeric<wbr>Type</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#isobjreftype" class="tsd-kind-icon">is<wbr>Obj<wbr>Ref<wbr>Type</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="_models_propertydef_.propertydef.html#ispasswordtype" class="tsd-kind-icon">is<wbr>Password<wbr>Type</a></li>
@@ -161,7 +163,7 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Property<wbr>Def<span class="tsd-signature-symbol">(</span>canCauseSideEffects<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, contentType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, displayLength<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, displayScale<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, format<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, length<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, propertyName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, scale<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, semanticType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, propertyType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, writeAllowed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, writeEnabled<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_models_propertydef_.propertydef.html" class="tsd-signature-type">PropertyDef</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Property<wbr>Def<span class="tsd-signature-symbol">(</span>canCauseSideEffects<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, contentType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, displayLength<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, displayScale<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, format<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, length<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, propertyName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, propertyType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, scale<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, semanticType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, upperCaseOnly<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, writeAllowed<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, writeEnabled<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_models_propertydef_.propertydef.html" class="tsd-signature-type">PropertyDef</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -194,13 +196,16 @@
 									<h5>propertyName: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
+									<h5>propertyType: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
 									<h5>scale: <span class="tsd-signature-type">number</span></h5>
 								</li>
 								<li>
 									<h5>semanticType: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
-									<h5>propertyType: <span class="tsd-signature-type">string</span></h5>
+									<h5>upperCaseOnly: <span class="tsd-signature-type">boolean</span></h5>
 								</li>
 								<li>
 									<h5>writeAllowed: <span class="tsd-signature-type">boolean</span></h5>
@@ -292,7 +297,7 @@
 					<div class="tsd-signature tsd-kind-icon">property<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in models/PropertyDef.ts:24</li>
+							<li>Defined in models/PropertyDef.ts:22</li>
 						</ul>
 					</aside>
 				</section>
@@ -302,7 +307,7 @@
 					<div class="tsd-signature tsd-kind-icon">scale<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in models/PropertyDef.ts:22</li>
+							<li>Defined in models/PropertyDef.ts:23</li>
 						</ul>
 					</aside>
 				</section>
@@ -312,7 +317,17 @@
 					<div class="tsd-signature tsd-kind-icon">semantic<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in models/PropertyDef.ts:23</li>
+							<li>Defined in models/PropertyDef.ts:24</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="uppercaseonly" class="tsd-anchor"></a>
+					<h3>upper<wbr>Case<wbr>Only</h3>
+					<div class="tsd-signature tsd-kind-icon">upper<wbr>Case<wbr>Only<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in models/PropertyDef.ts:25</li>
 						</ul>
 					</aside>
 				</section>
@@ -322,7 +337,7 @@
 					<div class="tsd-signature tsd-kind-icon">write<wbr>Allowed<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in models/PropertyDef.ts:25</li>
+							<li>Defined in models/PropertyDef.ts:26</li>
 						</ul>
 					</aside>
 				</section>
@@ -332,7 +347,7 @@
 					<div class="tsd-signature tsd-kind-icon">write<wbr>Enabled<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in models/PropertyDef.ts:26</li>
+							<li>Defined in models/PropertyDef.ts:27</li>
 						</ul>
 					</aside>
 				</section>
@@ -349,7 +364,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:29</li>
+									<li>Defined in models/PropertyDef.ts:30</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -366,7 +381,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:37</li>
+									<li>Defined in models/PropertyDef.ts:38</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -383,7 +398,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:33</li>
+									<li>Defined in models/PropertyDef.ts:34</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -400,7 +415,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:41</li>
+									<li>Defined in models/PropertyDef.ts:42</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -417,7 +432,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:49</li>
+									<li>Defined in models/PropertyDef.ts:50</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -434,7 +449,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:45</li>
+									<li>Defined in models/PropertyDef.ts:46</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -451,7 +466,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:53</li>
+									<li>Defined in models/PropertyDef.ts:54</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -468,7 +483,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:57</li>
+									<li>Defined in models/PropertyDef.ts:58</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -485,7 +500,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:61</li>
+									<li>Defined in models/PropertyDef.ts:62</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -502,7 +517,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:65</li>
+									<li>Defined in models/PropertyDef.ts:66</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -519,7 +534,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:69</li>
+									<li>Defined in models/PropertyDef.ts:70</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -536,7 +551,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:73</li>
+									<li>Defined in models/PropertyDef.ts:74</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -553,7 +568,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:81</li>
+									<li>Defined in models/PropertyDef.ts:82</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -570,7 +585,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:86</li>
+									<li>Defined in models/PropertyDef.ts:87</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -587,7 +602,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:96</li>
+									<li>Defined in models/PropertyDef.ts:97</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -604,7 +619,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:112</li>
+									<li>Defined in models/PropertyDef.ts:117</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -621,7 +636,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:92</li>
+									<li>Defined in models/PropertyDef.ts:93</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -638,7 +653,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:100</li>
+									<li>Defined in models/PropertyDef.ts:101</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -655,7 +670,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:77</li>
+									<li>Defined in models/PropertyDef.ts:78</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -672,7 +687,24 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:104</li>
+									<li>Defined in models/PropertyDef.ts:105</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="isnametype" class="tsd-anchor"></a>
+					<h3>is<wbr>Name<wbr>Type</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> isNameType<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in models/PropertyDef.ts:109</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -689,7 +721,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:108</li>
+									<li>Defined in models/PropertyDef.ts:113</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -706,7 +738,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:116</li>
+									<li>Defined in models/PropertyDef.ts:121</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -723,7 +755,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:120</li>
+									<li>Defined in models/PropertyDef.ts:125</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -740,7 +772,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:124</li>
+									<li>Defined in models/PropertyDef.ts:129</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -757,7 +789,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:128</li>
+									<li>Defined in models/PropertyDef.ts:133</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -774,7 +806,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:132</li>
+									<li>Defined in models/PropertyDef.ts:137</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -791,7 +823,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:136</li>
+									<li>Defined in models/PropertyDef.ts:141</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -808,7 +840,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:140</li>
+									<li>Defined in models/PropertyDef.ts:145</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -825,7 +857,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:144</li>
+									<li>Defined in models/PropertyDef.ts:149</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -842,7 +874,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:152</li>
+									<li>Defined in models/PropertyDef.ts:157</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -859,7 +891,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in models/PropertyDef.ts:148</li>
+									<li>Defined in models/PropertyDef.ts:153</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -918,6 +950,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_models_propertydef_.propertydef.html#semantictype" class="tsd-kind-icon">semantic<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_models_propertydef_.propertydef.html#uppercaseonly" class="tsd-kind-icon">upper<wbr>Case<wbr>Only</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_models_propertydef_.propertydef.html#writeallowed" class="tsd-kind-icon">write<wbr>Allowed</a>
@@ -984,6 +1019,9 @@
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="_models_propertydef_.propertydef.html#ismoneytype" class="tsd-kind-icon">is<wbr>Money<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="_models_propertydef_.propertydef.html#isnametype" class="tsd-kind-icon">is<wbr>Name<wbr>Type</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="_models_propertydef_.propertydef.html#isnumerictype" class="tsd-kind-icon">is<wbr>Numeric<wbr>Type</a>
