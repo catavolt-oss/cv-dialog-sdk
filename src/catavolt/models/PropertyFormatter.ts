@@ -212,7 +212,13 @@ export class PropertyFormatter {
                 propValue = new DateTimeValue(moment(value).toDate());
             }
         } else if (propDef.isTimeType) {
-            propValue = value instanceof TimeValue ? value : TimeValue.fromString(value);
+            if (value instanceof TimeValue) {
+                propValue = value;
+            } else if (typeof value === 'object') {
+                propValue = TimeValue.fromDateValue(value);
+            } else {
+                propValue = TimeValue.fromString(value);
+            }
         }
         return propValue;
     }
