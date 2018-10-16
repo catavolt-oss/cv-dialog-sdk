@@ -1,5 +1,6 @@
 import { DataAnnotation } from './DataAnnotation';
 import { Property } from './Property';
+import {PropertyDef} from "./PropertyDef";
 import { Record } from './Record';
 import { RecordUtil } from './RecordUtil';
 
@@ -196,12 +197,12 @@ export class RecordBuffer implements Record {
         return this._after.type;
     }
 
-    public setValue(name: string, value) {
+    public setValue(name: string, value:any, propDef: PropertyDef) {
         const newProps = [];
         let found = false;
         this.properties.forEach((prop: Property) => {
             if (prop.name === name) {
-                newProps.push(new Property(name, value, prop.propertyType, prop.format, prop.annotations));
+                newProps.push(new Property(name, value, propDef.format, prop.annotations));
                 found = true;
             } else {
                 newProps.push(prop);

@@ -196,7 +196,7 @@ export class EditorDialog extends Dialog {
         let parsedValue: any = null;
         if (propDef) {
             parsedValue = value !== null && value !== undefined ? this.parseValue(value, propDef.propertyName) : null;
-            this.buffer.setValue(propDef.propertyName, parsedValue);
+            this.buffer.setValue(propDef.propertyName, parsedValue, propDef);
         }
         return parsedValue;
     }
@@ -226,7 +226,7 @@ export class EditorDialog extends Dialog {
         const propDef: PropertyDef = this.propDefAtName(name);
         if (propDef) {
             const value = new LargeProperty(encodedData, mimeType);
-            this.buffer.setValue(propDef.propertyName, value);
+            this.buffer.setValue(propDef.propertyName, value, propDef);
         }
     }
 
@@ -293,7 +293,8 @@ export class EditorDialog extends Dialog {
              */
                 if (prop.value instanceof Attachment) {
                     const attachment = prop.value as Attachment;
-                    return new Property(prop.name, attachment.name, prop.propertyType, prop.format, prop.annotations);
+                    const propDef = this.propDefAtName(prop.name);
+                    return new Property(prop.name, attachment.name, propDef.format, prop.annotations);
                 } else {
                     return prop;
                 }

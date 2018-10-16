@@ -18,6 +18,8 @@ import { TypeNames } from './types';
  * but these apply to the property only
  */
 export class Property {
+
+    private type:string = TypeNames.PropertyTypeName;
     /**
      * Produce an unique string that can be used for comparison purposes
      * Props considered 'equal' should produce the same identity string
@@ -58,7 +60,6 @@ export class Property {
         return new Property(
             jsonObject.name,
             Property.parseJSONValue(jsonObject.value, jsonObject.format),
-            jsonObject.propertyType,
             jsonObject.format,
             jsonObject.annotations
         );
@@ -75,7 +76,6 @@ export class Property {
     constructor(
         readonly name: string,
         readonly value: any,
-        readonly propertyType?: string,
         readonly format?: string,
         readonly annotations: DataAnnotation[] = []
     ) {}
@@ -142,9 +142,7 @@ export class Property {
 
     get valueForWrite() {
         const o = this.value;
-        if (typeof o === 'number') {
-            return String(o);
-        } else if (typeof o === 'object') {
+        if (typeof o === 'object') {
             if (o instanceof Date) {
                 // remove the 'Z' from the end of the ISO string for now, until the server supports timezones...
                 return o.toISOString().slice(0, -1);
@@ -175,9 +173,6 @@ export class Property {
             propertyType: null,
             format: null
         };
-        if (this.propertyType) {
-            jsonObject.propertyType = this.propertyType;
-        }
         if (this.format) {
             jsonObject.format = this.format;
         }
