@@ -61,7 +61,7 @@ export class Menu {
     }
 
     get isRead(): boolean {
-        return this.modes && this.modes.indexOf('R') > -1;
+        return this.modes && this.modes.indexOf('READ') > -1;
     }
 
     get isSeparator(): boolean {
@@ -69,6 +69,6 @@ export class Menu {
     }
 
     get isWrite(): boolean {
-        return this.modes && this.modes.indexOf('W') > -1;
+        return this.modes && this.modes.indexOf('WRITE') > -1;
     }
 }

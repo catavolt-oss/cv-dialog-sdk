@@ -10,6 +10,7 @@ import { ViewType } from './types';
 export abstract class View {
     /* From View */
     public readonly alias: string;
+    public readonly defaultActionId: string;
     public readonly id: string;
     public readonly name: string;
     public readonly menu: Menu;
@@ -34,9 +35,8 @@ export abstract class View {
         let result: string = this.title ? this.title.trim() : '';
         result = result === 'null' ? '' : result;
         if (result === '') {
-            // @TODO put this back when label is resolved
-            // result = this.label ? this.label.trim() : '';
-            // result = result === 'null' ? '' : result;
+            result = this.title ? this.title.trim() : '';
+            result = result === 'null' ? '' : result;
         }
         return result;
     }
