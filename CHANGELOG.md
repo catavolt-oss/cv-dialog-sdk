@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.26.9"></a>
+## [4.26.9](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.26.8...v4.26.9) (2018-11-06)
+
+
+### Bug Fixes
+
+* fixed data annoations parsing bug in Property ([1c762cc](https://github.com/catavolt-oss/cv-dialog-sdk/commit/1c762cc))
+* menu read/write fix, moved default action id ([20dfffe](https://github.com/catavolt-oss/cv-dialog-sdk/commit/20dfffe))
+
+
+
 <a name="4.26.8"></a>
 ## [4.26.8](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.26.7...v4.26.8) (2018-10-16)
 
