@@ -92,7 +92,7 @@ export class ModelUtil {
                 // if the class has a fromJSON method, use it
                 const classType = ModelUtil.classType(objType);
                 if (classType && typeof classType.fromJSON === 'function') {
-                    resolve(classType.fromJSON(obj));
+                    classType.fromJSON(obj).then(resolve).catch(reject);
                 } else {
                     let newObj = ModelUtil.typeInstance(objType);
                     if (!newObj) {

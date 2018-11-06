@@ -1,15 +1,16 @@
 import moment from 'moment';
-import { DateTimeValue } from '../util/DateTimeValue';
-import { DateValue } from '../util/DateValue';
-import { StringDictionary } from '../util/StringDictionary';
-import { TimeValue } from '../util/TimeValue';
-import { CodeRef } from './CodeRef';
-import { DataAnnotation } from './DataAnnotation';
-import { GpsReading } from './GpsReading';
-import { MapLocation } from './MapLocation';
-import { ObjectRef } from './ObjectRef';
-import { PropertyDef } from './PropertyDef';
-import { TypeNames } from './types';
+import {DateTimeValue} from '../util/DateTimeValue';
+import {DateValue} from '../util/DateValue';
+import {StringDictionary} from '../util/StringDictionary';
+import {TimeValue} from '../util/TimeValue';
+import {CodeRef} from './CodeRef';
+import {DataAnnotation} from './DataAnnotation';
+import {GpsReading} from './GpsReading';
+import {MapLocation} from './MapLocation';
+import {ModelUtil} from "./ModelUtil";
+import {ObjectRef} from './ObjectRef';
+import {PropertyDef} from './PropertyDef';
+import {TypeNames} from './types';
 
 /**
  * Represents a 'value' or field in a row or record. See {@link Record}
@@ -56,13 +57,15 @@ export class Property {
         }
     }
 
-    public static fromJSON(jsonObject: StringDictionary): Property {
-        return new Property(
-            jsonObject.name,
-            Property.parseJSONValue(jsonObject.value, jsonObject.format),
-            jsonObject.format,
-            jsonObject.annotations
-        );
+    public static fromJSON(jsonObject: StringDictionary): Promise<Property> {
+        return ModelUtil.jsonToModel<DataAnnotation[]>(jsonObject.annotations).then((annotations: DataAnnotation[]) => {
+            return new Property(
+                jsonObject.name,
+                Property.parseJSONValue(jsonObject.value, jsonObject.format),
+                jsonObject.format,
+                annotations
+            );
+        });
     }
 
     /**
