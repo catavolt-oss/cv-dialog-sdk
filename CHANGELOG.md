@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.26.10"></a>
+## [4.26.10](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.26.9...v4.26.10) (2018-11-07)
+
+
+### Bug Fixes
+
+* fix parsing of Property with ModelUtil. refactor ModelUtil ([5e95156](https://github.com/catavolt-oss/cv-dialog-sdk/commit/5e95156))
+
+
+
 <a name="4.26.9"></a>
 ## [4.26.9](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.26.8...v4.26.9) (2018-11-06)
 
