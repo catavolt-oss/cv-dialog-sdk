@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ReferringWorkbench | cv-dialog-sdk</title>
+	<title>ModelUtil | cv-dialog-sdk</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,13 +56,13 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_models_referringworkbench_.html">&quot;models/ReferringWorkbench&quot;</a>
+					<a href="../modules/_models_modelutil_.html">&quot;models/ModelUtil&quot;</a>
 				</li>
 				<li>
-					<a href="_models_referringworkbench_.referringworkbench.html">ReferringWorkbench</a>
+					<a href="_models_modelutil_.modelutil.html">ModelUtil</a>
 				</li>
 			</ul>
-			<h1>Class ReferringWorkbench</h1>
+			<h1>Interface ModelUtil</h1>
 		</div>
 	</div>
 </header>
@@ -73,13 +73,14 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="_models_referringobject_.referringobject.html" class="tsd-signature-type">ReferringObject</a>
-						<ul class="tsd-hierarchy">
-							<li>
-								<span class="target">ReferringWorkbench</span>
-							</li>
-						</ul>
+						<span class="target">ModelUtil</span>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implemented by</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../classes/_models_modelutilimpl_.modelutilimpl.html" class="tsd-signature-type">ModelUtilImpl</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -87,120 +88,90 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="_models_referringworkbench_.referringworkbench.html#actionid" class="tsd-kind-icon">action<wbr>Id</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="_models_referringworkbench_.referringworkbench.html#type" class="tsd-kind-icon">type</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_models_referringworkbench_.referringworkbench.html#workbenchid" class="tsd-kind-icon">workbench<wbr>Id</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section tsd-is-inherited">
-							<h3>Accessors</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="_models_referringworkbench_.referringworkbench.html#sourcedestroyed" class="tsd-kind-icon">source<wbr>Destroyed</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section tsd-is-inherited">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_referringworkbench_.referringworkbench.html#isdialogreferrer" class="tsd-kind-icon">is<wbr>Dialog<wbr>Referrer</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_models_referringworkbench_.referringworkbench.html#isworkbenchreferrer" class="tsd-kind-icon">is<wbr>Workbench<wbr>Referrer</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter"><a href="_models_modelutil_.modelutil.html#jsontomodel" class="tsd-kind-icon">json<wbr>ToModel</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_models_modelutil_.modelutil.html#modeltojson" class="tsd-kind-icon">model<wbr>ToJson</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-					<a name="actionid" class="tsd-anchor"></a>
-					<h3>action<wbr>Id</h3>
-					<div class="tsd-signature tsd-kind-icon">action<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="_models_referringobject_.referringobject.html">ReferringObject</a>.<a href="_models_referringobject_.referringobject.html#actionid">actionId</a></p>
-						<ul>
-							<li>Defined in models/ReferringObject.ts:5</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-					<a name="type" class="tsd-anchor"></a>
-					<h3>type</h3>
-					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="_models_referringobject_.referringobject.html">ReferringObject</a>.<a href="_models_referringobject_.referringobject.html#type">type</a></p>
-						<ul>
-							<li>Defined in models/ReferringObject.ts:4</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="workbenchid" class="tsd-anchor"></a>
-					<h3>workbench<wbr>Id</h3>
-					<div class="tsd-signature tsd-kind-icon">workbench<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in models/ReferringWorkbench.ts:4</li>
-						</ul>
-					</aside>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
-				<h2>Accessors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
-					<a name="sourcedestroyed" class="tsd-anchor"></a>
-					<h3>source<wbr>Destroyed</h3>
-					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> sourceDestroyed<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Inherited from <a href="_models_referringobject_.referringobject.html">ReferringObject</a>.<a href="_models_referringobject_.referringobject.html#sourcedestroyed">sourceDestroyed</a></p>
-								<ul>
-									<li>Defined in models/ReferringObject.ts:15</li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
-						</li>
-					</ul>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<a name="isdialogreferrer" class="tsd-anchor"></a>
-					<h3>is<wbr>Dialog<wbr>Referrer</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Dialog<wbr>Referrer<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+					<a name="jsontomodel" class="tsd-anchor"></a>
+					<h3>json<wbr>ToModel</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">json<wbr>ToModel&lt;A&gt;<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, n<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="_models_referringobject_.referringobject.html">ReferringObject</a>.<a href="_models_referringobject_.referringobject.html#isdialogreferrer">isDialogReferrer</a></p>
 								<ul>
-									<li>Defined in models/ReferringObject.ts:7</li>
+									<li>Defined in models/ModelUtil.ts:5</li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>A</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>obj: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> n: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<a name="isworkbenchreferrer" class="tsd-anchor"></a>
-					<h3>is<wbr>Workbench<wbr>Referrer</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Workbench<wbr>Referrer<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="modeltojson" class="tsd-anchor"></a>
+					<h3>model<wbr>ToJson</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">model<wbr>ToJson<span class="tsd-signature-symbol">(</span>obj<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, filterFn<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_util_stringdictionary_.stringdictionary.html" class="tsd-signature-type">StringDictionary</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="_models_referringobject_.referringobject.html">ReferringObject</a>.<a href="_models_referringobject_.referringobject.html#isworkbenchreferrer">isWorkbenchReferrer</a></p>
 								<ul>
-									<li>Defined in models/ReferringObject.ts:11</li>
+									<li>Defined in models/ModelUtil.ts:6</li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>obj: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> filterFn: <span class="tsd-signature-type">function</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-siganture">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>prop<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>prop: <span class="tsd-signature-type">any</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_util_stringdictionary_.stringdictionary.html" class="tsd-signature-type">StringDictionary</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -213,7 +184,7 @@
 						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="../modules/_models_referringworkbench_.html">"models/<wbr>Referring<wbr>Workbench"</a>
+						<a href="../modules/_models_modelutil_.html">"models/<wbr>Model<wbr>Util"</a>
 					</li>
 				</ul>
 			</nav>
@@ -221,26 +192,14 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_models_referringworkbench_.referringworkbench.html" class="tsd-kind-icon">Referring<wbr>Workbench</a>
+					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
+						<a href="_models_modelutil_.modelutil.html" class="tsd-kind-icon">Model<wbr>Util</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-								<a href="_models_referringworkbench_.referringworkbench.html#actionid" class="tsd-kind-icon">action<wbr>Id</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+								<a href="_models_modelutil_.modelutil.html#jsontomodel" class="tsd-kind-icon">json<wbr>ToModel</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-								<a href="_models_referringworkbench_.referringworkbench.html#type" class="tsd-kind-icon">type</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_models_referringworkbench_.referringworkbench.html#workbenchid" class="tsd-kind-icon">workbench<wbr>Id</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
-								<a href="_models_referringworkbench_.referringworkbench.html#sourcedestroyed" class="tsd-kind-icon">source<wbr>Destroyed</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_models_referringworkbench_.referringworkbench.html#isdialogreferrer" class="tsd-kind-icon">is<wbr>Dialog<wbr>Referrer</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="_models_referringworkbench_.referringworkbench.html#isworkbenchreferrer" class="tsd-kind-icon">is<wbr>Workbench<wbr>Referrer</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="_models_modelutil_.modelutil.html#modeltojson" class="tsd-kind-icon">model<wbr>ToJson</a>
 							</li>
 						</ul>
 					</li>

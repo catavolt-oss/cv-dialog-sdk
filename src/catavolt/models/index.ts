@@ -79,4 +79,5 @@ export * from './QueryDialog';
 export * from './QueryScroller';
 export * from './ErrorDialog';
 export * from './types';
+export * from './ModelUtilImpl';
 export * from './ModelUtil';

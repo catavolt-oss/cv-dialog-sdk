@@ -5,13 +5,13 @@ import { StreamProducer } from '../io/StreamProducer';
 import {
     ActionParameters,
     Attachment,
+    DefaultModelUtil,
     Dialog,
     DialogMessage,
     EditorDialog,
     LargeProperty,
     Login,
     Menu,
-    ModelUtil,
     QueryParameters,
     ReadLargePropertyParameters,
     Record,
@@ -385,7 +385,7 @@ class DialogServiceResponse<T> implements DialogApiResponse<T> {
     }
 
     private fullfillJsonToModel<T>(clientResponse: JsonClientResponse, resolve, reject): void {
-        ModelUtil.jsonToModel<T>(this.clientResponse.value)
+        DefaultModelUtil.jsonToModel<T>(this.clientResponse.value)
             .then(resolve)
             .catch(reject);
     }

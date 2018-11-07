@@ -22,9 +22,10 @@ export class QueryDialog extends Dialog {
     public supportsPositionalQueries: boolean;
 
     private _scroller: QueryScroller;
+    private _defaultActionId: string;
 
     get defaultActionId(): string {
-        return this.view.defaultActionId;
+        return this._defaultActionId;
     }
 
     public initScroller(
@@ -91,6 +92,7 @@ export class QueryDialog extends Dialog {
             .getRecords(this.catavolt.session.tenantId, this.catavolt.session.id, this.id, queryParams)
             .then((recordSet: RecordSet) => {
                 this.lastRefreshTime = new Date();
+                this._defaultActionId = recordSet.defaultActionId;
                 return recordSet;
             });
     }
