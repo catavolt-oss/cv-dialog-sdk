@@ -197,21 +197,25 @@ export class RecordBuffer implements Record {
         return this._after.type;
     }
 
-    public setValue(name: string, value:any, propDef: PropertyDef) {
+    public setValue(name: string, value:any, propDef: PropertyDef): Property {
         const newProps = [];
         let found = false;
+        let newProp:Property = null;
         this.properties.forEach((prop: Property) => {
             if (prop.name === name) {
-                newProps.push(new Property(name, value, propDef.format, prop.annotations));
+                newProp = new Property(name, value, propDef.format, prop.annotations);
+                newProps.push(newProp);
                 found = true;
             } else {
                 newProps.push(prop);
             }
         });
         if (!found) {
-            newProps.push(new Property(name, value));
+            newProp = new Property(name, value);
+            newProps.push(newProps);
         }
         this._after = RecordUtil.newRecord(this.id, newProps, this.annotations);
+        return newProp;
     }
 
     get tipText(): string {

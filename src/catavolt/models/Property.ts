@@ -143,6 +143,9 @@ export class Property {
         return DataAnnotation.tipText(this.annotations);
     }
 
+   /*
+    Prepare value to be written to server
+    */
     get valueForWrite() {
         const o = this.value;
         if (typeof o === 'object') {

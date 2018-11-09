@@ -191,14 +191,14 @@ export class EditorDialog extends Dialog {
      * @param value
      * @returns {any}
      */
-    public setPropertyValue(name: string, value: any): any {
+    public setPropertyValue(name: string, value: any): Property {
         const propDef: PropertyDef = this.propDefAtName(name);
-        let parsedValue: any = null;
+        let property = null;
         if (propDef) {
-            parsedValue = value !== null && value !== undefined ? this.parseValue(value, propDef.propertyName) : null;
-            this.buffer.setValue(propDef.propertyName, parsedValue, propDef);
+            const parsedValue = value !== null && value !== undefined ? this.parseValue(value, propDef.propertyName) : null;
+            property = this.buffer.setValue(propDef.propertyName, parsedValue, propDef);
         }
-        return parsedValue;
+        return property;
     }
 
     /**
@@ -207,12 +207,12 @@ export class EditorDialog extends Dialog {
      * @param name
      * @param dataUrl
      */
-    public setLargePropertyWithDataUrl(name: string, dataUrl: string) {
+    public setLargePropertyWithDataUrl(name: string, dataUrl: string): Property {
         if (dataUrl) {
             const urlObj: DataUrl = new DataUrl(dataUrl);
-            this.setLargePropertyWithEncodedData(name, urlObj.data, urlObj.mimeType);
+            return this.setLargePropertyWithEncodedData(name, urlObj.data, urlObj.mimeType);
         } else {
-            this.setPropertyValue(name, null); // Property is being deleted/cleared
+            return this.setPropertyValue(name, null); // Property is being deleted/cleared
         }
     }
 
@@ -222,12 +222,14 @@ export class EditorDialog extends Dialog {
      * @param encodedData
      * @param mimeType
      */
-    public setLargePropertyWithEncodedData(name: string, encodedData: string, mimeType?: string) {
+    public setLargePropertyWithEncodedData(name: string, encodedData: string, mimeType?: string): Property {
         const propDef: PropertyDef = this.propDefAtName(name);
+        let property = null;
         if (propDef) {
             const value = new LargeProperty(encodedData, mimeType);
-            this.buffer.setValue(propDef.propertyName, value, propDef);
+            property = this.buffer.setValue(propDef.propertyName, value, propDef);
         }
+        return property;
     }
 
     /**
