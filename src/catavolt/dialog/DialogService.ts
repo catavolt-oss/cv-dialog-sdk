@@ -161,10 +161,10 @@ export class DialogService implements DialogApi {
         sessionId: string,
         dialogId: string,
         record: Record
-    ): Promise<Record | Redirection> {
+    ): Promise<EditorDialog | Redirection> {
         return this.put(`tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record`, record).then(
             jsonClientResponse =>
-                new DialogServiceResponse<Record | Redirection>(jsonClientResponse).responseValueOrRedirect()
+                new DialogServiceResponse<EditorDialog | Redirection>(jsonClientResponse).responseValueOrRedirect()
         );
     }
 

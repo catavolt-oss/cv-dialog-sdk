@@ -21,6 +21,7 @@
     "numeral": "2.0.6"
   },
   "devDependencies": {
+    "@babel/runtime": "^7.1.5",
     "@commitlint/cli": "^6.1.0",
     "@commitlint/config-conventional": "^6.1.0",
     "@types/numeral": "0.0.21",

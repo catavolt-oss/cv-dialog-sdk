@@ -1,27 +1,25 @@
-import { CatavoltApi } from '../dialog/CatavoltApi';
-import { StreamConsumer } from '../io/StreamConsumer';
-import { Base64 } from '../util/Base64';
-import { ActionParameters } from './ActionParameters';
-import { Attachment } from './Attachment';
-import { DialogException } from './DialogException';
-import { ErrorMessage } from './ErrorMessage';
-import { LargeProperty } from './LargeProperty';
-import { Menu } from './Menu';
-import { Property } from './Property';
-import { PropertyDef } from './PropertyDef';
-import { PropertyFormatter } from './PropertyFormatter';
-import { ReadLargePropertyParameters } from './ReadLargePropertyParameters';
-import { Record } from './Record';
-import { RecordDef } from './RecordDef';
-import { Redirection } from './Redirection';
-import { ReferringDialog } from './ReferringDialog';
-import { ReferringObject } from './ReferringObject';
-import { DialogType } from './types';
-import { DialogMode, DialogModeEnum } from './types';
-import { TypeNames, ViewMode } from './types';
-import { View } from './View';
-import { ViewDescriptor } from './ViewDescriptor';
-import { WriteLargePropertyParameters } from './WriteLargePropertyParams';
+import {CatavoltApi} from '../dialog/CatavoltApi';
+import {StreamConsumer} from '../io/StreamConsumer';
+import {Base64} from '../util/Base64';
+import {ActionParameters} from './ActionParameters';
+import {Attachment} from './Attachment';
+import {DialogException} from './DialogException';
+import {ErrorMessage} from './ErrorMessage';
+import {LargeProperty} from './LargeProperty';
+import {Menu} from './Menu';
+import {Property} from './Property';
+import {PropertyDef} from './PropertyDef';
+import {PropertyFormatter} from './PropertyFormatter';
+import {ReadLargePropertyParameters} from './ReadLargePropertyParameters';
+import {Record} from './Record';
+import {RecordDef} from './RecordDef';
+import {Redirection} from './Redirection';
+import {ReferringDialog} from './ReferringDialog';
+import {ReferringObject} from './ReferringObject';
+import {DialogMode, DialogModeEnum, DialogType, TypeNames, ViewMode, ViewModeEnum} from './types';
+import {View} from './View';
+import {ViewDescriptor} from './ViewDescriptor';
+import {WriteLargePropertyParameters} from './WriteLargePropertyParams';
 
 /**
  * Top-level class, representing a Catavolt 'Dialog' definition.
@@ -133,6 +131,10 @@ export abstract class Dialog {
      */
     get isRefreshNeeded(): boolean {
         return this._lastRefreshTime.getTime() < this.catavolt.dataLastChangedTime.getTime();
+    }
+
+    get isReadViewMode(): boolean {
+        return this.viewMode === ViewModeEnum.READ;
     }
 
     /**

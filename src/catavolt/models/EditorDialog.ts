@@ -1,7 +1,10 @@
+import {StringDictionary} from "../util";
 import { DataUrl } from '../util/DataUrl';
 import { Attachment } from './Attachment';
 import { AttributeCellValue } from './AttributeCellValue';
+import {Details} from "./Details";
 import { Dialog } from './Dialog';
+import {LabelCellValue} from "./LabelCellValue";
 import { LargeProperty } from './LargeProperty';
 import { Menu } from './Menu';
 import { NullRecord } from './NullRecord';
@@ -34,6 +37,9 @@ export class EditorDialog extends Dialog {
                 .then((result: EditorDialog | Redirection) => {
                     if (RedirectionUtil.isRedirection(result)) {
                         this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
+                        if ((result as Redirection).refreshNeeded) {
+                            this.catavolt.dataLastChangedTime = new Date();
+                        }
                         return result;
                     } else {
                         const dialog = result as EditorDialog;
@@ -47,11 +53,41 @@ export class EditorDialog extends Dialog {
     }
 
     /**
+     * Get the associated properties
+     */
+    get props(): Property[] {
+        return this.record.properties;
+    }
+
+    get constants(): string[]{
+        if(this.view instanceof Details) {
+           return this.view.constants;
+        }
+        return null;
+    }
+
+    get attributeCells(): AttributeCellValue[] {
+        if(this.view instanceof Details) {
+            return this.view.attributeCells;
+        }
+        return null;
+    }
+
+    get labelsByPropName(): StringDictionary {
+        if(this.view instanceof Details) {
+            return this.view.labelsByPropName;
+        }
+        return null;
+    }
+
+
+
+    /**
      * Get the associated entity record
      * @returns {Record}
      */
     get record(): Record {
-        return this._buffer.toRecord();
+        return this.buffer.toRecord();
     }
 
     /**
@@ -236,7 +272,7 @@ export class EditorDialog extends Dialog {
      * Write this record (i.e. {@link Record}} back to the server
      * @returns {Promise<Record | Redirection>}
      */
-    public write(): Promise<Record | Redirection> {
+    public write(): Promise<EditorDialog | Redirection> {
         const deltaRec: Record = this.buffer.afterEffects();
         /* Write the 'special' props first */
         return this.writeLargeProperties(deltaRec).then((binResult: void[]) => {
@@ -245,16 +281,22 @@ export class EditorDialog extends Dialog {
                 const writableRecord: Record = this.getWriteableRecord(deltaRec);
                 return this.catavolt.dialogApi
                     .putRecord(this.tenantId, this.sessionId, this.id, writableRecord)
-                    .then((result: Record | Redirection) => {
+                    .then((result: EditorDialog | Redirection) => {
                         const now = new Date();
                         this.catavolt.dataLastChangedTime = now;
                         this.lastRefreshTime = now;
                         if (RedirectionUtil.isRedirection(result)) {
                             this.updateSettingsWithNewDialogProperties((result as Redirection).referringObject);
+                            if ((result as Redirection).refreshNeeded) {
+                                this.catavolt.dataLastChangedTime = new Date();
+                            }
                             return result;
                         } else {
-                            this.initBuffer(result as Record);
-                            return this.record;
+                            const dialog = result as EditorDialog;
+                            // any new dialog needs to be initialized with the Catavolt object
+                            dialog.initialize(this.catavolt);
+                            this.updateSettingsWithNewDialogProperties(dialog.referringObject);
+                            return dialog;
                         }
                     });
             });

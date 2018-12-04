@@ -139,7 +139,7 @@ export class PropertyFormatter {
         } else if ((propDef && propDef.isDateType) || value instanceof Date) {
             return moment(value as Date)
                 .locale(locales)
-                .format('l');
+                .format('ll');
         } else if ((propDef && propDef.isTimeType) || value instanceof TimeValue) {
             return moment(value as TimeValue)
                 .locale(locales)
@@ -175,6 +175,7 @@ export class PropertyFormatter {
 
     /**
      * Attempt to construct (or preserve) the appropriate data type given primitive (or already constructed) value.
+     * Note this must be done here and not at 'write' time because it requires the knowledge of the PropDef
      * @param value
      * @param propDef
      * @returns {}

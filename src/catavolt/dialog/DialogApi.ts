@@ -113,7 +113,7 @@ export interface DialogApi {
         pendingWrites: Record
     ): Promise<Record>;
 
-    putRecord(tenantId: string, sessionId: string, dialogId: string, record: Record): Promise<Record | Redirection>;
+    putRecord(tenantId: string, sessionId: string, dialogId: string, record: Record): Promise<EditorDialog | Redirection>;
 
     getRecords(tenantId: string, sessionId: string, dialogId: string, queryParams: QueryParameters): Promise<RecordSet>;
 

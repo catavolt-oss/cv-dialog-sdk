@@ -47,13 +47,9 @@ export abstract class View {
      * @returns {Menu}
      */
     public findMenuAt(actionId: string): Menu {
-        let result: Menu = null;
         if (this.menu) {
-            this.menu.children.some((md: Menu) => {
-                result = md.findAtActionId(actionId);
-                return result != null;
-            });
+           return this.menu.findAtActionId(actionId);
         }
-        return result;
+        return null;
     }
 }

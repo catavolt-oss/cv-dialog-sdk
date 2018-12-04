@@ -61,14 +61,26 @@ export class Menu {
     }
 
     get isRead(): boolean {
-        return this.modes && this.modes.indexOf('READ') > -1;
+        return Menu.isRead(this);
     }
 
     get isSeparator(): boolean {
-        return this.type && this.type === 'separator';
+        return Menu.isSeparator(this);
     }
 
     get isWrite(): boolean {
-        return this.modes && this.modes.indexOf('WRITE') > -1;
+        return Menu.isWrite(this);
+    }
+
+    public static isRead(menu:Menu):boolean {
+       return menu.modes && menu.modes.indexOf('READ') > -1;
+    }
+
+    public static isSeparator(menu:Menu): boolean {
+        return menu.type && menu.type === 'separator';
+    }
+
+    public static isWrite(menu:Menu): boolean {
+        return menu.modes && menu.modes.indexOf('WRITE') > -1;
     }
 }
