@@ -2,7 +2,7 @@ import {ClientListener} from "../client/ClientListener";
 import { StreamProducer } from '../io/StreamProducer';
 import {
     ActionParameters,
-    Attachment,
+    Attachment, AvailableValuesParameters,
     Dialog,
     EditorDialog,
     LargeProperty,
@@ -121,7 +121,8 @@ export interface DialogApi {
         tenantId: string,
         sessionId: string,
         dialogId: string,
-        propertyName: string
+        propertyName: string,
+        availableValuesParams: AvailableValuesParameters,
     ): Promise<Array<any>>;
 
     getMode(tenantId: string, sessionId: string, dialogId: string): Promise<ViewMode>;

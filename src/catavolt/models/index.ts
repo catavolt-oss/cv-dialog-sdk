@@ -13,6 +13,7 @@ export * from './Record';
 export * from './Redirection';
 export * from './NullRecord';
 export * from './ActionParameters';
+export * from './AvailableValuesParameters';
 export * from './AppWindow';
 export * from './AttributeCellValue';
 export * from './BarcodeScan';

@@ -99,7 +99,10 @@ export class EditorDialog extends Dialog {
     }
 
     public getAvailableValues(propName: string): Promise<any[]> {
-        return this.catavolt.dialogApi.getAvailableValues(this.tenantId, this.sessionId, this.id, propName);
+        return this.catavolt.dialogApi.getAvailableValues(this.tenantId, this.sessionId, this.id, propName, {
+            pendingWrites: this.getWriteableRecord(this.buffer.afterEffects()),
+            type: TypeNames.AvailableValuesParametersTypeName,
+        });
     }
 
     /**
@@ -186,7 +189,7 @@ export class EditorDialog extends Dialog {
      */
     public processSideEffects(propertyName: string, value: any): Promise<void> {
         return this.catavolt.dialogApi
-            .propertyChange(this.tenantId, this.sessionId, this.id, propertyName, value, this.buffer.afterEffects())
+            .propertyChange(this.tenantId, this.sessionId, this.id, propertyName, value, this.getWriteableRecord(this.buffer.afterEffects()))
             .then((sideEffectsRecord: Record) => {
                 const originalProperties = this.buffer.before.properties;
                 const userModifiedProperties = this.buffer.afterEffects().properties;

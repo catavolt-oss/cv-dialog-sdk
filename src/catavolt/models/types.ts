@@ -69,6 +69,7 @@ export type ViewType =
 
 export enum TypeNames {
     ActionParametersTypeName = 'hxgn.api.dialog.ActionParameters',
+    AvailableValuesParametersTypeName = 'hxgn.api.dialog.AvailableValuesParameters',
     AppWindowTypeName = 'hxgn.api.dialog.AppWindow',
     BarcodeScanTypeName = 'hxgn.api.dialog.BarcodeScan',
     CalendarTypeName = 'hxgn.api.dialog.Calendar',

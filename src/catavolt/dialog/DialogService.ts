@@ -4,7 +4,7 @@ import { JsonClientResponse } from '../client/JsonClientResponse';
 import { StreamProducer } from '../io/StreamProducer';
 import {
     ActionParameters,
-    Attachment,
+    Attachment, AvailableValuesParameters,
     DefaultModelUtil,
     Dialog,
     DialogMessage,
@@ -241,10 +241,12 @@ export class DialogService implements DialogApi {
         tenantId: string,
         sessionId: string,
         dialogId: string,
-        propertyName: string
+        propertyName: string,
+        availableValuesParams:AvailableValuesParameters,
     ): Promise<Array<any>> {
-        return this.get(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record/${propertyName}/availableValues`
+        return this.post(
+            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record/${propertyName}/availableValues`,
+            availableValuesParams
         ).then(jsonClientResponse => new DialogServiceResponse<Array<any>>(jsonClientResponse).responseValue());
     }
 
