@@ -16,6 +16,15 @@ export class List extends View {
     public readonly filter: Filter[];
     public readonly sort: Sort[];
 
+    public getColumnAt(propName:string): Column {
+        if(this.columns) {
+            return this.columns.find((column) => {
+                return propName === column.propertyName;
+            });
+        }
+        return null;
+    }
+
     get isDefaultStyle(): boolean {
         return this.style && this.style === 'DEFAULT';
     }
