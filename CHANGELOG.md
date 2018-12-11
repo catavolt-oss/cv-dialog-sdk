@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.27.0"></a>
+# [4.27.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.26.13...v4.27.0) (2018-12-11)
+
+
+### Features
+
+* get column by property name ([c56f3c5](https://github.com/catavolt-oss/cv-dialog-sdk/commit/c56f3c5))
+
+
+
 <a name="4.26.13"></a>
 ## [4.26.13](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.26.12...v4.26.13) (2018-12-06)
 
