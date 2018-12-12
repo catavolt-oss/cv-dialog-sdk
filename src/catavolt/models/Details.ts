@@ -47,38 +47,42 @@ export class Details extends View {
     }
 
     public getAttributeCellValue(propertyName:string):AttributeCellValue {
-        if(!this.attributeCellMap) {
-            this.initIndexes();
-        }
-        return this.attributeCellMap[propertyName];
+        return this.attributeCellsByPropName[propertyName];
     }
     /**
      * 1-based index
      * @param number
      */
     public getConstantByIndex(index:number):string {
-        if(!this.constantsArray) {
-            this.initIndexes();
-        }
-        return this.constantsArray.length >= index ? this.constantsArray[index - 1] : null;
+        return this.constants.length >= index ? this.constants[index - 1] : null;
     }
 
     public getLabelForProperty(propertyName:string):LabelCellValue {
-        if(!this.propertyLabelMap) {
-            this.initIndexes();
-        }
-        return this.propertyLabelMap[propertyName];
+        return this.labelsByPropName[propertyName];
     }
 
     public get constants():string[] {
+        if(!this.constantsArray) {
+            this.initIndexes();
+        }
         return this.constantsArray;
     }
 
     public get attributeCells():AttributeCellValue[] {
-        return Object.keys(this.attributeCellMap).map(key => this.attributeCellMap[key]);
+        return Object.keys(this.attributeCellsByPropName).map(key => this.attributeCellsByPropName[key]);
+    }
+
+    public get attributeCellsByPropName():StringDictionary {
+        if(!this.attributeCellMap) {
+            this.initIndexes();
+        }
+        return this.attributeCellMap;
     }
 
     public get labelsByPropName():StringDictionary {
+        if(!this.propertyLabelMap) {
+            this.initIndexes();
+        }
         return this.propertyLabelMap;
     }
 
@@ -93,9 +97,13 @@ export class Details extends View {
                 const [labelCellValue] = firstCell.values;
                 if(labelCellValue instanceof LabelCellValue) {
                     if(secondCell && secondCell.values) {
-                        const [ attributeCellValue ] = secondCell.values;
-                        if(attributeCellValue instanceof AttributeCellValue) {
-                            this.propertyLabelMap[attributeCellValue.propertyName] = labelCellValue;
+                        const [ cellValue ] = secondCell.values;
+                        if(cellValue instanceof AttributeCellValue) {
+                            this.propertyLabelMap[cellValue.propertyName] = labelCellValue;
+                        } else if(cellValue instanceof LabelCellValue){
+                            if(!cellValue.value) {
+                                this.constantsArray.push(labelCellValue.value);
+                            }
                         }
                     } else {
                         this.constantsArray.push(labelCellValue.value);
