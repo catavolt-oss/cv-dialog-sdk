@@ -199,8 +199,7 @@ export class EditorDialog extends Dialog {
         return this.catavolt.dialogApi
             .propertyChange(this.tenantId, this.sessionId, this.id, propertyName, sideEffectsParameters)
             .then((sideEffectsResponse:SideEffectsResponse) => {
-                // @TODO - should this really be mutable?
-                // this.recordDef = sideEffectsResponse.recordDef;
+                this.recordDef = sideEffectsResponse.recordDef;
                 const sideEffectsRecord = sideEffectsResponse.record;
                 const originalProperties = this.buffer.before.properties;
                 const userModifiedProperties = this.buffer.afterEffects().properties;

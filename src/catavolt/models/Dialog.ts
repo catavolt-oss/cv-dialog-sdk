@@ -39,7 +39,7 @@ export abstract class Dialog {
     public dialogMode: DialogMode;
     public readonly header: View;
     public readonly id: string;
-    public readonly recordDef: RecordDef;
+    public recordDef: RecordDef;
     public readonly referringObject: ReferringObject;
     public readonly selectedViewId: string;
     public readonly sessionId: string;
