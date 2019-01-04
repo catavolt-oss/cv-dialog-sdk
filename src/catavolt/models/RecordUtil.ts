@@ -2,6 +2,7 @@ import { ArrayUtil } from '../util';
 import { DataAnnotation } from './DataAnnotation';
 import { NullRecord } from './NullRecord';
 import { Property } from './Property';
+import {PropertyDef} from "./PropertyDef";
 import { Record } from './Record';
 import { RecordBuffer } from './RecordBuffer';
 import { RecordImpl } from './RecordImpl';

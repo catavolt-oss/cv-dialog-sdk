@@ -4,7 +4,6 @@ import { Attachment } from './Attachment';
 import { AttributeCellValue } from './AttributeCellValue';
 import {Details} from "./Details";
 import { Dialog } from './Dialog';
-import {LabelCellValue} from "./LabelCellValue";
 import { LargeProperty } from './LargeProperty';
 import { Menu } from './Menu';
 import { NullRecord } from './NullRecord';
@@ -16,6 +15,8 @@ import { RecordBuffer } from './RecordBuffer';
 import { RecordUtil } from './RecordUtil';
 import { Redirection } from './Redirection';
 import { RedirectionUtil } from './RedirectionUtil';
+import {SideEffectsParameters} from "./SideEffectsParameters";
+import {SideEffectsResponse} from "./SideEffectsResponse";
 import { TypeNames } from './types';
 import { ViewMode } from './types';
 import { ViewModeEnum } from './types';
@@ -188,9 +189,19 @@ export class EditorDialog extends Dialog {
      * available values may change. (i.e. Country, State, City dropdowns)
      */
     public processSideEffects(propertyName: string, value: any): Promise<void> {
+        const property = this.newProperty(propertyName, value);
+        const sideEffectsParameters:SideEffectsParameters = {
+            property,
+            pendingWrites: this.getWriteableRecord(this.buffer.afterEffects()),
+            type: TypeNames.SideEffectsParameters
+        };
+
         return this.catavolt.dialogApi
-            .propertyChange(this.tenantId, this.sessionId, this.id, propertyName, value, this.getWriteableRecord(this.buffer.afterEffects()))
-            .then((sideEffectsRecord: Record) => {
+            .propertyChange(this.tenantId, this.sessionId, this.id, propertyName, sideEffectsParameters)
+            .then((sideEffectsResponse:SideEffectsResponse) => {
+                // @TODO - should this really be mutable?
+                // this.recordDef = sideEffectsResponse.recordDef;
+                const sideEffectsRecord = sideEffectsResponse.record;
                 const originalProperties = this.buffer.before.properties;
                 const userModifiedProperties = this.buffer.afterEffects().properties;
                 const sideEffectsProperties = sideEffectsRecord.properties.filter((prop: Property) => {
@@ -238,6 +249,17 @@ export class EditorDialog extends Dialog {
             property = this.buffer.setValue(propDef.propertyName, parsedValue, propDef);
         }
         return property;
+    }
+
+    public newProperty(name: string, value:any):Property {
+        const propDef: PropertyDef = this.propDefAtName(name);
+        const property = this.buffer.propAtName(name);
+        let newProperty = null;
+        if (propDef) {
+            const parsedValue = value !== null && value !== undefined ? this.parseValue(value, propDef.propertyName) : null;
+            newProperty = new Property(property.name, parsedValue, propDef.format, property.annotations);
+        }
+        return newProperty;
     }
 
     /**

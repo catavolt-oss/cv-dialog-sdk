@@ -72,7 +72,6 @@ export class Property {
      *
      * @param {string} name
      * @param value
-     * @param {string} propertyType
      * @param {string} format
      * @param {Array<DataAnnotation>} annotations
      */

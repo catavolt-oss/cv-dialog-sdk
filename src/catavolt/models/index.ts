@@ -62,6 +62,8 @@ export * from './RecordSet';
 export * from './RecordUtil';
 export * from './RedirectionUtil';
 export * from './Session';
+export * from './SideEffectsParameters';
+export * from './SideEffectsResponse';
 export * from './Sort';
 export * from './Stream';
 export * from './SubstitutionCellValue';

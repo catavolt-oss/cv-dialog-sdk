@@ -13,7 +13,7 @@ import {
     Record,
     RecordSet,
     Redirection,
-    Session,
+    Session, SideEffectsParameters, SideEffectsResponse,
     View,
     ViewDescriptor,
     ViewMode,
@@ -109,9 +109,8 @@ export interface DialogApi {
         sessionId: string,
         dialogId: string,
         propertyName: string,
-        propertyValue: any,
-        pendingWrites: Record
-    ): Promise<Record>;
+        sideEffectsParams: SideEffectsParameters
+    ): Promise<SideEffectsResponse>;
 
     putRecord(tenantId: string, sessionId: string, dialogId: string, record: Record): Promise<EditorDialog | Redirection>;
 

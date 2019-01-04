@@ -17,7 +17,7 @@ import {
     Record,
     RecordSet,
     Redirection,
-    Session,
+    Session, SideEffectsParameters, SideEffectsResponse,
     View,
     ViewDescriptor,
     ViewMode,
@@ -220,21 +220,17 @@ export class DialogService implements DialogApi {
         );
     }
 
-    // @TODO
     public propertyChange(
         tenantId: string,
         sessionId: string,
         dialogId: string,
         propertyName: string,
-        propertyValue: any,
-        pendingWrites: Record
-    ): Promise<Record> {
-        /*
+        sideEffectsParams: SideEffectsParameters
+    ): Promise<SideEffectsResponse> {
         return this.post(
-            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/records/${propertyName}`, propertyChangeParams
-        ).then(jsonClientResponse => new DialogServiceResponse<LargeProperty>(jsonClientResponse).responseValue());
-        */
-        return Promise.resolve(null);
+            `tenants/${tenantId}/sessions/${sessionId}/dialogs/${dialogId}/record/${propertyName}/sideEffects`,
+            sideEffectsParams,
+        ).then(jsonClientResponse => new DialogServiceResponse<SideEffectsResponse>(jsonClientResponse).responseValue());
     }
 
     public getAvailableValues(

@@ -99,6 +99,8 @@ export enum TypeNames {
     RecordTypeName = 'hxgn.api.dialog.Record',
     ReferringDialogTypeName = 'hxgn.api.dialog.ReferringDialog',
     ReferringWorkbenchTypeName = 'hxgn.api.dialog.ReferringWorkbench',
+    SideEffectsParameters = 'hxgn.api.dialog.SideEffectsParameters',
+    SideEffectsResponse = 'hxgn.api.dialog.SideEffectsResponse',
     SessionTypeName = 'hxgn.api.dialog.Session',
     StreamTypeName = 'hxgn.api.dialog.Stream',
     WebRedirectionTypeName = 'hxgn.api.dialog.WebRedirection',
