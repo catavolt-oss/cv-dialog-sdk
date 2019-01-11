@@ -450,7 +450,8 @@ export class SdaDialogDelegate implements DialogDelegate {
         const thisMethod = 'SdaDialogDelegate::captureNextOfflineWorkPackage';
         Log.info(`${thisMethod} -- capturing work package for offline: ${nextWorkPackageId}`);
         this.notifyClientListener({
-            message: `Capturing work package: ${nextWorkPackageId}`,
+            // message: `Capturing work package: ${nextWorkPackageId}`,
+            message: `Capturing work package`,
             eventType: ClientEventType.MESSAGE
         });
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, onlineWorkPackagesListDialogId, offlineWorkPackagesListDialogId, SdaDialogDelegate.ALIAS_OPEN_MENU_ACTION_ID, nextWorkPackageId);
@@ -470,7 +471,8 @@ export class SdaDialogDelegate implements DialogDelegate {
         const thisMethod = 'SdaDialogDelegate::captureNextOfflineTags';
         Log.info(`${thisMethod} -- capturing tags for offline: ${nextWorkPackageId}`);
         this.notifyClientListener({
-            message: `Capturing tags: ${nextWorkPackageId}`,
+            // message: `Capturing tags: ${nextWorkPackageId}`,
+            message: `Capturing tags`,
             eventType: ClientEventType.MESSAGE
         });
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeDocumentsListDialog.visitId(), afterDocumentsListDialog.visitId(), SdaDialogDelegate.ALIAS_SHOW_TAGS_MENU_ACTION_ID, null);
@@ -490,7 +492,8 @@ export class SdaDialogDelegate implements DialogDelegate {
         const nextTagRecordId = nextTagRecordVisitor.visitRecordId();
         Log.info(`${thisMethod} -- capturing tag for offline: ${nextTagRecordId}`);
         this.notifyClientListener({
-            message: `Capturing tag: ${nextTagRecordId}`,
+            // message: `Capturing tag: ${nextTagRecordId}`,
+            message: `Capturing tag`,
             eventType: ClientEventType.MESSAGE
         });
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeTagsListDialog.visitId(), afterTagsListDialog.visitId(), SdaDialogDelegate.OPEN_MENU_ACTION_ID, nextTagRecordId);
@@ -514,7 +517,8 @@ export class SdaDialogDelegate implements DialogDelegate {
         // GET REDIRECTION //
         const nextDocumentId = nextDocumentRecordVisitor.visitRecordId();
         this.notifyClientListener({
-            message: `Capturing document: ${nextDocumentId}`,
+            // message: `Capturing document: ${nextDocumentId}`,
+            message: `Capturing document`,
             eventType: ClientEventType.MESSAGE
         });
         const nextDocumentIdEncoded = Base64.encodeUrlSafeString(nextDocumentId);
@@ -578,7 +582,8 @@ export class SdaDialogDelegate implements DialogDelegate {
         const nextDocumentRecordId = nextDocumentRecordVisitor.visitRecordId();
         Log.info(`${thisMethod} -- capturing last comment: ${nextDocumentRecordId}`);
         this.notifyClientListener({
-            message: `Capturing last comment at document id: ${nextDocumentRecordId}`,
+            // message: `Capturing last comment at document id: ${nextDocumentRecordId}`,
+            message: `Capturing last comment for document`,
             eventType: ClientEventType.MESSAGE
         });
         const beforeAndAfterValues = await DialogProxyTools.captureMenuActionRedirectionAndDialog(this.delegateUserId(), baseUrl, tenantId, sessionId, beforeDocumentsListDialog.visitId(), afterDocumentsListDialog.visitId(), SdaDialogDelegate.ALIAS_SHOW_LATEST_MENU_ACTION_ID, nextDocumentRecordId);
@@ -863,7 +868,8 @@ export class SdaDialogDelegate implements DialogDelegate {
         for (const workPackageId of this._dialogDelegateStateVisitor.visitSelectedWorkPackageIds()) {
             Log.info(`${thisMethod} -- synchronizing selected work package: ${workPackageId}`);
             this.notifyClientListener({
-                message: `Synchronizing work package: ${workPackageId}`,
+                // message: `Synchronizing work package: ${workPackageId}`,
+                message: `Synchronizing work package`,
                 eventType: ClientEventType.MESSAGE
             });
             const workPackageIdEncoded = Base64.encodeUrlSafeString(workPackageId);
@@ -873,7 +879,8 @@ export class SdaDialogDelegate implements DialogDelegate {
             // NOTE: WE ARE NOT RETRIEVING DOCUMENT RECORDS
             // --------------------------------------------------------- //
             this.notifyClientListener({
-                message: `Retrieving documents for work package: ${workPackageId}`,
+                // message: `Retrieving documents for work package: ${workPackageId}`,
+                message: `Retrieving documents for work package`,
                 eventType: ClientEventType.MESSAGE
             });
             const documentsMenuActionPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${workPackagesListDialogVisitor.visitId()}/actions/${SdaDialogDelegate.ALIAS_OPEN_MENU_ACTION_ID}`;
@@ -985,7 +992,8 @@ export class SdaDialogDelegate implements DialogDelegate {
             };
             Log.info(`${thisMethod} -- getting tags redirection: ${tagsMenuActionPath}`);
             this.notifyClientListener({
-                message: `Getting tags for work package: ${workPackageId}`,
+                // message: `Getting tags for work package: ${workPackageId}`,
+                message: `Getting tags for work package`,
                 eventType: ClientEventType.MESSAGE
             });
             const tagsDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), tagsMenuActionPath, tagsMenuActionParameters);
@@ -1049,7 +1057,8 @@ export class SdaDialogDelegate implements DialogDelegate {
                         };
                         Log.info(`${thisMethod} -- opening a create tag comment dialog: ${createCommentMenuActionPath}`);
                         this.notifyClientListener({
-                            message: `Synchronizing tag comment: ${tagId}`,
+                            // message: `Synchronizing tag comment: ${tagId}`,
+                            message: `Synchronizing tag comment`,
                             eventType: ClientEventType.MESSAGE
                         });
                         const createCommentDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), createCommentMenuActionPath, createCommentMenuActionParameters);
@@ -1070,7 +1079,8 @@ export class SdaDialogDelegate implements DialogDelegate {
                         const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
                         if (propertyCommitJsonObject) {
                             this.notifyClientListener({
-                                message: `Writing image for tag comment: ${tagId}`,
+                                // message: `Writing image for tag comment: ${tagId}`,
+                                message: `Writing image for tag comment`,
                                 eventType: ClientEventType.MESSAGE
                             });
                             const commitCreateCommentPropertyPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${createCommentDialogRedirectionVisitor.visitDialogId()}/record/P_IMAGE`;
@@ -1143,7 +1153,8 @@ export class SdaDialogDelegate implements DialogDelegate {
                         };
                         Log.info(`${thisMethod} -- opening a create tag doc comment dialog: ${createCommentMenuActionPath}`);
                         this.notifyClientListener({
-                            message: `Synchronizing tag document comment: ${tagDocumentId}`,
+                            // message: `Synchronizing tag document comment: ${tagDocumentId}`,
+                            message: `Synchronizing tag document comment`,
                             eventType: ClientEventType.MESSAGE
                         });
                         const createCommentDialogRedirectionJcr = await DialogProxyTools.commonFetchClient().postJson(this.delegateBaseUrl(), createCommentMenuActionPath, createCommentMenuActionParameters);
@@ -1164,7 +1175,8 @@ export class SdaDialogDelegate implements DialogDelegate {
                         const propertyCommitJsonObject = await storage.getJson(propertyCommitKey);
                         if (propertyCommitJsonObject) {
                             this.notifyClientListener({
-                                message: `Writing image for tag comment: ${tagDocumentId}`,
+                                // message: `Writing image for tag comment: ${tagDocumentId}`,
+                                message: `Writing image for tag comment`,
                                 eventType: ClientEventType.MESSAGE
                             });
                             const commitCreateCommentPropertyPath = `tenants/${tenantId}/sessions/${sessionId}/dialogs/${createCommentDialogRedirectionVisitor.visitDialogId()}/record/P_IMAGE`;
