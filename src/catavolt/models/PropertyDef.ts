@@ -130,6 +130,10 @@ export class PropertyDef {
         return this.semanticType === 'PERCENTAGE';
     }
 
+    get isReadOnly(): boolean {
+        return !this.writeAllowed || !this.writeEnabled;
+    }
+
     get isSignatureType(): boolean {
         return this.semanticType === 'USER_SIGNATURE';
     }

@@ -60,6 +60,10 @@ export class EditorDialog extends Dialog {
         return this.record.properties;
     }
 
+    get propertyDefs(): PropertyDef[] {
+        return this.recordDef.propertyDefs;
+    }
+
     get constants(): string[]{
         if(this.view instanceof Details) {
            return this.view.constants;
@@ -133,7 +137,7 @@ export class EditorDialog extends Dialog {
     public isReadModeFor(propName: string): boolean {
         if (!this.isReadMode) {
             const propDef = this.propDefAtName(propName);
-            return !propDef || !propDef.writeAllowed || !propDef.writeEnabled;
+            return !propDef || propDef.isReadOnly;
         }
         return true;
     }
