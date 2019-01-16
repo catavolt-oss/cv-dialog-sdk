@@ -132,12 +132,14 @@ export class PropertyFormatter {
             return (value as CodeRef).description;
         } else if ((propDef && propDef.isObjRefType) || value instanceof ObjectRef) {
             return (value as ObjectRef).description;
-        } else if (propDef && propDef.isDateTimeType) {
-            return moment(value as Date)
+        } else if ((propDef && propDef.isDateTimeType) || value instanceof DateTimeValue) {
+            const dateValue = (value instanceof  DateTimeValue) ? value.dateObj : value;
+            return moment(dateValue)
                 .locale(locales)
                 .format('lll');
-        } else if ((propDef && propDef.isDateType) || value instanceof Date) {
-            return moment(value as Date)
+        } else if ((propDef && propDef.isDateType) || value instanceof Date || value instanceof DateValue) {
+            const dateValue = (value instanceof DateValue) ? value.dateObj : value;
+            return moment(dateValue)
                 .locale(locales)
                 .format('ll');
         } else if ((propDef && propDef.isTimeType) || value instanceof TimeValue) {
