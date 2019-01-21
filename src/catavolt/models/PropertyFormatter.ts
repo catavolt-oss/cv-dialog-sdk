@@ -185,9 +185,11 @@ export class PropertyFormatter {
     public parse(value: any, propDef: PropertyDef): any {
         let propValue: any = value;
         if (propDef.isDecimalType) {
-            propValue = Number(value);
+            const newVal = typeof value === 'string' ? value.replace(',', '') : value;
+            propValue = Number(newVal);
         } else if (propDef.isLongType) {
-            propValue = Number(value);
+            const newVal = typeof value === 'string' ? value.replace(',', '') : value;
+            propValue = Number(newVal);
         } else if (propDef.isBooleanType) {
             if (typeof value === 'string') {
                 propValue = value !== 'false';

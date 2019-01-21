@@ -134,6 +134,10 @@ export class PropertyDef {
         return !this.writeAllowed || !this.writeEnabled;
     }
 
+    get isWritable(): boolean {
+        return this.writeAllowed || this.writeEnabled;
+    }
+
     get isSignatureType(): boolean {
         return this.semanticType === 'USER_SIGNATURE';
     }

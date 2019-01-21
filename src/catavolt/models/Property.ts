@@ -21,41 +21,6 @@ import { TypeNames } from './types';
 export class Property {
 
     private type:string = TypeNames.PropertyTypeName;
-    /**
-     * Produce an unique string that can be used for comparison purposes
-     * Props considered 'equal' should produce the same identity string
-     *
-     * @param o
-     * @param {PropertyDef} propDef
-     * @returns {string}
-     */
-    public static identity(o: any, propDef: PropertyDef): string {
-        if (typeof o === 'number') {
-            return String(o);
-        } else if (typeof o === 'object') {
-            if (o instanceof Date) {
-                return String(o.getTime());
-            } else if (o instanceof DateValue) {
-                return String((o as DateValue).dateObj.getTime());
-            } else if (o instanceof DateTimeValue) {
-                return String((o as DateTimeValue).dateObj.getTime());
-            } else if (o instanceof TimeValue) {
-                return o.toString();
-            } else if (o instanceof CodeRef) {
-                return (o as CodeRef).code;
-            } else if (o instanceof ObjectRef) {
-                return (o as ObjectRef).objectId;
-            } else if (o instanceof GpsReading) {
-                return o.toString();
-            } else if (o instanceof MapLocation) {
-                return o.toString();
-            } else {
-                return String(o);
-            }
-        } else {
-            return String(o);
-        }
-    }
 
     public static fromJSON(jsonObject: StringDictionary, modelUtil: ModelUtil): Promise<Property> {
         return modelUtil.jsonToModel<DataAnnotation[]>(jsonObject.annotations).then((annotations: DataAnnotation[]) => {
@@ -66,6 +31,41 @@ export class Property {
                 annotations
             );
         });
+    }
+
+    /**
+     * Produce a value that can be used for comparison purposes
+     * Props considered 'equal' should produce the same identity value
+     *
+     * @param o
+     * @returns {any}
+     */
+    public static valueForCompare(o: any): any {
+        if (typeof o === 'number') {
+            return o;
+        } else if (typeof o === 'object') {
+            if (o instanceof Date) {
+                return o.getTime();
+            } else if (o instanceof DateValue) {
+                return o.dateObj.getTime();
+            } else if (o instanceof DateTimeValue) {
+                return o.dateObj.getTime();
+            } else if (o instanceof TimeValue) {
+                return o.toDateValue().getTime();
+            } else if (o instanceof CodeRef) {
+                return o.code;
+            } else if (o instanceof ObjectRef) {
+                return o.objectId;
+            } else if (o instanceof GpsReading) {
+                return o.toString();
+            } else if (o instanceof MapLocation) {
+                return o.toString();
+            } else {
+                return String(o);
+            }
+        } else {
+            return String(o);
+        }
     }
 
     /**
@@ -140,6 +140,13 @@ export class Property {
 
     get tipText(): string {
         return DataAnnotation.tipText(this.annotations);
+    }
+
+    /**
+     * Get a primative value appropriate for comparison
+     */
+    get comparable(): any {
+        return Property.valueForCompare(this.value);
     }
 
    /*
