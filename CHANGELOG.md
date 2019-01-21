@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.29.1"></a>
+## [4.29.1](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.29.0...v4.29.1) (2019-01-21)
+
+
+### Bug Fixes
+
+* fix comparator ops for properties ([7f3d30a](https://github.com/catavolt-oss/cv-dialog-sdk/commit/7f3d30a))
+
+
+
 <a name="4.29.0"></a>
 # [4.29.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.28.1...v4.29.0) (2019-01-16)
 
