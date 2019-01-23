@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.29.2"></a>
+## [4.29.2](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.29.1...v4.29.2) (2019-01-23)
+
+
+### Bug Fixes
+
+* added defaultActionId and displayInline ([fdb188e](https://github.com/catavolt-oss/cv-dialog-sdk/commit/fdb188e))
+* removed JSON from status message ([99b73f1](https://github.com/catavolt-oss/cv-dialog-sdk/commit/99b73f1))
+
+
+
 <a name="4.29.1"></a>
 ## [4.29.1](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.29.0...v4.29.1) (2019-01-21)
 
