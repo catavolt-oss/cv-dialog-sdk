@@ -192,7 +192,7 @@ export class PropertyFormatter {
             propValue = Number(newVal);
         } else if (propDef.isBooleanType) {
             if (typeof value === 'string') {
-                propValue = value !== 'false';
+                propValue = value !== 'false' && value !== 'no' && value !== '0';
             } else {
                 propValue = !!value;
             }
@@ -224,6 +224,12 @@ export class PropertyFormatter {
             } else {
                 propValue = TimeValue.fromString(value);
             }
+        } else if (propDef.isCodeRefType) {
+           if(typeof value === 'string') {
+
+           }
+        } else if (propDef.isObjRefType) {
+
         }
         return propValue;
     }

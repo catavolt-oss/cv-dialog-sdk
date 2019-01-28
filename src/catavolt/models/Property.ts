@@ -41,6 +41,9 @@ export class Property {
      * @returns {any}
      */
     public static valueForCompare(o: any): any {
+        if(o === null || o === undefined) {
+            return o;
+        }
         if (typeof o === 'number') {
             return o;
         } else if (typeof o === 'object') {
