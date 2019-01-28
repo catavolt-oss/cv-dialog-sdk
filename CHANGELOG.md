@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.29.3"></a>
+## [4.29.3](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.29.2...v4.29.3) (2019-01-28)
+
+
+### Bug Fixes
+
+* add bool compat with string values of yes and 1 ([b4d71ee](https://github.com/catavolt-oss/cv-dialog-sdk/commit/b4d71ee))
+
+
+
 <a name="4.29.2"></a>
 ## [4.29.2](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.29.1...v4.29.2) (2019-01-23)
 
