@@ -265,6 +265,18 @@ export class EditorDialog extends Dialog {
         return newProperty;
     }
 
+    public newLargePropertyWithDataUrl(dataUrl: string): LargeProperty {
+        if (dataUrl) {
+            const urlObj: DataUrl = new DataUrl(dataUrl);
+            return this.newLargePropertyWithEncodedData(urlObj.data, urlObj.mimeType);
+        }
+        return null;
+    }
+
+    public newLargePropertyWithEncodedData(encodedData: string, mimeType?: string): LargeProperty {
+        return new LargeProperty(encodedData, mimeType);
+    }
+
     /**
      * Set a binary property from a string formatted as a 'data url'
      * See {@link https://en.wikipedia.org/wiki/Data_URI_scheme}

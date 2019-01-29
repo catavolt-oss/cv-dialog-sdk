@@ -226,10 +226,12 @@ export class PropertyFormatter {
             }
         } else if (propDef.isCodeRefType) {
            if(typeof value === 'string') {
-
+               propValue = CodeRef.fromString(value);
            }
         } else if (propDef.isObjRefType) {
-
+            if(typeof value === 'string') {
+                propValue = ObjectRef.fromString(value);
+            }
         }
         return propValue;
     }

@@ -6,4 +6,10 @@ export class CodeRef {
     public toString(): string {
         return this.code + ':' + this.description;
     }
+
+    public static fromString(codeRef): CodeRef {
+        if(!codeRef) { return null; }
+        const [code, description] = codeRef.split(':');
+        return new CodeRef(code, description);
+    }
 }
