@@ -59,6 +59,16 @@ export abstract class Dialog {
         return this._catavolt;
     }
 
+    get anyChildNeedsRefresh(): boolean {
+        return (
+            this.children &&
+            this.children.some((dialog: Dialog) => {
+                return dialog.isRefreshNeeded;
+            })
+        );
+    }
+
+
     public destroy(): Promise<void> {
         return this.catavolt.dialogApi.deleteDialog(this.tenantId, this.sessionId, this.id).then(() => {
             this.dialogMode = DialogModeEnum.DESTROYED;

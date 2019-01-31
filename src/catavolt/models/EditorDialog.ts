@@ -2,10 +2,13 @@ import {StringDictionary} from "../util";
 import { DataUrl } from '../util/DataUrl';
 import { Attachment } from './Attachment';
 import { AttributeCellValue } from './AttributeCellValue';
+import {DataAnnotation} from "./DataAnnotation";
 import {Details} from "./Details";
 import { Dialog } from './Dialog';
+import { FormDialog} from "./FormDialog";
 import { LargeProperty } from './LargeProperty';
 import { Menu } from './Menu';
+import {ModelUtil} from "./ModelUtil";
 import { NullRecord } from './NullRecord';
 import { Property } from './Property';
 import { PropertyDef } from './PropertyDef';
@@ -30,6 +33,15 @@ export class EditorDialog extends Dialog {
     public readonly recordId: string;
 
     private _buffer: RecordBuffer;
+
+    public static getSubType(jsonObj:StringDictionary): any {
+        if(jsonObj.view && jsonObj.view.type === TypeNames.FormTypeName) {
+            return FormDialog
+        }
+        return EditorDialog;
+    }
+
+
 
     public changeViewMode(viewMode: ViewMode): Promise<EditorDialog | Redirection> {
         if (this.viewMode !== viewMode) {

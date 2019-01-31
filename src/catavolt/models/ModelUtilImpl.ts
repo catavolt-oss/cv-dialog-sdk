@@ -1,3 +1,4 @@
+import {type} from "os";
 import { Log } from '../util/Log';
 import { ObjUtil } from '../util/ObjUtil';
 import { StringDictionary } from '../util/StringDictionary';
@@ -75,9 +76,12 @@ class ModelUtilImpl implements  ModelUtil{
         return ModelUtilImpl.classTypes[name];
     }
 
-    private static typeInstance(name) {
-        const type = ModelUtilImpl.classType(name);
-        return type && new type();
+    private static typeInstance(obj) {
+        let classType = ModelUtilImpl.classType(obj.type);
+        if(classType && classType.getSubType) {
+           classType = classType.getSubType(obj);
+        }
+        return classType && new classType();
     }
 
     public jsonToModel<A>(obj, n = 0): Promise<A> {
@@ -95,7 +99,7 @@ class ModelUtilImpl implements  ModelUtil{
                 if (classType && typeof classType.fromJSON === 'function') {
                     classType.fromJSON(obj, this).then(resolve).catch(reject);
                 } else {
-                    let newObj = ModelUtilImpl.typeInstance(objType);
+                    let newObj = ModelUtilImpl.typeInstance(obj);
                     if (!newObj) {
                         // const message = `ModelUtilImpl::jsonToModel: no type constructor found for ${objType}: assuming interface`;
                         // Log.debug(message);

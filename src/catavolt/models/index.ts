@@ -36,6 +36,7 @@ export * from './ErrorMessage';
 export * from './Filter';
 export * from './ForcedLineCellValue';
 export * from './Form';
+export * from './FormDialog';
 export * from './GpsReading';
 export * from './GpsReadingProperty';
 export * from './MapLocation';
