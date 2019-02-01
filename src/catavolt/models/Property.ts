@@ -23,10 +23,11 @@ export class Property {
     private type:string = TypeNames.PropertyTypeName;
 
     public static fromJSON(jsonObject: StringDictionary, modelUtil: ModelUtil): Promise<Property> {
-        return modelUtil.jsonToModel<DataAnnotation[]>(jsonObject.annotations).then((annotations: DataAnnotation[]) => {
+        return modelUtil.jsonToModel<DataAnnotation[]>(jsonObject.annotations).then(async (annotations: DataAnnotation[]) => {
+            const value = await Property.parseJSONValue(jsonObject.value, jsonObject.format, modelUtil);
             return new Property(
                 jsonObject.name,
-                Property.parseJSONValue(jsonObject.value, jsonObject.format),
+                value,
                 jsonObject.format,
                 annotations
             );
@@ -195,25 +196,27 @@ export class Property {
         return jsonObject;
     }
 
-    private static parseJSONValue(value: any, format: string): any {
-        if (typeof value === 'string' && format) {
+    private static parseJSONValue(value: any, format: string, modelUtil:ModelUtil): Promise<any> {
+        let result = value;
+        if (value && typeof value === 'string' && format) {
             if (['integer', 'decimal', 'int32', 'int64', 'float', 'double'].some(v => format === v)) {
-                return Number(value);
+                result = Number(value);
             } else if (format === 'date') {
                 // parse as ISO - no offset specified by server right now, so we assume local time
-                return moment(value, 'YYYY-M-D').toDate();
+                result = moment(value, 'YYYY-M-D').toDate();
             } else if (format === 'date-time') {
                 // parse as ISO - no offset specified by server right now, so we assume local time
                 // strip invalid suffix (sometimes) provided by server
                 const i = value.indexOf('T0:');
-                return moment(i > -1 ? value.substring(0, i) : value).toDate();
+                result = moment(i > -1 ? value.substring(0, i) : value).toDate();
             } else if (format === 'time') {
-                return TimeValue.fromString(value);
+                result = TimeValue.fromString(value);
             } else {
-                return value;
+                result = value;
             }
-        } else {
-            return value;
+        } else if (value && typeof value === 'object' && value.type) {
+            return modelUtil.jsonToModel(value);
         }
+        return Promise.resolve(result);
     }
 }
