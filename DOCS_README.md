@@ -64,18 +64,40 @@ import { Catavolt, Log } from 'cv-dialog-sdk'; // pulls Catavolt and Log compone
 ### First Steps
 The first server-client interaction with a Xalt app is **setting the tenant Id** and **Logging a user in** using the `cv-dialog-sdk`.
 
+<!-- 
 The following occurs after the a tenantID is entered.
-<!-- *The user enters a tenantID* -->
+
 #### Pre-Login call for tenant informationCall
-Prior to log in, The client needs to give and receive some information to the server. First, The client needs to make a call to receive the current tenant settings and capabilities when the tenant is set. This call returns a dictionary with information such as the languages the tenant has available for translation and the tenants ability to use the OAuth protocol.
+Prior to log in, The client needs to send some information in order to receive the tenant capabilities. First, The client makes the following call to receive the current tenant settings and capabilities after the client tenantID is set. This call returns a dictionary with information such as the languages the tenant has available for translation and the tenants ability to use the OAuth protocol:
 
-- call `Catavolt.getCapabilities:tenantID:apiKey` *receive a `WSTenantCapabilityResult`*
-```javascript
-//insert sdk call once made
-//this brings in a WSTenantCapabilityResult containing the tenant pre-login info
-```
 
-In addition, after gathering the tenant settings, the client must set the following device information:
+- call `Catavolt.getCapabilities:tenantID:apiKey`. This yields a `WSTenantCapabilityResult`:
+
+Call Parameters:
+
+Property Key | Type | Description
+--- | --- | ---
+tenantID | *String* | the tenant you are requesting the capabilities of
+apiKey | *String* | (optional) the tenant you are requesting the capabilities of
+
+
+WSTenantCapabilityResult Response:
+
+Property Key | Type | Description
+--- | --- | ---
+translationAvailable | *Boolean* | true/false if multiple languages are available
+availableLanguages | *Array* | if translationAvailable=true, this value will return a list of CodeRefs of available languages to choose from.  If translationAvailable=false, this value will not be returned.
+defaultBrandingLoginJSON | *Dictionary* | the default login page branding JSON
+detectJailbrokenDevices  | *Boolean* |  true/false if the client should detect jailbroken devices
+mdmApiEnabled  | *Boolean* |  true/false if the tenant has enabled MDM
+oauthAuthorizationAvailable  | *Boolean* |  true/false if the tenant has enabled the OAUTH login path
+restApiEnabled  | *Boolean* |  true/false if the tenant has enabled the REST API
+savePasswordAllowed  | *Boolean* |  true/false if the tenant has enabled Save Password on mobile devices
+serverVersion | *String* | the current version of the cloud server.
+
+-->
+
+To login, the client must set the following device information:
 
 Property Key | Type | Description
 --- | --- | ---
@@ -102,7 +124,7 @@ platform | *String* | The client and device platform. *ex `android-react` or `io
 #### Login
 There are two ways to log into the Xalt Framework, Basic Authentication and OAuth. If you have OAuth present in your system and need assistance integrating it to Catavolt Extender take a look at the [Catavolt User Guide](https://support.catavolt.com/customer/login?return_to=%2Fcustomer%2Fen%2Fportal%2Farticles%2F1342497-extender-v3-user-guide---october-15-2018).
 
-On success, [Login](./interfaces/_models_login_.login.html) should create and pass back a [Session](./interfaces/_models_session_.session.html) (In the case of multi-factor authentication, it will present the proper authentication window [DialogRedirection](/interfaces/_models_dialogredirection_.dialogredirection.html) until it reaches the Session)
+On success, [Login](./interfaces/_models_login_.login.html) should create and pass back a [Session](./interfaces/_models_session_.session.html) (In the case of multi-factor authentication, it will present the proper authentication window [DialogRedirection](./interfaces/_models_dialogredirection_.dialogredirection.html) until it reaches the Session)
 
 * Basic Authentication
     ```javascript
@@ -125,21 +147,24 @@ Catavolt.login(
     const proofKey = await // acquire a random crypto security string method
     const initUrl = await CatavoltAuth.getOAuthUrl(tenantID, proofKey); // insert the tenantID and the generated proofKey
     ```
+    
     At this point, you will need to display the URL and create an event listener to extract the callbackURL
-
-
-```javascript
-//returns a Promise
-Catavolt.loginWithToken(
+    ```javascript
+    Catavolt.loginWithToken(
     tenantID,
     clientType,
     permissionToken,
     proofKey,
-).then(session => {
+    ).then(session => {
     //Do any post login calls here
-});
-Catavolt.onSessionExpiration = pageController.logout;
-```
+    }); //returns a promise
+    Catavolt.onSessionExpiration = pageController.logout;
+    ```
+    
+
+    
+        
+    
 ### Workbenches and Workbench Actions
 A Dialog flow is initiated by performing a **WorkbenchAction**.  A given user may have one or more **Workbench**es
 which may have one or more **WorkbenchAction**s.  These provide entry points into the various application flows and can

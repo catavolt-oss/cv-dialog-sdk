@@ -115,17 +115,39 @@
 </code></pre>
 				<h3 id="first-steps">First Steps</h3>
 				<p>The first server-client interaction with a Xalt app is <strong>setting the tenant Id</strong> and <strong>Logging a user in</strong> using the <code>cv-dialog-sdk</code>.</p>
-				<p>The following occurs after the a tenantID is entered.
-				<!-- *The user enters a tenantID* --></p>
-				<h4 id="pre-login-call-for-tenant-informationcall">Pre-Login call for tenant informationCall</h4>
-				<p>Prior to log in, The client needs to give and receive some information to the server. First, The client needs to make a call to receive the current tenant settings and capabilities when the tenant is set. This call returns a dictionary with information such as the languages the tenant has available for translation and the tenants ability to use the OAuth protocol.</p>
-				<ul>
-					<li>call <code>Catavolt.getCapabilities:tenantID:apiKey</code> <em>receive a <code>WSTenantCapabilityResult</code></em><pre><code class="lang-javascript"><span class="hljs-comment">//insert sdk call once made</span>
-<span class="hljs-comment">//this brings in a WSTenantCapabilityResult containing the tenant pre-login info</span>
-</code></pre>
-					</li>
-				</ul>
-				<p>In addition, after gathering the tenant settings, the client must set the following device information:</p>
+				<!--
+The following occurs after the a tenantID is entered.
+
+#### Pre-Login call for tenant informationCall
+Prior to log in, The client needs to send some information in order to receive the tenant capabilities. First, The client makes the following call to receive the current tenant settings and capabilities after the client tenantID is set. This call returns a dictionary with information such as the languages the tenant has available for translation and the tenants ability to use the OAuth protocol:
+
+
+- call `Catavolt.getCapabilities:tenantID:apiKey`. This yields a `WSTenantCapabilityResult`:
+
+Call Parameters:
+
+Property Key | Type | Description
+--- | --- | ---
+tenantID | *String* | the tenant you are requesting the capabilities of
+apiKey | *String* | (optional) the tenant you are requesting the capabilities of
+
+
+WSTenantCapabilityResult Response:
+
+Property Key | Type | Description
+--- | --- | ---
+translationAvailable | *Boolean* | true/false if multiple languages are available
+availableLanguages | *Array* | if translationAvailable=true, this value will return a list of CodeRefs of available languages to choose from.  If translationAvailable=false, this value will not be returned.
+defaultBrandingLoginJSON | *Dictionary* | the default login page branding JSON
+detectJailbrokenDevices  | *Boolean* |  true/false if the client should detect jailbroken devices
+mdmApiEnabled  | *Boolean* |  true/false if the tenant has enabled MDM
+oauthAuthorizationAvailable  | *Boolean* |  true/false if the tenant has enabled the OAUTH login path
+restApiEnabled  | *Boolean* |  true/false if the tenant has enabled the REST API
+savePasswordAllowed  | *Boolean* |  true/false if the tenant has enabled Save Password on mobile devices
+serverVersion | *String* | the current version of the cloud server.
+
+-->
+				<p>To login, the client must set the following device information:</p>
 				<table>
 					<thead>
 						<tr>
@@ -183,7 +205,7 @@
 				</ul>
 				<h4 id="login">Login</h4>
 				<p>There are two ways to log into the Xalt Framework, Basic Authentication and OAuth. If you have OAuth present in your system and need assistance integrating it to Catavolt Extender take a look at the <a href="https://support.catavolt.com/customer/login?return_to=%2Fcustomer%2Fen%2Fportal%2Farticles%2F1342497-extender-v3-user-guide---october-15-2018">Catavolt User Guide</a>.</p>
-				<p>On success, <a href="./interfaces/_models_login_.login.html">Login</a> should create and pass back a <a href="./interfaces/_models_session_.session.html">Session</a> (In the case of multi-factor authentication, it will present the proper authentication window <a href="/interfaces/_models_dialogredirection_.dialogredirection.html">DialogRedirection</a> until it reaches the Session)</p>
+				<p>On success, <a href="./interfaces/_models_login_.login.html">Login</a> should create and pass back a <a href="./interfaces/_models_session_.session.html">Session</a> (In the case of multi-factor authentication, it will present the proper authentication window <a href="./interfaces/_models_dialogredirection_.dialogredirection.html">DialogRedirection</a> until it reaches the Session)</p>
 				<ul>
 					<li>Basic Authentication<pre><code class="lang-javascript"><span class="hljs-comment">// Returns a promise</span>
 Catavolt.login(
@@ -203,19 +225,18 @@ Catavolt.login(
   <span class="hljs-keyword">const</span> initUrl = <span class="hljs-keyword">await</span> CatavoltAuth.getOAuthUrl(tenantID, proofKey); <span class="hljs-comment">// insert the tenantID and the generated proofKey</span>
 </code></pre>
 						<p>  At this point, you will need to display the URL and create an event listener to extract the callbackURL</p>
+						<pre><code class="lang-javascript">  Catavolt.loginWithToken(
+  tenantID,
+  clientType,
+  permissionToken,
+  proofKey,
+  ).then(<span class="hljs-function"><span class="hljs-params">session</span> =&gt;</span> {
+  <span class="hljs-comment">//Do any post login calls here</span>
+  }); <span class="hljs-comment">//returns a promise</span>
+  Catavolt.onSessionExpiration = pageController.logout;
+</code></pre>
 					</li>
 				</ul>
-				<pre><code class="lang-javascript"><span class="hljs-comment">//returns a Promise</span>
-Catavolt.loginWithToken(
-    tenantID,
-    clientType,
-    permissionToken,
-    proofKey,
-).then(<span class="hljs-function"><span class="hljs-params">session</span> =&gt;</span> {
-    <span class="hljs-comment">//Do any post login calls here</span>
-});
-Catavolt.onSessionExpiration = pageController.logout;
-</code></pre>
 				<h3 id="workbenches-and-workbench-actions">Workbenches and Workbench Actions</h3>
 				<p>A Dialog flow is initiated by performing a <strong>WorkbenchAction</strong>.  A given user may have one or more <strong>Workbench</strong>es
 					which may have one or more <strong>WorkbenchAction</strong>s.  These provide entry points into the various application flows and can
