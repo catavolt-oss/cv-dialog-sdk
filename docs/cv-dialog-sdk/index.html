@@ -64,8 +64,209 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
-				<h1 id="cv-dialog-sdk">cv-dialog-sdk</h1>
-				<p>This is Catavolt Javascript Software Development Kit</p>
+				<h1 id="getting-started">Getting Started</h1>
+				<p>This SDK provides easier access to the <a href="https://dialog.hxgn-api.net/v0/openapi.yaml">Dialog REST API (OpenApi)</a>
+				which can be viewed with an <a href="http://editor.swagger.io">OpenApi Viewer/Editor</a></p>
+				<hr>
+				<p>Contents:</p>
+				<ul>
+					<li><p><a href="#overview">Overview</a></p>
+					</li>
+					<li><p><a href="#usage">Usage</a></p>
+					</li>
+					<li><p><a href="#first-steps">First Steps</a></p>
+					</li>
+					<li><p><a href="#workbenches-and-workbench-actions">Workbenches &amp; Workbench Actions</a></p>
+					</li>
+					<li><p><a href="#types-of-dialogs">Dialog Types</a></p>
+					</li>
+					<li><p><a href="#views-and-records">Views and Records</a></p>
+					</li>
+					<li><p><a href="#dialog-hierarchies">Dialog Hierarchies</a></p>
+					</li>
+					<li><p><a href="#menus-and-actions">Menus and Actions</a></p>
+					</li>
+					<li><p><a href="#offline">Offline</a></p>
+					</li>
+				</ul>
+				<hr>
+				<h2 id="installation">Installation</h2>
+				<p>Install <code>cv-dialog-sdk</code> using npm:</p>
+				<pre><code class="lang-bash">npm install --save cv-dialog-sdk
+</code></pre>
+				<p>the package will install in the <code>package.json</code> under dependencies</p>
+				<h2 id="overview">Overview</h2>
+				<p><img src="./../SDK_Overview.png" alt="Overview"></p>
+				<h3 id="the-catavolt-dialog-model">The Catavolt Dialog Model</h3>
+				<p>The Catavolt Dialog Model represents an &#39;<strong><em>Abstract User Interface</em></strong>&#39;, managed by the server, transposed via the Dialog Service, and delivered to the <code>cv-dialog-sdk</code>. This SDK contains the instruction set for rendering the client&#39;s UI.  This system differs subtly, but
+					significantly from traditional client/server architectures in that rather than targeting a specific resource (i.e.
+					next page), the client simply asks the server to redirect it to the &#39;next&#39; resource (often without knowing
+				specifically what that resource will be).  </p>
+				<p>The <strong>Dialog</strong> abstraction itself, is a metaphor for a current channel of communication or more simply, a current
+					resource.  A <strong>Dialog</strong> contains information describing the UI itself, as well as any &#39;business data&#39; that should be
+					displayed.  A <strong>Redirection</strong> is a pointer to the next <strong>Dialog</strong>.  An <strong>Action</strong> is a submission or instruction to the
+				server (to do &#39;something&#39;).<br>A typical <strong>Dialog</strong> application flow is comprised of:  </p>
+				<p>1) Asking the server for a <strong>Redirection</strong> to a <strong>Dialog</strong> (e.g. rendered as an Html Page)</p>
+				<p>2) Performing an <strong>Action</strong> on the <strong>Dialog</strong> (e.g. user clicks a link)</p>
+				<p>3) Receiving a <strong>Redirection</strong> to the next <strong>Dialog</strong> (e.g. resulting Page is shown)</p>
+				<h2 id="usage">Usage</h2>
+				<p>To use the SDK, first include the objects you wish to pull into your project (this example pulls in the main Catavolt object and the Log. see the API for all components).</p>
+				<pre><code class="lang-Javascript"><span class="hljs-keyword">import</span> { Catavolt, Log } <span class="hljs-keyword">from</span> <span class="hljs-string">'cv-dialog-sdk'</span>; <span class="hljs-comment">// pulls Catavolt and Log components</span>
+</code></pre>
+				<h3 id="first-steps">First Steps</h3>
+				<p>The first server-client interaction with a Xalt app is <strong>setting the tenant Id</strong> and <strong>Logging a user in</strong> using the <code>cv-dialog-sdk</code>.</p>
+				<p>The following occurs after the a tenantID is entered.
+				<!-- *The user enters a tenantID* --></p>
+				<h4 id="pre-login-call-for-tenant-informationcall">Pre-Login call for tenant informationCall</h4>
+				<p>Prior to log in, The client needs to give and receive some information to the server. First, The client needs to make a call to receive the current tenant settings and capabilities when the tenant is set. This call returns a dictionary with information such as the languages the tenant has available for translation and the tenants ability to use the OAuth protocol.</p>
+				<ul>
+					<li>call <code>Catavolt.getCapabilities:tenantID:apiKey</code> <em>receive a <code>WSTenantCapabilityResult</code></em><pre><code class="lang-javascript"><span class="hljs-comment">//insert sdk call once made</span>
+<span class="hljs-comment">//this brings in a WSTenantCapabilityResult containing the tenant pre-login info</span>
+</code></pre>
+					</li>
+				</ul>
+				<p>In addition, after gathering the tenant settings, the client must set the following device information:</p>
+				<table>
+					<thead>
+						<tr>
+							<th>Property Key</th>
+							<th>Type</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>ClientVersion</td>
+							<td><em>String</em></td>
+							<td>The version of the client (iOS, Android)</td>
+						</tr>
+						<tr>
+							<td>DisplayHeight</td>
+							<td><em>Integer</em></td>
+							<td>The height of the client screen/window</td>
+						</tr>
+						<tr>
+							<td>DisplayWidth</td>
+							<td><em>Integer</em></td>
+							<td>The width of the client screen/window</td>
+						</tr>
+						<tr>
+							<td>FormFactor</td>
+							<td><em>String</em></td>
+							<td>the form factor of the device size. Values: <code>small</code> is for phones. <code>medium</code> or <code>large</code> is for tablets.</td>
+						</tr>
+						<tr>
+							<td>GPSSupported</td>
+							<td><em>Boolean</em></td>
+							<td>If the client supports GPS. Values: <code>true</code>, <code>false</code></td>
+						</tr>
+						<tr>
+							<td>platform</td>
+							<td><em>String</em></td>
+							<td>The client and device platform. <em>ex <code>android-react</code> or <code>ios-react</code></em></td>
+						</tr>
+					</tbody>
+				</table>
+				<ul>
+					<li><p>Set device properties</p>
+						<ul>
+							<li><p>dynamic value <em>(value is a function)</em></p>
+								<pre><code class="lang-javascript">Catavolt.addDynamicDeviceProp(key, value);
+</code></pre>
+							</li>
+							<li><p>static value <em>(value is a static, non-function type)</em></p>
+								<pre><code class="lang-javascript">Catavolt.addStaticDeviceProp(key, value);
+</code></pre>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<h4 id="login">Login</h4>
+				<p>There are two ways to log into the Xalt Framework, Basic Authentication and OAuth. If you have OAuth present in your system and need assistance integrating it to Catavolt Extender take a look at the <a href="https://support.catavolt.com/customer/login?return_to=%2Fcustomer%2Fen%2Fportal%2Farticles%2F1342497-extender-v3-user-guide---october-15-2018">Catavolt User Guide</a>.</p>
+				<p>On success, <a href="./interfaces/_models_login_.login.html">Login</a> should create and pass back a <a href="./interfaces/_models_session_.session.html">Session</a> (In the case of multi-factor authentication, it will present the proper authentication window <a href="/interfaces/_models_dialogredirection_.dialogredirection.html">DialogRedirection</a> until it reaches the Session)</p>
+				<ul>
+					<li>Basic Authentication<pre><code class="lang-javascript"><span class="hljs-comment">// Returns a promise</span>
+Catavolt.login(
+  tenantID,
+  clientType,
+  userID,
+  password,
+).then(<span class="hljs-function"><span class="hljs-params">session</span> =&gt;</span> {
+  <span class="hljs-comment">//Do any post login calls here</span>
+});
+</code></pre>
+					</li>
+					<li><p>oAuth</p>
+						<p>  oAuth requires native platform rendering and display of the browser window for loading the oAuthUrl that is set in Xalt Extender <em>(see the Catavolt User Guide linked above)</em>. Along with the oAuthUrl, you will also need to generate a proof key. The proofKey will be passed along with the oAuth call in order to prevent man in the middle attacks on the login token issuance. (a strong crypto string with at least 16 characters is recommended)</p>
+						<p>  Use the following to get the oAuthUrl</p>
+						<pre><code class="lang-javascript">  <span class="hljs-keyword">const</span> proofKey = <span class="hljs-keyword">await</span> <span class="hljs-comment">// acquire a random crypto security string method</span>
+  <span class="hljs-keyword">const</span> initUrl = <span class="hljs-keyword">await</span> CatavoltAuth.getOAuthUrl(tenantID, proofKey); <span class="hljs-comment">// insert the tenantID and the generated proofKey</span>
+</code></pre>
+						<p>  At this point, you will need to display the URL and create an event listener to extract the callbackURL</p>
+					</li>
+				</ul>
+				<pre><code class="lang-javascript"><span class="hljs-comment">//returns a Promise</span>
+Catavolt.loginWithToken(
+    tenantID,
+    clientType,
+    permissionToken,
+    proofKey,
+).then(<span class="hljs-function"><span class="hljs-params">session</span> =&gt;</span> {
+    <span class="hljs-comment">//Do any post login calls here</span>
+});
+Catavolt.onSessionExpiration = pageController.logout;
+</code></pre>
+				<h3 id="workbenches-and-workbench-actions">Workbenches and Workbench Actions</h3>
+				<p>A Dialog flow is initiated by performing a <strong>WorkbenchAction</strong>.  A given user may have one or more <strong>Workbench</strong>es
+					which may have one or more <strong>WorkbenchAction</strong>s.  These provide entry points into the various application flows and can
+					be thought of as initial &#39;Menus&#39; with &#39;Menu Items&#39;.  Performing a <strong>WorkbenchAction</strong> will begin the <strong>Dialog</strong>
+				application flow as described above.</p>
+				<h3 id="types-of-dialogs">Types of Dialogs</h3>
+				<p><strong>Dialog</strong>s will always be one of two subtypes:<br>1) An <strong>EditorDialog</strong><br>This type of <strong>Dialog</strong> is associated with one, single &#39;data record&#39;<br>E.g.  Viewing the &#39;Details&#39; of a single list item<br>2) A <strong>QueryDialog</strong> is associated with a list of &#39;data records&#39;<br>E.g.  Viewing a tabular list or a map with location points  </p>
+				<h3 id="views-and-records">Views and Records</h3>
+				<p>A <strong>Dialog</strong> is always associated with a <strong>View</strong> and one or more <strong>Records</strong>.  <strong>View</strong>s represent various ways
+					of displaying the &#39;data record(s)&#39; to the user.  <strong>View</strong>s themselves DO NOT contain the &#39;data record(s)&#39;,
+					only information about how it
+					should be displayed.<br>Some types of Views are:
+					1) <strong>Details</strong> (Properties)
+					2) <strong>List</strong>
+					3) <strong>Form</strong> (Layout other Views)
+					4) <strong>Map</strong>
+				5) <strong>Graph</strong> (or chart)  </p>
+				<p><strong>Record</strong>s contain the actual business data for display and may be combined with the display metadata provided by
+				the <strong>View</strong>, to render the UI.  </p>
+				<ul>
+					<li>A single <strong>Record</strong> may be retrieved directly from an <strong>EditorDialog</strong>, following a <strong>read()</strong> operation.  </li>
+					<li>Multiple <strong>Records</strong> may be retrieved as a <strong>RecordSet</strong> from a <strong>QueryDialog</strong> via the query() method.
+						However, a <strong>QueryScroller</strong> may also be obtained from the <strong>QueryDialog</strong>, and provides a buffer with record
+					pagining functionality.</li>
+				</ul>
+				<h3 id="dialog-hierarchies">Dialog Hierarchies</h3>
+				<p><strong>Dialog</strong>s may be composed of one or more &#39;child&#39; <strong>Dialog</strong>s. This is typically used to layout a
+					&#39;Form&#39;, such that the top-level is <strong>Dialog</strong> is an <strong>EditorDialog</strong> with a <strong>Form</strong> <strong>View</strong> .  The <strong>EditorDialog</strong>
+					will also have a list of &#39;child&#39; <strong>Dialog</strong>s which will contain the <strong>View</strong>s to be arranged based on the <strong>Form</strong>
+				<strong>View</strong>&#39;s metadata.</p>
+				<ul>
+					<li>When retrieving a new <strong>Dialog</strong> (i.e. following a <strong>DialogRedirection</strong>), the top-level <strong>Dialog</strong> will be an
+					<strong>EditorDialog</strong> with a <strong>Form</strong> <strong>View</strong></li>
+					<li>This <strong>Dialog</strong>&#39;s &#39;child&#39; <strong>Dialogs</strong> will typically be used to compose the UI (<strong>Lists</strong>, Details, Maps, etc.)</li>
+				</ul>
+				<h3 id="menus-and-actions">Menus and Actions</h3>
+				<p><strong>View</strong>s are associated with a <strong>Menu</strong>, which may in turn have a list of &#39;child&#39; <strong>Menu</strong>s, enabling a hierarchical
+					representation of nested menus and menu items.  A <strong>Menu</strong> may also have an &#39;<strong>actionId</strong>&#39; which can be used to
+					&#39;perform an Action&#39; on the associated <strong>Dialog</strong>, typically resulting in the server returning a <strong>Redirection</strong> to
+				another <strong>Dialog</strong> (i.e. resource, page, etc.)</p>
+				<ul>
+					<li><strong>Actions</strong> are used to transition from one <strong>Dialog</strong> to the next.</li>
+					<li><strong>actionId</strong>s are simply strings but are typically retrieved from <strong>Menu</strong>s associated with a *<em>View</em><code></code>*</li>
+				</ul>
+				<h3 id="documentation-and-tools">Documentation And Tools</h3>
+				<ul>
+					<li><strong>Dialog model</strong> can be found <a href="https://rawgit.com/catavolt-oss/cv-dialog-sdk/master/docs/dialog_model.pdf">here</a></li>
+					<li><strong>(early) Api Docs</strong> can be found <a href="https://rawgit.com/catavolt-oss/cv-dialog-sdk/master/docs/cv-dialog-sdk/index.html">here</a></li>
+				</ul>
+				<h3 id="offline">Offline</h3>
+				<p>Documentation coming soon</p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
