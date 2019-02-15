@@ -12,6 +12,7 @@ import { DialogException } from './DialogException';
 import { EditorDialog } from './EditorDialog';
 import { ForcedLineCellValue } from './ForcedLineCellValue';
 import { Form } from './Form';
+import {FormDialog} from "./FormDialog";
 import { GpsReading } from './GpsReading';
 import { GpsReadingProperty } from './GpsReadingProperty';
 import { Graph } from './Graph';
@@ -31,6 +32,7 @@ import { RecordDef } from './RecordDef';
 import { RecordImpl } from './RecordImpl';
 import { ReferringDialog } from './ReferringDialog';
 import { ReferringWorkbench } from './ReferringWorkbench';
+import {SearchDialog} from "./SearchDialog";
 import { Stream } from './Stream';
 import { SubstitutionCellValue } from './SubstitutionCellValue';
 import { TabCellValue } from './TabCellValue';
@@ -72,6 +74,12 @@ class ModelUtilImpl implements  ModelUtil{
         'hxgn.api.dialog.ViewDescriptor': ViewDescriptor
     };
 
+    private static subTypes = {
+        'EditorDialog': EditorDialog,
+        'FormDialog': FormDialog,
+        'SearchDialog': SearchDialog
+    };
+
     private static classType(name) {
         return ModelUtilImpl.classTypes[name];
     }
@@ -79,7 +87,7 @@ class ModelUtilImpl implements  ModelUtil{
     private static typeInstance(obj) {
         let classType = ModelUtilImpl.classType(obj.type);
         if(classType && classType.getSubType) {
-           classType = classType.getSubType(obj);
+           classType = ModelUtilImpl.subTypes[classType.getSubType(obj)];
         }
         return classType && new classType();
     }

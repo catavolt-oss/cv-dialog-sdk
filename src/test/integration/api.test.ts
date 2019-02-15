@@ -6,7 +6,7 @@ import "babel-polyfill";
 import test from "blue-tape";
 
 import {Catavolt, propertyFormatter} from "../../catavolt/dialog/Catavolt";
-import {LargeProperty, PropertyDef} from "../../catavolt/models";
+import {LargeProperty, PropertyDef, SearchDialog} from "../../catavolt/models";
 import {Cell} from "../../catavolt/models/Cell";
 import {CellValue} from "../../catavolt/models/CellValue";
 import {Details} from "../../catavolt/models/Details";
@@ -30,7 +30,7 @@ import {LogLevel} from "../../catavolt/util/Log";
  */
 /* tslint:disable */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['cvtutorial', 'wsmith', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 const currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;
@@ -133,6 +133,21 @@ test("Load And Page A List Test", (t) => {
         });
 
 
+    });
+
+});
+
+test("Open Search For A List", (t) => {
+
+    const queryDialog:QueryDialog = currentDialog.children[0] as QueryDialog;
+    const list:List = queryDialog.view as List;
+
+    t.comment(`Open search for List: ${queryDialog.description}`);
+    return queryDialog.openSearch().then((redirection)=>{
+       Catavolt.openDialog(redirection as DialogRedirection).then((dialog)=>{
+          t.ok(dialog instanceof SearchDialog);
+          return dialog;
+       })
     });
 
 });

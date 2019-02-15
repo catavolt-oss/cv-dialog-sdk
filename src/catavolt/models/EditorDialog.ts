@@ -2,13 +2,10 @@ import {StringDictionary} from "../util";
 import { DataUrl } from '../util/DataUrl';
 import { Attachment } from './Attachment';
 import { AttributeCellValue } from './AttributeCellValue';
-import {DataAnnotation} from "./DataAnnotation";
 import {Details} from "./Details";
 import { Dialog } from './Dialog';
-import { FormDialog} from "./FormDialog";
 import { LargeProperty } from './LargeProperty';
 import { Menu } from './Menu';
-import {ModelUtil} from "./ModelUtil";
 import { NullRecord } from './NullRecord';
 import { Property } from './Property';
 import { PropertyDef } from './PropertyDef';
@@ -20,10 +17,11 @@ import { Redirection } from './Redirection';
 import { RedirectionUtil } from './RedirectionUtil';
 import {SideEffectsParameters} from "./SideEffectsParameters";
 import {SideEffectsResponse} from "./SideEffectsResponse";
-import { TypeNames } from './types';
+import {ActionIdsEnum, TypeNames} from './types';
 import { ViewMode } from './types';
 import { ViewModeEnum } from './types';
 
+export const SEARCH_DIALOG_CLASS = 'SearchQueryModel';
 /**
  * PanContext Subtype that represents an 'Editor Dialog'.
  * An 'Editor' represents and is backed by a single Record and Record definition.
@@ -34,14 +32,15 @@ export class EditorDialog extends Dialog {
 
     private _buffer: RecordBuffer;
 
-    public static getSubType(jsonObj:StringDictionary): any {
-        if(jsonObj.view && jsonObj.view.type === TypeNames.FormTypeName) {
-            return FormDialog
+    public static getSubType(jsonObj:StringDictionary): string {
+        if(jsonObj.dialogClassName && jsonObj.dialogClassName.indexOf(SEARCH_DIALOG_CLASS) > -1) {
+            return 'SearchDialog';
         }
-        return EditorDialog;
+        if(jsonObj.view && jsonObj.view.type === TypeNames.FormTypeName) {
+            return 'FormDialog';
+        }
+        return 'EditorDialog';
     }
-
-
 
     public changeViewMode(viewMode: ViewMode): Promise<EditorDialog | Redirection> {
         if (this.viewMode !== viewMode) {

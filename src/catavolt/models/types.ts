@@ -21,19 +21,30 @@ export type DialogMode =
     | DialogModeEnum.DELETE
     | DialogModeEnum.LIST;
 export type DialogType = 'hxgn.api.dialog.EditorDialog' | 'hxgn.api.dialog.QueryDialog';
+
+export enum FilterOperatorEnum {
+    EQUAL = 'Equal',
+    NOT_EQUAL = 'Not Equal',
+    GREATER_THAN = 'Greater Than',
+    LESS_THAN = 'Less Than',
+    CONTAINS = 'Contains',
+    STARTS_WITH = 'Starts With',
+    ENDS_WITH = 'Ends With'
+}
 export type FilterOperator =
-    | 'AND'
-    | 'CONTAINS'
-    | 'ENDS_WITH'
-    | 'EQUAL_TO'
-    | 'GREATER_THAN'
-    | 'GREATER_THAN_OR_EQUAL_TO'
-    | 'LESS_THAN'
-    | 'LESS_THAN_OR_EQUAL_TO'
-    | 'NOT_EQUAL_TO'
-    | 'OR'
-    | 'STARTS_WITH';
+    FilterOperatorEnum.EQUAL |
+    FilterOperatorEnum.NOT_EQUAL |
+    FilterOperatorEnum.GREATER_THAN |
+    FilterOperatorEnum.LESS_THAN |
+    FilterOperatorEnum.CONTAINS |
+    FilterOperatorEnum.STARTS_WITH |
+    FilterOperatorEnum.ENDS_WITH;
+
 export type PositionalQueryAbilityType = 'FULL' | 'NONE';
+
+export enum ActionIdsEnum {
+    SEARCH_ACTION_ID = '#search'
+}
 
 export enum QueryDirectionEnum {
     FORWARD = 'FORWARD',
@@ -41,14 +52,20 @@ export enum QueryDirectionEnum {
 }
 
 export type QueryDirection = QueryDirectionEnum.FORWARD | QueryDirectionEnum.BACKWARD;
+
 export type RedirectionType =
     | 'hxgn.api.dialog.DialogRedirection'
     | 'hxgn.api.dialog.ContentRedirection'
     | 'hxgn.api.dialog.WebRedirection'
     | 'hxgn.api.dialog.WorkbenchRedirection'
     | 'hxgn.api.dialog.NullRedirection';
-export type SortDirection = 'ASC' | 'DESC';
 
+export enum SortDirectionEnum {
+    ASC = 'ASC',
+    DESC = 'DESC'
+}
+
+export type SortDirection = SortDirectionEnum.ASC | SortDirectionEnum.DESC;
 export enum ViewModeEnum {
     READ = 'READ',
     WRITE = 'WRITE'

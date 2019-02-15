@@ -7,10 +7,9 @@ import { QueryMarkerOption, QueryScroller } from './QueryScroller';
 import { ReadLargePropertyParameters } from './ReadLargePropertyParameters';
 import { RecordSet } from './RecordSet';
 import { Redirection } from './Redirection';
-import { TypeNames } from './types';
+import {ActionIdsEnum, TypeNames} from './types';
 import { QueryDirection } from './types';
 import { PositionalQueryAbilityType } from './types';
-
 /**
  * Dialog Subtype that represents a 'Query Dialog'.
  * A 'Query' represents and is backed by a list of Records and a single Record definition.
@@ -47,6 +46,13 @@ export class QueryDialog extends Dialog {
         }).then(result => {
             return result;
         });
+    }
+
+    /**
+     * Get a redirection to the search dialog for this query dialog
+     */
+    public openSearch():Promise<Redirection> {
+        return this.performMenuActionWithId(ActionIdsEnum.SEARCH_ACTION_ID, []);
     }
 
     /**
