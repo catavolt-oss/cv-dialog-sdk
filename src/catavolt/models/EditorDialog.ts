@@ -20,8 +20,6 @@ import {SideEffectsResponse} from "./SideEffectsResponse";
 import {ActionIdsEnum, TypeNames} from './types';
 import { ViewMode } from './types';
 import { ViewModeEnum } from './types';
-
-export const SEARCH_DIALOG_CLASS = 'SearchQueryModel';
 /**
  * PanContext Subtype that represents an 'Editor Dialog'.
  * An 'Editor' represents and is backed by a single Record and Record definition.
@@ -33,7 +31,7 @@ export class EditorDialog extends Dialog {
     private _buffer: RecordBuffer;
 
     public static getSubType(jsonObj:StringDictionary): string {
-        if(jsonObj.dialogClassName && jsonObj.dialogClassName.indexOf(SEARCH_DIALOG_CLASS) > -1) {
+        if(Dialog.isSearchDialog(jsonObj.dialogClassName)) {
             return 'SearchDialog';
         }
         if(jsonObj.view && jsonObj.view.type === TypeNames.FormTypeName) {

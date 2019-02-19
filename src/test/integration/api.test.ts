@@ -30,7 +30,7 @@ import {LogLevel} from "../../catavolt/util/Log";
  */
 /* tslint:disable */
 let [tenantId, userId, password, sessionId, workbenchId, workbenchLaunchId] =
-    ['', '', '', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
+    ['cvtutorial', 'wsmith', 'biznes1', null, 'AAABACffAAAAAE8X', 'AAABACfaAAAAAKE8'];
 
 const currentWorkbenches:Array<Workbench> = null;
 let currentRedirection:Redirection = null;
@@ -255,6 +255,7 @@ test("Read A Binary Property From EditorDialog Test", (t) => {
 
 });
 
+/*
 test("Read A Url as a Stream", (t) => {
     return Catavolt.openStream('https://dialog.hxgn-api.net/v0/openapi.yaml').then((readableClientResponse) => {
        t.ok(readableClientResponse);
@@ -264,6 +265,7 @@ test("Read A Url as a Stream", (t) => {
        });
     });
 });
+*/
 
 test("Logout Test", (t) => {
 

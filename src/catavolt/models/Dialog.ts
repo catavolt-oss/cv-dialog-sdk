@@ -28,6 +28,7 @@ import {WriteLargePropertyParameters} from './WriteLargePropertyParams';
  */
 export abstract class Dialog {
     // statics
+    public static SEARCH_DIALOG_CLASS = 'SearchQueryModel';
     public static BINARY_CHUNK_SIZE = 128 * 1024; // size in  byes for 'read' operation
     private static CHAR_CHUNK_SIZE = 128 * 1000; // size in chars for encoded 'write' operation
 
@@ -54,6 +55,9 @@ export abstract class Dialog {
     // protected _parentDialog;
 
     /* public methods */
+    public static isSearchDialog(dialogClassName) {
+        return dialogClassName && dialogClassName.indexOf(Dialog.SEARCH_DIALOG_CLASS) > -1;
+    }
 
     get catavolt(): CatavoltApi {
         return this._catavolt;
