@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.30.0"></a>
+# [4.30.0](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.29.6...v4.30.0) (2019-02-19)
+
+
+### Bug Fixes
+
+* added searchdialog constant ([2a9443e](https://github.com/catavolt-oss/cv-dialog-sdk/commit/2a9443e))
+
+
+### Features
+
+* added search dialog ([c884d8f](https://github.com/catavolt-oss/cv-dialog-sdk/commit/c884d8f))
+
+
+
 <a name="4.29.6"></a>
 ## [4.29.6](https://github.com/catavolt-oss/cv-dialog-sdk/compare/v4.29.5...v4.29.6) (2019-02-01)
 
