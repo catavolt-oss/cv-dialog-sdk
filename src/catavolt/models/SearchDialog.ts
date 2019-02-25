@@ -50,6 +50,32 @@ export class SearchDialog extends EditorDialog {
         return this.propDefAtName(propName + FILTER_VALUE_SUFFIX);
     }
 
+    public getSearchablePropertyNames(): string[] {
+        return this.recordDef.propertyDefs.filter((propertyDef:PropertyDef) => {
+            return propertyDef.propertyName.endsWith(FILTER_VALUE_SUFFIX);
+        }).map(propertyDef => propertyDef.propertyName);
+    }
+
+    public getSortablePropertyNames(): string[] {
+        return this.recordDef.propertyDefs.filter((propertyDef:PropertyDef) => {
+            return propertyDef.propertyName.endsWith(SORT_DIRECTION_SUFFIX);
+        }).map(propertyDef => propertyDef.propertyName);
+    }
+
+    public getPropertyNameForSearchPropertyName(searchPropertyName: string): string {
+
+        if(searchPropertyName.endsWith(FILTER_VALUE_SUFFIX)) {
+            return searchPropertyName.substring(0, searchPropertyName.indexOf(FILTER_VALUE_SUFFIX));
+        } else if(searchPropertyName.endsWith(FILTER_OPERATOR_SUFFIX)) {
+            return searchPropertyName.substring(0, searchPropertyName.indexOf(FILTER_OPERATOR_SUFFIX));
+        } else if (searchPropertyName.endsWith(SORT_DIRECTION_SUFFIX)) {
+            return searchPropertyName.substring(0, searchPropertyName.indexOf(SORT_DIRECTION_SUFFIX));
+        } else if (searchPropertyName.endsWith(SORT_SEQUENCE_SUFFIX)) {
+            return searchPropertyName.substring(0, searchPropertyName.indexOf(SORT_SEQUENCE_SUFFIX));
+        }
+        return null;
+    }
+
     /**
      * Get the current keyword search value.  This is a global substring search
      * across all properties
