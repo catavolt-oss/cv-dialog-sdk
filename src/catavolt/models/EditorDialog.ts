@@ -31,7 +31,7 @@ export class EditorDialog extends Dialog {
     private _buffer: RecordBuffer;
 
     public static getSubType(jsonObj:StringDictionary): string {
-        if(Dialog.isSearchDialog(jsonObj.dialogClassName)) {
+        if(Dialog.isSearchDialog(jsonObj)) {
             return 'SearchDialog';
         }
         if(jsonObj.view && jsonObj.view.type === TypeNames.FormTypeName) {

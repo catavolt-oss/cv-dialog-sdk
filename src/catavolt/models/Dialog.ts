@@ -55,8 +55,9 @@ export abstract class Dialog {
     // protected _parentDialog;
 
     /* public methods */
-    public static isSearchDialog(dialogClassName) {
-        return dialogClassName && dialogClassName.indexOf(Dialog.SEARCH_DIALOG_CLASS) > -1;
+    public static isSearchDialog(dialog) {
+        return dialog.dialogClassName && dialog.dialogClassName.indexOf(Dialog.SEARCH_DIALOG_CLASS) > -1 &&
+            dialog.view && dialog.view.type === TypeNames.DetailsTypeName;
     }
 
     get catavolt(): CatavoltApi {
