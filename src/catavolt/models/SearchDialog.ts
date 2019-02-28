@@ -53,13 +53,13 @@ export class SearchDialog extends EditorDialog {
     public getSearchablePropertyNames(): string[] {
         return this.recordDef.propertyDefs.filter((propertyDef:PropertyDef) => {
             return propertyDef.propertyName.endsWith(FILTER_VALUE_SUFFIX);
-        }).map(propertyDef => propertyDef.propertyName);
+        }).map(propertyDef => this.getPropertyNameForSearchPropertyName(propertyDef.propertyName));
     }
 
     public getSortablePropertyNames(): string[] {
         return this.recordDef.propertyDefs.filter((propertyDef:PropertyDef) => {
             return propertyDef.propertyName.endsWith(SORT_DIRECTION_SUFFIX);
-        }).map(propertyDef => propertyDef.propertyName);
+        }).map(propertyDef => this.getPropertyNameForSearchPropertyName(propertyDef.propertyName));
     }
 
     public getPropertyNameForSearchPropertyName(searchPropertyName: string): string {
