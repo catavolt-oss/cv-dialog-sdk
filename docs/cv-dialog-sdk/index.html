@@ -92,8 +92,7 @@
 				<hr>
 				<h2 id="installation">Installation</h2>
 				<p>Install <code>cv-dialog-sdk</code> using npm:</p>
-				<pre><code class="lang-bash">npm install --save cv-dialog-sdk
-</code></pre>
+				<pre><code class="language-bash">npm install --save cv-dialog-sdk</code></pre>
 				<p>the package will install in the <code>package.json</code> under dependencies</p>
 				<h2 id="overview">Overview</h2>
 				<p><img src="./../SDK_Overview.png" alt="Overview"></p>
@@ -111,8 +110,7 @@
 				<p>3) Receiving a <strong>Redirection</strong> to the next <strong>Dialog</strong> (e.g. resulting Page is shown)</p>
 				<h2 id="usage">Usage</h2>
 				<p>To use the SDK, first include the objects you wish to pull into your project (this example pulls in the main Catavolt object and the Log. see the API for all components).</p>
-				<pre><code class="lang-Javascript"><span class="hljs-keyword">import</span> { Catavolt, Log } <span class="hljs-keyword">from</span> <span class="hljs-string">'cv-dialog-sdk'</span>; <span class="hljs-comment">// pulls Catavolt and Log components</span>
-</code></pre>
+				<pre><code class="language-Javascript"><span class="hljs-keyword">import</span> { Catavolt, Log } <span class="hljs-keyword">from</span> <span class="hljs-string">'cv-dialog-sdk'</span>; <span class="hljs-comment">// pulls Catavolt and Log components</span></code></pre>
 				<h3 id="first-steps">First Steps</h3>
 				<p>The first server-client interaction with a Xalt app is <strong>setting the tenant Id</strong> and <strong>Logging a user in</strong> using the <code>cv-dialog-sdk</code>.</p>
 				<!--
@@ -156,8 +154,7 @@ serverVersion | *String* | the current version of the cloud server.
 							<th>Description</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
+					<tbody><tr>
 							<td>ClientVersion</td>
 							<td><em>String</em></td>
 							<td>The version of the client (iOS, Android)</td>
@@ -187,18 +184,15 @@ serverVersion | *String* | the current version of the cloud server.
 							<td><em>String</em></td>
 							<td>The client and device platform. <em>ex <code>android-react</code> or <code>ios-react</code></em></td>
 						</tr>
-					</tbody>
-				</table>
+				</tbody></table>
 				<ul>
 					<li><p>Set device properties</p>
 						<ul>
 							<li><p>dynamic value <em>(value is a function)</em></p>
-								<pre><code class="lang-javascript">Catavolt.addDynamicDeviceProp(key, value);
-</code></pre>
+								<pre><code class="language-javascript">Catavolt.addDynamicDeviceProp(key, value);</code></pre>
 							</li>
 							<li><p>static value <em>(value is a static, non-function type)</em></p>
-								<pre><code class="lang-javascript">Catavolt.addStaticDeviceProp(key, value);
-</code></pre>
+								<pre><code class="language-javascript">Catavolt.addStaticDeviceProp(key, value);</code></pre>
 							</li>
 						</ul>
 					</li>
@@ -207,7 +201,7 @@ serverVersion | *String* | the current version of the cloud server.
 				<p>There are two ways to log into the Xalt Framework, Basic Authentication and OAuth. If you have OAuth present in your system and need assistance integrating it to Catavolt Extender take a look at the <a href="https://support.catavolt.com/customer/login?return_to=%2Fcustomer%2Fen%2Fportal%2Farticles%2F1342497-extender-v3-user-guide---october-15-2018">Catavolt User Guide</a>.</p>
 				<p>On success, <a href="./interfaces/_models_login_.login.html">Login</a> should create and pass back a <a href="./interfaces/_models_session_.session.html">Session</a> (In the case of multi-factor authentication, it will present the proper authentication window <a href="./interfaces/_models_dialogredirection_.dialogredirection.html">DialogRedirection</a> until it reaches the Session)</p>
 				<ul>
-					<li>Basic Authentication<pre><code class="lang-javascript"><span class="hljs-comment">// Returns a promise</span>
+					<li>Basic Authentication<pre><code class="language-javascript"><span class="hljs-comment">// Returns a promise</span>
 Catavolt.login(
   tenantID,
   clientType,
@@ -215,17 +209,15 @@ Catavolt.login(
   password,
 ).then(<span class="hljs-function"><span class="hljs-params">session</span> =&gt;</span> {
   <span class="hljs-comment">//Do any post login calls here</span>
-});
-</code></pre>
+});</code></pre>
 					</li>
 					<li><p>oAuth</p>
 						<p>  oAuth requires native platform rendering and display of the browser window for loading the oAuthUrl that is set in Xalt Extender <em>(see the Catavolt User Guide linked above)</em>. Along with the oAuthUrl, you will also need to generate a proof key. The proofKey will be passed along with the oAuth call in order to prevent man in the middle attacks on the login token issuance. (a strong crypto string with at least 16 characters is recommended)</p>
 						<p>  Use the following to get the oAuthUrl</p>
-						<pre><code class="lang-javascript">  <span class="hljs-keyword">const</span> proofKey = <span class="hljs-keyword">await</span> <span class="hljs-comment">// acquire a random crypto security string method</span>
-  <span class="hljs-keyword">const</span> initUrl = <span class="hljs-keyword">await</span> CatavoltAuth.getOAuthUrl(tenantID, proofKey); <span class="hljs-comment">// insert the tenantID and the generated proofKey</span>
-</code></pre>
+						<pre><code class="language-javascript">  <span class="hljs-keyword">const</span> proofKey = <span class="hljs-keyword">await</span> <span class="hljs-comment">// acquire a random crypto security string method</span>
+  <span class="hljs-keyword">const</span> initUrl = <span class="hljs-keyword">await</span> CatavoltAuth.getOAuthUrl(tenantID, proofKey); <span class="hljs-comment">// insert the tenantID and the generated proofKey</span></code></pre>
 						<p>  At this point, you will need to display the URL and create an event listener to extract the callbackURL</p>
-						<pre><code class="lang-javascript">  Catavolt.loginWithToken(
+						<pre><code class="language-javascript">  Catavolt.loginWithToken(
   tenantID,
   clientType,
   permissionToken,
@@ -233,8 +225,7 @@ Catavolt.login(
   ).then(<span class="hljs-function"><span class="hljs-params">session</span> =&gt;</span> {
   <span class="hljs-comment">//Do any post login calls here</span>
   }); <span class="hljs-comment">//returns a promise</span>
-  Catavolt.onSessionExpiration = pageController.logout;
-</code></pre>
+  Catavolt.onSessionExpiration = pageController.logout;</code></pre>
 					</li>
 				</ul>
 				<h3 id="workbenches-and-workbench-actions">Workbenches and Workbench Actions</h3>
@@ -279,7 +270,7 @@ Catavolt.login(
 				another <strong>Dialog</strong> (i.e. resource, page, etc.)</p>
 				<ul>
 					<li><strong>Actions</strong> are used to transition from one <strong>Dialog</strong> to the next.</li>
-					<li><strong>actionId</strong>s are simply strings but are typically retrieved from <strong>Menu</strong>s associated with a *<em>View</em><code></code>*</li>
+					<li><strong>actionId</strong>s are simply strings but are typically retrieved from <strong>Menu</strong>s associated with a <em>*View</em><code></code>*</li>
 				</ul>
 				<h3 id="documentation-and-tools">Documentation And Tools</h3>
 				<ul>

@@ -11,7 +11,7 @@ export class MobileComment_Details_RECORD {
         "type": "hxgn.api.dialog.Record",
         "dialogName": "MobileComment_Details_Properties",
         "properties": [{
-            "name": "Description",
+            "name": "Details",
             "format": null,
             "annotations": [],
             "type": "hxgn.api.dialog.Property",
@@ -23,7 +23,7 @@ export class MobileComment_Details_RECORD {
             "type": "hxgn.api.dialog.Property",
             "value": true
         }, {
-            "name": "Name",
+            "name": "Title",
             "format": null,
             "annotations": [],
             "type": "hxgn.api.dialog.Property",

@@ -42,6 +42,7 @@ export class DialogProxyTools {
     private static RECORD_SET_STORAGE_KEY =         '${userId}.${tenantId}.${dialogId}.recordset';
     private static RECORD_STORAGE_KEY =             '${userId}.${tenantId}.${dialogId}.record';
     private static REDIRECTION_STORAGE_KEY =        '${userId}.${tenantId}.${stateId}.${actionId}.redirection';
+    private static STORAGE_KEY_PREFIX =             '${userId}.${tenantId}.';
 
     private static COMMON_FETCH_CLIENT = new FetchClient();
 
@@ -184,6 +185,21 @@ export class DialogProxyTools {
         const beforeAndAfterDialog = await this.captureDialog(userId, baseUrl, tenantId, sessionId, beforeDialogId, null);
         return {beforeDialogRedirection, afterDialogRedirection: dialogRedirectionVisitor.enclosedJsonObject(),
             beforeDialog: beforeAndAfterDialog['beforeDialog'], afterDialog: beforeAndAfterDialog['afterDialog']};
+    }
+
+    public static async clearAllStorageAt(userId: string, tenantId: string): Promise<void> {
+        const thisMethod = 'DialogProxyTools::clearAllStorageAt';
+        let prefix = this.STORAGE_KEY_PREFIX.replace('${userId}', userId);
+        prefix = prefix.replace('${tenantId}', tenantId);
+        Log.info(`${thisMethod} -- ************** BEGIN CLEAR ALL STORAGE AT **************`);
+        const allKeys = await storage.getAllKeys();
+        for (const k of allKeys) {
+            if (k.startsWith(prefix)) {
+                await storage.removeItem(k);
+                Log.info(`${thisMethod} -- Removed from storage: ${k}`);
+            }
+        }
+        Log.info(`${thisMethod} -- ************** END CLEAR ALL STORAGE AT **************`);
     }
 
     public static commonFetchClient(): FetchClient {
