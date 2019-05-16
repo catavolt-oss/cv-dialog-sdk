@@ -78,6 +78,10 @@ local.properties
 node_modules
 .nvm
 
+.vscode
+.code-workspace
+.history
+
 # Generated javascript and typescript definition files
 src/js/
 src/catavolt/**/*.js

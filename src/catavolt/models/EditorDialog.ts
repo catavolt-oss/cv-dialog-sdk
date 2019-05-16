@@ -212,6 +212,8 @@ export class EditorDialog extends Dialog {
         return this.catavolt.dialogApi
             .propertyChange(this.tenantId, this.sessionId, this.id, propertyName, sideEffectsParameters)
             .then((sideEffectsResponse:SideEffectsResponse) => {
+                /* TODO */
+                // coorindate the the handling of this result with server-side (some of these may be null...)
                 this.recordDef = sideEffectsResponse.recordDef;
                 const sideEffectsRecord = sideEffectsResponse.record;
                 const originalProperties = this.buffer.before.properties;
